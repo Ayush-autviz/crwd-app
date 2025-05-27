@@ -1,131 +1,88 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
+import React from 'react'
+import 'react-native-gesture-handler'
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
+import { NavigationContainer } from '@react-navigation/native'
+import { createDrawerNavigator } from '@react-navigation/drawer'
+import Home from './src/screens/Home'
 
-import React from 'react';
-import type {PropsWithChildren} from 'react';
-import {
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+import Post from './src/screens/Post'
+import Activity from './src/screens/Activity'
+import Profile from './src/screens/Profile'
+import { Bell, House, Plus, Search, User } from 'lucide-react-native'
+import SearchScreen from './src/screens/Search'
+import DonationScreen from './src/screens/DonationScreen'
+import CreateCRWD from './src/screens/CreateCRWD'
+import YourCRWDs from './src/screens/YourCRWDs'
+import Saved from './src/screens/Saved'
+import CustomDrawerContent from './src/components/drawer/CustomDrawerContent'
+import { LightGrey, PrimaryGrey } from './src/Constants/Colors'
+import Settings from './src/screens/Settings'
+import TransactionHistory from './src/screens/TransactionHistory'
+import { createNativeStackNavigator } from '@react-navigation/native-stack'
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+export default function App() {
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+  const Tab = createBottomTabNavigator()
+  const Drawer = createDrawerNavigator()
+  const Stack = createNativeStackNavigator()
 
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
+  function BottomTabs() {
+    return (
+      <Tab.Navigator screenOptions={({route}) => ({
+        headerShown: false,
+        tabBarActiveTintColor: '#000',
+        tabBarIcon: () => {
+          if (route.name === 'Home') {
+            return <House color={PrimaryGrey} size={22} />
+          } else if (route.name === 'Search') {
+           return <Search color={PrimaryGrey} size={22} />
+          } else if (route.name === 'Post') {
+            return <Plus color={PrimaryGrey} size={22} />
+          } else if (route.name === 'Activity') {
+            return <Bell color={PrimaryGrey} size={22} />
+          } else if (route.name === 'Profile') {
+            return <User color={PrimaryGrey} size={22} />
+          }
+        }
+      })}>
+        <Tab.Screen name="Home" component={Home} />
+        <Tab.Screen name="Search" component={SearchScreen} />
+        <Tab.Screen name="Post" component={Post} />
+        <Tab.Screen name="Activity" component={Activity} />
+        <Tab.Screen name="Profile" component={Profile} />
+      </Tab.Navigator>
+    )
+  }
+
+  function DrawerNavigator() {
+    return (
+      <Drawer.Navigator
+        drawerContent={(props) => <CustomDrawerContent {...props} />}
+        screenOptions={{
+          headerShown: false,
+          drawerStyle: {
+            width: '90%',
+            maxWidth: 320,
           },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
-
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
-
-  /*
-   * To keep the template simple and small we're adding padding to prevent view
-   * from rendering under the System UI.
-   * For bigger apps the recommendation is to use `react-native-safe-area-context`:
-   * https://github.com/AppAndFlow/react-native-safe-area-context
-   *
-   * You can read more about it here:
-   * https://github.com/react-native-community/discussions-and-proposals/discussions/827
-   */
-  const safePadding = '5%';
+          drawerType: 'front',
+          overlayColor: 'rgba(0, 0, 0, 0.5)',
+        }}
+      >
+        <Drawer.Screen name="MainTabs" component={BottomTabs} />
+        <Drawer.Screen name="CreateCRWD" component={CreateCRWD} />
+        <Drawer.Screen name="YourCRWDs" component={YourCRWDs} />
+        <Drawer.Screen name="Saved" component={Saved} />
+        <Drawer.Screen name="Donation" component={DonationScreen} />
+        <Drawer.Screen name='Settings' component={Settings} />
+        <Drawer.Screen name='TransactionHistory' component={TransactionHistory} />
+      </Drawer.Navigator>
+    )
+  }
 
   return (
-    <View style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        style={backgroundStyle}>
-        <View style={{paddingRight: safePadding}}>
-          <Header/>
-        </View>
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-            paddingHorizontal: safePadding,
-            paddingBottom: safePadding,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </View>
-  );
+    <NavigationContainer>
+      <DrawerNavigator />
+    </NavigationContainer>
+  )
+
 }
-
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
-
-export default App;

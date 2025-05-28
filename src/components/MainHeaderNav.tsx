@@ -2,7 +2,7 @@ import { View, Text, Image, Dimensions, TouchableOpacity } from 'react-native'
 import React from 'react'
 import { AlignJustify, Archive, ChevronLeft } from 'lucide-react-native'
 import { LightGrey, PrimaryGrey } from '../Constants/Colors';
-import { useNavigation, DrawerActions } from '@react-navigation/native';
+import { useNavigation, DrawerActions, CommonActions } from '@react-navigation/native';
 
 export default function MainHeaderNav({show = false}) {
     const navigation = useNavigation();
@@ -16,8 +16,6 @@ export default function MainHeaderNav({show = false}) {
     const handleMenuPress = () => {
         navigation.dispatch(DrawerActions.openDrawer());
     };
-
-    console.log(show);
     
 
     return (

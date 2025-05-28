@@ -19,6 +19,11 @@ import { LightGrey, PrimaryGrey } from './src/Constants/Colors'
 import Settings from './src/screens/Settings'
 import TransactionHistory from './src/screens/TransactionHistory'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
+import Email from './src/components/settings/Email'
+import Password from './src/components/settings/Password'
+import TermsOfUse from './src/components/settings/TermsOfUse'
+import PrivacyPolicy from './src/components/settings/PrivacyPolicy'
+import ReportIssue from './src/components/settings/ReportIssue'
 
 export default function App() {
 
@@ -79,9 +84,22 @@ export default function App() {
     )
   }
 
+  function StackNavigator() {
+    return (
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="DrawerNav" component={DrawerNavigator} />
+        <Stack.Screen name="Email" component={Email} />
+        <Stack.Screen name="Password" component={Password} />
+        <Stack.Screen name="TermsOfUse" component={TermsOfUse} />
+        <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicy} />
+        <Stack.Screen name="ReportIssue" component={ReportIssue} />
+      </Stack.Navigator>
+    )
+  }
+
   return (
     <NavigationContainer>
-      <DrawerNavigator />
+      <StackNavigator />
     </NavigationContainer>
   )
 

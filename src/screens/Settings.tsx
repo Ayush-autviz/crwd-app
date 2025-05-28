@@ -28,10 +28,10 @@ export default function Settings() {
                         <Text>Email</Text>
                     </TouchableOpacity>
                     <View style={{ borderTopWidth: 1, borderTopColor: LightGrey, marginHorizontal: -20 }} />
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 10 }}>
+                    <TouchableOpacity onPress={() => navigation.navigate('Password')} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 10 }}>
                         <Lock size={20} color={PrimaryGrey} />
                         <Text>Password</Text>
-                    </View>
+                    </TouchableOpacity>
                 </View>
                 <View style={styles.container}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10, gap: 10 }}>
@@ -66,25 +66,25 @@ export default function Settings() {
                         <Text>Help Center</Text>
                     </View>
                     <View style={{ borderTopWidth: 1, borderTopColor: LightGrey, marginHorizontal: -20 }} />
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 10 }}>
+                    <TouchableOpacity onPress={() => navigation.navigate('TermsOfUse')} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 10 }}>
                         <FileText size={20} color={PrimaryGrey} />
                         <Text>Terms of Use</Text>
-                    </View>
+                    </TouchableOpacity>
                     <View style={{ borderTopWidth: 1, borderTopColor: LightGrey, marginHorizontal: -20 }} />
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 10 }}>
+                    <TouchableOpacity onPress={() => navigation.navigate('PrivacyPolicy')} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 10 }}>
                         <Shield size={20} color={PrimaryGrey} />
                         <Text>Privacy Policy</Text>
-                    </View>
+                    </TouchableOpacity>
                     <View style={{ borderTopWidth: 1, borderTopColor: LightGrey, marginHorizontal: -20 }} />
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 10 }}>
                         <Info size={20} color={PrimaryGrey} />
                         <Text>About</Text>
                     </View>
                     <View style={{ borderTopWidth: 1, borderTopColor: LightGrey, marginHorizontal: -20 }} />
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 10 }}>
+                    <TouchableOpacity onPress={() => navigation.navigate('ReportIssue')} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 10 }}>
                         <MessageSquare size={20} color={PrimaryGrey} />
                         <Text>Report an Issue</Text>
-                    </View>
+                    </TouchableOpacity>
 
                 </View>
 

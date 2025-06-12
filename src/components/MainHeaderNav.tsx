@@ -1,4 +1,4 @@
-import { View, Text, Image, Dimensions, TouchableOpacity } from 'react-native'
+import { View, Text, Image, Dimensions, TouchableOpacity, SafeAreaView } from 'react-native'
 import React from 'react'
 import { AlignJustify, Archive, ChevronLeft } from 'lucide-react-native'
 import { LightGrey, PrimaryGrey } from '../Constants/Colors';
@@ -19,8 +19,8 @@ export default function MainHeaderNav({show = false}) {
     
 
     return (
-        <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, borderBottomWidth: 2, borderBottomColor: LightGrey, }}>
-            <View style={{flexDirection: 'row', gap: 20, }}>
+        <SafeAreaView style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginHorizontal: 20, borderBottomWidth: 2, borderBottomColor: LightGrey, }}>
+            <View style={{flexDirection: 'row', gap: 20 }}>
             <TouchableOpacity disabled={!show}  onPress={() => navigation.goBack()}>
                     <ChevronLeft color={show? '#000' : '#fff'}/>
                 </TouchableOpacity> 
@@ -37,6 +37,6 @@ export default function MainHeaderNav({show = false}) {
                     <AlignJustify color="#000" />
                 </TouchableOpacity>
             </View>
-        </View>
+        </SafeAreaView>
     )
 }

@@ -1,9 +1,11 @@
 import { View, Text, TouchableOpacity, Image } from 'react-native'
 import React from 'react'
 import { MapPin, Upload } from 'lucide-react-native'
-import { PrimaryBlue, PrimaryGrey } from '../Constants/Colors'
+import { LightGrey, PrimaryBlue, PrimaryGrey } from '../Constants/Colors'
+import { useNavigation } from '@react-navigation/native'
 
 export default function ProfileBio() {
+    const navigation = useNavigation()
 
     const data = {
         avatarUrl:"https://randomuser.me/api/portraits/women/44.jpg",
@@ -11,15 +13,22 @@ export default function ProfileBio() {
         username:"myamakes_moves",
         location:"Atlanta, GA",
         bio:`This is a bio about Mya and how she likes to help others and give back to her community. She also loves ice cream.`
-}
+    }
+
+    const handleEditPress = () => {
+        navigation.navigate('ProfileEdit' as never)
+    }
 
     return (
         <>
             <View style={{ marginTop: 20, flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: 10 }}>
-                <View style={{ borderColor: PrimaryGrey, borderWidth: 1, borderRadius: 10, padding: 8 }}>
-                    <Upload size={20} />
+                <View style={{ borderColor: LightGrey , borderWidth: 1, borderRadius: 10, padding: 8 }}>
+                    <Upload size={20} color={PrimaryGrey} />
                 </View>
-                <TouchableOpacity style={{ backgroundColor: PrimaryBlue, paddingVertical: 10, paddingHorizontal: 15, borderRadius: 10, }}>
+                <TouchableOpacity 
+                    style={{ backgroundColor: PrimaryBlue, paddingVertical: 10, paddingHorizontal: 15, borderRadius: 10, }}
+                    onPress={handleEditPress}
+                >
                     <Text style={{ color: 'white', fontWeight: 'bold' }}>Edit</Text>
                 </TouchableOpacity>
             </View>

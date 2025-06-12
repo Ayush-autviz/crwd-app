@@ -36,18 +36,18 @@ export default function TopicList({ showTitle = true }) {
             posts: 156,
             avatars: ["8", "9", "10",],
         },
-        {
-            id: "4",
-            name: "National Parks",
-            posts: 176,
-            avatars: ["1", "3", "4"],
-        },
-        {
-            id: "5",
-            name: "Columbia",
-            posts: 76,
-            avatars: ["5", "6", "1", "8"],
-        },
+        // {
+        //     id: "4",
+        //     name: "National Parks",
+        //     posts: 176,
+        //     avatars: ["1", "3", "4"],
+        // },
+        // {
+        //     id: "5",
+        //     name: "Columbia",
+        //     posts: 76,
+        //     avatars: ["5", "6", "1", "8"],
+        // },
     ];
 
     return (

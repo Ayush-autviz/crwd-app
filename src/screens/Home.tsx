@@ -1,7 +1,6 @@
 import { View, Text, TextInput, FlatList, ScrollView } from 'react-native'
 import React from 'react'
 import MainHeaderNav from '../components/MainHeaderNav'
-import { SafeAreaView } from 'react-native-safe-area-context'
 import { LightGrey } from '../Constants/Colors'
 import TopicList from '../components/TopicList'
 import SuggestedCrwd from '../components/SuggestedCrwd'
@@ -78,7 +77,7 @@ export default function Home() {
         }]
 
     return (
-        <SafeAreaView style={{backgroundColor: 'white', flex: 1}}>
+        <View style={{backgroundColor: 'white', flex: 1}}>
             <MainHeaderNav />
             <ScrollView style={{ paddingHorizontal: 20 }}>
                 <View style={{ marginVertical: 10, padding: 10, backgroundColor: LightGrey, borderRadius: 8 }}>
@@ -92,13 +91,35 @@ export default function Home() {
                 <Text style={{ fontSize: 18, fontWeight: 'bold', marginTop: 20 }}>Categories</Text>
                 <FlatList data={categories}
                     horizontal={true}
+
                     showsHorizontalScrollIndicator={false}
-                    renderItem={({ item }) => (
-                        <View style={{ marginHorizontal: 10, marginVertical: 10, flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: LightGrey, padding: 10, borderRadius: 10 }} >
-                            <Text style={{ fontSize: 14, fontWeight: 500 }}>{item}</Text>
-                        </View>
+                    renderItem={({ item,index }) => (
+                        <View key={index} style={{
+                            backgroundColor: LightGrey,
+                            paddingHorizontal: 13,
+                            paddingVertical: 12,
+                            borderRadius: 10,
+                            marginTop:15,
+                            marginLeft:10
+                          }}>
+                            <Text style={{ fontSize: 13, color: '#000',fontWeight:'500' }}>{item}</Text>
+                          </View>
                     )}
                 />
+
+
+{/* <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
+        {interests.map((interest, index) => (
+          <View key={index} style={{
+            backgroundColor: LightGrey,
+            paddingHorizontal: 12,
+            paddingVertical: 6,
+            borderRadius: 20
+          }}>
+            <Text style={{ fontSize: 12, color: '#374151' }}>{interest}</Text>
+          </View>
+        ))}
+      </View> */}
 
                 <SuggestdCauses />
 
@@ -107,6 +128,6 @@ export default function Home() {
                 <PopularPosts posts={popularPosts}/>
 
             </ScrollView>
-        </SafeAreaView>
+        </View>
     )
 }

@@ -1,9 +1,15 @@
 import { View, Text, FlatList, Image, TouchableOpacity } from 'react-native'
 import React from 'react'
+import { useNavigation } from '@react-navigation/native'
 import { PrimaryBlue } from '../Constants/Colors'
 
 export default function SuggestedCrwd() {
-  
+  const navigation = useNavigation();
+
+  const handleVisitCrwd = () => {
+    navigation.navigate('GroupCRWD' as never);
+  };
+
           // Sample data for suggested CRWDs
           const suggestedCRWDs = [
             {
@@ -25,7 +31,7 @@ export default function SuggestedCrwd() {
               image: "/grocery.jpg",
             },
           ];
-  
+
     return (
     <>
     <View style={{marginVertical: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'}}>
@@ -43,7 +49,10 @@ export default function SuggestedCrwd() {
         <Text style={{fontSize: 12, color: 'grey'}}>{item.members}</Text>
         <Text style={{fontSize: 12, color: 'grey', width: 200}}>{item.description.slice(0, 30)}..</Text>
       </View>
-      <TouchableOpacity style={{backgroundColor: PrimaryBlue, paddingVertical: 10, paddingHorizontal: 15 , borderRadius: 10}}>
+      <TouchableOpacity
+        onPress={handleVisitCrwd}
+        style={{backgroundColor: PrimaryBlue, paddingVertical: 10, paddingHorizontal: 15 , borderRadius: 10}}
+      >
         <Text style={{color: 'white'}}>Visit</Text>
       </TouchableOpacity>
       </View>

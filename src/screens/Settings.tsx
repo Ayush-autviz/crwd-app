@@ -15,11 +15,10 @@ export default function Settings() {
 
             <ScrollView style={{ paddingHorizontal: 20 }}>
                 <View style={styles.container}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10, gap: 10 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center',marginVertical: 10, gap: 10 }}>
                         <User size={20} color={PrimaryBlue} />
                         <View>
                             <Text style={{ fontSize: 18, fontWeight: '600' }}>Account</Text>
-                            <Text style={{ color: PrimaryGrey, fontSize: 13 }}>Manage your account settings and preferences</Text>
                         </View>
                     </View>
                     <View style={{ borderBottomWidth: 1, borderBottomColor: LightGrey, marginHorizontal: -20 }} />
@@ -34,37 +33,36 @@ export default function Settings() {
                     </TouchableOpacity>
                 </View>
                 <View style={styles.container}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10, gap: 10 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center',marginVertical: 10, gap: 10 }}>
                         <CreditCard size={20} color={PrimaryBlue} />
                         <View>
                             <Text style={{ fontSize: 18, fontWeight: '600' }}>Financial</Text>
-                            <Text style={{ color: PrimaryGrey, fontSize: 13 }}>Manage your payment methods and view transaction history</Text>
+                          
                         </View>
                     </View>
                     <View style={{ borderBottomWidth: 1, borderBottomColor: LightGrey, marginHorizontal: -20 }} />
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 10 }}>
+                    <TouchableOpacity onPress={() => navigation.navigate('PaymentMethods' as never)} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 10 }}>
                         <CreditCard size={20} color={PrimaryGrey} />
                         <Text>Payment Methods</Text>
-                    </View>
+                    </TouchableOpacity>
                     <View style={{ borderTopWidth: 1, borderTopColor: LightGrey, marginHorizontal: -20 }} />
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 10 }}>
+                    <TouchableOpacity onPress={() => navigation.navigate('TransactionHistory' as never)} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 10 }}>
                         <Lock size={20} color={PrimaryGrey} />
                         <Text>Transaction History</Text>
-                    </View>
+                    </TouchableOpacity>
                 </View>
                 <View style={styles.container}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10, gap: 10 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 10, gap: 10 }}>
                         <CircleHelp size={20} color={PrimaryBlue} />
                         <View>
                             <Text style={{ fontSize: 18, fontWeight: '600' }}>Help & Support</Text>
-                            <Text style={{ color: PrimaryGrey, fontSize: 13 }}>Get help and learn more about CRWD</Text>
                         </View>
                     </View>
                     <View style={{ borderBottomWidth: 1, borderBottomColor: LightGrey, marginHorizontal: -20 }} />
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 10 }}>
+                    <TouchableOpacity onPress={() => navigation.navigate('HelpCenter' as never)} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 10 }}>
                         <CircleHelp size={20} color={PrimaryGrey} />
                         <Text>Help Center</Text>
-                    </View>
+                    </TouchableOpacity>
                     <View style={{ borderTopWidth: 1, borderTopColor: LightGrey, marginHorizontal: -20 }} />
                     <TouchableOpacity onPress={() => navigation.navigate('TermsOfUse')} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 10 }}>
                         <FileText size={20} color={PrimaryGrey} />
@@ -76,10 +74,10 @@ export default function Settings() {
                         <Text>Privacy Policy</Text>
                     </TouchableOpacity>
                     <View style={{ borderTopWidth: 1, borderTopColor: LightGrey, marginHorizontal: -20 }} />
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 10 }}>
+                    <TouchableOpacity onPress={() => navigation.navigate('About' as never)} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 10 }}>
                         <Info size={20} color={PrimaryGrey} />
                         <Text>About</Text>
-                    </View>
+                    </TouchableOpacity>
                     <View style={{ borderTopWidth: 1, borderTopColor: LightGrey, marginHorizontal: -20 }} />
                     <TouchableOpacity onPress={() => navigation.navigate('ReportIssue')} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 10 }}>
                         <MessageSquare size={20} color={PrimaryGrey} />

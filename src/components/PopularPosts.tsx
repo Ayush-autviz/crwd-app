@@ -1,21 +1,37 @@
-import { View, Text, FlatList, Image, Dimensions, TouchableOpacity, StyleSheet } from 'react-native'
-import React from 'react'
+import { View, Text, FlatList, Image, Dimensions, TouchableOpacity, StyleSheet, Modal, Pressable } from 'react-native'
+import React, { useState } from 'react'
 import { LightGrey, PrimaryBlue, PrimaryGrey } from '../Constants/Colors'
-import { Ellipsis, Heart, MessageCircle } from 'lucide-react-native';
+import { Ellipsis, Heart, MessageCircle, Flag, Trash2 } from 'lucide-react-native'
+import { useNavigation } from '@react-navigation/native'
 
-export default function PopularPosts({posts, showTitle = true }) {
+export default function PopularPosts({posts, showTitle = true}) {
+    const navigation = useNavigation()
+    const screenWidth = Dimensions.get('window').width
+    const [tooltipVisible, setTooltipVisible] = useState(false)
+    const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 })
+    const [selectedPost, setSelectedPost] = useState(null)
 
-    const screenWidth = Dimensions.get('window').width;
+    const handlePostPress = (post) => {
+        navigation.navigate('PostDetail', { post })
+    }
 
-   
+    const handleEllipsisPress = (event, post) => {
+        const { pageX, pageY } = event.nativeEvent
+        setTooltipPosition({ x: pageX-50, y: pageY+30 })
+        setSelectedPost(post)
+        setTooltipVisible(true)
+    }
 
     return (
-        <View style={{marginTop: 20, marginBottom: 50 }}>
-            {showTitle && <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Popular Posts</Text>}
+        <View style={{marginTop: 20, marginBottom: 50}}>
+            {showTitle && <Text style={{fontSize: 18, fontWeight: 'bold'}}>Popular Posts</Text>}
             <FlatList
                 data={posts}
                 renderItem={({ item }) => (
-                    <View style={styles.container}>
+                    <TouchableOpacity 
+                        style={styles.container}
+                        onPress={() => handlePostPress(item)}
+                    >
                         <Image source={{ uri: item.avatarUrl }} style={{ width: 40, height: 40, borderRadius: 20 }} />
                         <View style={{ flex: 1 }}>
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, justifyContent: 'space-between' }}>
@@ -24,7 +40,7 @@ export default function PopularPosts({posts, showTitle = true }) {
                                     <Text style={{ fontSize: 14, color: PrimaryGrey }}>.</Text>
                                     <Text style={{ fontSize: 12, color: PrimaryGrey }}>{item.time}</Text>
                                 </View>
-                                <TouchableOpacity>
+                                <TouchableOpacity onPress={(event) => handleEllipsisPress(event, item)}>
                                     <Ellipsis size={18} color={PrimaryGrey} />
                                 </TouchableOpacity>
                             </View>
@@ -48,29 +64,86 @@ export default function PopularPosts({posts, showTitle = true }) {
                                 </TouchableOpacity>
                             </View>
                         </View>
-                    </View>
+                    </TouchableOpacity>
                 )}
             />
+
+            <Modal
+                transparent={true}
+                visible={tooltipVisible}
+                onRequestClose={() => setTooltipVisible(false)}
+            >
+                <Pressable 
+                    style={StyleSheet.absoluteFill} 
+                    onPress={() => setTooltipVisible(false)}
+                >
+                    <View style={[
+                        styles.tooltip, 
+                        {
+                            position: 'absolute',
+                            left: tooltipPosition.x - 100,
+                            top: tooltipPosition.y - 20,
+                        }
+                    ]}>
+                        <TouchableOpacity 
+                            style={styles.tooltipItem}
+                            onPress={() => {
+                                // Handle delete post
+                                setTooltipVisible(false)
+                            }}
+                        >
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                                <Trash2 size={16} color="#ef4444" />
+                                <Text style={[styles.tooltipText, { color: '#ef4444' }]}>Delete Post</Text>
+                            </View>
+                        </TouchableOpacity>
+                        <TouchableOpacity 
+                            style={styles.tooltipItem}
+                            onPress={() => {
+                                // Handle report post
+                                setTooltipVisible(false)
+                            }}
+                        >
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                                <Flag size={16} color={PrimaryGrey} />
+                                <Text style={styles.tooltipText}>Report Post</Text>
+                            </View>
+                        </TouchableOpacity>
+                    </View>
+                </Pressable>
+            </Modal>
         </View>
     )
 }
 
 const styles = StyleSheet.create({
     container: {
-        marginTop: 20,
         flexDirection: 'row',
+        paddingVertical: 16,
+        gap:10,
+        borderBottomWidth: 1,
+        borderBottomColor: '#E5E5E5'
+    },
+    tooltip: {
         backgroundColor: 'white',
-        gap: 10,
-        alignItems: 'flex-start',
+        borderRadius: 8,
+        padding: 8,
         shadowColor: '#000',
         shadowOffset: {
-            width: 0,   // no left/right shadow
-            height: 1,  // more shadow downward
+            width: 0,
+            height: 2,
         },
-        shadowOpacity: 0.1, // subtle transparency
-        shadowRadius: 6,
-        elevation: 3, // for Android
-        borderRadius: 10,
-        padding: 12,
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5,
+        width: 160,
+    },
+    tooltipItem: {
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+    },
+    tooltipText: {
+        fontSize: 14,
+        color: '#111',
     }
 })

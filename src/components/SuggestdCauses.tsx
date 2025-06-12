@@ -1,9 +1,19 @@
 import { View, Text, FlatList, Image, TouchableOpacity } from 'react-native'
 import React from 'react'
+import { useNavigation } from '@react-navigation/native'
 import { PrimaryBlue } from '../Constants/Colors';
 import { ChevronRight } from 'lucide-react-native';
 
 export default function SuggestdCauses() {
+    const navigation = useNavigation();
+
+    const handleVisitCause = () => {
+        navigation.navigate('CauseScreen' as never);
+    };
+
+    const handleDiscoverMore = () => {
+        navigation.navigate('Search' as never);
+    };
 
     // Sample data for suggested causes
     const suggestedCauses = [
@@ -38,11 +48,18 @@ export default function SuggestdCauses() {
                             <Text style={{ fontSize: 12, color: 'grey' }}>{item.description}</Text>
                         </View>
                         </View>
-                        <TouchableOpacity style={{ backgroundColor: PrimaryBlue, paddingVertical: 10, paddingHorizontal: 15, borderRadius: 10 }}>
-                            <Text style={{ color: 'white' }}>Visit</Text></TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={handleVisitCause}
+                            style={{ backgroundColor: PrimaryBlue, paddingVertical: 10, paddingHorizontal: 15, borderRadius: 10 }}
+                        >
+                            <Text style={{ color: 'white' }}>Visit</Text>
+                        </TouchableOpacity>
                     </View>
                 )} />
-            <TouchableOpacity style={{ paddingVertical: 10, marginTop: 10, alignSelf: 'flex-end', flexDirection: 'row', alignItems: 'center' }}>
+            <TouchableOpacity
+                onPress={handleDiscoverMore}
+                style={{ paddingVertical: 10, marginTop: 10, alignSelf: 'flex-end', flexDirection: 'row', alignItems: 'center' }}
+            >
                 <Text style={{ color: PrimaryBlue }}>Discover More</Text>
                 <ChevronRight color={PrimaryBlue} size={16} />
             </TouchableOpacity>

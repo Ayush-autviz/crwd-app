@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { Minus, Plus, Bookmark, Trash2 } from 'lucide-react-native';
 import { CROWDS, RECENTS, SUGGESTED, Organization } from '../../Constants/organizations';
+import PaymentSection from './PaymentSection';
 
 interface OneTimeDonationProps {
   setCheckout: (checkout: boolean) => void;
@@ -197,6 +198,7 @@ export default function OneTimeDonation({
       </View>
 
       {/* Donate Button */}
+      <PaymentSection setCheckout={setCheckout} amount={donationAmount} />
     </ScrollView>
   );
 }
@@ -310,7 +312,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   orgSection: {
-    marginBottom: 24,
+    // marginBottom: 24,
   },
   sectionTitle: {
     fontSize: 20,

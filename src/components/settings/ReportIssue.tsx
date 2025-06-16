@@ -60,7 +60,7 @@ export default function ReportIssue() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <MainHeaderNav show={true} />
+      <MainHeaderNav show={true} post={false} menu={false} />
       <ScrollView style={styles.scrollView}>
         <View style={styles.header}>
           {/* <MessageSquare size={24} color={PrimaryBlue} /> */}

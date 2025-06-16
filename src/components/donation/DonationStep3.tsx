@@ -122,11 +122,7 @@ export default function DonationStep3({
             </Text>
           </View>
 
-          <PaymentSection setCheckout={setCheckout} amount={7} />
-        </>
-      )}
-
-      {/* Action Buttons */}
+           {/* Action Buttons */}
       <View style={styles.actionSection}>
         <TouchableOpacity
           onPress={() => setStep(2)}
@@ -134,6 +130,20 @@ export default function DonationStep3({
         >
           <Text style={styles.backButtonText}>Add More</Text>
         </TouchableOpacity>
+        </View>
+
+          <PaymentSection setCheckout={setCheckout} amount={7} />
+        </>
+      )}
+
+      {/* Action Buttons
+      <View style={styles.actionSection}>
+        <TouchableOpacity
+          onPress={() => setStep(2)}
+          style={styles.backButton}
+        >
+          <Text style={styles.backButtonText}>Add More</Text>
+        </TouchableOpacity> */}
 
         {/* {selectedOrgs.length > 0 && (
           <TouchableOpacity
@@ -143,7 +153,7 @@ export default function DonationStep3({
             <Text style={styles.continueButtonText}>Continue to Checkout</Text>
           </TouchableOpacity>
         )} */}
-      </View>
+      {/* </View> */}
     </View>
   );
 }

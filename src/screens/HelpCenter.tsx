@@ -25,6 +25,7 @@ import {
 } from 'lucide-react-native'
 import { useNavigation } from '@react-navigation/native'
 import { PrimaryGrey, PrimaryBlue, LightGrey } from '../Constants/Colors'
+import MainHeaderNav from '../components/MainHeaderNav'
 
 interface FAQItem {
   question: string
@@ -130,7 +131,7 @@ export default function HelpCenter() {
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
+      {/* <View style={styles.header}>
         <TouchableOpacity 
           style={styles.backButton}
           onPress={() => navigation.goBack()}
@@ -139,8 +140,8 @@ export default function HelpCenter() {
         </TouchableOpacity>
         <Text style={styles.title}>Help & Support</Text>
         <View style={styles.headerSpacer} />
-      </View>
-
+      </View> */}
+      <MainHeaderNav show menu={false} post={false} />
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Welcome Section */}
         <View style={styles.welcomeSection}>

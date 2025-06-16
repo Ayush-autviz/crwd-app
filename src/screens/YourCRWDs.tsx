@@ -8,6 +8,9 @@ export default function YourCRWDs() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <MainHeaderNav show={true} menu={false} post={false} />
+
+      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Your CRWDs</Text>
         <TouchableOpacity

@@ -14,7 +14,7 @@ export default function CreateCRWD() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <MainHeaderNav />
+      <MainHeaderNav menu={false} post={false} show={true} />
       <ScrollView style={styles.content}>
         <Text style={styles.title}>Create a CRWD</Text>
         <Text style={styles.subtitle}>Be the inspiration to your community. Choose a causes, invite friends, discuss and make an impact together</Text>

@@ -241,8 +241,8 @@ const styles = StyleSheet.create({
   headerTitle: {
     flex: 1,
     textAlign: 'center',
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 20,
+    fontWeight: 'bold',
     color: '#111827',
   },
   headerSpacer: {
@@ -268,10 +268,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: 'rgba(255, 255, 255, 0.8)',
     textDecorationLine: 'underline',
+
+    
   },
   amountSection: {
     alignItems: 'center',
-    marginTop: 16,
+    marginTop: 35,
   },
   amountControls: {
     flexDirection: 'row',

@@ -177,7 +177,7 @@ export default function CheckoutScreen({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: '#fff',
   },
   header: {
     flexDirection: 'row',
@@ -199,8 +199,8 @@ const styles = StyleSheet.create({
   headerTitle: {
     flex: 1,
     textAlign: 'center',
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 20,
+    fontWeight: 'bold',
     color: '#111827',
   },
   headerSpacer: {

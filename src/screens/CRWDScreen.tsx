@@ -11,7 +11,7 @@ import { useNavigation } from '@react-navigation/native';
 import MainHeaderNav from '../components/MainHeaderNav';
 import { PrimaryBlue, PrimaryGrey, LightGrey } from '../Constants/Colors';
 
-export default function YourCRWDs() {
+export default function CRWDScreen() {
   const navigation = useNavigation();
 
   // Mock CRWDs data - matching the web version

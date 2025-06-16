@@ -8,7 +8,7 @@ import Home from './src/screens/Home'
 import Post from './src/screens/Post'
 import Activity from './src/screens/Activity'
 import Profile from './src/screens/Profile'
-import { Bell, House, Plus, Search, User } from 'lucide-react-native'
+import { Bell, Home as HomeIcon, Search, Users, Archive } from 'lucide-react-native'
 import SearchScreen from './src/screens/Search'
 import Search2 from './src/screens/Search2'
 import DonationScreen from './src/screens/DonationScreen'
@@ -38,6 +38,9 @@ import PaymentMethods from './src/screens/PaymentMethods'
 import HelpCenter from './src/screens/HelpCenter'
 import About from './src/screens/About'
 import Statistics from './src/screens/Statistics'
+import Members from './src/screens/Members'
+import CRWDScreen from './src/screens/CRWDScreen'
+import ManageCRWD from './src/screens/ManageCRWD'
 
 export default function App() {
 
@@ -50,23 +53,24 @@ export default function App() {
       <Tab.Navigator screenOptions={({route}) => ({
         headerShown: false,
         tabBarActiveTintColor: '#000',
+        tabBarStyle: route.name === 'Donation' ? { display: 'none' } : undefined,
         tabBarIcon: () => {
           if (route.name === 'Home') {
-            return <House color={PrimaryGrey} size={22} />
+            return <HomeIcon color={PrimaryGrey} size={22} />
           } else if (route.name === 'Search') {
            return <Search color={PrimaryGrey} size={22} />
-          } else if (route.name === 'Post') {
-            return <Plus color={PrimaryGrey} size={22} />
+          } else if (route.name === 'Donation') {
+            return <Archive color={PrimaryGrey} size={22} />
           } else if (route.name === 'Activity') {
             return <Bell color={PrimaryGrey} size={22} />
           } else if (route.name === 'Profile') {
-            return <User color={PrimaryGrey} size={22} />
+            return <Users color={PrimaryGrey} size={22} />
           }
         }
       })}>
         <Tab.Screen name="Home" component={Home} />
         <Tab.Screen name="Search" component={SearchScreen} />
-        <Tab.Screen name="Post" component={Post} />
+        <Tab.Screen name="Donation" component={DonationScreen} />
         <Tab.Screen name="Activity" component={Activity} />
         <Tab.Screen name="Profile" component={Profile} />
       </Tab.Navigator>
@@ -94,6 +98,7 @@ export default function App() {
         <Drawer.Screen name="Donation" component={DonationScreen} />
         <Drawer.Screen name='Settings' component={Settings} />
         <Drawer.Screen name='TransactionHistory' component={TransactionHistory} />
+        <Stack.Screen name="Post" component={Post} />
       </Drawer.Navigator>
     )
   }
@@ -121,6 +126,10 @@ export default function App() {
         <Stack.Screen name="HelpCenter" component={HelpCenter} />
         <Stack.Screen name="About" component={About} />
         <Stack.Screen name="Statistics" component={Statistics} />
+        <Stack.Screen name="Members" component={Members} />
+        <Stack.Screen name="CRWDScreen" component={CRWDScreen} />
+        <Stack.Screen name="ManageCRWD" component={ManageCRWD} />
+
       </Stack.Navigator>
     )
   }

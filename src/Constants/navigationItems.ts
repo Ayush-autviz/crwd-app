@@ -92,10 +92,11 @@ import {
   Search,
   Archive,
   Bell,
-  Shuffle,
   Info,
   HelpCircle,
-  Settings
+  Settings,
+  Shuffle,
+
 } from 'lucide-react-native';
 import { NavigationProp } from '@react-navigation/native';
 
@@ -107,9 +108,6 @@ export interface NavigationItem {
   onPress?: () => void;
   handleNavigation?: (navigation: NavigationProp<any>) => void;
 }
-
-// Tab screens inside BottomTabs
-const tabScreens = ['Home', 'Search', 'Post', 'Activity', 'Profile'];
 
 export const navigationItems: NavigationItem[] = [
   {
@@ -165,15 +163,15 @@ export const navigationItems: NavigationItem[] = [
     id: 'about',
     icon: Info,
     label: 'About',
-    onPress: () => console.log('About pressed'),
-    handleNavigation: () => console.log('About pressed')
+    route: 'About',
+    handleNavigation: (navigation) => navigation.navigate('About')
   },
   {
     id: 'help',
     icon: HelpCircle,
     label: 'Help',
-    onPress: () => console.log('Help pressed'),
-    handleNavigation: () => console.log('Help pressed')
+    route: 'HelpCenter',
+    handleNavigation: (navigation) => navigation.navigate('HelpCenter')
   },
   {
     id: 'settings',

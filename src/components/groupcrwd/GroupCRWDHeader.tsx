@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, Image, TouchableOpacity, FlatList } from 'react-native';
 import { Share2, Bookmark, UserPlus } from 'lucide-react-native';
 import { PrimaryBlue, LightGrey, PrimaryGrey } from '../../Constants/Colors';
+import { useNavigation } from '@react-navigation/native';
 
 const orgAvatars = [
   require('../../assets/images/grocery.jpg'),
@@ -30,6 +31,11 @@ const categories = [
 ];
 
 const GroupCRWDHeader: React.FC = () => {
+  const navigation = useNavigation();
+
+  const handleStatsPress = () => {
+    navigation.navigate('Members' as never);
+  };
 
   return (
     <View style={{ backgroundColor: 'white', padding: 16, margin: 8, borderRadius: 12 }}>
@@ -95,13 +101,16 @@ const GroupCRWDHeader: React.FC = () => {
       </View>
 
       {/* Stats */}
-      <View style={{ 
-        flexDirection: 'row', 
-        backgroundColor: '#f9fafb', 
-        borderRadius: 12, 
-        paddingVertical: 16,
-        marginBottom: 16
-      }}>
+      <TouchableOpacity 
+        onPress={handleStatsPress}
+        style={{ 
+          flexDirection: 'row', 
+          backgroundColor: '#f9fafb', 
+          borderRadius: 12, 
+          paddingVertical: 16,
+          marginBottom: 16
+        }}
+      >
         <View style={{ flex: 1, alignItems: 'center',justifyContent:"center" }}>
           <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#111827',textAlign:'center' }}>10</Text>
           <Text style={{ fontSize: 12, color: PrimaryGrey,textAlign:'center' }}>Causes</Text>
@@ -116,7 +125,7 @@ const GroupCRWDHeader: React.FC = () => {
           <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#111827',textAlign:"center" }}>102</Text>
           <Text style={{ fontSize: 12, color: PrimaryGrey,textAlign:"center" }}>Impact Score</Text>
         </View>
-      </View>
+      </TouchableOpacity>
 
       {/* Interest Tags */}
       {/* <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>

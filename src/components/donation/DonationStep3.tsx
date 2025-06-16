@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { Trash2, Bookmark } from 'lucide-react-native';
 import { CROWDS, RECENTS, SUGGESTED, Organization } from '../../Constants/organizations';
+import PaymentSection from './PaymentSection';
 
 interface DonationStep3Props {
   selectedOrganizations: string[];
@@ -110,15 +111,19 @@ export default function DonationStep3({
 
       {/* Distribution Info */}
       {selectedOrgs.length > 0 && (
-        <View style={styles.distributionInfo}>
-          <Text style={styles.distributionTitle}>Distribution</Text>
-          <Text style={styles.distributionText}>
-            Your donation will be evenly distributed across all {selectedOrgs.length} organization{selectedOrgs.length !== 1 ? 's' : ''}.
-          </Text>
-          <Text style={styles.distributionPercentage}>
-            Each organization receives: {Math.floor(100 / selectedOrgs.length)}%
-          </Text>
-        </View>
+        <>
+          <View style={styles.distributionInfo}>
+            <Text style={styles.distributionTitle}>Distribution</Text>
+            <Text style={styles.distributionText}>
+              Your donation will be evenly distributed across all {selectedOrgs.length} organization{selectedOrgs.length !== 1 ? 's' : ''}.
+            </Text>
+            <Text style={styles.distributionPercentage}>
+              Each organization receives: {Math.floor(100 / selectedOrgs.length)}%
+            </Text>
+          </View>
+
+          <PaymentSection setCheckout={setCheckout} amount={7} />
+        </>
       )}
 
       {/* Action Buttons */}
@@ -130,14 +135,14 @@ export default function DonationStep3({
           <Text style={styles.backButtonText}>Add More</Text>
         </TouchableOpacity>
 
-        {selectedOrgs.length > 0 && (
+        {/* {selectedOrgs.length > 0 && (
           <TouchableOpacity
             onPress={() => setCheckout(true)}
             style={styles.continueButton}
           >
             <Text style={styles.continueButtonText}>Continue to Checkout</Text>
           </TouchableOpacity>
-        )}
+        )} */}
       </View>
     </View>
   );

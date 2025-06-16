@@ -1,16 +1,25 @@
 import { View, Text, Image, Dimensions, TouchableOpacity, SafeAreaView } from 'react-native'
 import React from 'react'
-import { AlignJustify, Archive, ChevronLeft } from 'lucide-react-native'
+import { AlignJustify, ChevronLeft, Plus } from 'lucide-react-native'
 import { LightGrey, PrimaryGrey } from '../Constants/Colors';
-import { useNavigation, DrawerActions, CommonActions } from '@react-navigation/native';
+import { useNavigation, DrawerActions } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-export default function MainHeaderNav({show = false}) {
-    const navigation = useNavigation();
+type RootStackParamList = {
+    Post: undefined;
+    Donation: undefined;
+    // ... other screens
+};
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+
+export default function MainHeaderNav({show = false,menu=true,post=true}) {
+    const navigation = useNavigation<NavigationProp>();
     const screenWidth = Dimensions.get('window').width;
     const imageWidth = screenWidth * 0.25;
 
-    const handleDonationPress = () => {
-        navigation.navigate('Donation' as never);
+    const handlePostPress = () => {
+        navigation.navigate('Post');
     };
 
     const handleMenuPress = () => {
@@ -23,19 +32,31 @@ export default function MainHeaderNav({show = false}) {
             <View style={{flexDirection: 'row', gap: 20 }}>
             <TouchableOpacity disabled={!show}  onPress={() => navigation.goBack()}>
                     <ChevronLeft color={show? '#000' : '#fff'}/>
-                </TouchableOpacity> 
-                <TouchableOpacity>
+                </TouchableOpacity>
+                {
+                    post &&  <TouchableOpacity>
                     <AlignJustify color="#fff" />
                 </TouchableOpacity>
+                }
+
             </View>
             <Image source={require('../assets/logo/logo3.webp')} style={{resizeMode: 'center', width: imageWidth}} />
             <View style={{flexDirection: 'row', gap: 20}}>
-                <TouchableOpacity onPress={handleDonationPress}>
-                    <Archive color="#000" />
+                {
+                    post && <TouchableOpacity onPress={handlePostPress}>
+                    <Plus color="#000" />
                 </TouchableOpacity>
-                <TouchableOpacity onPress={handleMenuPress}>
+                }
+                {
+                    menu && 
+                }
+                
+                 <TouchableOpacity onPress={handleMenuPress}>
                     <AlignJustify color="#000" />
                 </TouchableOpacity>
+                
+   
+
             </View>
         </SafeAreaView>
     )

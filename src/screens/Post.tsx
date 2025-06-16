@@ -183,7 +183,7 @@ export default function Post() {
 
   return (
     <SafeAreaView style={{backgroundColor: 'white', flex: 1}}>
-      <MainHeaderNav />
+      <MainHeaderNav show post={false} menu={false}/>
       <ScrollView style={{paddingHorizontal: 20}}>
         {!postType ? (
           <View style={{marginTop: 20}}>

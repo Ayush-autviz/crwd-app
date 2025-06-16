@@ -21,6 +21,7 @@ import {
 } from 'lucide-react-native'
 import { useNavigation } from '@react-navigation/native'
 import { PrimaryGrey, PrimaryBlue, LightGrey } from '../Constants/Colors'
+import MainHeaderNav from '../components/MainHeaderNav'
 
 interface QuickLinkItem {
   id: string
@@ -114,7 +115,7 @@ export default function About() {
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
+      {/* <View style={styles.header}>
         <TouchableOpacity 
           style={styles.backButton}
           onPress={() => navigation.goBack()}
@@ -123,7 +124,8 @@ export default function About() {
         </TouchableOpacity>
         <Text style={styles.title}>About CRWD</Text>
         <View style={styles.headerSpacer} />
-      </View>
+      </View> */}
+      <MainHeaderNav show menu={false}/>
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Hero Section */}

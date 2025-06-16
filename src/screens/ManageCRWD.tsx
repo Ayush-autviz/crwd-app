@@ -12,27 +12,27 @@ import {
   Alert
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { ArrowLeft, Edit2, Check, X, Camera, MapPin, ChevronLeft } from 'lucide-react-native'
+import { ArrowLeft, Edit2, Check, X, Camera, MapPin, ChevronLeft, Users, Settings, Trash2 } from 'lucide-react-native'
 import { useNavigation } from '@react-navigation/native'
 import { PrimaryGrey, PrimaryBlue, LightGrey } from '../Constants/Colors'
 import MainHeaderNav from '../components/MainHeaderNav'
 
-export default function ProfileEdit() {
+export default function ManageCRWD() {
   const navigation = useNavigation()
   
   const [editingField, setEditingField] = useState<string | null>(null)
   const [formData, setFormData] = useState({
-    name: "My Name is Mya",
-    username: "myamakes_moves",
+    name: "Feed the hungry",
+    username: "feedthehungry",
     location: "Atlanta, GA",
-    bio: "This is a bio about Mya and how she likes to help others and give back to her community. She also loves ice cream.",
+    description: "Supporting families experiencing food insecurity in the greater Atlanta area",
     avatarUrl: "https://randomuser.me/api/portraits/women/44.jpg"
   })
   const [tempData, setTempData] = useState({
-    name: "My Name is Mya",
-    username: "myamakes_moves", 
+    name: "Feed the hungry",
+    username: "feedthehungry", 
     location: "Atlanta, GA",
-    bio: "This is a bio about Mya and how she likes to help others and give back to her community. She also loves ice cream."
+    description: "Supporting families experiencing food insecurity in the greater Atlanta area"
   })
 
   const handleEdit = (field: string) => {
@@ -45,7 +45,7 @@ export default function ProfileEdit() {
 
     // Basic validation
     if (field === 'name' && !value.trim()) {
-      Alert.alert('Error', 'Name cannot be empty')
+      Alert.alert('Error', 'CRWD name cannot be empty')
       return
     }
 
@@ -56,7 +56,7 @@ export default function ProfileEdit() {
 
     setFormData(prev => ({ ...prev, [field]: value }))
     setEditingField(null)
-    Alert.alert('Success', 'Profile updated successfully!')
+    Alert.alert('Success', 'CRWD updated successfully!')
   }
 
   const handleCancel = () => {
@@ -65,15 +65,33 @@ export default function ProfileEdit() {
       name: formData.name,
       username: formData.username,
       location: formData.location,
-      bio: formData.bio
+      description: formData.description
     })
   }
 
   const handleImageChange = () => {
     Alert.alert(
-      'Change Profile Picture',
+      'Change CRWD Picture',
       'Image picker functionality will be implemented with proper image library setup.',
       [{ text: 'OK' }]
+    )
+  }
+
+  const handleDeleteCRWD = () => {
+    Alert.alert(
+      'Delete CRWD',
+      'Are you sure you want to delete this CRWD? This action cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Delete', 
+          style: 'destructive',
+          onPress: () => {
+            Alert.alert('CRWD Deleted', 'Your CRWD has been deleted successfully.')
+            navigation.goBack()
+          }
+        }
+      ]
     )
   }
 
@@ -139,6 +157,24 @@ export default function ProfileEdit() {
     )
   }
 
+  const renderManagementOption = (icon: any, title: string, subtitle: string, onPress: () => void, isDestructive = false) => {
+    const IconComponent = icon
+    return (
+      <TouchableOpacity style={styles.managementOption} onPress={onPress}>
+        <View style={styles.managementOptionContent}>
+          <View style={[styles.managementIcon, isDestructive && styles.destructiveIcon]}>
+            <IconComponent size={20} color={isDestructive ? '#ef4444' : PrimaryBlue} />
+          </View>
+          <View style={styles.managementText}>
+            <Text style={[styles.managementTitle, isDestructive && styles.destructiveText]}>{title}</Text>
+            <Text style={styles.managementSubtitle}>{subtitle}</Text>
+          </View>
+        </View>
+        <ChevronLeft size={16} color={PrimaryGrey} style={{ transform: [{ rotate: '180deg' }] }} />
+      </TouchableOpacity>
+    )
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <MainHeaderNav show={true} />
@@ -148,10 +184,7 @@ export default function ProfileEdit() {
         style={styles.keyboardView}
       >
         <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-          {/* Header */}
-
-
-          {/* Profile Picture Section */}
+          {/* CRWD Picture Section */}
           <View style={styles.avatarSection}>
             <View style={styles.avatarContainer}>
               <Image 
@@ -166,25 +199,44 @@ export default function ProfileEdit() {
               </TouchableOpacity>
             </View>
             <TouchableOpacity onPress={handleImageChange}>
-              <Text style={styles.editPictureText}>Edit picture</Text>
+              <Text style={styles.editPictureText}>Edit CRWD picture</Text>
             </TouchableOpacity>
           </View>
 
           {/* Editable Fields */}
           <View style={styles.fieldsContainer}>
-            {renderField('name', 'Name', formData.name)}
+            {renderField('name', 'CRWD Name', formData.name)}
             {renderField('username', 'Username', formData.username)}
             {renderField('location', 'Location', formData.location)}
-            {renderField('bio', 'Bio', formData.bio, true)}
+            {renderField('description', 'Description', formData.description, true)}
           </View>
 
-          {/* URL Section */}
-          {/* <View style={styles.urlSection}>
-            <View style={styles.urlContainer}>
-              <MapPin size={16} color={PrimaryGrey} />
-              <Text style={styles.urlText}>thisisaurl.com</Text>
-            </View>
-          </View> */}
+          {/* Management Options */}
+          <View style={styles.managementSection}>
+            <Text style={styles.sectionTitle}>Management</Text>
+            
+            {renderManagementOption(
+              Users,
+              'Manage Members',
+              'View and manage CRWD members',
+              () => Alert.alert('Manage Members', 'Member management feature coming soon!')
+            )}
+            
+            {renderManagementOption(
+              Settings,
+              'CRWD Settings',
+              'Privacy, notifications, and more',
+              () => Alert.alert('CRWD Settings', 'Settings feature coming soon!')
+            )}
+            
+            {renderManagementOption(
+              Trash2,
+              'Delete CRWD',
+              'Permanently delete this CRWD',
+              handleDeleteCRWD,
+              true
+            )}
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -203,28 +255,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
     marginTop: 20,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 20,
-    marginBottom: 30,
-  },
-  backButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginRight: 8,
-  },
-  backText: {
-    fontSize: 16,
-    color: '#374151',
-    marginLeft: 8,
-    fontWeight: '500',
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#111827',
   },
   avatarSection: {
     alignItems: 'center',
@@ -261,7 +291,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderBottomWidth: 1,
     borderColor: '#e5e7eb',
-    marginBottom: 20,
+    marginBottom: 30,
   },
   fieldContainer: {
     flexDirection: 'row',
@@ -340,17 +370,56 @@ const styles = StyleSheet.create({
   editIconButton: {
     padding: 8,
   },
-  urlSection: {
-    marginTop: 10,
+  managementSection: {
     marginBottom: 40,
   },
-  urlContainer: {
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#111827',
+    marginBottom: 16,
+  },
+  managementOption: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    justifyContent: 'space-between',
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    backgroundColor: '#f9fafb',
+    borderRadius: 12,
+    marginBottom: 12,
   },
-  urlText: {
+  managementOptionContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  managementIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#eff6ff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  destructiveIcon: {
+    backgroundColor: '#fef2f2',
+  },
+  managementText: {
+    flex: 1,
+  },
+  managementTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#111827',
+    marginBottom: 2,
+  },
+  destructiveText: {
+    color: '#ef4444',
+  },
+  managementSubtitle: {
     fontSize: 14,
-    color: PrimaryBlue,
+    color: PrimaryGrey,
   },
-}) 
+});

@@ -92,11 +92,11 @@ import {
   Search,
   Archive,
   Bell,
+  Shuffle,
   Info,
   HelpCircle,
   Settings,
-  Shuffle,
-
+  Settings2
 } from 'lucide-react-native';
 import { NavigationProp } from '@react-navigation/native';
 
@@ -108,6 +108,9 @@ export interface NavigationItem {
   onPress?: () => void;
   handleNavigation?: (navigation: NavigationProp<any>) => void;
 }
+
+// Tab screens inside BottomTabs
+const tabScreens = ['Home', 'Search', 'Post', 'Activity', 'Profile'];
 
 export const navigationItems: NavigationItem[] = [
   {
@@ -123,6 +126,13 @@ export const navigationItems: NavigationItem[] = [
     label: 'Your CRWDs',
     route: 'YourCRWDs',
     handleNavigation: (navigation) => navigation.navigate('YourCRWDs')
+  },
+  {
+    id: 'manage-crwd',
+    icon: Settings2,
+    label: 'Manage CRWDs',
+    route: 'ManageCRWD',
+    handleNavigation: (navigation) => navigation.navigate('ManageCRWD')
   },
   {
     id: 'saved',
@@ -163,15 +173,15 @@ export const navigationItems: NavigationItem[] = [
     id: 'about',
     icon: Info,
     label: 'About',
-    route: 'About',
-    handleNavigation: (navigation) => navigation.navigate('About')
+    onPress: () => console.log('About pressed'),
+    handleNavigation: () => console.log('About pressed')
   },
   {
     id: 'help',
     icon: HelpCircle,
     label: 'Help',
-    route: 'HelpCenter',
-    handleNavigation: (navigation) => navigation.navigate('HelpCenter')
+    onPress: () => console.log('Help pressed'),
+    handleNavigation: () => console.log('Help pressed')
   },
   {
     id: 'settings',

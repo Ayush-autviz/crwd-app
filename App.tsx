@@ -14,6 +14,7 @@ import Search2 from './src/screens/Search2'
 import DonationScreen from './src/screens/DonationScreen'
 import CreateCRWD from './src/screens/CreateCRWD'
 import YourCRWDs from './src/screens/YourCRWDs'
+import ManageCRWDScreen from './src/screens/ManageCRWDScreen'
 import Saved from './src/screens/Saved'
 import CustomDrawerContent from './src/components/drawer/CustomDrawerContent'
 import { LightGrey, PrimaryGrey } from './src/Constants/Colors'
@@ -39,8 +40,6 @@ import HelpCenter from './src/screens/HelpCenter'
 import About from './src/screens/About'
 import Statistics from './src/screens/Statistics'
 import Members from './src/screens/Members'
-import CRWDScreen from './src/screens/CRWDScreen'
-import ManageCRWD from './src/screens/ManageCRWD'
 
 export default function App() {
 
@@ -94,6 +93,7 @@ export default function App() {
         <Drawer.Screen name="MainTabs" component={BottomTabs} />
         <Drawer.Screen name="CreateCRWD" component={CreateCRWD} />
         <Drawer.Screen name="YourCRWDs" component={YourCRWDs} />
+        <Drawer.Screen name="ManageCRWD" component={ManageCRWDScreen} />
         <Drawer.Screen name="Saved" component={Saved} />
         <Drawer.Screen name="Donation" component={DonationScreen} />
         <Drawer.Screen name='Settings' component={Settings} />
@@ -127,8 +127,6 @@ export default function App() {
         <Stack.Screen name="About" component={About} />
         <Stack.Screen name="Statistics" component={Statistics} />
         <Stack.Screen name="Members" component={Members} />
-        <Stack.Screen name="CRWDScreen" component={CRWDScreen} />
-        <Stack.Screen name="ManageCRWD" component={ManageCRWD} />
 
       </Stack.Navigator>
     )

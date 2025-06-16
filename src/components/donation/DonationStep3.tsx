@@ -132,7 +132,7 @@ export default function DonationStep3({
         </TouchableOpacity>
         </View>
 
-          {/* <PaymentSection setCheckout={setCheckout} amount={7} /> */}
+          <PaymentSection setCheckout={setCheckout} amount={7} />
         </>
       )}
 

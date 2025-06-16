@@ -41,6 +41,7 @@ import Statistics from './src/screens/Statistics'
 import Members from './src/screens/Members'
 import CRWDScreen from './src/screens/CRWDScreen'
 import ManageCRWD from './src/screens/ManageCRWD'
+import { User } from 'lucide-react-native'
 
 export default function App() {
 
@@ -64,7 +65,7 @@ export default function App() {
           } else if (route.name === 'Activity') {
             return <Bell color={PrimaryGrey} size={22} />
           } else if (route.name === 'Profile') {
-            return <Users color={PrimaryGrey} size={22} />
+            return <User color={PrimaryGrey} size={22} />
           }
         }
       })}>

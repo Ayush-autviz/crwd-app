@@ -260,15 +260,15 @@ export default function DonationScreen() {
           </View>
         )}
 
-        {activeTab === 'setup' && step === 3 && (
+        {/* {activeTab === 'setup' && step === 3 && (
           <View style={styles.footer}>
-            {/* <View style={styles.nextSection}> */}
+            <View style={styles.nextSection}>
               <PaymentSection setCheckout={setCheckout} amount={7} />
-            {/* </View> */}
+            </View>
           </View>
-        )}
+        )} */}
 
-{activeTab === 'onetime' && (
+{/* {activeTab === 'onetime' && (
           <View style={styles.footer}>
           <TouchableOpacity
             onPress={() => setCheckout(true)}
@@ -279,7 +279,7 @@ export default function DonationScreen() {
             </Text>
           </TouchableOpacity>
           </View>
-        )}
+        )} */}
     </>
   );
 }

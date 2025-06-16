@@ -48,12 +48,12 @@ export default function MainHeaderNav({show = false,menu=true,post=true}) {
                 </TouchableOpacity>
                 }
                 {
-                    menu && 
-                }
-                
-                 <TouchableOpacity onPress={handleMenuPress}>
+                    menu &&  <TouchableOpacity onPress={handleMenuPress}>
                     <AlignJustify color="#000" />
                 </TouchableOpacity>
+                }
+                
+        
                 
    
 

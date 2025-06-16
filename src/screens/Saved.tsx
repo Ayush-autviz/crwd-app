@@ -30,7 +30,7 @@ export default function Saved() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <MainHeaderNav show={true} />
+      <MainHeaderNav show={true} menu={false} post={false} />
       <FlatList data={suggestedCauses}
         renderItem={({ item }) => (
           <View style={{ marginTop: 20, paddingHorizontal: 20, flexDirection: 'row', alignItems: 'center', gap: 10, justifyContent: 'space-between' }}>

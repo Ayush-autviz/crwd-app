@@ -14,7 +14,7 @@ export default function TransactionHistory() {
 
   return (
     <SafeAreaView style={{backgroundColor: 'white', flex: 1}}>
-        <MainHeaderNav show={true} />
+        <MainHeaderNav show={true} menu={false} post={false} />
         <ScrollView style={{ paddingHorizontal: 20 , marginTop: 20}}>
         {transactions.map((transaction) => (
             <View key={transaction.date} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 20, paddingHorizontal: 20 }}>

@@ -74,7 +74,7 @@ export default function YourCRWDs() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <MainHeaderNav show={true} />
+      <MainHeaderNav show={true} menu={false} post={false} />
 
       {/* Header */}
       <View style={styles.header}>

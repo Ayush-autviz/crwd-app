@@ -15,6 +15,7 @@ import DonationStep2 from '../components/donation/DonationStep2';
 import DonationStep3 from '../components/donation/DonationStep3';
 import OneTimeDonation from '../components/donation/OneTimeDonation';
 import CheckoutScreen from '../components/donation/CheckoutScreen';
+import PaymentSection from '../components/donation/PaymentSection';
 
 
 const { width } = Dimensions.get('window');
@@ -256,6 +257,14 @@ export default function DonationScreen() {
             <Text style={styles.nextButtonText}>Next</Text>
           </TouchableOpacity>
         </View>
+          </View>
+        )}
+
+        {activeTab === 'setup' && step === 3 && (
+          <View style={styles.footer}>
+            {/* <View style={styles.nextSection}> */}
+              <PaymentSection setCheckout={setCheckout} amount={7} />
+            {/* </View> */}
           </View>
         )}
 

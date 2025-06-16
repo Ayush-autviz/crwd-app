@@ -8,6 +8,8 @@ import {
   Image,
 } from 'react-native';
 import { CreditCard as CreditCardIcon } from 'lucide-react-native';
+import { AppleIcon } from 'lucide-react-native';
+import { Apple } from 'lucide-react-native';
 
 interface PaymentSectionProps {
   setCheckout: (value: boolean) => void;
@@ -37,11 +39,13 @@ export default function PaymentSection({ setCheckout, amount }: PaymentSectionPr
           ]}
           onPress={() => setSelectedMethod('apple_pay')}
         >
-          {/* <Image
-            source={require('../../assets/apple-pay.png')}
+          <Image
+            source={require('../../assets/logo/apple-pay.png')}
             style={styles.applePayLogo}
             resizeMode="contain"
-          /> */}
+          />
+          {/* <Apple size={24} color="#374151" /> */}
+          <Text style={styles.paymentOptionText}>Apple Pay</Text>
         </TouchableOpacity>
       )}
 
@@ -69,14 +73,14 @@ export default function PaymentSection({ setCheckout, amount }: PaymentSectionPr
         </Text>
       </TouchableOpacity>
 
-      <View style={styles.securityInfo}>
+      {/* <View style={styles.securityInfo}>
         <View style={styles.securityIcon}>
           <Text style={styles.securityIconText}>🔒</Text>
         </View>
         <Text style={styles.securityText}>
           Your payment is secure and encrypted
         </Text>
-      </View>
+      </View> */}
     </View>
   );
 }
@@ -86,7 +90,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderRadius: 12,
     padding: 16,
-    marginTop: 16,
+    // marginTop: 16,
   },
   title: {
     fontSize: 18,
@@ -110,7 +114,7 @@ const styles = StyleSheet.create({
   },
   applePayLogo: {
     height: 24,
-    width: 48,
+    width: 24,
   },
   paymentOptionText: {
     marginLeft: 12,

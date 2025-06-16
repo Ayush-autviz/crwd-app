@@ -404,7 +404,7 @@ export default function Activity() {
 
     return (
         <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }}>
-            <MainHeaderNav  />
+            <MainHeaderNav   />
             
             {/* Tab Headers */}
             <View style={{ flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: LightGrey }}>

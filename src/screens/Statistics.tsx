@@ -146,7 +146,7 @@ export default function Statistics() {
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
-            <MainHeaderNav show={true} />
+             <MainHeaderNav show menu={false} post={false} />
             
             {/* Tab Headers */}
             <View style={{ flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: LightGrey }}>

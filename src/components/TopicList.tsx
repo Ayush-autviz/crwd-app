@@ -57,7 +57,7 @@ export default function TopicList({ showTitle = true }) {
                 <FlatList data={topic}
                     renderItem={({ item }) => (
                         <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 10 }}>
-                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                            {/* <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                                     <View style={{ flexDirection: 'row' }}>
                                         {item.avatars.map((avatar: any, index: number) => (
@@ -76,7 +76,7 @@ export default function TopicList({ showTitle = true }) {
                                         ))}
                                     </View>
                                 </View>
-                            </View>
+                            </View> */}
                             <Text>{item.name}</Text>
                         </TouchableOpacity>
                     )}

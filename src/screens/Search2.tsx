@@ -73,7 +73,7 @@ export default function Search2() {
 
     return (
         <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }}>
-            <MainHeaderNav show={true} />
+            <MainHeaderNav show={true} menu={false} post={false} />
             <ScrollView style={{ paddingHorizontal: 20 }}>
                 {/* Search Bar */}
                 <View style={{ marginVertical: 10, padding: 10, backgroundColor: LightGrey, borderRadius: 8 }}>

@@ -19,7 +19,7 @@ export default function CauseScreen() {
 
   return (
     <View style={{ backgroundColor: 'white', flex: 1 }}>
-      <MainHeaderNav show={true} />
+       <MainHeaderNav show menu={false} post={false} />
       <ScrollView 
         ref={aboutCardRef}
         style={{ flex: 1 }} 

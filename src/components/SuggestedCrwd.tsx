@@ -36,13 +36,15 @@ export default function SuggestedCrwd() {
     <>
     <View style={{marginVertical: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'}}>
       <Text style={{fontSize: 18, fontWeight: 'bold'}}>Suggested CRWD's</Text>
+      <TouchableOpacity onPress={() => navigation.navigate('CreateCRWD')}>
       <Text style={{color: PrimaryBlue}}>Create a CRWD</Text>
+      </TouchableOpacity>
     </View>
     <FlatList data={suggestedCRWDs}
     horizontal={true}
     showsHorizontalScrollIndicator={false}
     renderItem={({item}) => (
-      <View style={{marginHorizontal: 10, marginBottom:10, flexDirection: 'row', alignItems: 'center', gap: 10}}>
+      <TouchableOpacity onPress={handleVisitCrwd}  style={{marginHorizontal: 10, marginBottom:10, flexDirection: 'row', alignItems: 'center', gap: 10}}>
         <Image source={require('../assets/images/grocery.jpg')} style={{width: 40, height:40, borderRadius: 20,}} />
         <View>
         <Text style={{fontSize: 14, fontWeight: 500}}>{item.name}</Text>
@@ -55,7 +57,7 @@ export default function SuggestedCrwd() {
       >
         <Text style={{color: 'white'}}>Visit</Text>
       </TouchableOpacity>
-      </View>
+      </TouchableOpacity>
     )}
     />
     </>

@@ -238,7 +238,7 @@ export default function Activity() {
                         gap: 12,
                         alignItems: 'center'
                     }}>
-                        <Trophy size={24} color="#F59E0B" />
+                        <Trophy size={24} color="#000" />
                         <View style={{ flex: 1 }}>
                             <Text style={{ color: '#374151' }}>{item.message}</Text>
                             <Text style={{ fontSize: 12, color: PrimaryGrey, marginTop: 4 }}>• {item.time}</Text>

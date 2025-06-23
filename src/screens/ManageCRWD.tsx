@@ -177,7 +177,7 @@ export default function ManageCRWD() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <MainHeaderNav show={true} />
+      <MainHeaderNav show={true} menu={false} post={false} />
       
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}

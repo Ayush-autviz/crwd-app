@@ -14,7 +14,7 @@ export default function PostDetail() {
   if (!post) {
     return (
       <SafeAreaView style={{backgroundColor: 'white', flex: 1}}>
-        <MainHeaderNav show />
+        <MainHeaderNav show menu={false} post={false} />
         <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
           <Text>Post not found</Text>
         </View>
@@ -24,7 +24,7 @@ export default function PostDetail() {
 
   return (
     <SafeAreaView style={{backgroundColor: 'white', flex: 1}}>
-      <MainHeaderNav show />
+       <MainHeaderNav show menu={false} post={false} />
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{flex: 1}}

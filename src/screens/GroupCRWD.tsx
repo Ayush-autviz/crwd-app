@@ -10,7 +10,7 @@ import GroupCRWDBottomBar from '../components/groupcrwd/GroupCRWDBottomBar';
 export default function GroupCRWD() {
   return (
     <View style={{ backgroundColor: 'white', flex: 1 }}>
-      <MainHeaderNav show={true} />
+       <MainHeaderNav show menu={false} post={false} />
       <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
         <GroupCRWDHeader />
         <GroupCRWDSuggested />

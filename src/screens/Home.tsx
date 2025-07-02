@@ -1,5 +1,5 @@
 import { View, Text, TextInput, FlatList, ScrollView } from 'react-native'
-import React from 'react'
+import React, { useState } from 'react'
 import MainHeaderNav from '../components/MainHeaderNav'
 import { LightGrey, PrimaryGrey } from '../Constants/Colors'
 import { Search } from 'lucide-react-native'
@@ -9,7 +9,30 @@ import SuggestdCauses from '../components/SuggestdCauses'
 import NearbyCauses from '../components/NearbyCauses'
 import PopularPosts from '../components/PopularPosts'
 
+// Sample data generator for infinite posts
+const generateMorePosts = (startId: number, count: number) => {
+    return Array.from({ length: count }, (_, index) => ({
+        id: String(startId + index),
+        avatarUrl: `https://randomuser.me/api/portraits/${Math.random() > 0.5 ? 'men' : 'women'}/${Math.floor(Math.random() * 70)}.jpg`,
+        username: `user${startId + index}`,
+        time: `${Math.floor(Math.random() * 7)}d`,
+        org: ["youth4change", "cleanwaternow", "treeplanters", "literacyforall"][Math.floor(Math.random() * 4)],
+        text: [
+            "Making a difference in our community one step at a time! 🌟",
+            "Another successful volunteer event completed! Thank you to all participants! 🙏",
+            "Working together for a better tomorrow. Join us in our mission! 💪",
+            "Every small action counts. Let's create positive change together! ✨"
+        ][Math.floor(Math.random() * 4)],
+        imageUrl: Math.random() > 0.5 ? `https://picsum.photos/600/400?random=${startId + index}` : undefined,
+        likes: Math.floor(Math.random() * 100),
+        comments: Math.floor(Math.random() * 20),
+        shares: Math.floor(Math.random() * 10),
+    }));
+};
+
 export default function Home() {
+    const [posts, setPosts] = useState(() => generateMorePosts(1, 4));
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
 
     // Sample data for categories
     const categories = [
@@ -24,58 +47,14 @@ export default function Home() {
         "Homelessness",
     ];
 
-    const popularPosts = [
-        {
-            id: 5,
-            avatarUrl: "https://randomuser.me/api/portraits/men/45.jpg",
-            username: "johnnydoe",
-            time: "4d",
-            org: "youth4change",
-            orgUrl: "/profile",
-            text: `Just wrapped up an amazing youth leadership workshop! So proud of everyone who participated.`,
-            imageUrl: "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=600&q=80",
-            likes: 15,
-            comments: 4,
-            shares: 2,
-        },
-        {
-            id: 6,
-            avatarUrl: "https://randomuser.me/api/portraits/women/55.jpg",
-            username: "sarahsmiles",
-            time: "5d",
-            org: "cleanwaternow",
-            orgUrl: "/profile",
-            text: `We distributed clean water kits to over 100 families this week. Thank you to all our volunteers! 💧`,
-            imageUrl: "https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=600&q=80",
-            likes: 22,
-            comments: 5,
-            shares: 6,
-        },
-        {
-            id: 7,
-            avatarUrl: "https://randomuser.me/api/portraits/men/54.jpg",
-            username: "mikegreen",
-            time: "6d",
-            org: "treeplanters",
-            orgUrl: "/profile",
-            text: `Planted 200 trees this weekend! Let's keep making our city greener. 🌳`,
-            imageUrl: "https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=600&q=80", likes: 30,
-            comments: 7,
-            shares: 10,
-        },
-        {
-            id: 8,
-            avatarUrl: "https://randomuser.me/api/portraits/women/60.jpg",
-            username: "emilywrites",
-            time: "1w",
-            org: "literacyforall",
-            orgUrl: "/profile",
-            text: `Hosted a book drive for local schools. Thank you to everyone who donated books! 📚`,
-            imageUrl: "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=600&q=80",
-            likes: 18,
-            comments: 2,
-            shares: 3,
-        }]
+    const handleLoadMore = async () => {
+        setIsLoadingMore(true);
+        // Simulate API call delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        const newPosts = generateMorePosts(posts.length + 1, 4);
+        setPosts(prevPosts => [...prevPosts, ...newPosts]);
+        setIsLoadingMore(false);
+    };
 
     return (
         <View style={{backgroundColor: 'white', flex: 1}}>
@@ -102,9 +81,9 @@ export default function Home() {
                 <SuggestedCrwd />
 
                 <Text style={{ fontSize: 18, fontWeight: 'bold', marginTop: 20 }}>Categories</Text>
-                <FlatList data={categories}
+                <FlatList 
+                    data={categories}
                     horizontal={true}
-
                     showsHorizontalScrollIndicator={false}
                     renderItem={({ item,index }) => (
                         <View key={index} style={{
@@ -120,25 +99,15 @@ export default function Home() {
                     )}
                 />
 
-
-{/* <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
-        {interests.map((interest, index) => (
-          <View key={index} style={{
-            backgroundColor: LightGrey,
-            paddingHorizontal: 12,
-            paddingVertical: 6,
-            borderRadius: 20
-          }}>
-            <Text style={{ fontSize: 12, color: '#374151' }}>{interest}</Text>
-          </View>
-        ))}
-      </View> */}
-
                 <SuggestdCauses />
 
                 <NearbyCauses />
 
-                <PopularPosts posts={popularPosts}/>
+                <PopularPosts 
+                    posts={posts}
+                    onLoadMore={handleLoadMore}
+                    hasMore={true}
+                />
 
             </ScrollView>
         </View>

@@ -3,6 +3,7 @@ import React, { useState } from 'react'
 import { LightGrey, PrimaryBlue, PrimaryGrey } from '../Constants/Colors'
 import { Ellipsis, Heart, MessageCircle, Flag, Trash2, Share2 } from 'lucide-react-native'
 import { useNavigation, NavigationProp } from '@react-navigation/native'
+import SocialShare from './SocialShare'
 
 interface Post {
     id: string;
@@ -45,6 +46,7 @@ export default function PopularPosts({
     const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
     const [selectedPost, setSelectedPost] = useState<Post | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [shareModalVisible, setShareModalVisible] = useState(false);
 
     const handlePostPress = (post: Post) => {
         navigation.navigate('PostDetail', { post });
@@ -67,6 +69,11 @@ export default function PopularPosts({
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const handleSharePress = () => {
+        setTooltipVisible(false);
+        setShareModalVisible(true);
     };
 
     const renderFooter = () => {
@@ -167,10 +174,7 @@ export default function PopularPosts({
                         )}
                         <TouchableOpacity 
                             style={styles.tooltipItem}
-                            onPress={() => {
-                                // Handle edit post
-                                setTooltipVisible(false)
-                            }}
+                            onPress={handleSharePress}
                         >
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                                 <Share2 size={16} color={PrimaryGrey} />
@@ -192,6 +196,14 @@ export default function PopularPosts({
                     </View>
                 </Pressable>
             </Modal>
+
+            <SocialShare 
+                visible={shareModalVisible}
+                onClose={() => setShareModalVisible(false)}
+                title={selectedPost?.username + "'s post"}
+                message={selectedPost?.text || ''}
+                url={selectedPost?.imageUrl}
+            />
         </View>
     )
 }

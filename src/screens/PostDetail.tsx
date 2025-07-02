@@ -1,10 +1,10 @@
-import { View, Text, Image, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform, Share, Dimensions } from 'react-native'
-import React, { useState } from 'react'
+import { View, Text, Image, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform, Share, Dimensions, Modal, Pressable } from 'react-native'
+import React, { useState, useEffect } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import MainHeaderNav from '../components/MainHeaderNav'
 import { PrimaryGrey, PrimaryBlue, LightGrey } from '../Constants/Colors'
 import { Heart, MessageCircle, ChevronRight } from 'lucide-react-native'
-import { useNavigation, useRoute } from '@react-navigation/native'
+import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native'
 import { useToast } from '../contexts/ToastContext'
 
 interface Post {
@@ -31,6 +31,31 @@ export default function PostDetail() {
   const { showToast } = useToast()
   const [comment, setComment] = useState('')
   const screenWidth = Dimensions.get('window').width
+  const [showExitConfirmation, setShowExitConfirmation] = useState(false)
+
+  // Handle back button and navigation
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('beforeRemove', (e) => {
+      if (!comment.trim()) {
+        // If no comment, allow navigation
+        return;
+      }
+
+      // Prevent default behavior of leaving the screen
+      e.preventDefault();
+
+      // Show confirmation modal
+      setShowExitConfirmation(true);
+    });
+
+    return unsubscribe;
+  }, [navigation, comment]);
+
+  const handleConfirmExit = () => {
+    setShowExitConfirmation(false);
+    setComment('');
+    navigation.goBack();
+  };
 
   const handleShare = async () => {
     try {
@@ -223,6 +248,78 @@ export default function PostDetail() {
             </TouchableOpacity>
           </View>
         </View>
+
+        {/* Exit Confirmation Modal */}
+        <Modal
+          transparent={true}
+          visible={showExitConfirmation}
+          onRequestClose={() => setShowExitConfirmation(false)}
+          animationType="fade"
+        >
+          <Pressable 
+            style={{
+              flex: 1,
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              justifyContent: 'center',
+              alignItems: 'center',
+              padding: 20
+            }}
+            onPress={() => setShowExitConfirmation(false)}
+          >
+            <View style={{
+              backgroundColor: 'white',
+              borderRadius: 16,
+              padding: 20,
+              width: '100%',
+              maxWidth: 400,
+              alignItems: 'center'
+            }}>
+              <MessageCircle size={40} color={PrimaryBlue} style={{ marginBottom: 16 }} />
+              <Text style={{
+                fontSize: 18,
+                fontWeight: '600',
+                marginBottom: 8,
+                textAlign: 'center'
+              }}>Discard Comment?</Text>
+              <Text style={{
+                fontSize: 14,
+                color: PrimaryGrey,
+                textAlign: 'center',
+                marginBottom: 20
+              }}>You have an unposted comment. Are you sure you want to leave?</Text>
+              <View style={{
+                flexDirection: 'row',
+                gap: 12,
+                width: '100%'
+              }}>
+                <TouchableOpacity 
+                  style={{
+                    flex: 1,
+                    backgroundColor: LightGrey,
+                    padding: 12,
+                    borderRadius: 8,
+                    alignItems: 'center'
+                  }}
+                  onPress={() => setShowExitConfirmation(false)}
+                >
+                  <Text style={{ color: PrimaryGrey, fontWeight: '500' }}>Keep Writing</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={{
+                    flex: 1,
+                    backgroundColor: PrimaryBlue,
+                    padding: 12,
+                    borderRadius: 8,
+                    alignItems: 'center'
+                  }}
+                  onPress={handleConfirmExit}
+                >
+                  <Text style={{ color: 'white', fontWeight: '500' }}>Discard</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Pressable>
+        </Modal>
       </KeyboardAvoidingView>
     </SafeAreaView>
   )

@@ -1,9 +1,9 @@
-import { View, Text, Image, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform, Share } from 'react-native'
-import React from 'react'
+import { View, Text, Image, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform, Share, Dimensions } from 'react-native'
+import React, { useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import MainHeaderNav from '../components/MainHeaderNav'
-import { PrimaryGrey, PrimaryBlue } from '../Constants/Colors'
-import { Heart, MessageCircle } from 'lucide-react-native'
+import { PrimaryGrey, PrimaryBlue, LightGrey } from '../Constants/Colors'
+import { Heart, MessageCircle, ChevronRight } from 'lucide-react-native'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { useToast } from '../contexts/ToastContext'
 
@@ -29,6 +29,8 @@ export default function PostDetail() {
   const route = useRoute()
   const post = (route.params as RouteParams)?.post
   const { showToast } = useToast()
+  const [comment, setComment] = useState('')
+  const screenWidth = Dimensions.get('window').width
 
   const handleShare = async () => {
     try {
@@ -44,6 +46,12 @@ export default function PostDetail() {
       showToast('Failed to share post');
       console.error('Error sharing:', error);
     }
+  };
+
+  const handleComment = () => {
+    if (!comment.trim()) return;
+    showToast('Comment posted successfully!');
+    setComment('');
   };
 
   if (!post) {
@@ -131,7 +139,43 @@ export default function PostDetail() {
           {/* Comments Section */}
           <View style={{padding: 20, borderTopWidth: 1, borderTopColor: '#E5E5E5'}}>
             <Text style={{fontSize: 16, fontWeight: '600', marginBottom: 16}}>Comments</Text>
-            {/* Add your comments list here */}
+            {post.comments === 0 && (
+              <View style={{
+                alignItems: 'center',
+                padding: 20,
+                backgroundColor: LightGrey,
+                borderRadius: 12,
+                marginBottom: 20
+              }}>
+                <MessageCircle size={40} color={PrimaryGrey} style={{ marginBottom: 12 }} />
+                <Text style={{
+                  fontSize: 16,
+                  fontWeight: '500',
+                  color: PrimaryGrey,
+                  marginBottom: 8
+                }}>No comments yet</Text>
+                <Text style={{
+                  fontSize: 14,
+                  color: PrimaryGrey,
+                  textAlign: 'center',
+                  marginBottom: 12
+                }}>Be the first one to share your thoughts!</Text>
+                <TouchableOpacity 
+                  style={{
+                    backgroundColor: PrimaryBlue,
+                    paddingHorizontal: 20,
+                    paddingVertical: 10,
+                    borderRadius: 20,
+                  }}
+                  onPress={() => {
+                    // Focus the comment input
+                    showToast('Start typing your comment below!');
+                  }}
+                >
+                  <Text style={{ color: 'white', fontWeight: '500' }}>Write a Comment</Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
         </ScrollView>
 
@@ -148,21 +192,35 @@ export default function PostDetail() {
             backgroundColor: '#F3F4F6',
             borderRadius: 20,
             paddingHorizontal: 16,
-            paddingVertical: 8
+            paddingVertical: 8,
+            gap: 8
           }}>
             <Image 
               source={{ uri: post.avatarUrl }} 
-              style={{width: 24, height: 24, borderRadius: 12, marginRight: 8}}
+              style={{width: 24, height: 24, borderRadius: 12}}
             />
             <TextInput
-              placeholder="Join the conversation"
-              clearButtonMode='while-editing'
+              placeholder="Share your thoughts..."
+              value={comment}
+              onChangeText={setComment}
+              multiline
               style={{
                 flex: 1,
                 fontSize: 14,
-                color: PrimaryGrey
+                color: PrimaryGrey,
+                maxHeight: 100,
+                paddingTop: Platform.OS === 'ios' ? 0 : 0
               }}
             />
+            <TouchableOpacity 
+              onPress={handleComment}
+              style={{
+                opacity: comment.trim() ? 1 : 0.5,
+                padding: 4
+              }}
+            >
+              <ChevronRight size={20} color={PrimaryBlue} />
+            </TouchableOpacity>
           </View>
         </View>
       </KeyboardAvoidingView>

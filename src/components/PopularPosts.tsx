@@ -1,10 +1,10 @@
 import { View, Text, FlatList, Image, Dimensions, TouchableOpacity, StyleSheet, Modal, Pressable } from 'react-native'
 import React, { useState } from 'react'
 import { LightGrey, PrimaryBlue, PrimaryGrey } from '../Constants/Colors'
-import { Ellipsis, Heart, MessageCircle, Flag, Trash2 } from 'lucide-react-native'
+import { Ellipsis, Heart, MessageCircle, Flag, Trash2, Share2 } from 'lucide-react-native'
 import { useNavigation } from '@react-navigation/native'
 
-export default function PopularPosts({posts, showTitle = true}) {
+export default function PopularPosts({posts, showTitle = true, showDelete = false}) {
     const navigation = useNavigation()
     const screenWidth = Dimensions.get('window').width
     const [tooltipVisible, setTooltipVisible] = useState(false)
@@ -85,6 +85,7 @@ export default function PopularPosts({posts, showTitle = true}) {
                             top: tooltipPosition.y - 20,
                         }
                     ]}>
+                        {showDelete && (
                         <TouchableOpacity 
                             style={styles.tooltipItem}
                             onPress={() => {
@@ -97,7 +98,20 @@ export default function PopularPosts({posts, showTitle = true}) {
                                 <Text style={[styles.tooltipText, { color: '#ef4444' }]}>Delete Post</Text>
                             </View>
                         </TouchableOpacity>
+                        )}
                         <TouchableOpacity 
+                            style={styles.tooltipItem}
+                            onPress={() => {
+                                // Handle edit post
+                                setTooltipVisible(false)
+                            }}
+                        >
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                                <Share2 size={16} color={PrimaryGrey} />
+                                <Text style={styles.tooltipText}>Share Post</Text>
+                            </View>
+                        </TouchableOpacity>
+                            <TouchableOpacity 
                             style={styles.tooltipItem}
                             onPress={() => {
                                 // Handle report post

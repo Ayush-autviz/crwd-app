@@ -1,7 +1,8 @@
 import { View, Text, TextInput, FlatList, ScrollView } from 'react-native'
 import React from 'react'
 import MainHeaderNav from '../components/MainHeaderNav'
-import { LightGrey } from '../Constants/Colors'
+import { LightGrey, PrimaryGrey } from '../Constants/Colors'
+import { Search } from 'lucide-react-native'
 import TopicList from '../components/TopicList'
 import SuggestedCrwd from '../components/SuggestedCrwd'
 import SuggestdCauses from '../components/SuggestdCauses'
@@ -80,8 +81,20 @@ export default function Home() {
         <View style={{backgroundColor: 'white', flex: 1}}>
             <MainHeaderNav />
             <ScrollView style={{ paddingHorizontal: 20 }}>
-                <View style={{ marginVertical: 10, padding: 10, backgroundColor: LightGrey, borderRadius: 8 }}>
-                    <TextInput placeholder='Search' />
+                <View style={{ 
+                    marginVertical: 10, 
+                    padding: 10, 
+                    backgroundColor: LightGrey, 
+                    borderRadius: 8,
+                    flexDirection: 'row',
+                    alignItems: 'center'
+                }}>
+                    <Search size={20} color={PrimaryGrey} style={{ marginRight: 8 }} />
+                    <TextInput 
+                        placeholder='Search' 
+                        clearButtonMode="while-editing"
+                        style={{ flex: 1 }}
+                    />
                 </View>
 
                 <TopicList />

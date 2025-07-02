@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, Image, TouchableOpacity, FlatList } from 'react-native';
 import { Share2, Bookmark, UserPlus } from 'lucide-react-native';
 import { PrimaryBlue, LightGrey, PrimaryGrey } from '../../Constants/Colors';
 import { useNavigation } from '@react-navigation/native';
+import { useToast } from '../../contexts/ToastContext';
 
 const orgAvatars = [
   require('../../assets/images/grocery.jpg'),
@@ -32,9 +33,20 @@ const categories = [
 
 const GroupCRWDHeader: React.FC = () => {
   const navigation = useNavigation();
+  const { showToast } = useToast();
+  const [isJoined, setIsJoined] = useState(false);
 
   const handleStatsPress = () => {
     navigation.navigate('Members' as never);
+  };
+
+  const handleJoinPress = () => {
+    setIsJoined(!isJoined);
+    if (!isJoined) {
+      showToast('Successfully joined the CRWD!');
+    } else {
+      showToast('Left the CRWD');
+    }
   };
 
   return (
@@ -59,15 +71,25 @@ const GroupCRWDHeader: React.FC = () => {
         }}>
           <Bookmark size={20} color={PrimaryGrey} />
         </TouchableOpacity>
-        <TouchableOpacity style={{ 
-          backgroundColor: PrimaryBlue, 
-          paddingVertical: 10, 
-          paddingHorizontal: 20, 
-          borderRadius: 8 ,
-          justifyContent:"center",
-          alignItems:"center"
-        }}>
-          <Text style={{ color: 'white', fontWeight: '600' }}>Join</Text>
+        <TouchableOpacity 
+          style={{ 
+            backgroundColor: isJoined ? 'white' : PrimaryBlue,
+            borderWidth: isJoined ? 1 : 0,
+            borderColor: LightGrey,
+            paddingVertical: 10, 
+            paddingHorizontal: 20, 
+            borderRadius: 8,
+            justifyContent: "center",
+            alignItems: "center"
+          }}
+          onPress={handleJoinPress}
+        >
+          <Text style={{ 
+            color: isJoined ? PrimaryGrey : 'white', 
+            fontWeight: '600' 
+          }}>
+            {isJoined ? 'Joined' : 'Join'}
+          </Text>
         </TouchableOpacity>
       </View>
 

@@ -6,7 +6,7 @@ import SuggestdCauses from '../components/SuggestdCauses'
 import PopularPosts from '../components/PopularPosts'
 import { LightGrey, PrimaryBlue, PrimaryGrey } from '../Constants/Colors'
 import { useNavigation } from '@react-navigation/native'
-import { Clock, TrendingUp, X } from 'lucide-react-native'
+import { Clock, TrendingUp, X, Search } from 'lucide-react-native'
 
 export default function SearchScreen() {
     const [search, setSearch] = useState("")
@@ -90,11 +90,21 @@ export default function SearchScreen() {
         <SafeAreaView style={{backgroundColor: 'white', flex: 1}}>
             <MainHeaderNav />
             <ScrollView style={{ paddingHorizontal: 20 }}>
-                <View style={{ marginVertical: 10, padding: 10, backgroundColor: LightGrey, borderRadius: 8 }}>
+                <View style={{ 
+                    marginVertical: 10, 
+                    padding: 10, 
+                    backgroundColor: LightGrey, 
+                    borderRadius: 8,
+                    flexDirection: 'row',
+                    alignItems: 'center'
+                }}>
+                    <Search size={20} color={PrimaryGrey} style={{ marginRight: 8 }} />
                     <TextInput 
                         placeholder='Search for non-profits CRWDs, or posts' 
                         value={search}
                         onChangeText={setSearch}
+                        clearButtonMode="while-editing"
+                        style={{ flex: 1 }}
                     />
                 </View>
                 

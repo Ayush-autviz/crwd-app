@@ -1,15 +1,50 @@
-import { View, Text, Image, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform } from 'react-native'
+import { View, Text, Image, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform, Share } from 'react-native'
 import React from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import MainHeaderNav from '../components/MainHeaderNav'
 import { PrimaryGrey, PrimaryBlue } from '../Constants/Colors'
 import { Heart, MessageCircle } from 'lucide-react-native'
 import { useNavigation, useRoute } from '@react-navigation/native'
+import { useToast } from '../contexts/ToastContext'
+
+interface Post {
+  id: string;
+  text: string;
+  username: string;
+  avatarUrl: string;
+  imageUrl?: string;
+  time: string;
+  org: string;
+  likes: number;
+  comments: number;
+  shares: number;
+}
+
+interface RouteParams {
+  post: Post;
+}
 
 export default function PostDetail() {
   const navigation = useNavigation()
   const route = useRoute()
-  const post = route.params?.post
+  const post = (route.params as RouteParams)?.post
+  const { showToast } = useToast()
+
+  const handleShare = async () => {
+    try {
+      const result = await Share.share({
+        message: post.text,
+        title: `Post by ${post.username}`,
+      });
+
+      if (result.action === Share.sharedAction) {
+        showToast('Post shared successfully!');
+      }
+    } catch (error) {
+      showToast('Failed to share post');
+      console.error('Error sharing:', error);
+    }
+  };
 
   if (!post) {
     return (
@@ -80,7 +115,10 @@ export default function PostDetail() {
                   <Text style={{fontSize: 12, color: PrimaryGrey}}>{post.comments}</Text>
                 </TouchableOpacity>
               </View>
-              <TouchableOpacity style={{flexDirection: 'row', alignItems: 'center', gap: 4}}>
+              <TouchableOpacity 
+                style={{flexDirection: 'row', alignItems: 'center', gap: 4}}
+                onPress={handleShare}
+              >
                 <Image 
                   source={require('../assets/icons/forward.png')} 
                   style={{ width: 18, height: 18 }} 
@@ -118,6 +156,7 @@ export default function PostDetail() {
             />
             <TextInput
               placeholder="Join the conversation"
+              clearButtonMode='while-editing'
               style={{
                 flex: 1,
                 fontSize: 14,

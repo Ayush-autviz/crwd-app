@@ -4,7 +4,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { NavigationContainer } from '@react-navigation/native'
 import { createDrawerNavigator } from '@react-navigation/drawer'
 import Home from './src/screens/Home'
-
+import { ToastProvider } from './src/contexts/ToastContext'
 import Post from './src/screens/Post'
 import Activity from './src/screens/Activity'
 import Profile from './src/screens/Profile'
@@ -54,7 +54,7 @@ export default function App() {
       <Tab.Navigator screenOptions={({route}) => ({
         headerShown: false,
         tabBarActiveTintColor: '#000',
-        tabBarStyle: route.name === 'Donation' ? { display: 'none' } : undefined,
+       // tabBarStyle: route.name === 'Donation' ? { display: 'none' } : undefined,
         tabBarIcon: () => {
           if (route.name === 'Home') {
             return <HomeIcon color={PrimaryGrey} size={22} />
@@ -137,7 +137,9 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      <StackNavigator />
+      <ToastProvider>
+        <StackNavigator />
+      </ToastProvider>
     </NavigationContainer>
   )
 

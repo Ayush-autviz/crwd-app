@@ -35,7 +35,7 @@ export default function NearbyCauses() {
       <FlatList
                 data={nearbyCauses}
                 renderItem={({ item }) => (
-                    <View style={{ marginTop: 20, flexDirection: 'row', alignItems: 'center', gap: 10, justifyContent: 'space-between' }}>
+                    <TouchableOpacity onPress={handleVisitCause} style={{ marginTop: 20, flexDirection: 'row', alignItems: 'center', gap: 10, justifyContent: 'space-between' }}>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                         <Image source={item.image} style={{ width: 40, height: 40, borderRadius: 20, }} />
                         <View>
@@ -49,7 +49,7 @@ export default function NearbyCauses() {
                         >
                             <Text style={{ color: 'white' }}>Visit</Text>
                         </TouchableOpacity>
-                    </View>
+                    </TouchableOpacity>
                 )} />
     </View>
   )

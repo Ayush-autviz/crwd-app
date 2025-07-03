@@ -238,7 +238,7 @@ export default function PostDetail() {
                   paddingTop: Platform.OS === 'ios' ? 0 : 0
                 }}
               />
-              {/* {comment.length > 0 && (
+              {comment.length > 0 && (
                 <TouchableOpacity 
                   onPress={() => setComment('')}
                   style={{
@@ -248,10 +248,8 @@ export default function PostDetail() {
                 >
                   <Trash2 size={16} color={PrimaryGrey} />
                 </TouchableOpacity>
-              )} */}
+              )}
             </View>
-              {comment.length > 0 && (
-
             <TouchableOpacity 
               onPress={handleComment}
               style={{
@@ -261,7 +259,6 @@ export default function PostDetail() {
             >
               <ChevronRight size={16} color={PrimaryBlue} />
             </TouchableOpacity>
-              )}
           </View>
         </View>
 

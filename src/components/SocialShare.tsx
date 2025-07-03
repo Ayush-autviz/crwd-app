@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, Modal, TouchableOpacity, StyleSheet, Pressable, Share, Platform, Linking } from 'react-native';
-import { Share2, MessageCircle } from 'lucide-react-native';
+import { Share2, MessageCircle, Mail, Phone, Globe, ArrowDown } from 'lucide-react-native';
 import { PrimaryBlue, PrimaryGrey, LightGrey } from '../Constants/Colors';
 import { useToast } from '../contexts/ToastContext';
 
@@ -18,6 +18,57 @@ interface ShareButtonProps {
   color: string;
   onPress: () => void;
 }
+
+const SHARE_OPTIONS = [
+  {
+    label: 'Facebook',
+    color: '#1877F2',
+    icon: Share2,
+    platform: 'facebook'
+  },
+  {
+    label: 'Twitter',
+    color: '#1DA1F2',
+    icon: Share2,
+    platform: 'twitter'
+  },
+  {
+    label: 'LinkedIn',
+    color: '#0A66C2',
+    icon: Share2,
+    platform: 'linkedin'
+  },
+  {
+    label: 'WhatsApp',
+    color: '#25D366',
+    icon: MessageCircle,
+    platform: 'whatsapp'
+  },
+  {
+    label: 'Telegram',
+    color: '#0088cc',
+    icon: MessageCircle,
+    platform: 'telegram'
+  },
+  {
+    label: 'Email',
+    color: '#EA4335',
+    icon: Mail,
+    platform: 'email'
+  },
+  {
+    label: 'SMS',
+    color: '#63B3ED',
+    icon: Phone,
+    platform: 'sms'
+  },
+  {
+    label: 'More',
+    color: PrimaryBlue,
+    icon: Share2,
+    platform: undefined
+  }
+];
 
 export default function SocialShare({ visible, onClose, title = '', message, url = '' }: SocialShareProps) {
   const { showToast } = useToast();
@@ -96,9 +147,10 @@ export default function SocialShare({ visible, onClose, title = '', message, url
     <TouchableOpacity 
       style={styles.shareButton} 
       onPress={onPress}
+      activeOpacity={0.7}
     >
       <View style={[styles.iconContainer, { backgroundColor: color }]}>
-        <Icon size={24} color="white" />
+        <Icon size={24} color="white" strokeWidth={2.5} />
       </View>
       <Text style={styles.shareLabel}>{label}</Text>
     </TouchableOpacity>
@@ -106,83 +158,48 @@ export default function SocialShare({ visible, onClose, title = '', message, url
 
   return (
     <Modal
-      animationType="fade"
+      animationType="slide"
       transparent={true}
       visible={visible}
       onRequestClose={onClose}
     >
       <Pressable style={styles.overlay} onPress={onClose}>
         <View style={styles.content}>
+          <View style={styles.handle} />
+          
           <View style={styles.header}>
             <Text style={styles.title}>Share via</Text>
-            <TouchableOpacity onPress={onClose}>
-              <Share2 size={24} color={PrimaryGrey} />
+            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+              <ArrowDown size={20} color={PrimaryGrey} />
             </TouchableOpacity>
           </View>
 
           <View style={styles.shareButtons}>
-            <ShareButton 
-              icon={Share2} 
-              label="Facebook" 
-              color="#1877F2"
-              onPress={() => handleShare('facebook')}
-            />
-            <ShareButton 
-              icon={Share2} 
-              label="Twitter" 
-              color="#1DA1F2"
-              onPress={() => handleShare('twitter')}
-            />
-            <ShareButton 
-              icon={Share2} 
-              label="LinkedIn" 
-              color="#0A66C2"
-              onPress={() => handleShare('linkedin')}
-            />
-            <ShareButton 
-              icon={Share2} 
-              label="WhatsApp" 
-              color="#25D366"
-              onPress={() => handleShare('whatsapp')}
-            />
-            <ShareButton 
-              icon={Share2} 
-              label="Telegram" 
-              color="#0088cc"
-              onPress={() => handleShare('telegram')}
-            />
-            <ShareButton 
-              icon={Share2} 
-              label="Email" 
-              color="#EA4335"
-              onPress={() => handleShare('email')}
-            />
-            <ShareButton 
-              icon={MessageCircle} 
-              label="SMS" 
-              color="#63B3ED"
-              onPress={() => handleShare('sms')}
-            />
-            <ShareButton 
-              icon={Share2} 
-              label="More" 
-              color={PrimaryBlue}
-              onPress={() => handleShare()}
-            />
+            {SHARE_OPTIONS.map((option, index) => (
+              <ShareButton 
+                key={index}
+                icon={option.icon}
+                label={option.label}
+                color={option.color}
+                onPress={() => handleShare(option.platform)}
+              />
+            ))}
           </View>
 
-          <TouchableOpacity 
-            style={styles.copyButton}
-            onPress={() => {
-              if (url) {
+          {url && (
+            <TouchableOpacity 
+              style={styles.copyButton}
+              onPress={() => {
                 Linking.openURL(url);
                 showToast('Opening link...');
                 onClose();
-              }
-            }}
-          >
-            <Text style={styles.copyButtonText}>Open Link</Text>
-          </TouchableOpacity>
+              }}
+              activeOpacity={0.7}
+            >
+              <Globe size={20} color={PrimaryGrey} style={styles.linkIcon} />
+              <Text style={styles.copyButtonText}>Open Link</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </Pressable>
     </Modal>
@@ -202,49 +219,80 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingBottom: Platform.OS === 'ios' ? 40 : 20,
   },
+  handle: {
+    width: 40,
+    height: 4,
+    backgroundColor: '#E0E0E0',
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginBottom: 20,
+  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 24,
+    paddingHorizontal: 4,
   },
   title: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '600',
+    color: '#1a1a1a',
+  },
+  closeButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: LightGrey,
   },
   shareButtons: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 20,
     justifyContent: 'space-between',
-    marginBottom: 20,
+    paddingHorizontal: 8,
+    marginBottom: 24,
   },
   shareButton: {
     alignItems: 'center',
-    width: '21%',
-    marginBottom: 10,
+    width: '25%',
+    marginBottom: 20,
   },
   iconContainer: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 56,
+    height: 56,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 8,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   shareLabel: {
     fontSize: 12,
-    color: PrimaryGrey,
+    color: '#4a4a4a',
     textAlign: 'center',
+    fontWeight: '500',
   },
   copyButton: {
     backgroundColor: LightGrey,
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 16,
     alignItems: 'center',
+    marginHorizontal: 4,
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  linkIcon: {
+    marginRight: 8,
   },
   copyButtonText: {
-    color: PrimaryGrey,
-    fontWeight: '500',
+    color: '#1a1a1a',
+    fontWeight: '600',
+    fontSize: 16,
   },
 }); 

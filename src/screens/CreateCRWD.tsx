@@ -2,15 +2,73 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image } from 'react-native';
 import MainHeaderNav from '../components/MainHeaderNav';
 import { LightGrey, PrimaryBlue, PrimaryGrey, SecondaryBlue, SecondaryGrey } from '../Constants/Colors';
-import { Minus, Plus } from 'lucide-react-native';
+import { Bookmark, Plus } from 'lucide-react-native';
 import { TextInput } from 'react-native-gesture-handler';
 import OneTimeDonation from '../components/donation/OneTimeDonation';
+import { Organization, RECENTS, SUGGESTED } from '../Constants/organizations';
 
 export default function CreateCRWD() {
 
   const [count, setcount] = useState(5)
   const [checkout, setCheckout] = useState(false);
   const [selectedOrganizations, setSelectedOrganizations] = useState<string[]>([]);
+  const [bookmarkedOrgs, setBookmarkedOrgs] = useState<string[]>([]);
+
+
+  const toggleOrganization = (orgId: string) => {
+    if (selectedOrganizations.includes(orgId)) {
+      setSelectedOrganizations(selectedOrganizations.filter(id => id !== orgId));
+    } else {
+      setSelectedOrganizations([...selectedOrganizations, orgId]);
+    }
+  };
+
+  const toggleBookmark = (orgId: string) => {
+    if (bookmarkedOrgs.includes(orgId)) {
+      setBookmarkedOrgs(bookmarkedOrgs.filter(id => id !== orgId));
+    } else {
+      setBookmarkedOrgs([...bookmarkedOrgs, orgId]);
+    }
+  };
+
+  const renderOrganizationCard = (org: Organization) => {
+    const isSelected = selectedOrganizations.includes(org.id);
+    const isBookmarked = bookmarkedOrgs.includes(org.id);
+
+    return (
+      <TouchableOpacity
+        key={org.id}
+        style={[styles.orgCard, isSelected && styles.selectedOrgCard]}
+        onPress={() => toggleOrganization(org.id)}
+      >
+        <View style={styles.orgHeader}>
+          <Image source={{ uri: org.imageUrl }} style={styles.orgImage} />
+          <View style={styles.orgInfo}>
+            <Text style={styles.orgName}>{org.name}</Text>
+            <Text style={styles.orgDesc}>{org.shortDesc}</Text>
+          </View>
+          <View style={styles.orgActions}>
+            <TouchableOpacity
+              onPress={(e) => {
+                e.stopPropagation();
+                toggleBookmark(org.id);
+              }}
+              style={[styles.actionButton, isBookmarked && styles.bookmarkedButton]}
+            >
+              <Bookmark
+                size={16}
+                color={isBookmarked ? '#ffffff' : '#6b7280'}
+                fill={isBookmarked ? '#ffffff' : 'none'}
+              />
+            </TouchableOpacity>
+            <View style={[styles.checkbox, isSelected && styles.checkedBox]}>
+              {isSelected && <Text style={styles.checkmark}>✓</Text>}
+            </View>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -31,7 +89,7 @@ export default function CreateCRWD() {
         <Text style={{ color: SecondaryGrey, marginBottom: 10, fontSize: 16 }}>Describe your CRWD</Text>
         <TextInput style={{ borderColor: SecondaryGrey, borderWidth: 1, borderRadius: 10, padding: 15, marginBottom: 20 }} multiline={true} numberOfLines={2} placeholder='Choose a name' />
 
-        <Text style={{ color: SecondaryGrey, marginBottom: 10, fontSize: 16 }}>Enter Suggested Amount</Text>
+        {/* <Text style={{ color: SecondaryGrey, marginBottom: 10, fontSize: 16 }}>Enter Suggested Amount</Text>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, backgroundColor: LightGrey, padding: 15, borderRadius: 10 }}>
           <Text style={{ color: SecondaryGrey, fontSize: 16 }}>Input amount over $5</Text>
           <View style={{ flexDirection: 'row', gap: 10 , justifyContent: 'space-around', alignContent: 'center', backgroundColor: SecondaryBlue, borderRadius: 10, padding: 15 }}>
@@ -43,16 +101,22 @@ export default function CreateCRWD() {
               <Plus color={PrimaryBlue} size={20} />
             </TouchableOpacity>
           </View>
-        </View>
+        </View> */}
 
         <Text style={{ color: SecondaryGrey, fontSize: 16 }}>Choose causes</Text>
 
-        <OneTimeDonation
+        {/* <OneTimeDonation
               setCheckout={setCheckout}
               selectedOrganizations={selectedOrganizations}
               setSelectedOrganizations={setSelectedOrganizations}
               show={false}
-            />
+            /> */}
+
+<Text style={styles.subsectionTitle}>RECENT</Text>
+        {RECENTS.map(renderOrganizationCard)}
+
+        <Text style={styles.subsectionTitle}>SUGGESTED</Text>
+        {SUGGESTED.map(renderOrganizationCard)}
         
 
       </ScrollView>

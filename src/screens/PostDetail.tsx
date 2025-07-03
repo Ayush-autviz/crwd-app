@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import MainHeaderNav from '../components/MainHeaderNav'
 import { PrimaryGrey, PrimaryBlue, LightGrey } from '../Constants/Colors'
-import { Heart, MessageCircle, ChevronRight } from 'lucide-react-native'
+import { Heart, MessageCircle, ChevronRight, Trash2 } from 'lucide-react-native'
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native'
 import { useToast } from '../contexts/ToastContext'
 
@@ -224,19 +224,34 @@ export default function PostDetail() {
               source={{ uri: post.avatarUrl }} 
               style={{width: 24, height: 24, borderRadius: 12}}
             />
-            <TextInput
-              placeholder="Share your thoughts..."
-              value={comment}
-              onChangeText={setComment}
-              multiline
-              style={{
-                flex: 1,
-                fontSize: 14,
-                color: PrimaryGrey,
-                maxHeight: 100,
-                paddingTop: Platform.OS === 'ios' ? 0 : 0
-              }}
-            />
+            <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
+              <TextInput
+                placeholder="Share your thoughts..."
+                value={comment}
+                onChangeText={setComment}
+                multiline
+                style={{
+                  flex: 1,
+                  fontSize: 14,
+                  color: PrimaryGrey,
+                  maxHeight: 100,
+                  paddingTop: Platform.OS === 'ios' ? 0 : 0
+                }}
+              />
+              {/* {comment.length > 0 && (
+                <TouchableOpacity 
+                  onPress={() => setComment('')}
+                  style={{
+                    padding: 4,
+                    marginRight: 4
+                  }}
+                >
+                  <Trash2 size={16} color={PrimaryGrey} />
+                </TouchableOpacity>
+              )} */}
+            </View>
+              {comment.length > 0 && (
+
             <TouchableOpacity 
               onPress={handleComment}
               style={{
@@ -244,8 +259,9 @@ export default function PostDetail() {
                 padding: 4
               }}
             >
-              <ChevronRight size={20} color={PrimaryBlue} />
+              <ChevronRight size={16} color={PrimaryBlue} />
             </TouchableOpacity>
+              )}
           </View>
         </View>
 

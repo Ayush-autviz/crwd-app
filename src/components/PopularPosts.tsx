@@ -116,7 +116,7 @@ export default function PopularPosts({
                                     <Ellipsis size={18} color={PrimaryGrey} />
                                 </TouchableOpacity>
                             </View>
-                            <Text style={{ fontSize: 12, color: PrimaryBlue, marginTop: 5 }}>{item.org}</Text>
+                            <Text style={{ fontSize: 12, color: PrimaryBlue }}>{item.org}</Text>
                             <Text ellipsizeMode='tail' style={{ fontSize: 14, fontWeight: '400', flexWrap: 'wrap', width: screenWidth - 120, marginTop: 5 }} numberOfLines={3}>{item.text}</Text>
                             { item.imageUrl && <Image source={{ uri: item.imageUrl }} style={{ width: screenWidth - 120, height: 150, borderRadius: 10, marginTop: 10 }} />}
                             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: screenWidth - 120, gap: 10, marginTop: 10 }}>

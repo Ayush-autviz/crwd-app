@@ -324,7 +324,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#6b7280',
-    marginTop: 20,
+    // marginTop: 20,
     marginBottom: 12,
     letterSpacing: 0.5,
   },

@@ -59,7 +59,7 @@ const InterestsScreen = () => {
   const { width } = useWindowDimensions();
   const [selected, setSelected] = useState<string[]>([]);
 
-  const buttonWidth = (width - 48) / 2 - 8;
+  const buttonWidth = (width - 76) / 2 - 8;
 
   const toggleInterest = (interest: string) => {
     setSelected((prev) =>
@@ -75,28 +75,23 @@ const InterestsScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-        <ScrollView 
+      <ScrollView 
         style={styles.content} 
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.contentContainer}
       >
-      <View style={styles.header}>
-        <Image
-          source={require('../assets/logo/logo3.webp')}
-          style={styles.logo}
-          resizeMode="contain"
-        />
-        <Text style={styles.title}>What interests you?</Text>
-        <Text style={styles.subtitle}>
-          Select topics you'd like to see in your feed.
-        </Text>
-      </View>
+        <View style={styles.header}>
+          <Image
+            source={require('../assets/logo/logo3.webp')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+          <Text style={styles.title}>What interests you?</Text>
+          <Text style={styles.subtitle}>
+            Select topics you'd like to see in your feed.
+          </Text>
+        </View>
 
-      {/* <ScrollView 
-        style={styles.content} 
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.contentContainer}
-      > */}
         {CATEGORIES.map((category) => (
           <View key={category.label} style={styles.categoryContainer}>
             <Text style={styles.categoryLabel}>{category.label}</Text>
@@ -175,51 +170,53 @@ const InterestsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: 'white',
   },
   header: {
     paddingHorizontal: 16,
     alignItems: 'center',
-    backgroundColor: '#ffffff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    backgroundColor: 'white',
+    marginBottom: 20,
   },
   logo: {
-    width: 80,
-    height: 80,
-    // marginBottom: 12,
+    width: 100,
+    height: 100,
+    marginBottom: 0,
   },
   title: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#1a1a1a',
-    marginBottom: 4,
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#111827',
+    marginBottom: 12,
+    textAlign: 'center',
   },
   subtitle: {
-    fontSize: 13,
-    color: '#64748b',
+    fontSize: 16,
+    color: Colors.PrimaryGrey,
     textAlign: 'center',
     marginBottom: 16,
+    lineHeight: 24,
   },
   content: {
     flex: 1,
   },
   contentContainer: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 24,
+    paddingVertical: 32,
   },
   categoryContainer: {
-    marginBottom: 16,
-    backgroundColor: '#ffffff',
+    marginBottom: 24,
+    backgroundColor: 'white',
     borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#f1f5f9',
-    padding: 12,
+    borderWidth: 1.5,
+    borderColor: '#e5e7eb',
+    padding: 16,
   },
   categoryLabel: {
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '600',
-    color: '#1a1a1a',
-    marginBottom: 12,
+    color: '#374151',
+    marginBottom: 16,
   },
   interestsGrid: {
     width: '100%',
@@ -227,58 +224,60 @@ const styles = StyleSheet.create({
   interestRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 8,
+    marginBottom: 16,
+    gap: 10,
   },
   interestButton: {
-    borderRadius: 8,
-    backgroundColor: '#f8fafc',
-    paddingVertical: 10,
-    paddingHorizontal: 12,
+    borderRadius: 12,
+    backgroundColor: '#f9fafb',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    minHeight: 36,
+    borderWidth: 1.5,
+    borderColor: '#e5e7eb',
+    minHeight: 44,
   },
   interestButtonSelected: {
-    backgroundColor: Colors.PrimaryBlue,
-    borderColor: Colors.PrimaryBlue,
+    backgroundColor: '#111827',
+    borderColor: '#111827',
   },
   interestButtonText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#64748b',
+    color: '#374151',
     textAlign: 'center',
   },
   interestButtonTextSelected: {
-    color: '#ffffff',
+    color: 'white',
+    fontWeight: '600',
   },
   footer: {
-    backgroundColor: '#ffffff',
-    padding: 16,
+    backgroundColor: 'white',
+    padding: 24,
     borderTopWidth: 1,
-    borderTopColor: '#f1f5f9',
+    borderTopColor: '#e5e7eb',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
   selectedCount: {
-    fontSize: 13,
-    color: '#64748b',
+    fontSize: 14,
+    color: Colors.PrimaryGrey,
     fontWeight: '500',
   },
   continueButton: {
-    backgroundColor: Colors.PrimaryBlue,
-    paddingVertical: 8,
+    backgroundColor: '#111827',
+    paddingVertical: 12,
     paddingHorizontal: 16,
-    borderRadius: 8,
+    borderRadius: 12,
   },
   continueButtonDisabled: {
     opacity: 0.5,
   },
   continueButtonText: {
-    color: '#ffffff',
-    fontSize: 13,
+    color: 'white',
+    fontSize: 16,
     fontWeight: '600',
   },
 });

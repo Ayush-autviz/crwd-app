@@ -6,6 +6,7 @@ import { PrimaryGrey, PrimaryBlue, LightGrey } from '../Constants/Colors'
 import { Heart, MessageCircle, ChevronRight, Trash2 } from 'lucide-react-native'
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native'
 import { useToast } from '../contexts/ToastContext'
+import babelConfig from '../../babel.config'
 
 interface Post {
   id: string;
@@ -164,6 +165,15 @@ export default function PostDetail() {
           {/* Comments Section */}
           <View style={{padding: 20, borderTopWidth: 1, borderTopColor: '#E5E5E5'}}>
             <Text style={{fontSize: 16, fontWeight: '600', marginBottom: 16}}>Comments</Text>
+            {post.comments > 0 && (
+              <View style={{flexDirection: 'row', gap: 12, backgroundColor: LightGrey, padding: 12, borderRadius: 12, marginBottom: 12}}>
+                <Image source={{uri: post.avatarUrl}} style={{width: 24, height: 24, borderRadius: 12}} />
+                <View style={{flex: 1}}>
+                  <Text style={{fontSize: 14, color: PrimaryGrey, lineHeight: 20}}>Just wrapped up an amazing youth leadership workshop! So proud of everyone who participated.</Text>
+                  <Text style={{fontSize: 12, color: '#000', textAlign: 'right'}}>12:00 PM</Text>
+                </View>
+              </View>
+            )}
             {post.comments === 0 && (
               <View style={{
                 alignItems: 'center',
@@ -254,10 +264,17 @@ export default function PostDetail() {
               onPress={handleComment}
               style={{
                 opacity: comment.trim() ? 1 : 0.5,
-                padding: 4
+                padding: 4,
+                borderColor: PrimaryBlue,
+                borderWidth: 1,
+                borderRadius: 20,
+                paddingHorizontal: 8,
+                alignItems: 'center',
+                justifyContent: 'center',
               }}
             >
-              <ChevronRight size={16} color={PrimaryBlue} />
+              {/* <ChevronRight size={16} color={PrimaryBlue} /> */}
+              <Text style={{fontSize: 14}}>Reply</Text>
             </TouchableOpacity>
           </View>
         </View>

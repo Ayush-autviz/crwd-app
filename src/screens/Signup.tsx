@@ -83,7 +83,8 @@ export default function Signup() {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1500))
       Alert.alert('Success', 'Account created successfully! Welcome to our platform!', [
-        { text: 'OK', onPress: () => navigation.navigate('DrawerNav' as never) }
+        // { text: 'OK', onPress: () => navigation.navigate('DrawerNav' as never) }
+        { text: 'OK', onPress: () => navigation.navigate('Interests' as never) }
       ])
     } catch (error) {
       Alert.alert('Error', 'Something went wrong. Please try again later.')

@@ -43,6 +43,7 @@ import CRWDScreen from './src/screens/CRWDScreen'
 import ManageCRWD from './src/screens/ManageCRWD'
 import { User } from 'lucide-react-native'
 import Interests from './src/screens/Interests'
+import UserProfile from './src/screens/UserProfile'
 
 export default function App() {
 
@@ -132,6 +133,7 @@ export default function App() {
         <Stack.Screen name="CRWDScreen" component={CRWDScreen} />
         <Stack.Screen name="ManageCRWD" component={ManageCRWD} />
         <Stack.Screen name="Interests" component={Interests} />
+        <Stack.Screen name="UserProfile" component={UserProfile} />
       </Stack.Navigator>
     )
   }

@@ -104,7 +104,9 @@ export default function PopularPosts({
                         style={styles.container}
                         onPress={() => handlePostPress(item)}
                     >
-                        <Image source={{ uri: item.avatarUrl }} style={{ width: 40, height: 40, borderRadius: 20 }} />
+                        <TouchableOpacity onPress={() => navigation.navigate('UserProfile', { imageUrl: item.avatarUrl, username: item.username })}>
+                            <Image source={{ uri: item.avatarUrl }} style={{ width: 40, height: 40, borderRadius: 20 }} />
+                        </TouchableOpacity>
                         <View style={{ flex: 1 }}>
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, justifyContent: 'space-between' }}>
                                 <View style={{ flexDirection: 'row', gap: 5, alignItems: 'center' }}>

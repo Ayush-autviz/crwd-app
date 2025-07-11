@@ -59,7 +59,7 @@ const InterestsScreen = () => {
   const { width } = useWindowDimensions();
   const [selected, setSelected] = useState<string[]>([]);
 
-  const buttonWidth = (width - 76) / 2 - 8;
+  const buttonWidth = (width - 48 - 16 - 32 - 16) / 2;
 
   const toggleInterest = (interest: string) => {
     setSelected((prev) =>
@@ -225,9 +225,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 16,
-    gap: 10,
+    gap: 16,
   },
   interestButton: {
+    flex: 1,
     borderRadius: 12,
     backgroundColor: '#f9fafb',
     paddingVertical: 12,
@@ -268,8 +269,8 @@ const styles = StyleSheet.create({
   },
   continueButton: {
     backgroundColor: '#111827',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    paddingVertical: 18,
+    paddingHorizontal: 24,
     borderRadius: 12,
   },
   continueButtonDisabled: {

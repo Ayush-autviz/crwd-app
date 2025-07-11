@@ -5,17 +5,13 @@ import MainHeaderNav from '../components/MainHeaderNav'
 import ProfileBio from '../components/ProfileBio'
 import ProfileStats from '../components/ProfileStats'
 import PopularPosts from '../components/PopularPosts'
-import { PrimaryBlue } from '../Constants/Colors'
-import { useNavigation, NavigationProp } from '@react-navigation/native'
 import { Share2 } from 'lucide-react-native'
+import { PrimaryBlue } from '../Constants/Colors'
+import { useToast } from '../contexts/ToastContext'
 import { Upload } from 'lucide-react-native'
 
-type RootStackParamList = {
-    ProfileEdit: undefined;
-};
-
 // Sample data generator for profile posts
-const generateMoreProfilePosts = (startId: number, count: number) => {
+const generateMoreProfilePosts = (startId: number, count: number, imageUrl: string, username: string) => {
     const organizations = ["marchofdimes", "feedthehungry", "greenearth", "animalrescue"];
     const messages = [
         "Just finished another amazing volunteer session! Making a real difference in our community. 💪",
@@ -27,8 +23,8 @@ const generateMoreProfilePosts = (startId: number, count: number) => {
 
     return Array.from({ length: count }, (_, i) => ({
         id: (startId + i).toString(),
-        username: "mynameismya",
-        avatarUrl: "https://randomuser.me/api/portraits/women/44.jpg",
+        username: username,
+        avatarUrl: imageUrl,
         time: `${Math.floor(Math.random() * 23) + 1}h`,
         org: organizations[Math.floor(Math.random() * organizations.length)],
         text: messages[Math.floor(Math.random() * messages.length)],
@@ -39,16 +35,18 @@ const generateMoreProfilePosts = (startId: number, count: number) => {
     }));
 };
 
-export default function Profile() {
-    const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-    const [profilePosts, setProfilePosts] = useState(() => generateMoreProfilePosts(1, 4));
+export default function UserProfile({route}: {route: any}) {
+    const { imageUrl, username } = route.params;
+    const [profilePosts, setProfilePosts] = useState(() => generateMoreProfilePosts(1, 4, imageUrl, username));
     const [isLoadingMore, setIsLoadingMore] = useState(false);
+    const [isFollowing, setIsFollowing] = useState(false);
+    const { showToast } = useToast();
 
     const handleLoadMore = async () => {
         setIsLoadingMore(true);
         // Simulate API call delay
         await new Promise(resolve => setTimeout(resolve, 1000));
-        const newPosts = generateMoreProfilePosts(profilePosts.length + 1, 4);
+        const newPosts = generateMoreProfilePosts(profilePosts.length + 1, 4, imageUrl, username);
         setProfilePosts(prevPosts => [...prevPosts, ...newPosts]);
         setIsLoadingMore(false);
     };
@@ -56,17 +54,22 @@ export default function Profile() {
     const handleShare = async () => {
         try {
             const result = await Share.share({
-                message: `Check out my profile!`,
-                title: `My Profile`,
+                message: `Check out ${username}'s profile!`,
+                title: `${username}'s Profile`,
             });
         } catch (error) {
             Alert.alert('Error', 'Failed to share profile');
         }
     };
 
+    const handleFollowClick = () => {
+        setIsFollowing(!isFollowing);
+        showToast(isFollowing ? `Unfollowed ${username}` : `Following ${username}`);
+    };
+
     return (
         <SafeAreaView style={{backgroundColor: 'white', flex: 1}}>
-            <MainHeaderNav />
+            <MainHeaderNav show={true} menu={false} post={false} />
             <ScrollView style={{flex: 1}}>
                 {/* Top right buttons */}
                 <View style={{flexDirection: 'row', justifyContent: 'flex-end', gap: 12, paddingHorizontal: 20, paddingTop: 16}}>
@@ -86,12 +89,14 @@ export default function Profile() {
                         <Upload size={16} color="#374151" />
                     </TouchableOpacity>
                     <TouchableOpacity 
-                        onPress={() => navigation.navigate('ProfileEdit')}
+                        onPress={handleFollowClick}
                         style={{
                             height: 32,
                             paddingHorizontal: 16,
                             borderRadius: 8,
-                            backgroundColor: PrimaryBlue,
+                            backgroundColor: isFollowing ? 'white' : PrimaryBlue,
+                            borderWidth: isFollowing ? 1 : 0,
+                            borderColor: '#e5e7eb',
                             justifyContent: 'center',
                             alignItems: 'center'
                         }}
@@ -99,19 +104,15 @@ export default function Profile() {
                         <Text style={{
                             fontSize: 14,
                             fontWeight: '600',
-                            color: 'white'
+                            color: isFollowing ? '#374151' : 'white'
                         }}>
-                            Edit
+                            {isFollowing ? 'Following' : 'Follow'}
                         </Text>
                     </TouchableOpacity>
                 </View>
 
                 <View style={{paddingHorizontal: 20}}>
-                    <ProfileBio 
-                        imageUrl="https://randomuser.me/api/portraits/women/44.jpg"
-                        username="mynameismya"
-                        isOwnProfile={true}
-                    />
+                    <ProfileBio imageUrl={imageUrl} username={username} isOwnProfile={false} />
                     <ProfileStats />
                     <PopularPosts 
                         posts={profilePosts} 

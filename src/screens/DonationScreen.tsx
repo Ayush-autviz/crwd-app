@@ -3,7 +3,6 @@ import {
   View,
   Text,
   TouchableOpacity,
-  SafeAreaView,
   ScrollView,
   TextInput,
   StyleSheet,
@@ -16,6 +15,7 @@ import DonationStep3 from '../components/donation/DonationStep3';
 import OneTimeDonation from '../components/donation/OneTimeDonation';
 import CheckoutScreen from '../components/donation/CheckoutScreen';
 import PaymentSection from '../components/donation/PaymentSection';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 
 const { width } = Dimensions.get('window');
@@ -229,7 +229,7 @@ export default function DonationScreen() {
         {/* Footer - Only show for step 1 */}
 
       </View>
-    </SafeAreaView>
+    {/* </SafeAreaView> */}
     {activeTab === 'setup' && step === 1 && (
           <View style={styles.footer}>
             <View style={styles.nextSection}>
@@ -280,6 +280,7 @@ export default function DonationScreen() {
           </TouchableOpacity>
           </View>
         )} */}
+        </SafeAreaView>
     </>
   );
 }

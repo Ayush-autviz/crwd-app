@@ -1,7 +1,8 @@
-import { View, Text, ScrollView, SafeAreaView } from 'react-native'
+import { View, Text, ScrollView } from 'react-native'
 import React from 'react'
 import MainHeaderNav from '../components/MainHeaderNav';
 import { PrimaryBlue, PrimaryGrey, SecondaryGrey } from '../Constants/Colors';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function TransactionHistory() {
 

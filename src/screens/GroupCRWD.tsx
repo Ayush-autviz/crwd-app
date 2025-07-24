@@ -6,10 +6,11 @@ import GroupCRWDSuggested from '../components/groupcrwd/GroupCRWDSuggested';
 import GroupCRWDUpdates from '../components/groupcrwd/GroupCRWDUpdates';
 import GroupCRWDEvent from '../components/groupcrwd/GroupCRWDEvent';
 import GroupCRWDBottomBar from '../components/groupcrwd/GroupCRWDBottomBar';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function GroupCRWD() {
   return (
-    <View style={{ backgroundColor: 'white', flex: 1 }}>
+    <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }}>
        <MainHeaderNav show menu={false} post={false} />
       <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
         <GroupCRWDHeader />
@@ -19,6 +20,6 @@ export default function GroupCRWD() {
         <View style={{ height: 100 }} />
       </ScrollView>
       <GroupCRWDBottomBar />
-    </View>
+    </SafeAreaView>
   );
 }

@@ -6,10 +6,10 @@ import {
   ScrollView,
   StyleSheet,
   Image,
-  SafeAreaView,
 } from 'react-native';
 import { DrawerContentScrollView, DrawerContentComponentProps } from '@react-navigation/drawer';
 import { navigationItems } from '../../Constants/navigationItems';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function CustomDrawerContent(props: DrawerContentComponentProps) {
   const { navigation } = props;

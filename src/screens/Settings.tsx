@@ -1,9 +1,10 @@
-import { View, Text, SafeAreaView, ScrollView, Image, StyleSheet, TouchableOpacity } from 'react-native'
+import { View, Text, ScrollView, Image, StyleSheet, TouchableOpacity } from 'react-native'
 import React from 'react'
 import MainHeaderNav from '../components/MainHeaderNav'
 import { CircleHelp, CreditCard, FileText, Info, Lock, Mail, MessageSquare, Shield, User } from 'lucide-react-native'
 import { LightGrey, PrimaryBlue, PrimaryGrey, SecondaryGrey } from '../Constants/Colors'
 import { useNavigation } from '@react-navigation/native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 export default function Settings() {
 

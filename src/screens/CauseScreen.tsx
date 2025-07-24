@@ -18,7 +18,7 @@ export default function CauseScreen() {
   };
 
   return (
-    <View style={{ backgroundColor: 'white', flex: 1 }}>
+    <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }}>
        <MainHeaderNav show menu={false} post={false} />
       <ScrollView 
         ref={aboutCardRef}
@@ -33,6 +33,6 @@ export default function CauseScreen() {
         </View>
       </ScrollView>
       <GroupCRWDBottomBar />
-    </View>
+    </SafeAreaView>
   );
 }

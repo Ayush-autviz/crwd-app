@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
 import MainHeaderNav from '../components/MainHeaderNav';
 import { LightGrey, PrimaryBlue, PrimaryGrey, SecondaryBlue, SecondaryGrey } from '../Constants/Colors';
 import { Bookmark, Plus } from 'lucide-react-native';
 import { TextInput } from 'react-native-gesture-handler';
 import OneTimeDonation from '../components/donation/OneTimeDonation';
 import { Organization, RECENTS, SUGGESTED } from '../Constants/organizations';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function CreateCRWD() {
 

@@ -8,6 +8,7 @@ import SuggestedCrwd from '../components/SuggestedCrwd'
 import SuggestdCauses from '../components/SuggestdCauses'
 import NearbyCauses from '../components/NearbyCauses'
 import PopularPosts from '../components/PopularPosts'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 // Sample data generator for infinite posts
 const generateMorePosts = (startId: number, count: number) => {
@@ -57,7 +58,7 @@ export default function Home() {
     };
 
     return (
-        <View style={{backgroundColor: 'white', flex: 1}}>
+        <SafeAreaView style={{backgroundColor: 'white', flex: 1}}>
             <MainHeaderNav />
             <ScrollView style={{ paddingHorizontal: 20 }}>
                 <View style={{ 
@@ -110,6 +111,6 @@ export default function Home() {
                 />
 
             </ScrollView>
-        </View>
+        </SafeAreaView>
     )
 }

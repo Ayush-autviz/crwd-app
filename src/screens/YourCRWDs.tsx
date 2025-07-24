@@ -5,11 +5,11 @@ import {
   TouchableOpacity,
   ScrollView,
   StyleSheet,
-  SafeAreaView,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import MainHeaderNav from '../components/MainHeaderNav';
 import { PrimaryBlue, PrimaryGrey, LightGrey } from '../Constants/Colors';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function YourCRWDs() {
   const navigation = useNavigation();

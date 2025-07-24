@@ -6,12 +6,12 @@ import {
   ScrollView,
   Image,
   StyleSheet,
-  SafeAreaView,
   useWindowDimensions,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import * as Colors from '../Constants/Colors';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type RootStackParamList = {
   Home: undefined;

@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, FlatList, Image, Modal, TouchableOpacity, Pressable } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Image, Modal, TouchableOpacity, Pressable } from 'react-native';
 import MainHeaderNav from '../components/MainHeaderNav';
 import { Bookmark } from 'lucide-react-native';
 import { PrimaryGrey, SecondaryGrey, PrimaryBlue, LightGrey } from '../Constants/Colors';
 import { useToast } from '../contexts/ToastContext';
 import FilledBookmark from '../components/FilledBookmark';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface SavedItem {
   id: string;

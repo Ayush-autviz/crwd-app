@@ -44,6 +44,7 @@ import ManageCRWD from './src/screens/ManageCRWD'
 import { User } from 'lucide-react-native'
 import Interests from './src/screens/Interests'
 import UserProfile from './src/screens/UserProfile'
+import SplashScreen from './src/screens/SplashScreen'
 
 export default function App() {
 
@@ -109,6 +110,7 @@ export default function App() {
   function StackNavigator() {
     return (
       <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="SplashScreen" component={SplashScreen} />
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="Signup" component={Signup} />
         <Stack.Screen name="ForgotPassword" component={ForgotPassword} />

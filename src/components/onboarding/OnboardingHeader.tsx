@@ -11,9 +11,9 @@ export default function OnboardingHeader() {
     <View
       style={{
         // marginHorizontal: 16,
-        // marginTop: 16,
+        marginTop: 5,
         // paddingHorizontal: 16,
-        // paddingVertical: 12,
+        paddingBottom: 10,
         borderRadius: 16,
         backgroundColor: '#ffffff',
         // borderWidth: 1,

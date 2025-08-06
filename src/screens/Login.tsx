@@ -109,7 +109,7 @@ export default function Login() {
               Don't have an account?{' '}
               <Text 
                 style={styles.link}
-                onPress={() => navigation.navigate('Signup' as never)}
+                onPress={() => navigation.navigate('ClaimProfile' as never)}
               >
                 Sign up
               </Text>

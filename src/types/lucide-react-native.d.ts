@@ -25,4 +25,5 @@ declare module 'lucide-react-native' {
   export const Menu: FC<IconProps>;
   export const AlignJustify: FC<IconProps>;
   export const ChevronLeft: FC<IconProps>;
+  export const Check: FC<IconProps>;
 } 

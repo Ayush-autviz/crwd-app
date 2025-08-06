@@ -45,6 +45,9 @@ import { User } from 'lucide-react-native'
 import Interests from './src/screens/Interests'
 import UserProfile from './src/screens/UserProfile'
 import SplashScreen from './src/screens/SplashScreen'
+import ClaimProfile from './src/components/onboarding/ClaimProfile'
+import AddPhoto from './src/components/onboarding/AddPhoto'
+import NonProfitInterests from './src/components/onboarding/NonProfitInterests'
 
 export default function App() {
 
@@ -111,6 +114,9 @@ export default function App() {
     return (
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="SplashScreen" component={SplashScreen} />
+        <Stack.Screen name="ClaimProfile" component={ClaimProfile} />
+        <Stack.Screen name="AddPhoto" component={AddPhoto} />
+        <Stack.Screen name="NonProfitInterests" component={NonProfitInterests} />
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="Signup" component={Signup} />
         <Stack.Screen name="ForgotPassword" component={ForgotPassword} />

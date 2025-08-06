@@ -17,78 +17,57 @@ import Animated, {
   withSpring,
   runOnJS,
 } from 'react-native-reanimated';
-import { PrimaryBlue } from '../../Constants/Colors';
+import { PrimaryBlue, PrimaryGrey } from '../../Constants/Colors';
 import OnboardingHeader from './OnboardingHeader';
+import { useNavigation } from '@react-navigation/native';
 
 const { width } = Dimensions.get('window');
 const cardWidth = (width - 60) / 2; // Account for padding and gap
 
-const nonProfitInterests = [
+const interestsData = [
   {
     id: 1,
-    name: 'Education',
+    name: 'Shriners Children',
     image: 'https://upload.wikimedia.org/wikipedia/en/thumb/9/9d/Shriners_Hospitals_for_Children_Logo.svg/500px-Shriners_Hospitals_for_Children_Logo.svg.png',
     color: '#3B82F6',
   },
   {
     id: 2,
-    name: 'Healthcare',
+    name: 'Change',
     image: 'https://images.squarespace-cdn.com/content/v1/5fd7e20940f9b820fac1e013/d442cb1f-e175-4b8d-bc81-44102583a6a5/thumbnail-05.png',
     color: '#EF4444',
   },
   {
     id: 3,
-    name: 'Environment',
+    name: 'The Water Trust',
     image: 'https://media.licdn.com/dms/image/v2/C4E0BAQEHqcfGhnH29g/company-logo_200_200/company-logo_200_200/0/1630573980553/the_water_trust_logo?e=2147483647&v=beta&t=fjyZGioRcUDheVZH_f8dxxSvR7840DFgAp6XrGwo8hw',
     color: '#10B981',
   },
   {
     id: 4,
-    name: 'Animal Welfare',
+    name: 'WWF',
     image: 'https://i0.wp.com/acrossthegreen.com/wp-content/uploads/2021/03/75E8B176-DAFE-4956-ABC5-9F221ACB2094.png?fit=1020%2C680&ssl=1',
     color: '#F59E0B',
   },
   {
     id: 5,
-    name: 'Poverty Relief',
+    name: 'Wounded Warrior Project',
     image: 'https://flooringresources.com/sites/default/files/styles/square_large/public/2022-01/1320-pps-wounded-warrior-classic.jpg?itok=4asRq76x',
     color: '#8B5CF6',
   },
   {
     id: 6,
-    name: 'Disaster Relief',
+    name: 'Girls Who Code',
     image: 'https://media.licdn.com/dms/image/v2/C4D0BAQEHUTYYyPFEhQ/company-logo_200_200/company-logo_200_200/0/1630509785189/girlswhocode_logo?e=2147483647&v=beta&t=eqyanOv949sDS3M_EnIq_wabT-1mN3uHQXVyB_FCTBI',
     color: '#F97316',
   },
-  {
-    id: 7,
-    name: 'Mental Health',
-    image: 'https://media.licdn.com/dms/image/v2/C4E0BAQEHqcfGhnH29g/company-logo_200_200/company-logo_200_200/0/1630573980553/the_water_trust_logo?e=2147483647&v=beta&t=fjyZGioRcUDheVZH_f8dxxSvR7840DFgAp6XrGwo8hw',
-    color: '#06B6D4',
-  },
-  {
-    id: 8,
-    name: 'Youth Development',
-    image: 'https://upload.wikimedia.org/wikipedia/en/thumb/9/9d/Shriners_Hospitals_for_Children_Logo.svg/500px-Shriners_Hospitals_for_Children_Logo.svg.png',
-    color: '#EC4899',
-  },
-  {
-    id: 9,
-    name: 'Animal Welfare',
-    image: 'https://i0.wp.com/acrossthegreen.com/wp-content/uploads/2021/03/75E8B176-DAFE-4956-ABC5-9F221ACB2094.png?fit=1020%2C680&ssl=1',
-    color: '#F59E0B',
-  },
-  {
-    id: 10,
-    name: 'Poverty Relief',
-    image: 'https://flooringresources.com/sites/default/files/styles/square_large/public/2022-01/1320-pps-wounded-warrior-classic.jpg?itok=4asRq76x',
-    color: '#8B5CF6',
-  },
 ];
+
+const nonProfitInterests = [...interestsData,...interestsData,...interestsData, ...interestsData, ...interestsData, ...interestsData]
 
 export default function NonProfitInterests() {
   const [selectedInterests, setSelectedInterests] = useState<number[]>([]);
-  
+  const navigation = useNavigation<any>()   
   const continueButtonScale = useSharedValue(1);
 
   const continueButtonAnimatedStyle = useAnimatedStyle(() => ({
@@ -110,15 +89,17 @@ export default function NonProfitInterests() {
       return;
     }
 
-    continueButtonScale.value = withTiming(0.95, { duration: 100 }, () => {
-      continueButtonScale.value = withTiming(1, { duration: 100 }, () => {
-        // Navigate to next screen or complete onboarding
-        runOnJS(() => {
-          console.log('Selected interests:', selectedInterests);
-          // You can navigate to the next screen here
-        })();
-      });
-    });
+    navigation.navigate('DrawerNav')
+
+    // continueButtonScale.value = withTiming(0.95, { duration: 100 }, () => {
+    //   continueButtonScale.value = withTiming(1, { duration: 100 }, () => {
+    //     // Navigate to next screen or complete onboarding
+    //     runOnJS(() => {
+    //       console.log('Selected interests:', selectedInterests);
+    //       // You can navigate to the next screen here
+    //     })();
+    //   });
+    // });
   };
 
   const handleBack = () => {
@@ -154,9 +135,9 @@ export default function NonProfitInterests() {
         activeOpacity={0.8}
       >
         <Image source={{ uri: interest.image }} style={styles.interestImage} />
-        {/* <View style={styles.interestContent}>
+        <View style={styles.interestContent}>
           <Text style={styles.interestName}>{interest.name}</Text>
-        </View> */}
+        </View>
         
         {/* Selection Overlay */}
         <Animated.View style={[styles.selectionOverlay, overlayAnimatedStyle]}>
@@ -171,8 +152,11 @@ export default function NonProfitInterests() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <View style={{paddingHorizontal: 20, backgroundColor: 'white'}}>
       <OnboardingHeader />
+
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      {/* <OnboardingHeader /> */}
 
           <Text style={styles.title}>Select a few Non Profits </Text>     
         <Text style={styles.subtitle}>
@@ -181,13 +165,13 @@ export default function NonProfitInterests() {
 
         {/* Interests Grid */}
         <View style={styles.interestsGrid}>
-          {nonProfitInterests.map((interest) => (
-            <InterestCard key={interest.id} interest={interest} />
+          {nonProfitInterests.map((interest,index) => (
+            <InterestCard key={index} interest={interest} />
           ))}
         </View>
 
         {/* Continue Button */}
-        <View style={styles.buttonContainer}>
+        {/* <View style={styles.buttonContainer}>
           <Animated.View style={continueButtonAnimatedStyle}>
             <TouchableOpacity 
               style={[
@@ -206,8 +190,25 @@ export default function NonProfitInterests() {
               </Text>
             </TouchableOpacity>
           </Animated.View>
-        </View>
+        </View> */}
       </ScrollView>
+      <View style={styles.footer}> <TouchableOpacity 
+              style={[
+                styles.continueButton, 
+                selectedInterests.length === 0 && styles.continueButtonDisabled
+              ]} 
+              onPress={handleContinue}
+              disabled={selectedInterests.length === 0}
+              activeOpacity={1}
+            >
+              <Text style={[
+                styles.continueButtonText,
+                selectedInterests.length === 0 && styles.continueButtonTextDisabled
+              ]}>
+                Continue ({selectedInterests.length})
+              </Text>
+            </TouchableOpacity></View>
+      </View>
     </SafeAreaView>
   );
 }
@@ -215,35 +216,40 @@ export default function NonProfitInterests() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // backgroundColor: '#F9FAFB',
+    paddingHorizontal: 20,
+    backgroundColor: 'white',
+    // paddingBottom: 200,
   },
   scrollContent: {
     flexGrow: 1,
     // paddingHorizontal: 24,
+    paddingBottom: 50,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 20,
     marginBottom: 20,
+    
   },
   backButton: {
     padding: 8,
     marginRight: 12,
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: '700',
-    color: '#1F2937',
+    color: '#111827',
+    marginBottom: 12,
     textAlign: 'center',
     marginTop: 20,
   },
   subtitle: {
     fontSize: 16,
-    color: '#6B7280',
+    color: PrimaryGrey,
     textAlign: 'center',
-    lineHeight: 22,
-    marginBottom: 40,
+    lineHeight: 24,
+    marginBottom : 20,
   },
   interestsGrid: {
     flexDirection: 'row',
@@ -269,7 +275,7 @@ const styles = StyleSheet.create({
   },
   interestImage: {
     width: '100%',
-    height: 120,
+    height: 100,
     resizeMode: 'contain',
   },
   interestContent: {
@@ -317,9 +323,9 @@ const styles = StyleSheet.create({
   },
   continueButton: {
     backgroundColor: 'black', 
-    padding: 10, 
-    borderRadius: 5, 
-    marginTop: 20,
+    padding: 15, 
+    borderRadius: 12, 
+    // marginTop: 20,
     alignItems: 'center',
     // borderWidth: 1,
     // borderColor: '#000000',
@@ -340,5 +346,18 @@ const styles = StyleSheet.create({
   },
   continueButtonTextDisabled: {
     color: '#D1D5DB',
+  },
+  footer: {
+    position: 'absolute',
+    bottom: 20,
+    left: 0,
+    right: 0,
+    backgroundColor: 'white',
+    padding: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#e5e7eb',
+    // flexDirection: 'row',
+    // justifyContent: 'space-between',
+    // alignItems: 'center',
   },
 });

@@ -63,7 +63,15 @@ const interestsData = [
   },
 ];
 
-const nonProfitInterests = [...interestsData,...interestsData,...interestsData, ...interestsData, ...interestsData, ...interestsData]
+// Create unique IDs for each interest by duplicating the data with different IDs
+const nonProfitInterests = [
+  ...interestsData.map((item, index) => ({ ...item, id: item.id + (index * 1000) })),
+  ...interestsData.map((item, index) => ({ ...item, id: item.id + (index * 1000) + 100 })),
+  ...interestsData.map((item, index) => ({ ...item, id: item.id + (index * 1000) + 200 })),
+  ...interestsData.map((item, index) => ({ ...item, id: item.id + (index * 1000) + 300 })),
+  ...interestsData.map((item, index) => ({ ...item, id: item.id + (index * 1000) + 400 })),
+  ...interestsData.map((item, index) => ({ ...item, id: item.id + (index * 1000) + 500 }))
+]
 
 export default function NonProfitInterests() {
   const [selectedInterests, setSelectedInterests] = useState<number[]>([]);
@@ -143,7 +151,7 @@ export default function NonProfitInterests() {
         <Animated.View style={[styles.selectionOverlay, overlayAnimatedStyle]}>
           <Animated.View style={[styles.checkContainer, checkAnimatedStyle]}>
             {/* <Text style={styles.checkmark}>✓</Text> */}
-            <Check size={18} color="white" strokeWidth={3} />
+            <Check size={18} color="white" />
           </Animated.View>
         </Animated.View>
       </TouchableOpacity>
@@ -274,8 +282,9 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   interestImage: {
-    width: '100%',
-    height: 100,
+    width: '80%',
+    height: 90,
+    alignSelf: 'center',
     resizeMode: 'contain',
   },
   interestContent: {

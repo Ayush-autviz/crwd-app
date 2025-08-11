@@ -19,7 +19,7 @@ export default function AddPhoto() {
         "https://randomuser.me/api/portraits/women/46.jpg",
         "https://randomuser.me/api/portraits/men/36.jpg",
         "https://randomuser.me/api/portraits/women/47.jpg",
-        // "https://randomuser.me/api/portraits/men/37.jpg",
+        "https://randomuser.me/api/portraits/men/37.jpg",
         // "https://randomuser.me/api/portraits/women/48.jpg",
     ];
 
@@ -121,7 +121,7 @@ export default function AddPhoto() {
                 </TouchableOpacity>
 
 
-                <Text style={{ fontSize: 14, fontWeight: '600', marginTop: 30, color: '#000000', textAlign: 'left' }}>Recently Joined Claim...</Text>
+                <Text style={{ fontSize: 14, fontWeight: '600', marginTop: 30, color: '#000000', textAlign: 'left' }}>Recently Joined CRWDs...</Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 10 }}>
                                     <View style={{ flexDirection: 'row' }}>
                                         {avatarImages.map((avatar: any, index: number) => (
@@ -129,8 +129,8 @@ export default function AddPhoto() {
                                                 key={index}
                                                 source={{ uri: avatar}}
                                                 style={{
-                                                    width: 45,
-                                                    height: 45,
+                                                    width: 40,
+                                                    height: 40,
                                                     borderRadius: 15,
                                                     borderWidth: 2,
                                                     borderColor: 'white',

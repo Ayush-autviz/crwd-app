@@ -96,7 +96,7 @@ export default function ClaimProfile() {
 
                 <View style={{ flex: 1 }}>
                     <Text style={{ fontSize: 13, lineHeight: 18, color: 'gray', textAlign: 'center' }}>
-                        By checking this box, you acknowledge and agree to Claim's Terms of Use and Privacy Policy.
+                        By checking this box, you acknowledge and agree to CRWD's Terms of Use and Privacy Policy.
                     </Text>
                 </View>
             </View>

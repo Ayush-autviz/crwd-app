@@ -37,7 +37,7 @@ export default function OnBoard() {
   const scrollXBottom = useRef(new Animated.Value(0)).current;
   const navigation = useNavigation();
 
-  const IMAGE_SIZE = 90;
+  const IMAGE_SIZE = 80;
   const IMAGE_MARGIN = 15;
   const ITEM_WIDTH = IMAGE_SIZE + IMAGE_MARGIN * 2;
 
@@ -159,7 +159,7 @@ export default function OnBoard() {
             color: PrimaryGrey,
             textAlign: 'center',
             lineHeight: 24,
-            marginBottom: 40,
+            marginBottom: 50,
           }}
         >
           CRWD makes giving simple, flexible and collective.

@@ -205,7 +205,7 @@ export default function NonProfitInterests() {
                 styles.continueButtonText,
                 selectedInterests.length === 0 && styles.continueButtonTextDisabled
               ]}>
-                Continue ({selectedInterests.length})
+                Continue {selectedInterests.length > 0 && `(${selectedInterests.length})`}
               </Text>
             </TouchableOpacity></View>
       </View>
@@ -322,7 +322,7 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   continueButton: {
-    backgroundColor: 'black', 
+    backgroundColor: PrimaryBlue, 
     padding: 15, 
     borderRadius: 12, 
     // marginTop: 20,
@@ -336,16 +336,17 @@ const styles = StyleSheet.create({
     // elevation: 12,
   },
   continueButtonDisabled: {
-    backgroundColor: '#000000',
+    backgroundColor: PrimaryBlue,
   },
   continueButtonText: {
     color: '#FFFFFF',
     fontSize: 18,
-    fontWeight: '500',
+    fontWeight: 'bold',
     textAlign: 'center',
   },
   continueButtonTextDisabled: {
     color: '#D1D5DB',
+    fontWeight: 'bold',
   },
   footer: {
     position: 'absolute',

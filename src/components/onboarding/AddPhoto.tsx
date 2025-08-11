@@ -142,8 +142,8 @@ export default function AddPhoto() {
                                 </View>
             </View>
 
-            <TouchableOpacity style={{ backgroundColor: 'black', padding: 15, borderRadius: 12, marginTop: 20 }} onPress={() => navigation.navigate('NonProfitInterests')}>
-                <Text style={{ color: 'white', fontSize: 16, fontWeight: '500', textAlign: 'center' }}>Confirm</Text>
+            <TouchableOpacity style={{ backgroundColor: PrimaryBlue, padding: 15, borderRadius: 12, marginTop: 20 }} onPress={() => navigation.navigate('NonProfitInterests')}>
+                <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold', textAlign: 'center' }}>Confirm</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={{ backgroundColor: 'white', padding: 10, borderRadius: 12, marginTop: 10 }} onPress={() => navigation.navigate('NonProfitInterests')}>

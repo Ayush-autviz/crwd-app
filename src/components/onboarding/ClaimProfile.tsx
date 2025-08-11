@@ -5,6 +5,7 @@ import OnboardingHeader from './OnboardingHeader'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useNavigation } from '@react-navigation/native'
 import DatePicker from 'react-native-date-picker'
+import { PrimaryBlue } from '../../Constants/Colors'
 
 export default function ClaimProfile() {
     const navigation = useNavigation<any>()
@@ -102,7 +103,7 @@ export default function ClaimProfile() {
 
             <TouchableOpacity
                 style={{
-                    backgroundColor: 'black',
+                    backgroundColor: PrimaryBlue,
                     padding: 15,
                     borderRadius: 12,
                     marginTop: 20,

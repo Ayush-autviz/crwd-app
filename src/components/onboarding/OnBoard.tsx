@@ -1,256 +1,222 @@
 import {
-    View,
-    Text,
-    Image,
-    TouchableOpacity,
-    Animated,
-    Easing,
-    Dimensions,
-  } from 'react-native';
-  import React, { useEffect, useRef } from 'react';
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  Animated,
+  Easing,
+  Dimensions,
+} from 'react-native';
+import React, { useEffect, useRef } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { PrimaryGrey } from '../../Constants/Colors';
-  
-  const images = [
-    require('../../assets/ngo/aspca.jpg'),
-    require('../../assets/ngo/cancerSociety.png'),
-    require('../../assets/ngo/girlCode.png'),
-    require('../../assets/ngo/redCross.png'),
-    require('../../assets/ngo/makeAwish.jpg'),
-    require('../../assets/ngo/paws.jpeg'),
-  ];
-  
-  const { width: SCREEN_WIDTH } = Dimensions.get('window');
-  
-  function shuffleArray(array) {
-    const copy = [...array];
-    for (let i = copy.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [copy[i], copy[j]] = [copy[j], copy[i]];
-    }
-    return copy;
+import { PrimaryBlue, PrimaryGrey } from '../../Constants/Colors';
+
+const images = [
+  require('../../assets/ngo/aspca.jpg'),
+  require('../../assets/ngo/cancerSociety.png'),
+  require('../../assets/ngo/girlCode.png'),
+  require('../../assets/ngo/redCross.png'),
+  require('../../assets/ngo/makeAwish.jpg'),
+  require('../../assets/ngo/paws.jpeg'),
+  require('../../assets/ngo/CRI.jpg'),
+  require('../../assets/ngo/catAllies.jpeg'),
+  require('../../assets/ngo/cureSearch.png'),
+];
+
+function shuffleArray(array) {
+  const copy = [...array];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
   }
-  
-  export default function OnBoard() {
-    const scrollXTop = useRef(new Animated.Value(0)).current;
-    const scrollXBottom = useRef(new Animated.Value(0)).current;
-    const navigation = useNavigation();
-  
-    useEffect(() => {
-      const animateTop = Animated.loop(
-        Animated.timing(scrollXTop, {
-          toValue: -SCREEN_WIDTH,
-          duration: 15000, // slower animation
-          easing: Easing.linear,
-          useNativeDriver: true,
-        })
-      );
-  
-      const animateBottom = Animated.loop(
-        Animated.timing(scrollXBottom, {
-          toValue: -SCREEN_WIDTH,
-          duration: 20000, // even slower
-          easing: Easing.linear,
-          useNativeDriver: true,
-        })
-      );
-  
-      animateTop.start();
-      animateBottom.start();
-  
-      return () => {
-        animateTop.stop();
-        animateBottom.stop();
-      };
-    }, []);
-  
-    const repeatedImagesTop = [...images, ...images, ...images];
-    const repeatedImagesBottom = [...shuffleArray(images), ...shuffleArray(images), ...shuffleArray(images)];
-  
-    return (
-      <View
+  return copy;
+}
+
+export default function OnBoard() {
+  const scrollXTop = useRef(new Animated.Value(0)).current;
+  const scrollXBottom = useRef(new Animated.Value(0)).current;
+  const navigation = useNavigation();
+
+  const IMAGE_SIZE = 90;
+  const IMAGE_MARGIN = 15;
+  const ITEM_WIDTH = IMAGE_SIZE + IMAGE_MARGIN * 2;
+
+  const rowTop = images;
+  const rowBottom = shuffleArray(images);
+
+  const rowWidth = rowTop.length * ITEM_WIDTH;
+
+  const startLoop = (animatedValue, duration) => {
+    animatedValue.setValue(0);
+    Animated.loop(
+      Animated.timing(animatedValue, {
+        toValue: -rowWidth,
+        duration,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      })
+    ).start();
+  };
+
+  useEffect(() => {
+    startLoop(scrollXTop, 15000);
+    startLoop(scrollXBottom, 20000);
+  }, []);
+
+  const renderRow = (rowImages, animatedValue, verticalOffsetPattern) => (
+    <View style={{ height: 140, overflow: 'hidden', marginHorizontal: -20 }}>
+      <Animated.View
         style={{
-          flex: 1,
-          paddingTop: 60,
-        //   paddingHorizontal: 10,
-          justifyContent: 'space-between',
+          flexDirection: 'row',
+          transform: [{ translateX: animatedValue }],
         }}
       >
-        <View>
-          <Image
-            source={require('../../assets/logo/CRWD.png')}
-            style={{
-              width: '50%',
-              height: 60,
-              alignSelf: 'center',
-              borderRadius: 30,
-            }}
-            resizeMode="contain"
-          />
-  
-          <Text
-            style={{
-              fontSize: 28,
-              fontWeight: '700',
-              color: '#111827',
-              marginBottom: 12,
-              textAlign: 'center',marginTop: 20 
-            }}
-          >
-            What is CRWD
-          </Text>
-          <Text
-            style={{
-              fontSize: 16,
-              color: PrimaryGrey,
-              textAlign: 'center',
-              lineHeight: 24,
-              marginBottom : 20,
-            }}
-          >
-            CRWD makes giving simple, flexible and collective.
-          </Text>
-  
-          {/* <Text
-            style={{
-              fontSize: 14,
-              color: 'gray',
-              marginTop: 10,
-              textAlign: 'center',
-              fontWeight: '500',
-            }}
-          >
-            First you care then you act
-          </Text> */}
-  
-          {/* TOP ROW */}
-          <View
-            style={{
-              height: 160,
-              // marginTop: 20,
-              overflow: 'hidden',
-              justifyContent: 'center',
-              marginHorizontal: -20
-            }}
-          >
-            <Animated.View
+        {/* first copy */}
+        {rowImages.map((img, index) => {
+          const verticalOffset =
+            index % 2 === 0 ? verticalOffsetPattern[0] : verticalOffsetPattern[1];
+          return (
+            <View
+              key={'first_' + index}
               style={{
-                flexDirection: 'row',
-                transform: [{ translateX: scrollXTop }],
+                marginHorizontal: IMAGE_MARGIN,
+                transform: [{ translateY: verticalOffset }],
               }}
             >
-              {repeatedImagesTop.map((img, index) => {
-                const verticalOffset = index % 2 === 0 ? 0 : 20;
-                return (
-                  <View
-                    key={'top_' + index}
-                    style={{
-                      marginHorizontal: 15,
-                      transform: [{ translateY: verticalOffset }],
-                    }}
-                  >
-                    <Image
-                      source={img}
-                      style={{
-                        width: 110,
-                        height: 110,
-                        borderRadius: 75,
-                      }}
-                      resizeMode="cover"
-                    />
-                  </View>
-                );
-              })}
-            </Animated.View>
-          </View>
-  
-          {/* BOTTOM ROW */}
-          <View
-            style={{
-              height: 160,
-            //   marginTop: 10,
-              overflow: 'hidden',
-              justifyContent: 'center',
-              marginHorizontal: -20
-            }}
-          >
-            <Animated.View
+              <Image
+                source={img}
+                style={{
+                  width: IMAGE_SIZE,
+                  height: IMAGE_SIZE,
+                  borderRadius: 75,
+                }}
+                resizeMode="cover"
+              />
+            </View>
+          );
+        })}
+        {/* second copy */}
+        {rowImages.map((img, index) => {
+          const verticalOffset =
+            index % 2 === 0 ? verticalOffsetPattern[0] : verticalOffsetPattern[1];
+          return (
+            <View
+              key={'second_' + index}
               style={{
-                flexDirection: 'row',
-                transform: [{ translateX: scrollXBottom }],
+                marginHorizontal: IMAGE_MARGIN,
+                transform: [{ translateY: verticalOffset }],
               }}
             >
-              {repeatedImagesBottom.map((img, index) => {
-                const verticalOffset = index % 2 === 0 ? 25 : 5; // different pattern
-                return (
-                  <View
-                    key={'bottom_' + index}
-                    style={{
-                      marginHorizontal: 15,
-                      transform: [{ translateY: verticalOffset }],
-                    }}
-                  >
-                    <Image
-                      source={img}
-                      style={{
-                        width: 110,
-                        height: 110,
-                        borderRadius: 75,
-                      }}
-                      resizeMode="cover"
-                    />
-                  </View>
-                );
-              })}
-            </Animated.View>
-          </View>
-        </View>
-  
-        <View style={{ marginBottom: 30 }}>
-          <TouchableOpacity
-            style={{
-              backgroundColor: 'black',
-              padding: 14,
-              borderRadius: 12,
-            }}
-            onPress={() => navigation.navigate('ClaimProfile')}
-          >
-            <Text
-              style={{
-                color: 'white',
-                fontSize: 16,
-                fontWeight: 'bold',
-                textAlign: 'center',
-              }}
-            >
-              Join Now
-            </Text>
-          </TouchableOpacity>
-  
-          <TouchableOpacity
-            style={{
-              backgroundColor: 'white',
-              padding: 14,
-              borderRadius: 12,
-              marginTop: 10,
-              borderWidth: 1,
-              borderColor: 'black',
-            }}
-            onPress={() => navigation.navigate('Login')}
-          >
-            <Text
-              style={{
-                color: 'black',
-                fontSize: 16,
-                fontWeight: 'bold',
-                textAlign: 'center',
-              }}
-            >
-              Login
-            </Text>
-          </TouchableOpacity>
-        </View>
+              <Image
+                source={img}
+                style={{
+                  width: IMAGE_SIZE,
+                  height: IMAGE_SIZE,
+                  borderRadius: 75,
+                }}
+                resizeMode="cover"
+              />
+            </View>
+          );
+        })}
+      </Animated.View>
+    </View>
+  );
+
+  return (
+    <View style={{ flex: 1, paddingTop: 60, justifyContent: 'space-between' }}>
+      <View>
+        {/* Logo */}
+        <Image
+          source={require('../../assets/logo/CRWD.png')}
+          style={{
+            width: '50%',
+            height: 60,
+            alignSelf: 'center',
+            borderRadius: 30,
+          }}
+          resizeMode="contain"
+        />
+
+        {/* Heading */}
+        <Text
+          style={{
+            fontSize: 28,
+            fontWeight: '700',
+            color: '#111827',
+            marginBottom: 12,
+            textAlign: 'center',
+            marginTop: 20,
+          }}
+        >
+          What is CRWD
+        </Text>
+
+        {/* Subtitle */}
+        <Text
+          style={{
+            fontSize: 16,
+            color: PrimaryGrey,
+            textAlign: 'center',
+            lineHeight: 24,
+            marginBottom: 40,
+          }}
+        >
+          CRWD makes giving simple, flexible and collective.
+        </Text>
+
+        {/* Top row */}
+        {renderRow(rowTop, scrollXTop, [0, 20])}
+
+        {/* Bottom row */}
+        {renderRow(rowBottom, scrollXBottom, [25, 5])}
       </View>
-    );
-  }
-  
+
+      {/* Buttons */}
+      <View style={{ marginBottom: 30 }}>
+        <TouchableOpacity
+          style={{
+            backgroundColor: PrimaryBlue,
+            padding: 14,
+            borderRadius: 12,
+          }}
+          onPress={() => navigation.navigate('ClaimProfile')}
+        >
+          <Text
+            style={{
+              color: 'white',
+              fontSize: 16,
+              fontWeight: 'bold',
+              textAlign: 'center',
+            }}
+          >
+            Join Now
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={{
+            backgroundColor: 'white',
+            padding: 14,
+            borderRadius: 12,
+            marginTop: 10,
+            borderWidth: 1,
+            borderColor: 'black',
+          }}
+          onPress={() => navigation.navigate('Login')}
+        >
+          <Text
+            style={{
+              color: 'black',
+              fontSize: 16,
+              fontWeight: 'bold',
+              textAlign: 'center',
+            }}
+          >
+            Login
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}

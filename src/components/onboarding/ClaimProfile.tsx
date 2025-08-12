@@ -51,7 +51,7 @@ export default function ClaimProfile() {
                     marginTop: 20,
                 }}
             >
-                Claim Your Profile
+                Create Your Profile
             </Text>
 
             <View style={{ flex: 1, padding: 5, marginTop: 20, gap: 5 }}>

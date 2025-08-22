@@ -1,7 +1,7 @@
 import { View, Text, FlatList, Image, TouchableOpacity } from 'react-native'
 import React from 'react'
 import { useNavigation } from '@react-navigation/native'
-import { PrimaryBlue } from '../Constants/Colors';
+import { PrimaryBlue, TertiaryBlue } from '../Constants/Colors';
 import { ChevronRight } from 'lucide-react-native';
 
 export default function SuggestdCauses() {
@@ -20,7 +20,8 @@ export default function SuggestdCauses() {
         {
             name: "The Red Cross",
             description: "An health organization that provides medical care to those in need",
-            image: require("../assets/images/redcross.png")
+            image: require("../assets/images/redcross.png"),
+
         },
         {
             name: "St. Judes",
@@ -36,14 +37,17 @@ export default function SuggestdCauses() {
 
     return (
         <View>
-            <Text style={{ fontSize: 18, fontWeight: 'bold', marginTop: 20 }}>Suggested Causes</Text>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', marginTop: 20 }}>Find Your Cause</Text>
             <FlatList
                 data={suggestedCauses}
                 renderItem={({ item }) => (
-                    <TouchableOpacity onPress={handleVisitCause} style={{ marginTop: 20, flexDirection: 'row', justifyContent: 'space-between' }}>
-                        <View style={{ flexDirection: 'row', gap: 10 }}>
+                    <TouchableOpacity onPress={handleVisitCause} style={{ marginTop: 20, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
                         <Image source={item.image} style={{ width: 40, height: 40, borderRadius: 20, }} />
                         <View style={{width: '55%'}}>
+                            <View style={{backgroundColor: TertiaryBlue, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10, marginBottom: 5, alignSelf: 'flex-start'}}>
+                                <Text style={{ fontSize: 12, color: PrimaryBlue, fontWeight: '500'}}>Non-Profit</Text>
+                            </View>
                             <Text style={{ fontSize: 14, fontWeight: 500 }}>{item.name}</Text>
                             <Text style={{ fontSize: 12, color: 'grey'}} numberOfLines={2}>{item.description}</Text>
                         </View>

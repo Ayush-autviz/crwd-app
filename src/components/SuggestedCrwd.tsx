@@ -1,7 +1,7 @@
 import { View, Text, FlatList, Image, TouchableOpacity } from 'react-native'
 import React from 'react'
 import { useNavigation } from '@react-navigation/native'
-import { PrimaryBlue } from '../Constants/Colors'
+import { PrimaryBlue, PrimaryGreen } from '../Constants/Colors'
 
 export default function SuggestedCrwd() {
   const navigation = useNavigation();
@@ -53,9 +53,9 @@ export default function SuggestedCrwd() {
       </View>
       <TouchableOpacity
         onPress={handleVisitCrwd}
-        style={{backgroundColor: PrimaryBlue, paddingVertical: 10, paddingHorizontal: 15 , borderRadius: 10}}
+        style={{backgroundColor: PrimaryGreen, paddingVertical: 10, paddingHorizontal: 15 , borderRadius: 10}}
       >
-        <Text style={{color: 'white'}}>Join the CRWD</Text>
+        <Text style={{color: 'white'}}>Learn More</Text>
       </TouchableOpacity>
       </TouchableOpacity>
     )}

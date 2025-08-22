@@ -24,6 +24,7 @@ interface PopularPostsProps {
     showDelete?: boolean;
     onLoadMore?: () => Promise<void>;
     hasMore?: boolean;
+    related?: boolean;
 }
 
 type RootStackParamList = {
@@ -31,20 +32,22 @@ type RootStackParamList = {
 };
 
 export default function PopularPosts({
-    posts, 
-    showTitle = true, 
+    posts,
+    showTitle = true,
     showDelete = false,
+    related = false,
     onLoadMore = async () => {
         // Default implementation to make button visible
         await new Promise(resolve => setTimeout(resolve, 1000));
     },
     hasMore = true
 }: PopularPostsProps) {
+    const [showTooltip, setShowTooltip] = useState(false);
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const screenWidth = Dimensions.get('window').width;
+    const [selectedPost, setSelectedPost] = useState<Post | null>(null);
     const [tooltipVisible, setTooltipVisible] = useState(false);
     const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
-    const [selectedPost, setSelectedPost] = useState<Post | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [shareModalVisible, setShareModalVisible] = useState(false);
 
@@ -96,7 +99,71 @@ export default function PopularPosts({
 
     return (
         <View style={{marginTop: 20, marginBottom: 50}}>
-            {showTitle && <Text style={{fontSize: 18, fontWeight: 'bold'}}>Popular Posts</Text>}
+            {showTitle && (
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                    <Text style={{fontSize: 18, fontWeight: '600'}}>{related ? 'Related Posts' : 'Recent Posts to CRWDs'}</Text>
+                    <TouchableOpacity
+                        onPress={() => setShowTooltip(!showTooltip)}
+                        style={{ padding: 8 }}
+                    >
+                        <View style={{
+                            width: 20,
+                            height: 20,
+                            borderRadius: 10,
+                            backgroundColor: '#6c757d',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}>
+                            <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>?</Text>
+                        </View>
+                    </TouchableOpacity>
+                </View>
+            )}
+
+            {/* Tooltip */}
+            {showTooltip && showTitle && (
+                <View style={{
+                    position: 'absolute',
+                    top: 50,
+                    right: 10,
+                    backgroundColor: '#000',
+                    paddingHorizontal: 12,
+                    paddingVertical: 8,
+                    borderRadius: 8,
+                    shadowColor: "#000",
+                    shadowOffset: {
+                        width: 0,
+                        height: 2,
+                    },
+                    shadowOpacity: 0.25,
+                    shadowRadius: 3.84,
+                    elevation: 5,
+                    zIndex: 1000,
+                    maxWidth: 200,
+                }}>
+                    <Text style={{
+                        color: 'white',
+                        fontSize: 12,
+                        fontWeight: '500',
+                        textAlign: 'center'
+                    }}>
+                        You can engage with others in CRWDs.
+                    </Text>
+                    <View style={{
+                        position: 'absolute',
+                        top: -6,
+                        right: 12,
+                        width: 0,
+                        height: 0,
+                        borderLeftWidth: 6,
+                        borderRightWidth: 6,
+                        borderBottomWidth: 6,
+                        borderLeftColor: 'transparent',
+                        borderRightColor: 'transparent',
+                        borderBottomColor: '#000',
+                    }} />
+                </View>
+            )}
             <FlatList
                 data={posts}
                 renderItem={({ item }) => (
@@ -104,7 +171,7 @@ export default function PopularPosts({
                         style={styles.container}
                         onPress={() => handlePostPress(item)}
                     >
-                        <TouchableOpacity onPress={() => navigation.navigate('UserProfile', { imageUrl: item.avatarUrl, username: item.username })}>
+                        <TouchableOpacity onPress={() => {}}>
                             <Image source={{ uri: item.avatarUrl }} style={{ width: 40, height: 40, borderRadius: 20 }} />
                         </TouchableOpacity>
                         <View style={{ flex: 1 }}>

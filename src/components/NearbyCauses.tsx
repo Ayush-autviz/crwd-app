@@ -30,8 +30,8 @@ export default function NearbyCauses() {
   ];
 
   return (
-    <View style={{marginTop: 20}}>
-      <Text style={{fontSize: 18, fontWeight: 'bold'}}>Causes and CRWD's near you</Text>
+    <View style={{marginVertical: 20}}>
+      <Text style={{fontSize: 18, fontWeight: 'bold'}}>Causes near you</Text>
       <FlatList
                 data={nearbyCauses}
                 renderItem={({ item }) => (

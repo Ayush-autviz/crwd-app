@@ -65,14 +65,14 @@ export default function Home() {
             <HomeHeader />
             <ScrollView style={{ paddingHorizontal: 20 }}>
 
-                {/* main message */}
+                {/* Main Message */}
                 <View style={{ 
-                    backgroundColor: SecondaryBlue, 
-                    padding: 20, 
-                    borderRadius: 16, 
+                    backgroundColor: '#f8f9fa', 
+                    padding: 24, 
+                    borderRadius: 20, 
                     alignItems: 'center', 
                     marginTop: 15,
-                    marginBottom: 20,
+                    marginBottom: 12,
                     shadowColor: "#000",
                     shadowOffset: {
                         width: 0,
@@ -81,29 +81,31 @@ export default function Home() {
                     shadowOpacity: 0.1,
                     shadowRadius: 3.84,
                     elevation: 5,
+                    borderWidth: 1,
+                    borderColor: '#e9ecef'
                 }}>
                     <Text style={{ 
                         fontSize: 20, 
                         fontWeight: '800', 
                         textAlign: 'center', 
-                        color: PrimaryBlue,
-                        marginBottom: 8,
+                        color: '#495057',
+                        marginBottom: 10,
                         lineHeight: 26,
                     }}
                     >
-                    THE EASIEST WAY TO GIVE TO EVERYTHING YOU CARE ABOUT, AT ONCE.                    </Text>
+                        THE EASIEST WAY TO GIVE TO EVERYTHING YOU CARE ABOUT, AT ONCE.
+                    </Text>
                     <TouchableOpacity 
                         onPress={() => navigation.navigate('Donation' as never)} 
                         style={{ 
                             backgroundColor: '#000', 
                             paddingVertical: 12, 
-                            paddingHorizontal: 24, 
+                            paddingHorizontal: 20, 
                             borderRadius: 25, 
-                            marginTop: 15,
                         }}
                     >
                         <Text style={{ 
-                            fontSize: 16, 
+                                fontSize: 16, 
                             color: 'white', 
                             fontWeight: '600',
                             textAlign: 'center',
@@ -113,8 +115,10 @@ export default function Home() {
                     </TouchableOpacity>
                 </View>
 
-                {/* causes carousel */}
-                <CausesCarousel />
+                {/* Causes Carousel */}
+                <View style={{ marginBottom: 24 }}>
+                    <CausesCarousel />
+                </View>
 
 
                 {/* <View style={{ 
@@ -158,9 +162,57 @@ export default function Home() {
 
                 <SuggestdCauses />
 
+                {/* Why CRWDs Section */}
+                <View style={{ marginTop: 32, marginBottom: 24 }}>
+                    <View style={{
+                        backgroundColor: '#f8f9fa',
+                        padding: 24,
+                        borderRadius: 20,
+                        borderWidth: 1,
+                        borderColor: '#e9ecef',
+                        shadowColor: "#000",
+                        shadowOffset: {
+                            width: 0,
+                            height: 2,
+                        },
+                        shadowOpacity: 0.1,
+                        shadowRadius: 3.84,
+                        elevation: 5,
+                    }}>
+                        <View style={{ alignItems: 'center', marginBottom: 18 }}>
+                            <Text style={{
+                                fontSize: 24,
+                                fontWeight: '800',
+                                color: '#495057',
+                                marginBottom: 8,
+                                textAlign: 'center'
+                            }}>
+                                Why CRWD?
+                            </Text>
+                            <Text style={{
+                                fontSize: 18,
+                                fontWeight: '600',
+                                color: '#6c757d',
+                                
+                                textAlign: 'center'
+                            }}>
+                                Giving should be simple
+                            </Text>
+                        </View>
+                        <Text style={{
+                            textAlign: 'center',
+                            color: '#6c757d',
+                            lineHeight: 24,
+                            fontSize: 16
+                        }}>
+                            On CRWD, one donation supports all the causes you care about. You're not just donating, you're joining others who care about the same things, creating bigger impact together.
+                        </Text>
+                    </View>
+                </View>
+
                 <NearbyCauses />
 
-                <PopularPosts 
+                <PopularPosts
                     posts={posts}
                     onLoadMore={handleLoadMore}
                     hasMore={true}

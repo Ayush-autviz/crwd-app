@@ -10,3 +10,5 @@ export const PrimaryBlue = '#4176f6'
 // export const SecondaryBlue = '#e6eaff'
 export const SecondaryBlue = 'rgb(239 246 255)'  
 export const TertiaryBlue = '#c3d4f7'
+
+export const PrimaryGreen = '#008000'

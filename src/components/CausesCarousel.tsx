@@ -15,12 +15,12 @@ const data = [{
 {
     image: require('../assets/images/grocery.jpg'),
     heading: 'Set One Donation',
-    subHeading: 'Decide your amount once - it splits aross your chosen causes.'
+    subHeading: 'Decide your amount once - it splits across your chosen causes.'
 },
 {
     image: require('../assets/images/grocery.jpg'),
     heading: 'Give Together',
-    subHeading: 'Join CRWDs to give alongside other and see your shared impact.'
+    subHeading: 'Join CRWDs to give alongside others and see your shared impact.'
 }];
 
 const width = Dimensions.get("window").width;
@@ -43,10 +43,10 @@ export default function CausesCarousel() {
     return (
       <View style={{ 
         flex: 1, 
-        backgroundColor: SecondaryBlue, 
+        backgroundColor: '#f8f9fa', 
         marginTop: 10, 
         padding: 20, 
-        borderRadius: 16,
+        borderRadius: 20,
         shadowColor: "#000",
         shadowOffset: {
           width: 0,
@@ -55,6 +55,8 @@ export default function CausesCarousel() {
         shadowOpacity: 0.1,
         shadowRadius: 3.84,
         elevation: 5,
+        borderWidth: 1,
+        borderColor: '#e9ecef'
       }}>
         <Carousel
           ref={ref}
@@ -77,15 +79,23 @@ export default function CausesCarousel() {
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 width: '100%',
-                gap: 20,
+                gap: 20,  
               }}>
                 <Image 
                   source={item.image} 
                   style={{ 
-                    width: 80, 
-                    height: 80, 
+                    width: 96, 
+                    height: 96, 
                     resizeMode: 'cover',
                     borderRadius: 12,
+                    shadowColor: "#000",
+                    shadowOffset: {
+                      width: 0,
+                      height: 2,
+                    },
+                    shadowOpacity: 0.1,
+                    shadowRadius: 3.84,
+                    
                   }} 
                 />
                 <View style={{
@@ -96,16 +106,17 @@ export default function CausesCarousel() {
                   <Text style={{ 
                     fontSize: 22, 
                     fontWeight: '800',
-                    color: PrimaryBlue,
+                    color: '#6c757d',
                     marginBottom: 8,
                     textAlign: 'left',
+                    lineHeight: 28,
                   }}>
                     {item.heading}
                   </Text>
                   <Text style={{ 
-                    fontSize: 14, 
-                    color: PrimaryGrey,
-                    lineHeight: 20,
+                    fontSize: 16, 
+                    color: '#6c757d',
+                    lineHeight: 22,
                     textAlign: 'left',
                   }}>
                     {item.subHeading}
@@ -120,17 +131,19 @@ export default function CausesCarousel() {
           progress={progress}
           data={data}
           dotStyle={{ 
-            backgroundColor: TertiaryBlue, 
+            backgroundColor: '#d1d5db', 
             borderRadius: 50,
-
+            width: 8,
+            height: 8,
           }}
           activeDotStyle={{ 
-            backgroundColor: PrimaryBlue,
+            backgroundColor: PrimaryGrey,
           }}
           containerStyle={{ 
             gap: 8, 
-            marginTop: 20,
+            marginTop: 24,
             alignItems: 'center',
+            alignSelf: 'flex-end',
           }}
           onPress={onPressPagination}
         />

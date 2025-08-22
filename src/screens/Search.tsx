@@ -7,10 +7,37 @@ import PopularPosts from '../components/PopularPosts'
 import { LightGrey, PrimaryBlue, PrimaryGrey } from '../Constants/Colors'
 import { useNavigation } from '@react-navigation/native'
 import { Clock, TrendingUp, X, Search } from 'lucide-react-native'
+import NearbyCauses from '../components/NearbyCauses'
+
+
+// Sample data generator for infinite posts
+const generateMorePosts = (startId: number, count: number) => {
+    return Array.from({ length: count }, (_, index) => ({
+        id: String(startId + index),
+        avatarUrl: `https://randomuser.me/api/portraits/${Math.random() > 0.5 ? 'men' : 'women'}/${Math.floor(Math.random() * 70)}.jpg`,
+        username: `user${startId + index}`,
+        time: `${Math.floor(Math.random() * 7)}d`,
+        org: ["youth4change", "cleanwaternow", "treeplanters", "literacyforall"][Math.floor(Math.random() * 4)],
+        text: [
+            "Making a difference in our community one step at a time! 🌟",
+            "Another successful volunteer event completed! Thank you to all participants! 🙏",
+            "Working together for a better tomorrow. Join us in our mission! 💪",
+            "Every small action counts. Let's create positive change together! ✨"
+        ][Math.floor(Math.random() * 4)],
+        imageUrl: Math.random() > 0.5 ? `https://picsum.photos/600/400?random=${startId + index}` : undefined,
+        likes: Math.floor(Math.random() * 100),
+        comments: Math.floor(Math.random() * 20),
+        shares: Math.floor(Math.random() * 10),
+    }));
+};
 
 export default function SearchScreen() {
+    const [posts, setPosts] = useState(() => generateMorePosts(1, 4));
     const [search, setSearch] = useState("")
     const navigation = useNavigation()
+    
+    // Show search results when typing, show default content when empty
+    const showSearchResults = search.trim().length > 0
     
     const [recentSearches, setRecentSearches] = useState([
         "Atlanta animal shelters", 
@@ -86,6 +113,8 @@ export default function SearchScreen() {
         }
     ]
 
+    
+
     return (
         <SafeAreaView style={{backgroundColor: 'white', flex: 1}} edges={['top', 'left', 'right']}>
             <MainHeaderNav />
@@ -101,6 +130,7 @@ export default function SearchScreen() {
                     <Search size={20} color={PrimaryGrey} style={{ marginRight: 8 }} />
                     <TextInput 
                         placeholder='Search for non-profits CRWDs, or posts' 
+                        placeholderTextColor={PrimaryGrey}
                         value={search}
                         onChangeText={setSearch}
                         clearButtonMode="while-editing"
@@ -108,50 +138,37 @@ export default function SearchScreen() {
                     />
                 </View>
                 
-                {/* <View style={{ padding: 10, marginTop: 10, backgroundColor: LightGrey, alignSelf: 'flex-start', borderRadius: 8 }}>
-                    <Text style={{  }}>Animal Welfare</Text>
-                </View> */}
+                {/* Search Results - Show when typing */}
+                {showSearchResults && (
+                    <>
 
-<View style={{ 
-                    marginVertical: 10, 
-                    backgroundColor: LightGrey, 
-                    borderRadius: 12, 
-                    padding: 20, 
-                    alignItems: 'center' 
-                }}>
-                    <Text style={{ 
-                        fontSize: 14, 
-                        fontWeight: '500', 
-                        color: 'black', 
-                        marginBottom: 20,
-                        textAlign: 'center'
-                    }}>
-                        We couldn't find any result for <Text style={{ fontStyle: 'italic', color: PrimaryGrey, fontWeight: 'normal' }}>Kids for Change Austin</Text>
-                    </Text>
-                    
-                    <Text style={{ 
-                        fontSize: 14, 
-                        fontWeight: '500', 
-                        color: 'black', 
-                        marginBottom: 10,
-                        textAlign: 'center'
-                    }}>
-                        Can't Find What You're Looking For?
-                    </Text>
-                    
-                    <Text style={{ 
-                        fontSize: 12, 
-                        color: PrimaryGrey, 
-                        marginBottom: 10,
-                        textAlign: 'center',
-                        alignItems: 'center'
-                    }}>
-                        You can submit causes you're interested in here{' '}
-                        {/* <TouchableOpacity onPress={() => navigation.navigate('CreateCRWD' as never)}>
-                            <Text style={{ color: PrimaryBlue, textDecorationLine: 'underline' }}>here</Text>
-                        </TouchableOpacity> */}
-                    </Text>
-                </View>
+                        <View style={{
+                            backgroundColor: LightGrey,
+                            paddingHorizontal: 13,
+                            paddingVertical: 12,
+                            borderRadius: 10,
+                            marginTop: 15,
+                            marginBottom: 15,
+                            alignSelf: 'flex-start',
+                            maxWidth: '90%'
+                          }}>
+                            <Text style={{ fontSize: 13, color: '#000', fontWeight: '500' }}>Animal Welfare</Text>
+                          </View>
+
+                        <NearbyCauses />
+                        
+<PopularPosts
+                    posts={posts}
+                    related
+                    hasMore={false}
+                />
+                      
+                    </>
+                )}
+
+                {/* Default Content - Show when not searching */}
+                {!showSearchResults && (
+                    <>
 
                 {/* Recent Searches */}
                 {recentSearches.length > 0 && (
@@ -264,8 +281,8 @@ export default function SearchScreen() {
                         </View>
                     </View>
                 )}
-
-  
+                    </>
+                )}
             </ScrollView>
         </SafeAreaView>
     )

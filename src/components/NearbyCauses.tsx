@@ -1,7 +1,7 @@
 import { View, Text, FlatList, Image, TouchableOpacity } from 'react-native'
 import React from 'react'
 import { useNavigation } from '@react-navigation/native'
-import { PrimaryBlue } from '../Constants/Colors';
+import { PrimaryBlue, PrimaryGreen, SecondaryGreen, TertiaryBlue } from '../Constants/Colors';
 
 export default function NearbyCauses() {
     const navigation = useNavigation();
@@ -15,17 +15,20 @@ export default function NearbyCauses() {
     {
       name: "The Red Cross",
       description: "An health organization that provides medical care to those in need",
-      image: require("../assets/images/redcross.png")
+      image: require("../assets/images/redcross.png"),
+      type: "CRWD"
     },
     {
       name: "St. Judes",
       description: "The leading children's health organization in the world",
-      image: require("../assets/images/grocery.jpg")
+      image: require("../assets/images/grocery.jpg"),
+      type: "NonProfit"
     },
     {
       name: "Women's Healthcare of At...",
       description: "We are Atlanta's #1 healthcare organization",
-      image: require("../assets/images/redcross.png")
+      image: require("../assets/images/redcross.png"),
+      type: "CRWD"
     },
   ];
 
@@ -33,24 +36,39 @@ export default function NearbyCauses() {
     <View style={{marginVertical: 20}}>
       <Text style={{fontSize: 18, fontWeight: 'bold'}}>Causes near you</Text>
       <FlatList
-                data={nearbyCauses}
-                renderItem={({ item }) => (
-                    <TouchableOpacity onPress={handleVisitCause} style={{ marginTop: 20, flexDirection: 'row', alignItems: 'center', gap: 10, justifyContent: 'space-between' }}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                        <Image source={item.image} style={{ width: 40, height: 40, borderRadius: 20, }} />
-                        <View style={{width: '60%'}}>
-                            <Text style={{ fontSize: 14, fontWeight: 500 }}>{item.name}</Text>
-                            <Text style={{ fontSize: 12, color: 'grey' }} numberOfLines={2}>{item.description}</Text>
-                        </View>
-                        </View>
-                        <TouchableOpacity
-                            onPress={handleVisitCause}
-                            style={{ backgroundColor: PrimaryBlue, paddingVertical: 10, paddingHorizontal: 15, borderRadius: 10 }}
-                        >
-                            <Text style={{ color: 'white' }}>Visit</Text>
-                        </TouchableOpacity>
-                    </TouchableOpacity>
-                )} />
+        data={nearbyCauses}
+        renderItem={({ item }) => (
+          <TouchableOpacity onPress={handleVisitCause} style={{ marginTop: 20, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
+              <Image source={item.image} style={{ width: 40, height: 40, borderRadius: 20, }} />
+              <View style={{width: '55%'}}>
+                <View style={{backgroundColor: item.type === "CRWD" ? SecondaryGreen : TertiaryBlue, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10, marginBottom: 5, alignSelf: 'flex-start'}}>
+                  <Text style={{ fontSize: 12, color: item.type === "CRWD" ? PrimaryGreen : PrimaryBlue, fontWeight: '500'}}>{item.type}</Text>
+                </View>
+                <Text style={{ fontSize: 14, fontWeight: 500 }}>{item.name}</Text>
+                <Text style={{ fontSize: 12, color: 'grey'}} numberOfLines={2}>{item.description}</Text>
+              </View>
+            </View>
+            <View style={{alignItems: 'center'}}>
+              {item.type === "NonProfit" && (
+                <>
+                  <TouchableOpacity onPress={() => navigation.navigate('Donation' as never)} style={{backgroundColor: PrimaryBlue, paddingVertical: 10, paddingHorizontal: 10, borderRadius: 10, marginBottom: 5}}>
+                    <Text style={{color: 'white'}}>Donate Now</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={handleVisitCause}>
+                    <Text style={{ color: PrimaryBlue }}>Visit Profile</Text>
+                  </TouchableOpacity>
+                </>
+              )}
+              {item.type === "CRWD" && (
+                <TouchableOpacity onPress={() => navigation.navigate('GroupCRWD' as never)} style={{backgroundColor: PrimaryGreen, paddingVertical: 10, paddingHorizontal: 10, borderRadius: 10}}>
+                  <Text style={{color: 'white'}}>Join CRWD</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </TouchableOpacity>
+        )}
+      />
     </View>
   )
 }

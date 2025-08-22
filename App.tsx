@@ -48,6 +48,8 @@ import SplashScreen from './src/screens/SplashScreen'
 import ClaimProfile from './src/components/onboarding/ClaimProfile'
 import AddPhoto from './src/components/onboarding/AddPhoto'
 import NonProfitInterests from './src/components/onboarding/NonProfitInterests'
+import {FontAwesome6} from '@react-native-vector-icons/fontawesome6'
+import { Image } from 'react-native'
 
 export default function App() {
 
@@ -60,18 +62,27 @@ export default function App() {
       <Tab.Navigator screenOptions={({route}) => ({
         headerShown: false,
         tabBarActiveTintColor: '#000',
+        tabBarInactiveTintColor: '#000',
        // tabBarStyle: route.name === 'Donation' ? { display: 'none' } : undefined,
-        tabBarIcon: () => {
+        tabBarIcon: ({focused}) => {
           if (route.name === 'Home') {
-            return <HomeIcon color={PrimaryGrey} size={22} />
+            // return !focused ? <FontAwesome6 name='house' size={22} color="black" /> : <FontAwesome6 name="house" size={22} color="black" iconStyle='solid' /> 
+            return focused ? <Image source={require('./src/assets/icons/home-fill.png')} style={{width: 22, height: 22}} /> : <Image source={require('./src/assets/icons/home.png')} style={{width: 20, height: 20}} />
           } else if (route.name === 'Search') {
-           return <Search color={PrimaryGrey} size={22} />
+          //  return <Search color={PrimaryGrey} size={22} />
+          return focused ? <Image source={require('./src/assets/icons/search-fill.png')} style={{width: 22, height: 22}} /> : <Image source={require('./src/assets/icons/search.png')} style={{width: 22, height: 22}} />
           } else if (route.name === 'Donation') {
-            return <Archive color={PrimaryGrey} size={22} />
+            // return <Archive color={PrimaryGrey} size={22} />
+            return focused ? <Image source={require('./src/assets/icons/box-fill.png')} style={{width: 22, height: 22}} /> : <Image source={require('./src/assets/icons/box.png')} style={{width: 22, height: 22}} />
           } else if (route.name === 'Activity') {
-            return <Bell color={PrimaryGrey} size={22} />
+            // return <Bell color={PrimaryGrey} size={22} />
+
+            return focused ? <Image source={require('./src/assets/icons/bell-fill.png')} style={{width: 25, height: 25}} /> : <Image source={require('./src/assets/icons/bell.png')} style={{width: 22, height: 22}} />
+
           } else if (route.name === 'Profile') {
-            return <User color={PrimaryGrey} size={22} />
+            // return <User color={PrimaryGrey} size={22} />
+
+            return focused ? <Image source={require('./src/assets/icons/user-fill.png')} style={{width: 22, height: 22}} /> : <Image source={require('./src/assets/icons/user.png')} style={{width: 22, height: 22}} />
           }
         }
       })}>
@@ -92,9 +103,11 @@ export default function App() {
           headerShown: false,
           drawerStyle: {
             width: '90%',
-            maxWidth: 320,
+            // maxWidth: 320,
+            right: 0
           },
           drawerType: 'front',
+          drawerPosition: 'right',
           overlayColor: 'rgba(0, 0, 0, 0.5)',
         }}
       >

@@ -14,17 +14,17 @@ export default function NearbyCauses() {
   const nearbyCauses = [
     {
       name: "The Red Cross",
-      description: "An health organization that...",
+      description: "An health organization that provides medical care to those in need",
       image: require("../assets/images/redcross.png")
     },
     {
       name: "St. Judes",
-      description: "The leading children's hea...",
+      description: "The leading children's health organization in the world",
       image: require("../assets/images/grocery.jpg")
     },
     {
       name: "Women's Healthcare of At...",
-      description: "We are Atlanta's #1 healthca...",
+      description: "We are Atlanta's #1 healthcare organization",
       image: require("../assets/images/redcross.png")
     },
   ];
@@ -38,9 +38,9 @@ export default function NearbyCauses() {
                     <TouchableOpacity onPress={handleVisitCause} style={{ marginTop: 20, flexDirection: 'row', alignItems: 'center', gap: 10, justifyContent: 'space-between' }}>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                         <Image source={item.image} style={{ width: 40, height: 40, borderRadius: 20, }} />
-                        <View>
+                        <View style={{width: '60%'}}>
                             <Text style={{ fontSize: 14, fontWeight: 500 }}>{item.name}</Text>
-                            <Text style={{ fontSize: 12, color: 'grey' }}>{item.description}</Text>
+                            <Text style={{ fontSize: 12, color: 'grey' }} numberOfLines={2}>{item.description}</Text>
                         </View>
                         </View>
                         <TouchableOpacity

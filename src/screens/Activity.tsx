@@ -403,7 +403,7 @@ export default function Activity() {
     }
 
     return (
-        <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }}>
+        <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }} edges={['top', 'left', 'right']}>
             <MainHeaderNav   />
             
             {/* Tab Headers */}

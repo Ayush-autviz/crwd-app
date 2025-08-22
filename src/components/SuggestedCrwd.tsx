@@ -35,7 +35,7 @@ export default function SuggestedCrwd() {
     return (
     <>
     <View style={{marginVertical: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'}}>
-      <Text style={{fontSize: 18, fontWeight: 'bold'}}>Suggested CRWD's</Text>
+      <Text style={{fontSize: 18, fontWeight: 'bold'}}>Discover giving in action</Text>
       <TouchableOpacity onPress={() => navigation.navigate('CreateCRWD')}>
       <Text style={{color: PrimaryBlue}}>Create a CRWD</Text>
       </TouchableOpacity>
@@ -44,18 +44,18 @@ export default function SuggestedCrwd() {
     horizontal={true}
     showsHorizontalScrollIndicator={false}
     renderItem={({item}) => (
-      <TouchableOpacity onPress={handleVisitCrwd}  style={{marginHorizontal: 10, marginBottom:10, flexDirection: 'row', alignItems: 'center', gap: 10}}>
+      <TouchableOpacity onPress={handleVisitCrwd}  style={{marginHorizontal: 10, marginBottom:10, alignItems: 'center', gap: 10,}}>
         <Image source={require('../assets/images/grocery.jpg')} style={{width: 40, height:40, borderRadius: 20,}} />
-        <View>
+        <View style={{alignItems: 'center', marginBottom: 10}}>
         <Text style={{fontSize: 14, fontWeight: 500}}>{item.name}</Text>
         <Text style={{fontSize: 12, color: 'grey'}}>{item.members}</Text>
-        <Text style={{fontSize: 12, color: 'grey', width: 200}}>{item.description.slice(0, 30)}..</Text>
+        <Text style={{fontSize: 12, color: 'grey', width: 150}}>{item.description.slice(0, 21)}..</Text>
       </View>
       <TouchableOpacity
         onPress={handleVisitCrwd}
         style={{backgroundColor: PrimaryBlue, paddingVertical: 10, paddingHorizontal: 15 , borderRadius: 10}}
       >
-        <Text style={{color: 'white'}}>Visit</Text>
+        <Text style={{color: 'white'}}>Join the CRWD</Text>
       </TouchableOpacity>
       </TouchableOpacity>
     )}

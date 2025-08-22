@@ -8,8 +8,9 @@ import {
   Image,
 } from 'react-native';
 import { DrawerContentScrollView, DrawerContentComponentProps } from '@react-navigation/drawer';
-import { navigationItems } from '../../Constants/navigationItems';
+import { navigationGroups } from '../../Constants/navigationItems';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { PrimaryGrey } from '../../Constants/Colors';
 
 export default function CustomDrawerContent(props: DrawerContentComponentProps) {
   const { navigation } = props;
@@ -41,23 +42,42 @@ export default function CustomDrawerContent(props: DrawerContentComponentProps) 
 
       {/* Navigation Items */}
       <ScrollView style={styles.menuContainer} showsVerticalScrollIndicator={false}>
-        {navigationItems.map((item) => {
-          const IconComponent = item.icon;
-          return (
-            <TouchableOpacity
-              key={item.id}
-              style={styles.menuItem}
-              // onPress={() => handleNavigation(item)}
-              onPress={() => item.handleNavigation?.(navigation)}
-              activeOpacity={0.7}
-            >
-              <View style={styles.menuItemContent}>
-                <IconComponent size={20} color="#2563eb" style={styles.menuIcon} />
-                <Text style={styles.menuLabel}>{item.label}</Text>
-              </View>
-            </TouchableOpacity>
-          );
-        })}
+        {/* Giving Section */}
+        <Text style={styles.sectionHeading}>Giving</Text>
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => navigation.navigate('CreateCRWD')}
+          activeOpacity={0.7}
+        >
+          <View style={styles.menuItemContent}>
+            <Text style={styles.plusIcon}>+</Text>
+            <Text style={styles.menuLabel}>Create a CRWD</Text>
+          </View>
+        </TouchableOpacity>
+        
+        {navigationGroups.map((group) => (
+          <View key={group.heading || 'no-heading'}>
+            {group.heading && (
+              <Text style={styles.sectionHeading}>{group.heading}</Text>
+            )}
+            {group.items.map((item) => {
+              const IconComponent = item.icon;
+              return (
+                <TouchableOpacity
+                  key={item.id}
+                  style={styles.menuItem}
+                  onPress={() => item.handleNavigation?.(navigation)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.menuItemContent}>
+                    <IconComponent size={20} color="#2563eb" style={styles.menuIcon} />
+                    <Text style={styles.menuLabel}>{item.label}</Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        ))}
       </ScrollView>
 
       {/* Footer */}
@@ -69,6 +89,7 @@ export default function CustomDrawerContent(props: DrawerContentComponentProps) 
           <TouchableOpacity onPress={() => console.log('Terms of Service')}>
             <Text style={styles.footerLink}>Terms of Service</Text>
           </TouchableOpacity>
+          <Text style={{fontSize: 12, color: PrimaryGrey}}>CRWD @2025</Text>
         </View>
       </View>
     </SafeAreaView>
@@ -135,11 +156,30 @@ const styles = StyleSheet.create({
   },
   footerLinks: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    // justifyContent: 'space-around',
+    gap: 8,
     paddingHorizontal: 16,
   },
   footerLink: {
     fontSize: 12,
     color: '#2563eb',
+  },
+  sectionHeading: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#6b7280',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    paddingHorizontal: 24,
+    paddingVertical: 8,
+    marginTop: 8,
+  },
+  plusIcon: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#2563eb',
+    marginRight: 16,
+    width: 20,
+    textAlign: 'center',
   },
 });

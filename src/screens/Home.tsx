@@ -1,7 +1,7 @@
-import { View, Text, TextInput, FlatList, ScrollView } from 'react-native'
+import { View, Text, TextInput, FlatList, ScrollView, TouchableOpacity } from 'react-native'
 import React, { useState } from 'react'
 import MainHeaderNav from '../components/MainHeaderNav'
-import { LightGrey, PrimaryGrey } from '../Constants/Colors'
+import { LightGrey, PrimaryBlue, PrimaryGrey, SecondaryBlue } from '../Constants/Colors'
 import { Search } from 'lucide-react-native'
 import TopicList from '../components/TopicList'
 import SuggestedCrwd from '../components/SuggestedCrwd'
@@ -9,6 +9,9 @@ import SuggestdCauses from '../components/SuggestdCauses'
 import NearbyCauses from '../components/NearbyCauses'
 import PopularPosts from '../components/PopularPosts'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import HomeHeader from '../components/HomeHeader'
+import CausesCarousel from '../components/CausesCarousel'
+import { useNavigation } from '@react-navigation/native'
 
 // Sample data generator for infinite posts
 const generateMorePosts = (startId: number, count: number) => {
@@ -34,7 +37,7 @@ const generateMorePosts = (startId: number, count: number) => {
 export default function Home() {
     const [posts, setPosts] = useState(() => generateMorePosts(1, 4));
     const [isLoadingMore, setIsLoadingMore] = useState(false);
-
+    const navigation = useNavigation();
     // Sample data for categories
     const categories = [
         "Animal Welfare",
@@ -58,10 +61,63 @@ export default function Home() {
     };
 
     return (
-        <SafeAreaView style={{backgroundColor: 'white', flex: 1}}>
-            <MainHeaderNav />
+        <SafeAreaView style={{backgroundColor: 'white', flex: 1}} edges={['top', 'left', 'right']}>
+            <HomeHeader />
             <ScrollView style={{ paddingHorizontal: 20 }}>
+
+                {/* main message */}
                 <View style={{ 
+                    backgroundColor: SecondaryBlue, 
+                    padding: 20, 
+                    borderRadius: 16, 
+                    alignItems: 'center', 
+                    marginTop: 15,
+                    marginBottom: 20,
+                    shadowColor: "#000",
+                    shadowOffset: {
+                        width: 0,
+                        height: 2,
+                    },
+                    shadowOpacity: 0.1,
+                    shadowRadius: 3.84,
+                    elevation: 5,
+                }}>
+                    <Text style={{ 
+                        fontSize: 20, 
+                        fontWeight: '800', 
+                        textAlign: 'center', 
+                        color: PrimaryBlue,
+                        marginBottom: 8,
+                        lineHeight: 26,
+                    }}
+                    >
+                    THE EASIEST WAY TO GIVE TO EVERYTHING YOU CARE ABOUT, AT ONCE.                    </Text>
+                    <TouchableOpacity 
+                        onPress={() => navigation.navigate('Donation' as never)} 
+                        style={{ 
+                            backgroundColor: '#000', 
+                            paddingVertical: 12, 
+                            paddingHorizontal: 24, 
+                            borderRadius: 25, 
+                            marginTop: 15,
+                        }}
+                    >
+                        <Text style={{ 
+                            fontSize: 16, 
+                            color: 'white', 
+                            fontWeight: '600',
+                            textAlign: 'center',
+                        }}>
+                            Start Giving
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+
+                {/* causes carousel */}
+                <CausesCarousel />
+
+
+                {/* <View style={{ 
                     marginVertical: 10, 
                     padding: 10, 
                     backgroundColor: LightGrey, 
@@ -75,13 +131,13 @@ export default function Home() {
                         clearButtonMode="while-editing"
                         style={{ flex: 1 }}
                     />
-                </View>
+                </View> */}
 
-                <TopicList />
+                {/* <TopicList /> */}
 
                 <SuggestedCrwd />
 
-                <Text style={{ fontSize: 18, fontWeight: 'bold', marginTop: 20 }}>Categories</Text>
+                <Text style={{ fontSize: 18, fontWeight: 'bold', marginTop: 20 }}>Explore Categories</Text>
                 <FlatList 
                     data={categories}
                     horizontal={true}

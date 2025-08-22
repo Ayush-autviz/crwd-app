@@ -87,7 +87,7 @@ export default function SearchScreen() {
     ]
 
     return (
-        <SafeAreaView style={{backgroundColor: 'white', flex: 1}}>
+        <SafeAreaView style={{backgroundColor: 'white', flex: 1}} edges={['top', 'left', 'right']}>
             <MainHeaderNav />
             <ScrollView style={{ paddingHorizontal: 20 }}>
                 <View style={{ 

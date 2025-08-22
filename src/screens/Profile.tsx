@@ -65,7 +65,7 @@ export default function Profile() {
     };
 
     return (
-        <SafeAreaView style={{backgroundColor: 'white', flex: 1}}>
+        <SafeAreaView style={{backgroundColor: 'white', flex: 1}} edges={['top', 'left', 'right']}>
             <MainHeaderNav />
             <ScrollView style={{flex: 1}}>
                 {/* Top right buttons */}

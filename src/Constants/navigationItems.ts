@@ -109,75 +109,92 @@ export interface NavigationItem {
   handleNavigation?: (navigation: NavigationProp<any>) => void;
 }
 
-export const navigationItems: NavigationItem[] = [
+export interface NavigationGroup {
+  heading?: string;
+  items: NavigationItem[];
+}
+
+export const navigationGroups: NavigationGroup[] = [
   {
-    id: 'create-crwd',
-    icon: Plus,
-    label: 'Create a CRWD',
-    route: 'CreateCRWD',
-    handleNavigation: (navigation) => navigation.navigate('CreateCRWD')
+    items: [
+      {
+        id: 'your-crwds',
+        icon: Users,
+        label: 'Your CRWDs',
+        route: 'YourCRWDs',
+        handleNavigation: (navigation) => navigation.navigate('YourCRWDs')
+      },
+      {
+        id: 'donation-box',
+        icon: Archive,
+        label: 'Donation box',
+        route: 'Donation',
+        handleNavigation: (navigation) => navigation.navigate('Donation')
+      }
+    ]
   },
   {
-    id: 'your-crwds',
-    icon: Users,
-    label: 'Your CRWDs',
-    route: 'YourCRWDs',
-    handleNavigation: (navigation) => navigation.navigate('YourCRWDs')
+    heading: 'Discover',
+    items: [
+      {
+        id: 'explore',
+        icon: Search,
+        label: 'Explore',
+        route: 'Search',
+        handleNavigation: (navigation) => navigation.navigate('MainTabs', { screen: 'Search' })
+      },
+      {
+        id: 'saved',
+        icon: Bookmark,
+        label: 'Saved',
+        route: 'Saved',
+        handleNavigation: (navigation) => navigation.navigate('Saved')
+      }
+    ]
   },
   {
-    id: 'saved',
-    icon: Bookmark,
-    label: 'Saved',
-    route: 'Saved',
-    handleNavigation: (navigation) => navigation.navigate('Saved')
+    heading: 'Activity',
+    items: [
+      {
+        id: 'notifications',
+        icon: Bell,
+        label: 'Notifications',
+        route: 'Notifications',
+        handleNavigation: (navigation) => navigation.navigate('MainTabs', {screen: 'Activity'})
+      },
+      {
+        id: 'transaction-history',
+        icon: Shuffle,
+        label: 'Transaction history',
+        route: 'TransactionHistory',
+        handleNavigation: (navigation) => navigation.navigate('TransactionHistory')
+      }
+    ]
   },
   {
-    id: 'explore',
-    icon: Search,
-    label: 'Explore',
-    route: 'Search',
-    handleNavigation: (navigation) => navigation.navigate('MainTabs', { screen: 'Search' })
-  },
-  {
-    id: 'donation-box',
-    icon: Archive,
-    label: 'Donation box',
-    route: 'Donation',
-    handleNavigation: (navigation) => navigation.navigate('Donation')
-  },
-  {
-    id: 'notifications',
-    icon: Bell,
-    label: 'Notifications',
-    route: 'Notifications',
-    handleNavigation: (navigation) => navigation.navigate('MainTabs', {screen: 'Activity'})
-  },
-  {
-    id: 'transaction-history',
-    icon: Shuffle,
-    label: 'Transaction history',
-    route: 'TransactionHistory',
-    handleNavigation: (navigation) => navigation.navigate('TransactionHistory')
-  },
-  {
-    id: 'about',
-    icon: Info,
-    label: 'About',
-    route: 'About',
-    handleNavigation: (navigation) => navigation.navigate('About')
-  },
-  {
-    id: 'help',
-    icon: HelpCircle,
-    label: 'Help',
-    route: 'HelpCenter',
-    handleNavigation: (navigation) => navigation.navigate('HelpCenter')
-  },
-  {
-    id: 'settings',
-    icon: Settings,
-    label: 'Settings',
-    route: 'Settings',
-    handleNavigation: (navigation) => navigation.navigate('Settings')
+    heading: 'Support',
+    items: [
+      {
+        id: 'about',
+        icon: Info,
+        label: 'About',
+        route: 'About',
+        handleNavigation: (navigation) => navigation.navigate('About')
+      },
+      {
+        id: 'help',
+        icon: HelpCircle,
+        label: 'Help',
+        route: 'HelpCenter',
+        handleNavigation: (navigation) => navigation.navigate('HelpCenter')
+      },
+      {
+        id: 'settings',
+        icon: Settings,
+        label: 'Settings',
+        route: 'Settings',
+        handleNavigation: (navigation) => navigation.navigate('Settings')
+      }
+    ]
   }
 ];

@@ -66,7 +66,7 @@ export default function DonationScreen() {
 
   return (
     <>
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       {/* Header */}
       <View style={styles.header}>
         {step > 1 && activeTab !== 'onetime' ? (

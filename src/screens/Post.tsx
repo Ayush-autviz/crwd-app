@@ -5,6 +5,7 @@ import MainHeaderNav from '../components/MainHeaderNav'
 import { PrimaryGrey, PrimaryBlue, LightGrey } from '../Constants/Colors'
 import { Link, Image as ImageIcon, Calendar, X, ChevronDown } from 'lucide-react-native'
 import * as ImagePicker from 'react-native-image-picker'
+import { useNavigation } from '@react-navigation/native'
 
 // Mock data for CRWDs
 const CRWDS = [
@@ -14,6 +15,7 @@ const CRWDS = [
 ];
 
 export default function Post() {
+  const navigation = useNavigation();
   const [postType, setPostType] = useState<'link' | 'image' | 'event' | null>(null)
   const [form, setForm] = useState({
     content: '',
@@ -28,6 +30,7 @@ export default function Post() {
   const [urlError, setUrlError] = useState<string | null>(null)
   const [selectedCRWD, setSelectedCRWD] = useState<typeof CRWDS[0] | null>(null)
   const [showCRWDDropdown, setShowCRWDDropdown] = useState(false)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
 
   const handlePostTypeSelect = (type: 'link' | 'image' | 'event') => {
     setPostType(type)
@@ -108,6 +111,21 @@ export default function Post() {
     }
   }
 
+  const handleCRWDSelect = (crwd: typeof CRWDS[0]) => {
+    setSelectedCRWD(crwd);
+    setShowCRWDDropdown(false);
+    // Show success modal after CRWD selection
+    // setShowSuccessModal(true);
+  };
+
+  const handleGoToHome = () => {
+    setShowSuccessModal(false);
+    navigation.navigate('DrawerNav' as never, { 
+      screen: 'MainTabs',
+      params: { screen: 'Home' }
+    } as never);
+  };
+
   const renderCRWDDropdown = () => (
     <Modal
       visible={showCRWDDropdown}
@@ -151,10 +169,7 @@ export default function Post() {
                   borderBottomWidth: 1,
                   borderBottomColor: '#E5E5E5'
                 }}
-                onPress={() => {
-                  setSelectedCRWD(item)
-                  setShowCRWDDropdown(false)
-                }}
+                onPress={() => handleCRWDSelect(item)}
               >
                 <View style={{
                   width: 40,
@@ -374,6 +389,7 @@ export default function Post() {
           onPress={() => {
             // TODO: Implement post submission logic
             console.log('Post submitted:', { postType, form, selectedImage, selectedCRWD });
+            setShowSuccessModal(true);
           }}
         >
           <Text style={{
@@ -387,6 +403,65 @@ export default function Post() {
       </View>
 
       {renderCRWDDropdown()}
+
+      {/* Success Modal - Same as crwd-vite */}
+      <Modal
+        visible={showSuccessModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowSuccessModal(false)}
+      >
+        <View style={{
+          flex: 1,
+          backgroundColor: 'rgba(0, 0, 0, 0.4)',
+          justifyContent: 'center',
+          alignItems: 'center',
+          paddingHorizontal: 16
+        }}>
+          <View style={{
+            backgroundColor: 'white',
+            borderRadius: 12,
+            padding: 32,
+            alignItems: 'center',
+            gap: 16,
+            maxWidth: 300,
+            width: '100%'
+          }}>
+            <Text style={{ fontSize: 48 }}>🎉</Text>
+            <Text style={{
+              fontSize: 20,
+              fontWeight: '600',
+              textAlign: 'center',
+              lineHeight: 28
+            }}>
+              Your post has been created for{' '}
+              <Text style={{ color: PrimaryBlue, fontWeight: 'bold' }}>
+                {selectedCRWD?.name}
+              </Text>
+              !
+            </Text>
+            <TouchableOpacity
+              style={{
+                backgroundColor: PrimaryBlue,
+                paddingHorizontal: 24,
+                paddingVertical: 12,
+                borderRadius: 8,
+                width: '100%',
+                alignItems: 'center'
+              }}
+              onPress={handleGoToHome}
+            >
+              <Text style={{
+                color: 'white',
+                fontSize: 16,
+                fontWeight: '500'
+              }}>
+                Go to Home
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   )
 }

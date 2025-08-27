@@ -4,6 +4,7 @@ import { Search } from 'lucide-react-native';
 import MainHeaderNav from '../components/MainHeaderNav';
 import { LightGrey, PrimaryBlue, PrimaryGrey } from '../Constants/Colors';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRoute } from '@react-navigation/native';
 
 // Type declarations
 interface Member {
@@ -13,27 +14,15 @@ interface Member {
   avatarUrl: string;
 }
 
-interface DonationSummary {
-  totalAmount: number;
-  donorsCount: number;
-  averageDonation: number;
-  topDonors: Array<{
-    name: string;
-    amount: number;
-    avatarUrl: string;
-  }>;
-}
-
-interface RecentDonation {
+interface Cause {
   name: string;
-  username: string;
-  amount: number;
-  date: string;
-  avatarUrl: string;
+  description: string;
+  image: any;
+  type: 'CRWD' | 'Nonprofit';
 }
 
 // Sample members data
-const initialMembers: Member[] = [
+const members: Member[] = [
   { name: "Chad F.", username: "chad", connected: true, avatarUrl: "https://randomuser.me/api/portraits/men/32.jpg" },
   { name: "Mia Cares", username: "miacares1", connected: false, avatarUrl: "https://randomuser.me/api/portraits/women/44.jpg" },
   { name: "Conrad M.", username: "conradm1", connected: false, avatarUrl: "https://randomuser.me/api/portraits/men/65.jpg" },
@@ -46,32 +35,37 @@ const initialMembers: Member[] = [
   { name: "Max Fields", username: "maxf", connected: false, avatarUrl: "https://randomuser.me/api/portraits/men/91.jpg" },
 ];
 
-// Sample donation summary data
-const donationSummary: DonationSummary = {
-  totalAmount: 15750,
-  donorsCount: 58,
-  averageDonation: 271.55,
-  topDonors: [
-    { name: "Chad F.", amount: 1200, avatarUrl: "https://randomuser.me/api/portraits/men/32.jpg" },
-    { name: "Mia Cares", amount: 850, avatarUrl: "https://randomuser.me/api/portraits/women/44.jpg" },
-    { name: "Conrad M.", amount: 750, avatarUrl: "https://randomuser.me/api/portraits/men/65.jpg" },
-  ]
-};
-
-// Sample recent donations data
-const recentDonations: RecentDonation[] = [
-  { name: "Chad F.", username: "chad", amount: 50, date: "2h ago", avatarUrl: "https://randomuser.me/api/portraits/men/32.jpg" },
-  { name: "Mia Cares", username: "miacares1", amount: 100, date: "5h ago", avatarUrl: "https://randomuser.me/api/portraits/women/44.jpg" },
-  { name: "Conrad M.", username: "conradm1", amount: 75, date: "1d ago", avatarUrl: "https://randomuser.me/api/portraits/men/65.jpg" },
-  { name: "Morgan W.", username: "moremorgan", amount: 25, date: "2d ago", avatarUrl: "https://randomuser.me/api/portraits/women/28.jpg" },
+// Sample causes data
+const suggestedCauses: Cause[] = [
+  {
+    name: "The Red Cross",
+    description: "An health organization that...",
+    image: require('../assets/images/redcross.png'),
+    type: "Nonprofit",
+  },
+  {
+    name: "St. Judes",
+    description: "The leading children's hea...",
+    image: require('../assets/images/redcross.png'),
+    type: "Nonprofit",
+  },
+  {
+    name: "Women's Healthcare of At...",
+    description: "We are Atlanta's #1 healthca...",
+    image: require('../assets/images/redcross.png'),
+    type: "Nonprofit",
+  },
 ];
 
-type TabType = 'Members' | 'Donations' | 'Recent';
+type TabType = 'Causes' | 'Members' | 'Collective Donations';
 
 export default function Members() {
+  const route = useRoute();
+  const routeParams = route.params as { tab?: TabType } | undefined;
+  const defaultTab = routeParams?.tab || 'Causes';
   const [search, setSearch] = useState('');
-  const [members, setMembers] = useState<Member[]>(initialMembers);
-  const [activeTab, setActiveTab] = useState<TabType>('Members');
+  const [activeTab, setActiveTab] = useState<TabType>(defaultTab);
+  const [showRecentDonations, setShowRecentDonations] = useState(false);
 
   const filteredMembers = members.filter(m => 
     m.name.toLowerCase().includes(search.toLowerCase()) || 
@@ -79,12 +73,69 @@ export default function Members() {
   );
 
   const handleConnect = (username: string) => {
-    setMembers(members.map(member => 
-      member.username === username 
-        ? { ...member, connected: !member.connected }
-        : member
-    ));
+    // Handle connect logic
   };
+
+  const renderCausesTab = () => (
+    <View style={styles.causesContainer}>
+      {/* Search Bar */}
+      <View style={styles.searchContainer}>
+        <View style={styles.searchBar}>
+          <Search size={20} color={PrimaryGrey} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search members..."
+            value={search}
+            onChangeText={setSearch}
+            placeholderTextColor={PrimaryGrey}
+          />
+        </View>
+      </View>
+
+      {/* Causes List */}
+      <ScrollView style={styles.causesList}>
+        {suggestedCauses.map((cause, index) => (
+          <View key={index} style={styles.causeItem}>
+            <View style={styles.causeInfo}>
+              <Image source={cause.image} style={styles.causeImage} />
+              <View style={styles.causeDetails}>
+                <View style={[
+                  styles.typeBadge,
+                  cause.type === 'CRWD' ? styles.crwdBadge : styles.nonprofitBadge
+                ]}>
+                  <Text style={[
+                    styles.typeText,
+                    cause.type === 'CRWD' ? styles.crwdText : styles.nonprofitText
+                  ]}>
+                    {cause.type}
+                  </Text>
+                </View>
+                <Text style={styles.causeName}>{cause.name}</Text>
+                <Text style={styles.causeDescription}>{cause.description}</Text>
+              </View>
+            </View>
+            {cause.type === 'Nonprofit' && (
+              <View style={styles.causeActions}>
+                <TouchableOpacity style={styles.donateButton}>
+                  <Text style={styles.donateButtonText}>Donate Now</Text>
+                </TouchableOpacity>
+                <TouchableOpacity>
+                  <Text style={styles.visitProfileText}>Visit Profile</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+            {cause.type === 'CRWD' && (
+              <View style={styles.causeActions}>
+                <TouchableOpacity style={styles.joinButton}>
+                  <Text style={styles.joinButtonText}>Join CRWD</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+        ))}
+      </ScrollView>
+    </View>
+  );
 
   const renderMembersTab = () => (
     <>
@@ -124,7 +175,7 @@ export default function Members() {
                 styles.connectButtonText,
                 member.connected && styles.connectedButtonText
               ]}>
-                {member.connected ? 'Connected' : 'Connect'}
+                {member.connected ? 'Following' : 'Follow'}
               </Text>
             </TouchableOpacity>
           </View>
@@ -133,56 +184,51 @@ export default function Members() {
     </>
   );
 
-  const renderDonationsTab = () => (
-    <ScrollView style={styles.donationsContainer}>
-      <View style={styles.summaryCard}>
-        <Text style={styles.summaryTitle}>Collective Donations Summary</Text>
-        <View style={styles.statsGrid}>
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>${donationSummary.totalAmount}</Text>
-            <Text style={styles.statLabel}>Total Donations</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>{donationSummary.donorsCount}</Text>
-            <Text style={styles.statLabel}>Total Donors</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>${donationSummary.averageDonation}</Text>
-            <Text style={styles.statLabel}>Average Donation</Text>
-          </View>
+  const renderCollectiveDonationsTab = () => (
+    <>
+      {/* Search Bar */}
+      <View style={styles.searchContainer}>
+        <View style={styles.searchBar}>
+          <Search size={20} color={PrimaryGrey} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search"
+            placeholderTextColor={PrimaryGrey}
+          />
         </View>
-        <Text style={styles.topDonorsTitle}>Top Donors</Text>
-        {donationSummary.topDonors.map((donor, index) => (
-          <View key={index} style={styles.donorItem}>
-            <View style={styles.memberInfo}>
-              <Image source={{ uri: donor.avatarUrl }} style={styles.avatar} />
-              <Text style={styles.memberName}>{donor.name}</Text>
-            </View>
-            <Text style={styles.donationAmount}>${donor.amount}</Text>
-          </View>
-        ))}
       </View>
-    </ScrollView>
-  );
 
-  const renderRecentTab = () => (
-    <ScrollView style={styles.recentContainer}>
-      {recentDonations.map((donation, index) => (
-        <View key={index} style={styles.donationItem}>
-          <View style={styles.memberInfo}>
-            <Image source={{ uri: donation.avatarUrl }} style={styles.avatar} />
-            <View>
-              <Text style={styles.memberName}>{donation.name}</Text>
-              <Text style={styles.memberUsername}>@{donation.username}</Text>
+      {/* Impact Metrics */}
+      <View style={styles.impactMetrics}>
+        <Text style={styles.impactTitle}>Impact Metrics</Text>
+        
+        <View style={styles.metricItem}>
+          <View style={styles.metricRow}>
+            <View style={styles.metricLabel}>
+              <Text style={styles.metricText}>Collective Donations</Text>
             </View>
+            <Text style={styles.metricValue}>$34</Text>
           </View>
-          <View style={styles.donationDetails}>
-            <Text style={styles.donationAmount}>${donation.amount}</Text>
-            <Text style={styles.donationDate}>{donation.date}</Text>
+          <TouchableOpacity onPress={() => setShowRecentDonations(true)}>
+            <Text style={styles.seeRecentText}>See recent donations</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.metricItem}>
+          <View style={styles.metricRow}>
+            <Text style={styles.metricText}>Causes</Text>
+            <Text style={styles.metricValue}>3</Text>
           </View>
         </View>
-      ))}
-    </ScrollView>
+
+        <View style={styles.metricItem}>
+          <View style={styles.metricRow}>
+            <Text style={styles.metricText}>Members</Text>
+            <Text style={styles.metricValue}>59</Text>
+          </View>
+        </View>
+      </View>
+    </>
   );
 
   return (
@@ -191,7 +237,7 @@ export default function Members() {
       
       {/* Tabs */}
       <View style={styles.tabsContainer}>
-        {(['Members', 'Donations', 'Recent'] as TabType[]).map((tab) => (
+        {(['Causes', 'Members', 'Collective Donations'] as TabType[]).map((tab) => (
           <TouchableOpacity
             key={tab}
             onPress={() => setActiveTab(tab)}
@@ -200,20 +246,33 @@ export default function Members() {
               activeTab === tab && styles.activeTab
             ]}
           >
-            <Text style={[
-              styles.tabText,
-              activeTab === tab && styles.activeTabText
-            ]}>
-              {tab}
-            </Text>
+            <View style={styles.tabContent}>
+              <View style={[
+                styles.tabCount,
+                activeTab === tab && styles.activeTabCount
+              ]}>
+                <Text style={[
+                  styles.tabCountText,
+                  activeTab === tab && styles.activeTabCountText
+                ]}>
+                  {tab === 'Causes' ? 1 : tab === 'Members' ? members.length : 34}
+                </Text>
+              </View>
+              <Text style={[
+                styles.tabText,
+                activeTab === tab && styles.activeTabText
+              ]}>
+                {tab}
+              </Text>
+            </View>
           </TouchableOpacity>
         ))}
       </View>
 
       {/* Tab Content */}
+      {activeTab === 'Causes' && renderCausesTab()}
       {activeTab === 'Members' && renderMembersTab()}
-      {activeTab === 'Donations' && renderDonationsTab()}
-      {activeTab === 'Recent' && renderRecentTab()}
+      {activeTab === 'Collective Donations' && renderCollectiveDonationsTab()}
     </SafeAreaView>
   );
 }
@@ -228,15 +287,43 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderBottomWidth: 1,
     borderBottomColor: LightGrey,
+    marginTop: 12,
   },
   tab: {
     flex: 1,
-    paddingVertical: 12,
+    paddingVertical: 16,
     alignItems: 'center',
+    justifyContent: 'center',
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
   },
   activeTab: {
-    borderBottomWidth: 2,
     borderBottomColor: PrimaryBlue,
+  },
+  tabContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    maxWidth: '100%',
+  },
+  tabCount: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#f3f4f6',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  activeTabCount: {
+    backgroundColor: PrimaryBlue + '20',
+  },
+  tabCountText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#374151',
+  },
+  activeTabCountText: {
+    color: PrimaryBlue,
   },
   tabText: {
     fontSize: 14,
@@ -264,6 +351,102 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     fontSize: 14,
     color: '#000',
+  },
+  causesContainer: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  causesList: {
+    flex: 1,
+    paddingHorizontal: 16,
+  },
+  causeItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 8,
+    marginBottom: 12,
+    borderRadius: 8,
+  },
+  causeInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    marginRight: 16,
+  },
+  causeImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 12,
+  },
+  causeDetails: {
+    flex: 1,
+    minWidth: 0,
+  },
+  typeBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 4,
+    alignSelf: 'flex-start',
+    marginBottom: 4,
+  },
+  crwdBadge: {
+    backgroundColor: '#dcfce7',
+  },
+  nonprofitBadge: {
+    backgroundColor: '#dbeafe',
+  },
+  typeText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  crwdText: {
+    color: '#16a34a',
+  },
+  nonprofitText: {
+    color: '#2563eb',
+  },
+  causeName: {
+    fontSize: 14,
+    fontWeight: '500',
+    marginBottom: 4,
+  },
+  causeDescription: {
+    fontSize: 12,
+    color: PrimaryGrey,
+    lineHeight: 16,
+  },
+  causeActions: {
+    alignItems: 'center',
+    gap: 8,
+  },
+  donateButton: {
+    backgroundColor: PrimaryBlue,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  donateButtonText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  joinButton: {
+    backgroundColor: '#16a34a',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  joinButtonText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  visitProfileText: {
+    color: PrimaryBlue,
+    fontSize: 12,
+    textDecorationLine: 'underline',
   },
   membersList: {
     flex: 1,
@@ -312,78 +495,48 @@ const styles = StyleSheet.create({
   connectedButtonText: {
     color: '#fff',
   },
-  donationsContainer: {
-    flex: 1,
-    padding: 16,
+  impactMetrics: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
   },
-  summaryCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  summaryTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 16,
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 24,
-  },
-  statItem: {
-    alignItems: 'center',
-  },
-  statValue: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: PrimaryBlue,
-  },
-  statLabel: {
+  impactTitle: {
     fontSize: 12,
-    color: PrimaryGrey,
-    marginTop: 4,
-  },
-  topDonorsTitle: {
-    fontSize: 16,
     fontWeight: '600',
+    color: '#374151',
     marginBottom: 12,
+    paddingHorizontal: 32,
   },
-  donorItem: {
+  metricItem: {
+    paddingVertical: 14,
+    borderTopWidth: 1,
+    borderTopColor: '#e5e7eb',
+  },
+  metricRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  metricLabel: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: LightGrey,
+    gap: 8,
+    flex: 2,
   },
-  donationAmount: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: PrimaryBlue,
+  metricText: {
+    fontSize: 14,
+    color: '#374151',
   },
-  recentContainer: {
-    flex: 1,
+  metricValue: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#374151',
+    flex: 2,
+    textAlign: 'right',
   },
-  donationItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: LightGrey,
-  },
-  donationDetails: {
-    alignItems: 'flex-end',
-  },
-  donationDate: {
+  seeRecentText: {
     fontSize: 12,
-    color: PrimaryGrey,
-    marginTop: 4,
+    color: PrimaryBlue,
+    textDecorationLine: 'underline',
   },
 }); 

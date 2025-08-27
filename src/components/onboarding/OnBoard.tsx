@@ -165,6 +165,34 @@ export default function OnBoard() {
           CRWD makes giving simple, flexible and collective.
         </Text>
 
+        {/* Step Indicator */}
+        <View style={{ 
+          flexDirection: 'row', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          marginBottom: 30,
+          gap: 8
+        }}>
+          <View style={{
+            width: 48,
+            height: 4,
+            borderRadius: 2,
+            backgroundColor: '#000000',
+          }} />
+          <View style={{
+            width: 48,
+            height: 4,
+            borderRadius: 2,
+            backgroundColor: '#d1d5db',
+          }} />
+          <View style={{
+            width: 48,
+            height: 4,
+            borderRadius: 2,
+            backgroundColor: '#d1d5db',
+          }} />
+        </View>
+
         {/* Top row */}
         {renderRow(rowTop, scrollXTop, [0, 20])}
 

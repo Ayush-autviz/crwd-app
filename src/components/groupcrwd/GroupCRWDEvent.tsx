@@ -4,6 +4,9 @@ import { MoreHorizontal, Heart, MessageCircle, Share2 } from 'lucide-react-nativ
 import { PrimaryGrey } from '../../Constants/Colors';
 
 const GroupCRWDEvent: React.FC = () => {
+  const handleEventPress = () => {
+    navigation.navigate('PostDetail' as never);
+  };
   return (
     <View style={{ paddingHorizontal: 16, paddingTop: 8, paddingBottom: 48 }}>
       <View style={{

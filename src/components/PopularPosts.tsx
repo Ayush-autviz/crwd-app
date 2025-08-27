@@ -1,4 +1,4 @@
-import { View, Text, FlatList, Image, Dimensions, TouchableOpacity, StyleSheet, Modal, Pressable, ActivityIndicator } from 'react-native'
+import { View, Text, FlatList, Image, Dimensions, TouchableOpacity, StyleSheet, Modal, Pressable, ActivityIndicator, Alert, Share } from 'react-native'
 import React, { useState } from 'react'
 import { LightGrey, PrimaryBlue, PrimaryGrey } from '../Constants/Colors'
 import { Ellipsis, Heart, MessageCircle, Flag, Trash2, Share2 } from 'lucide-react-native'
@@ -25,6 +25,7 @@ interface PopularPostsProps {
     onLoadMore?: () => Promise<void>;
     hasMore?: boolean;
     related?: boolean;
+    title?: string;
 }
 
 type RootStackParamList = {
@@ -36,6 +37,7 @@ export default function PopularPosts({
     showTitle = true,
     showDelete = false,
     related = false,
+    title = 'Recent Posts to CRWDs',
     onLoadMore = async () => {
         // Default implementation to make button visible
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -74,9 +76,21 @@ export default function PopularPosts({
         }
     };
 
-    const handleSharePress = () => {
-        setTooltipVisible(false);
-        setShareModalVisible(true);
+    const handleShare = async () => {
+ 
+        try {
+        // setTooltipVisible(false);
+
+            const result = await Share.share({
+                message: `Check out my profile!`,
+                title: `My Profile`,
+            });
+        } catch (error) {
+            Alert.alert('Error', 'Failed to share profile');
+        }
+        finally {
+            setTooltipVisible(false);
+        }
     };
 
     const renderFooter = () => {
@@ -101,7 +115,7 @@ export default function PopularPosts({
         <View style={{marginTop: 20, marginBottom: 50}}>
             {showTitle && (
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                    <Text style={{fontSize: 18, fontWeight: '600'}}>{related ? 'Related Posts' : 'Recent Posts to CRWDs'}</Text>
+                    <Text style={{fontSize: 18, fontWeight: '600'}}>{related ? 'Related Posts' : title}</Text>
                     <TouchableOpacity
                         onPress={() => setShowTooltip(!showTooltip)}
                         style={{ padding: 8 }}
@@ -243,7 +257,7 @@ export default function PopularPosts({
                         )}
                         <TouchableOpacity 
                             style={styles.tooltipItem}
-                            onPress={handleSharePress}
+                            onPress={handleShare}
                         >
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                                 <Share2 size={16} color={PrimaryGrey} />

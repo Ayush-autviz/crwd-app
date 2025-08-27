@@ -1,211 +1,180 @@
-import React, { useState } from 'react';
-import { View, Text, Image, TouchableOpacity, FlatList } from 'react-native';
-import { Share2, Bookmark, UserPlus } from 'lucide-react-native';
+import React from 'react';
+import { View, Text, Image, TouchableOpacity } from 'react-native';
+import { Bookmark } from 'lucide-react-native';
 import { PrimaryBlue, LightGrey, PrimaryGrey } from '../../Constants/Colors';
 import { useNavigation } from '@react-navigation/native';
-import { useToast } from '../../contexts/ToastContext';
 
 const orgAvatars = [
-  require('../../assets/images/grocery.jpg'),
-  require('../../assets/images/redcross.png'),
-  require('../../assets/images/grocery.jpg'),
-  require('../../assets/images/redcross.png'),
-  require('../../assets/images/grocery.jpg'),
-  require('../../assets/images/redcross.png'),
-  require('../../assets/images/grocery.jpg'),
-  require('../../assets/images/redcross.png'),
-  require('../../assets/images/grocery.jpg'),
+  {
+    name: "ASPCA",
+    image: require('../../assets/images/grocery.jpg'),
+  },
+  {
+    name: "CRI",
+    image: require('../../assets/images/redcross.png'),
+  },
+  {
+    name: "CureSearch",
+    image: require('../../assets/images/grocery.jpg'),
+  },
+  {
+    name: "Paws",
+    image: require('../../assets/images/redcross.png'),
+  },
 ];
 
 const interests = ['Animal Welfare', 'Environment', 'Food Insecurity'];
 
-const categories = [
-  "Animal Welfare",
-  "Environment",
-  "Food Insecurity",
-  "Food Insecurity",
-  "Environment",
-  "Education",
-  "Healthcare",
-  "Social Justice",
-  "Homelessness",
-];
+interface GroupCRWDHeaderProps {
+  hasJoined?: boolean;
+  onJoin?: () => void;
+  id?: string;
+}
 
-const GroupCRWDHeader: React.FC = () => {
+const GroupCRWDHeader: React.FC<GroupCRWDHeaderProps> = ({
+  hasJoined = false,
+  onJoin,
+  id = "",
+}) => {
   const navigation = useNavigation();
-  const { showToast } = useToast();
-  const [isJoined, setIsJoined] = useState(false);
 
-  const handleStatsPress = () => {
-    navigation.navigate('Members' as never);
+  const handleStatsPress = (type: string) => {
+    if (type === 'causes') {
+      navigation.navigate('Members' as never, { tab: 'Causes' });
+    } else if (type === 'members') {
+      navigation.navigate('Members' as never, { tab: 'Members' });
+    } else if (type === 'donations') {
+      navigation.navigate('Members' as never, { tab: 'Collective Donations' });
+    }
   };
 
-  const handleJoinPress = () => {
-    setIsJoined(!isJoined);
-    if (!isJoined) {
-      showToast('Successfully joined the CRWD!');
-    } else {
-      showToast('Left the CRWD');
-    }
+  const handleOrgPress = () => {
+    navigation.navigate('CauseScreen' as never);
+  };
+
+  const handleSeeAllPress = () => {
+    navigation.navigate('Members' as never);
   };
 
   return (
     <View style={{ backgroundColor: 'white', padding: 16, margin: 8, borderRadius: 12 }}>
-      {/* Action Buttons Row */}
-      <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 8, marginBottom: 16 }}>
+      {/* Top Row - Group Title */}
+      <View style={{ alignItems: 'center', marginBottom: 16 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          <View style={{ alignItems: 'center' }}>
+            <Text style={{ fontSize: 24, fontWeight: '600', color: '#374151', marginTop: 8 }}>
+              Feed the hungry
+            </Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Founder */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 16 }}>
+        <Image 
+          source={{ uri: 'https://randomuser.me/api/portraits/men/32.jpg' }} 
+          style={{ width: 56, height: 56, borderRadius: 28 }} 
+        />
+        <Text style={{ fontSize: 14, color: '#6b7280' }}>Founded by</Text>
+        <Text style={{ fontSize: 14, fontWeight: '600', color: '#374151' }}>@ChadFofana1</Text>
         <TouchableOpacity style={{ 
           borderWidth: 1, 
           borderColor: LightGrey, 
-          padding: 10, 
-          borderRadius: 8,
-          backgroundColor: 'white'
-        }}>
-          <Share2 size={20} color={PrimaryGrey} />
-        </TouchableOpacity>
-        <TouchableOpacity style={{ 
-          borderWidth: 1, 
-          borderColor: LightGrey, 
-          padding: 10, 
-          borderRadius: 8,
+          padding: 8, 
+          borderRadius: 6,
           backgroundColor: 'white'
         }}>
           <Bookmark size={20} color={PrimaryGrey} />
         </TouchableOpacity>
-        <TouchableOpacity 
-          style={{ 
-            backgroundColor: isJoined ? 'white' : PrimaryBlue,
-            borderWidth: isJoined ? 1 : 0,
-            borderColor: LightGrey,
-            paddingVertical: 10, 
-            paddingHorizontal: 20, 
-            borderRadius: 8,
-            justifyContent: "center",
-            alignItems: "center"
-          }}
-          onPress={handleJoinPress}
-        >
-          <Text style={{ 
-            color: isJoined ? PrimaryGrey : 'white', 
-            fontWeight: '600' 
-          }}>
-            {isJoined ? 'Joined' : 'Join'}
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Group Info */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-        <Image 
-          source={{ uri: 'https://randomuser.me/api/portraits/men/32.jpg' }} 
-          style={{ width: 48, height: 48, borderRadius: 12 }} 
-        />
-        <View style={{ flex: 1 }}>
-          <Text style={{ fontSize: 16, fontWeight: '600', color: "#374151" }}>
-            Feed the hungry
-          </Text>
-        </View>
       </View>
 
       {/* Bio */}
-      <Text style={{ fontSize: 16, color: '#374151', marginBottom: 16, lineHeight: 24 }}>
+      <Text style={{ fontSize: 20, color: '#374151', marginBottom: 16, lineHeight: 28, textAlign: 'center' }}>
         families experiencing food insecurity in the greater Atlanta area. Join us in the cause to solve world hunger.
       </Text>
 
-      {/* Founder */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-        <Image 
-          source={{ uri: 'https://randomuser.me/api/portraits/men/32.jpg' }} 
-          style={{ width: 20, height: 20, borderRadius: 10 }} 
-        />
-        <Text style={{ fontSize: 12, color: PrimaryGrey }}>
-          Founded by <Text style={{ fontWeight: '600', color: '#374151' }}>@ChadFofana1</Text>
-        </Text>
+      {/* Stats */}
+      <View style={{ 
+        flexDirection: 'row', 
+        backgroundColor: '#f9fafb', 
+        borderRadius: 12, 
+        paddingVertical: 16,
+        marginBottom: 16,
+        borderWidth: 1,
+        borderColor: '#e5e7eb'
+      }}>
+        <TouchableOpacity 
+          onPress={() => handleStatsPress('causes')}
+          style={{ flex: 1, alignItems: 'center', borderRightWidth: 1, borderRightColor: '#e5e7eb' }}
+        >
+          <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#111827', marginBottom: 4 }}>10</Text>
+          <Text style={{ fontSize: 12, color: '#6b7280', textAlign: 'center', width: '70%' }}>Causes Supported</Text>
+        </TouchableOpacity>
+        <TouchableOpacity 
+          onPress={() => handleStatsPress('members')}
+          style={{ flex: 1, alignItems: 'center', borderRightWidth: 1, borderRightColor: '#e5e7eb' }}
+        >
+          <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#111827', marginBottom: 4 }}>58</Text>
+          <Text style={{ fontSize: 12, color: '#6b7280', textAlign: 'center' }}>Members</Text>
+        </TouchableOpacity>
+        <TouchableOpacity 
+          onPress={() => handleStatsPress('donations')}
+          style={{ flex: 1, alignItems: 'center' }}
+        >
+          <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#111827', marginBottom: 4 }}>12</Text>
+          <Text style={{ fontSize: 12, color: '#6b7280', textAlign: 'center', width: '70%' }}>Collective Donations</Text>
+        </TouchableOpacity>
       </View>
 
-      {/* Stats */}
-      <TouchableOpacity 
-        onPress={handleStatsPress}
-        style={{ 
-          flexDirection: 'row', 
-          backgroundColor: '#f9fafb', 
-          borderRadius: 12, 
-          paddingVertical: 16,
-          marginBottom: 16
-        }}
-      >
-        <View style={{ flex: 1, alignItems: 'center',justifyContent:"center" }}>
-          <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#111827',textAlign:'center' }}>10</Text>
-          <Text style={{ fontSize: 12, color: PrimaryGrey,textAlign:'center' }}>Causes</Text>
-        </View>
-        <View style={{ width: 1, backgroundColor: '#e5e7eb', marginHorizontal: 8 }} />
-        <View style={{ flex: 1, alignItems: 'center',justifyContent:"center" }}>
-          <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#111827',textAlign:"center" }}>58</Text>
-          <Text style={{ fontSize: 12, color: PrimaryGrey,textAlign:"center" }}>Members</Text>
-        </View>
-        <View style={{ width: 1, backgroundColor: '#e5e7eb', marginHorizontal: 8 }} />
-        <View style={{ flex: 1, alignItems: 'center',justifyContent:"center" }}>
-          <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#111827',textAlign:"center" }}>102</Text>
-          <Text style={{ fontSize: 12, color: PrimaryGrey,textAlign:"center" }}>Impact Score</Text>
-        </View>
-      </TouchableOpacity>
-
       {/* Interest Tags */}
-      {/* <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 24 }}>
         {interests.map((interest, index) => (
           <View key={index} style={{ 
             backgroundColor: LightGrey, 
-            paddingHorizontal: 13, 
-            paddingVertical: 12, 
+            paddingHorizontal: 10, 
+            paddingVertical: 10, 
             borderRadius: 10,
-            marginTop:15,
-           // marginLeft:10
           }}>
-            <Text style={{ fontSize: 13, color: '#000',fontWeight:'500' }}>{interest}</Text>
+            <Text style={{ fontSize: 13, color: '#000', fontWeight: '500' }}>{interest}</Text>
           </View>
         ))}
-      </View> */}
+      </View>
 
-
-<FlatList data={categories}
-                    horizontal={true}
-                    
-                    showsHorizontalScrollIndicator={false}
-                    renderItem={({ item,index }) => (
-                        <View key={index} style={{ 
-                            backgroundColor: LightGrey, 
-                            paddingHorizontal: 13, 
-                            paddingVertical: 12, 
-                            borderRadius: 10,
-                            marginTop:10,
-                            marginLeft:10
-                          }}>
-                            <Text style={{ fontSize: 13, color: '#000',fontWeight:'500' }}>{item}</Text>
-                          </View>
-                    )}
-                />
+      {/* Recently Supported Nonprofits */}
+      <Text style={{ fontSize: 16, fontWeight: '700', color: '#374151', marginBottom: 16 }}>
+        Recently Supported Nonprofits
+      </Text>
 
       {/* Organization Avatars */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8,marginTop:24 }}>
-        {orgAvatars.slice(0, 6).map((avatar, index) => (
-          <Image 
-            key={index} 
-            source={avatar} 
-            style={{ 
-              width: 28, 
-              height: 28, 
-              borderRadius: 14, 
-              borderWidth: 2, 
-              borderColor: 'white',
-              marginLeft: index > 0 ? -8 : 0
-            }} 
-          />
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16, justifyContent: 'space-between' }}>
+        {orgAvatars.map((org, index) => (
+          <TouchableOpacity key={index} onPress={handleOrgPress} style={{ alignItems: 'center', marginRight: 20 }}>
+            <Image 
+              source={org.image} 
+              style={{ 
+                width: 48, 
+                height: 48, 
+                borderRadius: 8,
+                marginBottom: 4
+              }} 
+            />
+            <Text style={{ fontSize: 12, fontWeight: '600', color: '#6b7280' }}>
+              {org.name}
+            </Text>
+          </TouchableOpacity>
         ))}
       </View>
 
       {/* Supporting Text */}
-      <Text style={{ fontSize: 12, color: PrimaryGrey, lineHeight: 16 }}>
-        Currently supporting <Text style={{ fontWeight: '600' }}>10 Non Profits</Text>: Grocery Spot, Food for Thought, Meals on Wheels, American Red Cross, & Pizza Hut…{' '}
-        <Text style={{ color: PrimaryBlue, textDecorationLine: 'underline' }}>See More</Text>
+      <Text style={{ fontSize: 12, color: '#6b7280', lineHeight: 16 }}>
+        Currently supporting{' '}
+        <Text style={{ fontWeight: '600' }}>10 Non Profits</Text>: Grocery Spot, Food for Thought, Meals on Wheels, American Red Cross, & Pizza Hut…{' '}
+        <Text 
+          style={{ color: PrimaryBlue, textDecorationLine: 'underline' }}
+          onPress={handleSeeAllPress}
+        >
+          See All
+        </Text>
       </Text>
     </View>
   );

@@ -22,7 +22,7 @@ export default function NearbyCauses() {
       name: "St. Judes",
       description: "The leading children's health organization in the world",
       image: require("../assets/images/grocery.jpg"),
-      type: "NonProfit"
+      type: "Nonprofit"
     },
     {
       name: "Women's Healthcare of At...",
@@ -50,7 +50,7 @@ export default function NearbyCauses() {
               </View>
             </View>
             <View style={{alignItems: 'center'}}>
-              {item.type === "NonProfit" && (
+              {item.type === "Nonprofit" && (
                 <>
                   <TouchableOpacity onPress={() => navigation.navigate('Donation' as never)} style={{backgroundColor: PrimaryBlue, paddingVertical: 10, paddingHorizontal: 10, borderRadius: 10, marginBottom: 5}}>
                     <Text style={{color: 'white'}}>Donate Now</Text>

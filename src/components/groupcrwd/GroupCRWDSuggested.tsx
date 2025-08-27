@@ -1,18 +1,21 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Image, FlatList } from 'react-native';
+import { View, Text, TouchableOpacity, Image, ScrollView } from 'react-native';
 import { ChevronRight } from 'lucide-react-native';
 import { PrimaryBlue, PrimaryGrey } from '../../Constants/Colors';
 import { useNavigation } from '@react-navigation/native';
 
-const suggestedCauses = [
+// Sample data for suggested CRWDs
+const suggestedCRWDs = [
   {
-    name: "The Red Cross",
-    description: "An health organization that...",
-    image: require('../../assets/images/redcross.png'),
+    name: "Grocery Spot",
+    members: "303 Members",
+    description: "Community lunches every Saturday",
+    image: require('../../assets/images/grocery.jpg'),
   },
   {
-    name: "St. Judes",
-    description: "The leading children's hea...",
+    name: "Food for Thought",
+    members: "78 Members",
+    description: "Solving world hunger. One meal at a time.",
     image: require('../../assets/images/grocery.jpg'),
   },
 ];
@@ -20,80 +23,13 @@ const suggestedCauses = [
 const GroupCRWDSuggested: React.FC = () => {
   const navigation = useNavigation();
 
-  const handleVisit = (cause: any) => {
-    // Navigate to another GroupCRWD screen or cause details
+  const handleVisit = (crwd: any) => {
     navigation.navigate('GroupCRWD' as never);
   };
 
   const handleDiscoverMore = () => {
     navigation.navigate('Search' as never);
   };
-
-  const renderSuggestedItem = ({ item }: { item: any }) => (
-    <TouchableOpacity 
-      onPress={() => handleVisit(item)}
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: 12,
-        borderRadius: 8,
-        backgroundColor: 'white',
-        marginBottom: 12,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-        elevation: 2,
-      }}
-    >
-      <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, marginRight: 8 }}>
-        <Image 
-          source={item.image} 
-          style={{ 
-            width: 40, 
-            height: 40, 
-            borderRadius: 20,
-            marginRight: 12
-          }} 
-        />
-        <View style={{ flex: 1 }}>
-          <Text style={{ 
-            fontSize: 14, 
-            fontWeight: '500', 
-            color: '#111827',
-            marginBottom: 2
-          }}>
-            {item.name}
-          </Text>
-          <Text style={{ 
-            fontSize: 12, 
-            color: PrimaryGrey,
-            numberOfLines: 1
-          }}>
-            {item.description}
-          </Text>
-        </View>
-      </View>
-      <TouchableOpacity 
-        onPress={() => handleVisit(item)}
-        style={{
-          backgroundColor: PrimaryBlue,
-          paddingHorizontal: 16,
-          paddingVertical: 8,
-          borderRadius: 6,
-        }}
-      >
-        <Text style={{ 
-          color: 'white', 
-          fontSize: 12, 
-          fontWeight: '600' 
-        }}>
-          Visit
-        </Text>
-      </TouchableOpacity>
-    </TouchableOpacity>
-  );
 
   return (
     <View style={{ marginTop: 16, paddingHorizontal: 16 }}>
@@ -106,12 +42,88 @@ const GroupCRWDSuggested: React.FC = () => {
         Suggested CRWDS
       </Text>
       
-      <FlatList
-        data={suggestedCauses}
-        renderItem={renderSuggestedItem}
-        keyExtractor={(item, index) => index.toString()}
-        scrollEnabled={false}
-      />
+      <ScrollView 
+        horizontal 
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 8 }}
+      >
+        <View style={{ flexDirection: 'row', gap: 16 }}>
+          {suggestedCRWDs.map((crwd, index) => (
+            <TouchableOpacity 
+              key={index}
+              onPress={() => handleVisit(crwd)}
+              style={{
+                backgroundColor: '#f9fafb',
+                borderRadius: 8,
+                padding: 16,
+                minWidth: 200,
+                alignItems: 'center',
+                gap: 12,
+                borderWidth: 1,
+                borderColor: '#e5e7eb',
+              }}
+            >
+              {/* Image on top */}
+              <View style={{ width: 64, height: 64, borderRadius: 32, overflow: 'hidden' }}>
+                <Image 
+                  source={crwd.image} 
+                  style={{ width: '100%', height: '100%' }}
+                  resizeMode="cover"
+                />
+              </View>
+
+              {/* Text content below image */}
+              <View style={{ alignItems: 'center' }}>
+                <Text style={{ 
+                  fontSize: 14, 
+                  fontWeight: '500', 
+                  color: '#111827',
+                  marginBottom: 4,
+                  textAlign: 'center'
+                }}>
+                  {crwd.name}
+                </Text>
+                <Text style={{ 
+                  fontSize: 12, 
+                  color: '#6b7280',
+                  marginBottom: 4
+                }}>
+                  {crwd.members}
+                </Text>
+                <Text style={{ 
+                  fontSize: 12, 
+                  color: '#6b7280',
+                  width: 144,
+                  lineHeight: 16,
+                  textAlign: 'center'
+                }}>
+                  {crwd.description.length > 21
+                    ? `${crwd.description.slice(0, 21)}..`
+                    : crwd.description}
+                </Text>
+              </View>
+
+              {/* Button at the bottom */}
+              <TouchableOpacity 
+                style={{
+                  backgroundColor: '#16a34a',
+                  paddingHorizontal: 16,
+                  paddingVertical: 8,
+                  borderRadius: 8,
+                }}
+              >
+                <Text style={{ 
+                  color: 'white', 
+                  fontSize: 12, 
+                  fontWeight: '600' 
+                }}>
+                  Learn More
+                </Text>
+              </TouchableOpacity>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </ScrollView>
       
       <View style={{ alignItems: 'flex-end', marginTop: 16 }}>
         <TouchableOpacity 

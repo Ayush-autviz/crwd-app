@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, FlatList } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { PrimaryGrey } from '../../Constants/Colors';
+import { PrimaryGrey, PrimaryBlue } from '../../Constants/Colors';
+import { Heart } from 'lucide-react-native';
 
 interface Donation {
   avatar: string;
@@ -20,12 +21,27 @@ const donations: Donation[] = [
   { avatar: 'https://randomuser.me/api/portraits/women/47.jpg', name: 'Raquel Wells', username: 'rarawells' },
 ];
 
-const CauseRecentDonations: React.FC = () => {
+interface CauseRecentDonationsProps {
+  donations?: Donation[];
+  showEmpty?: boolean;
+}
+
+const CauseRecentDonations: React.FC<CauseRecentDonationsProps> = ({ 
+  donations: donationsProp = donations, 
+  showEmpty = false 
+}) => {
   const navigation = useNavigation();
 
   const handleDonorPress = (donor: Donation) => {
     navigation.navigate('Profile' as never);
   };
+
+  const handleDonateNow = () => {
+    navigation.navigate('Donation' as never);
+  };
+
+  // Show empty state if showEmpty is true or if donations array is empty
+  const shouldShowEmpty = showEmpty || donationsProp.length === 0;
 
   const renderDonation = ({ item }: { item: Donation }) => (
     <TouchableOpacity 
@@ -59,8 +75,8 @@ const CauseRecentDonations: React.FC = () => {
     <View style={{ 
       backgroundColor: 'white', 
       paddingVertical: 16, 
-     // borderTopWidth: 1, 
-     // borderBottomWidth: 1, 
+      borderTopWidth: 1, 
+      borderBottomWidth: 1, 
       borderColor: '#e5e7eb' 
     }}>
       <Text style={{ 
@@ -72,13 +88,63 @@ const CauseRecentDonations: React.FC = () => {
       }}>
         Recent Donations
       </Text>
-      <FlatList
-        data={donations}
-        renderItem={renderDonation}
-        keyExtractor={(item, index) => index.toString()}
-        scrollEnabled={false}
-        showsVerticalScrollIndicator={false}
-      />
+      
+      {shouldShowEmpty ? (
+        <View style={{ paddingHorizontal: 24 }}>
+          <View style={{ 
+            alignItems: 'center', 
+            paddingVertical: 32 
+          }}>
+            <View style={{ 
+              backgroundColor: '#f3f4f6', 
+              borderRadius: 24, 
+              padding: 12, 
+              marginBottom: 16 
+            }}>
+              <Heart size={48} color={PrimaryGrey} />
+            </View>
+            <Text style={{ 
+              fontSize: 18, 
+              fontWeight: '600', 
+              color: '#111827', 
+              marginBottom: 8,
+              textAlign: 'center'
+            }}>
+              No donations yet
+            </Text>
+            <Text style={{ 
+              fontSize: 14, 
+              color: '#6b7280', 
+              textAlign: 'center',
+              lineHeight: 20,
+              marginBottom: 16
+            }}>
+              Be the first to support this cause. Every donation makes a difference and helps us reach our goal.
+            </Text>
+            <TouchableOpacity 
+              style={{
+                backgroundColor: PrimaryBlue,
+                paddingHorizontal: 20,
+                paddingVertical: 10,
+                borderRadius: 8
+              }}
+              onPress={handleDonateNow}
+            >
+              <Text style={{ color: 'white', fontSize: 14, fontWeight: '500' }}>
+                Donate Now
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      ) : (
+        <FlatList
+          data={donationsProp}
+          renderItem={renderDonation}
+          keyExtractor={(item, index) => index.toString()}
+          scrollEnabled={false}
+          showsVerticalScrollIndicator={false}
+        />
+      )}
     </View>
   );
 };

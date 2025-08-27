@@ -12,7 +12,7 @@ export default function SuggestdCauses() {
     };
 
     const handleDiscoverMore = () => {
-        navigation.navigate('Search' as never);
+        navigation.navigate('Search' as never, { discover: true });
     };
 
     // Sample data for suggested causes
@@ -46,7 +46,7 @@ export default function SuggestdCauses() {
                         <Image source={item.image} style={{ width: 40, height: 40, borderRadius: 20, }} />
                         <View style={{width: '55%'}}>
                             <View style={{backgroundColor: TertiaryBlue, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10, marginBottom: 5, alignSelf: 'flex-start'}}>
-                                <Text style={{ fontSize: 12, color: PrimaryBlue, fontWeight: '500'}}>Non-Profit</Text>
+                                <Text style={{ fontSize: 12, color: PrimaryBlue, fontWeight: '500'}}>Nonprofit</Text>
                             </View>
                             <Text style={{ fontSize: 14, fontWeight: 500 }}>{item.name}</Text>
                             <Text style={{ fontSize: 12, color: 'grey'}} numberOfLines={2}>{item.description}</Text>

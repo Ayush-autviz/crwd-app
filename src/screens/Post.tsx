@@ -2,7 +2,7 @@ import { View, Text, TouchableOpacity, TextInput, Image, ScrollView, Platform, M
 import React, { useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import MainHeaderNav from '../components/MainHeaderNav'
-import { PrimaryGrey, PrimaryBlue } from '../Constants/Colors'
+import { PrimaryGrey, PrimaryBlue, LightGrey } from '../Constants/Colors'
 import { Link, Image as ImageIcon, Calendar, X, ChevronDown } from 'lucide-react-native'
 import * as ImagePicker from 'react-native-image-picker'
 
@@ -185,219 +185,205 @@ export default function Post() {
     <SafeAreaView style={{backgroundColor: 'white', flex: 1}}>
       <MainHeaderNav show post={false} menu={false}/>
       <ScrollView style={{paddingHorizontal: 20}}>
-        {!postType ? (
-          <View style={{marginTop: 20}}>
-            <TouchableOpacity
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: 12,
-                backgroundColor: '#F3F4F6',
-                borderRadius: 8,
-                marginBottom: 20
-              }}
-              onPress={() => setShowCRWDDropdown(true)}
-            >
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                {selectedCRWD ? (
-                  <>
-                    <View style={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: 16,
-                      backgroundColor: PrimaryBlue,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      marginRight: 12
-                    }}>
-                      <Text style={{ color: 'white', fontSize: 14, fontWeight: 'bold' }}>
-                        {selectedCRWD.name.charAt(0)}
-                      </Text>
-                    </View>
-                    <Text style={{ fontSize: 14, color: PrimaryGrey }}>
-                      Posting to {selectedCRWD.name}
+      <View style={{marginTop: 20}}>
+          <Text style={{fontSize: 16, fontWeight: 'bold', marginBottom: 10}}>Post to a CRWD</Text>
+          
+          {/* CRWD Selection */}
+          <TouchableOpacity
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: 12,
+              backgroundColor: LightGrey,
+              borderRadius: 8,
+              marginBottom: 20
+            }}
+            onPress={() => setShowCRWDDropdown(true)}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              {selectedCRWD ? (
+                <>
+                  <View style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: 16,
+                    backgroundColor: PrimaryBlue,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    marginRight: 12
+                  }}>
+                    <Text style={{ color: 'white', fontSize: 14, fontWeight: 'bold' }}>
+                      {selectedCRWD.name.charAt(0)}
                     </Text>
-                  </>
-                ) : (
+                  </View>
                   <Text style={{ fontSize: 14, color: PrimaryGrey }}>
-                    Select a CRWD to post to
+                    Posting to {selectedCRWD.name}
                   </Text>
-                )}
-              </View>
-              <ChevronDown size={20} color={PrimaryGrey} />
+                </>
+              ) : (
+                <Text style={{ fontSize: 14, color: PrimaryGrey }}>
+                  Select a CRWD (required)
+                </Text>
+              )}
+            </View>
+            <ChevronDown size={20} color={PrimaryGrey} />
+          </TouchableOpacity>
+
+          {/* Main Text Input */}
+          <TextInput
+            style={{
+              minHeight: 100,
+              borderWidth: 1,
+              borderColor: '#E5E5E5',
+              borderRadius: 8,
+              padding: 10,
+              fontSize: 16,
+              marginBottom: 20
+            }}
+            multiline
+            placeholderTextColor={PrimaryGrey}
+            placeholder="What's on your mind?"
+            value={form.content}
+            onChangeText={(value) => handleInputChange('content', value)}
+          />
+          
+          {/* Post Type Icons */}
+          <View style={{
+            flexDirection: 'row',
+            gap: 32,
+            marginBottom: 20
+          }}>
+            <TouchableOpacity onPress={() => handlePostTypeSelect('link')}>
+              <Link size={24} color={postType === 'link' ? PrimaryBlue : PrimaryGrey} />
             </TouchableOpacity>
-
-            <TextInput
-              style={{
-                minHeight: 100,
-                borderWidth: 1,
-                borderColor: '#E5E5E5',
-                borderRadius: 8,
-                padding: 10,
-                fontSize: 16
-              }}
-              multiline
-              placeholder="What's on your mind?"
-              value={form.content}
-              onChangeText={(value) => handleInputChange('content', value)}
-            />
-            <Text style={{fontSize: 12, color: PrimaryGrey, fontStyle: 'italic', marginTop: 8}}>
-              You can share an announcement, picture, event, link, etc.
-            </Text>
+            <TouchableOpacity onPress={() => handlePostTypeSelect('image')}>
+              <ImageIcon size={24} color={postType === 'image' ? PrimaryBlue : PrimaryGrey} />
+            </TouchableOpacity>
           </View>
-        ) : (
-          <View style={{marginTop: 20}}>
-            <TextInput
-              style={{
-                minHeight: 100,
-                fontSize: 16,
-                marginBottom: 20
-              }}
-              multiline
-              placeholder={
-                postType === 'link' ? "What's on your mind?" :
-                postType === 'image' ? "What's on your mind?" :
-                "What's the name of your event?"
-              }
-              value={form.content}
-              onChangeText={(value) => handleInputChange('content', value)}
-            />
+          
+          {/* Helper Text */}
+          <Text style={{
+            fontSize: 12,
+            color: PrimaryGrey,
+            fontStyle: 'italic',
+            marginBottom: 20
+          }}>
+            {postType ? 
+              'Add a link or image' : 
+              'Select a post type to get started'
+            }
+          </Text>
 
-            {postType === 'link' && (
-              <View style={{marginBottom: 20}}>
-                <TextInput
-                  style={{
-                    borderBottomWidth: 1,
-                    borderBottomColor: '#E5E5E5',
-                    paddingVertical: 10,
-                    fontSize: 16,
-                    color: PrimaryBlue
-                  }}
-                  placeholder="URL"
-                  value={form.url}
-                  onChangeText={(value) => handleInputChange('url', value)}
-                  onBlur={handleUrlBlur}
-                />
-                {urlError && (
-                  <Text style={{color: 'red', fontSize: 12, marginTop: 5}}>{urlError}</Text>
-                )}
-              </View>
-            )}
+          {/* Link Form Fields - Shows inline when link icon is clicked */}
+          {postType === 'link' && (
+            <View style={{marginBottom: 20}}>
+              <TextInput
+                style={{
+                  borderWidth: 1,
+                  borderColor: '#E5E5E5',
+                  borderRadius: 8,
+                  padding: 12,
+                  fontSize: 16,
+                  marginBottom: 8
+                }}
+                placeholder="URL"
+                placeholderTextColor={PrimaryGrey}
+                value={form.url}
+                onChangeText={(value) => handleInputChange('url', value)}
+                onBlur={handleUrlBlur}
+              />
+              {urlError && (
+                <Text style={{color: 'red', fontSize: 12, marginBottom: 8}}>{urlError}</Text>
+              )}
+            </View>
+          )}
 
-            {postType === 'image' && selectedImage && (
-              <View style={{marginBottom: 20}}>
-                <Image
-                  source={{ uri: selectedImage }}
-                  style={{
-                    width: '100%',
-                    height: 200,
-                    borderRadius: 8
-                  }}
-                />
+          {/* Image Form Fields - Shows inline when image icon is clicked */}
+          {postType === 'image' && (
+            <View style={{marginBottom: 20}}>
+              {!selectedImage ? (
                 <TouchableOpacity
                   style={{
-                    position: 'absolute',
-                    top: 10,
-                    right: 10,
-                    backgroundColor: 'rgba(0,0,0,0.5)',
-                    borderRadius: 15,
-                    width: 30,
-                    height: 30,
+                    borderWidth: 2,
+                    borderColor: '#E5E5E5',
+                    borderStyle: 'dashed',
+                    borderRadius: 8,
+                    padding: 40,
+                    alignItems: 'center',
                     justifyContent: 'center',
-                    alignItems: 'center'
+                    backgroundColor: '#FAFAFA'
                   }}
-                  onPress={() => setSelectedImage(null)}
+                  onPress={pickImage}
                 >
-                  <X size={16} color="white" />
+                  <ImageIcon size={32} color={PrimaryGrey} />
+                  <Text style={{ color: PrimaryGrey, marginTop: 8, fontSize: 14 }}>
+                    Tap to add a photo
+                  </Text>
                 </TouchableOpacity>
-              </View>
-            )}
-
-            {postType === 'event' && (
-              <View style={{gap: 15}}>
-                <TextInput
-                  style={{
-                    borderBottomWidth: 1,
-                    borderBottomColor: '#E5E5E5',
-                    paddingVertical: 10,
-                    fontSize: 16
-                  }}
-                  placeholder="Day"
-                  value={form.day}
-                  onChangeText={(value) => handleInputChange('day', value)}
-                />
-                <TextInput
-                  style={{
-                    borderBottomWidth: 1,
-                    borderBottomColor: '#E5E5E5',
-                    paddingVertical: 10,
-                    fontSize: 16
-                  }}
-                  placeholder="Time"
-                  value={form.time}
-                  onChangeText={(value) => handleInputChange('time', value)}
-                />
-                <TextInput
-                  style={{
-                    borderBottomWidth: 1,
-                    borderBottomColor: '#E5E5E5',
-                    paddingVertical: 10,
-                    fontSize: 16
-                  }}
-                  placeholder="Place"
-                  value={form.place}
-                  onChangeText={(value) => handleInputChange('place', value)}
-                />
-                <TextInput
-                  style={{
-                    borderBottomWidth: 1,
-                    borderBottomColor: '#E5E5E5',
-                    paddingVertical: 10,
-                    fontSize: 16
-                  }}
-                  placeholder="Caption"
-                  value={form.caption}
-                  onChangeText={(value) => handleInputChange('caption', value)}
-                />
-              </View>
-            )}
-          </View>
-        )}
+              ) : (
+                <View>
+                  <Image
+                    source={{ uri: selectedImage }}
+                    style={{
+                      width: '100%',
+                      height: 200,
+                      borderRadius: 8,
+                      marginBottom: 8
+                    }}
+                  />
+                  <TouchableOpacity
+                    style={{
+                      backgroundColor: '#EF4444',
+                      paddingVertical: 8,
+                      paddingHorizontal: 16,
+                      borderRadius: 6,
+                      alignSelf: 'flex-start'
+                    }}
+                    onPress={() => setSelectedImage(null)}
+                  >
+                    <Text style={{ color: 'white', fontSize: 14, fontWeight: '500' }}>
+                      Remove Photo
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+          )}
+        </View>
       </ScrollView>
+        {/* } */}
+      {/* </ScrollView> */}
 
-      {/* Bottom Bar */}
+      {/* Post Button */}
       <View style={{
         borderTopWidth: 1,
         borderTopColor: '#E5E5E5',
         padding: 16,
         backgroundColor: 'white'
       }}>
-        <View style={{
-          flexDirection: 'row',
-          gap: 32,
-          marginBottom: 8
-        }}>
-          <TouchableOpacity onPress={() => handlePostTypeSelect('link')}>
-            <Link size={24} color={postType === 'link' ? PrimaryBlue : PrimaryGrey} />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => handlePostTypeSelect('image')}>
-            <ImageIcon size={24} color={postType === 'image' ? PrimaryBlue : PrimaryGrey} />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => handlePostTypeSelect('event')}>
-            <Calendar size={24} color={postType === 'event' ? PrimaryBlue : PrimaryGrey} />
-          </TouchableOpacity>
-        </View>
-        <Text style={{
-          fontSize: 12,
-          color: PrimaryGrey,
-          fontStyle: 'italic'
-        }}>
-          {postType ?
-            `Create a ${postType === 'link' ? 'link' : postType === 'image' ? 'photo' : 'event'} post` :
-            'Select a post type to get started'
-          }
-        </Text>
+        <TouchableOpacity
+          style={{
+            backgroundColor: canSubmitPost() ? PrimaryBlue : '#E5E5E5',
+            paddingVertical: 16,
+            borderRadius: 8,
+            alignItems: 'center',
+            opacity: canSubmitPost() ? 1 : 0.6
+          }}
+          disabled={!canSubmitPost()}
+          onPress={() => {
+            // TODO: Implement post submission logic
+            console.log('Post submitted:', { postType, form, selectedImage, selectedCRWD });
+          }}
+        >
+          <Text style={{
+            color: canSubmitPost() ? 'white' : '#9CA3AF',
+            fontSize: 16,
+            fontWeight: '600'
+          }}>
+            Post
+          </Text>
+        </TouchableOpacity>
       </View>
 
       {renderCRWDDropdown()}

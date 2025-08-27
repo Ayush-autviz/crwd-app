@@ -1,11 +1,11 @@
-import { View, Text, ScrollView, TextInput, TouchableOpacity } from 'react-native'
+import { View, Text, ScrollView, TextInput, TouchableOpacity, Image } from 'react-native'
 import React, { useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import MainHeaderNav from '../components/MainHeaderNav'
 import SuggestdCauses from '../components/SuggestdCauses'
 import PopularPosts from '../components/PopularPosts'
 import { LightGrey, PrimaryBlue, PrimaryGrey } from '../Constants/Colors'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation, useRoute } from '@react-navigation/native'
 import { Clock, TrendingUp, X, Search } from 'lucide-react-native'
 import NearbyCauses from '../components/NearbyCauses'
 
@@ -32,6 +32,10 @@ const generateMorePosts = (startId: number, count: number) => {
 };
 
 export default function SearchScreen() {
+    const route = useRoute()
+    const routeParams = route.params as { discover?: boolean } | undefined
+    const discover = routeParams?.discover || false
+    
     const [posts, setPosts] = useState(() => generateMorePosts(1, 4));
     const [search, setSearch] = useState("")
     const navigation = useNavigation()
@@ -113,7 +117,126 @@ export default function SearchScreen() {
         }
     ]
 
-    
+    const suggestedCauses = [
+        {
+            name: "Animal Rescue",
+            description: "Support local animal shelters and rescue organizations.",
+            type: "Nonprofit",
+            image: require('../assets/ngo/aspca.jpg'),
+        },
+        {
+            name: "Environmental Conservation",
+            description: "Join efforts to protect and restore our natural environment.",
+            type: "Nonprofit",
+            image: require('../assets/ngo/CRI.jpg'),
+        },
+        {
+            name: "Education",
+            description: "Promote literacy and access to quality education for all.",
+            type: "Nonprofit",
+            image: require('../assets/ngo/paws.jpeg'),
+        },
+        {
+            name: "Healthcare",
+            description: "Support local healthcare initiatives and access to medical care.",
+            type: "Nonprofit",
+            image: require('../assets/ngo/redCross.png'),
+        },
+    ];
+
+    // If in discover mode, show discover-focused layout
+    if (discover) {
+        return (
+            <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }} edges={['top', 'left', 'right']}>
+                <MainHeaderNav title="Discover" showBackButton={true} />
+                <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+                    <View style={{ paddingHorizontal: 20 }}>
+                        {/* Search Input for discover mode */}
+                        <View style={{ marginBottom: 32, marginTop: 16 }}>
+                            <View style={{ 
+                                position: 'relative', 
+                                backgroundColor: LightGrey, 
+                                borderRadius: 10, 
+                                flexDirection: 'row', 
+                                alignItems: 'center',
+                                paddingHorizontal: 16,
+                                paddingVertical: 16
+                            }}>
+                                <Search size={20} color={PrimaryGrey} style={{ marginRight: 12 }} />
+                                <TextInput
+                                    placeholder="Search non-profits, CRWDs, or posts"
+                                    placeholderTextColor={PrimaryGrey} 
+                                    style={{ flex: 1, fontSize: 16 }}
+                                    value={search}
+                                    onChangeText={setSearch}
+                                />
+                                {search ? (
+                                    <TouchableOpacity onPress={() => setSearch("")}>
+                                        <Text style={{ fontSize: 18, color: PrimaryGrey }}>✕</Text>
+                                    </TouchableOpacity>
+                                ) : null}
+                            </View>
+                        </View>
+
+                        {/* Suggested Causes Section */}
+                        <View style={{ marginBottom: 32 }}>
+                            <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 16 }}>Find Your Cause</Text>
+                            <View style={{ gap: 20 }}>
+                                {suggestedCauses.map((cause, index) => (
+                                    <TouchableOpacity key={index} style={{ 
+                                        flexDirection: 'row', 
+                                        justifyContent: 'space-between', 
+                                        alignItems: 'center',
+                                        padding: 16,
+                                        backgroundColor: '#f8f9fa',
+                                        borderRadius: 12
+                                    }}>
+                                        <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center', flex: 1 }}>
+                                            <Image source={cause.image} style={{ width: 40, height: 40, borderRadius: 20 }} />
+                                            <View style={{ flex: 1 }}>
+                                                <View style={{
+                                                    backgroundColor: '#e3f2fd',
+                                                    paddingHorizontal: 10,
+                                                    paddingVertical: 4,
+                                                    borderRadius: 8,
+                                                    marginBottom: 4,
+                                                    alignSelf: 'flex-start'
+                                                }}>
+                                                    <Text style={{ fontSize: 12, color: PrimaryBlue, fontWeight: '500' }}>
+                                                        {cause.type}
+                                                    </Text>
+                                                </View>
+                                                <Text style={{ fontSize: 14, fontWeight: '500', marginBottom: 4 }}>
+                                                    {cause.name}
+                                                </Text>
+                                                <Text style={{ fontSize: 12, color: 'grey' }} numberOfLines={2}>
+                                                    {cause.description}
+                                                </Text>
+                                            </View>
+                                        </View>
+                                        <View style={{ alignItems: 'center' }}>
+                                            <TouchableOpacity style={{
+                                                backgroundColor: PrimaryBlue,
+                                                paddingVertical: 8,
+                                                paddingHorizontal: 12,
+                                                borderRadius: 8,
+                                                marginBottom: 4
+                                            }}>
+                                                <Text style={{ color: 'white', fontSize: 12 }}>Donate Now</Text>
+                                            </TouchableOpacity>
+                                            <TouchableOpacity>
+                                                <Text style={{ color: PrimaryBlue, fontSize: 12 }}>Visit Profile</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+                        </View>
+                    </View>
+                </ScrollView>
+            </SafeAreaView>
+        );
+    }
 
     return (
         <SafeAreaView style={{backgroundColor: 'white', flex: 1}} edges={['top', 'left', 'right']}>

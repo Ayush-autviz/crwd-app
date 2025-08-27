@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { ArrowLeft, X, Minus, Plus } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
+import Slider from '@react-native-community/slider';
 import DonationStep2 from '../components/donation/DonationStep2';
 import DonationStep3 from '../components/donation/DonationStep3';
 import OneTimeDonation from '../components/donation/OneTimeDonation';
@@ -29,30 +30,10 @@ export default function DonationScreen() {
   const [step, setStep] = useState(1);
   const [inputValue, setInputValue] = useState('7');
 
-  const incrementDonation = () => {
-    const newAmount = donationAmount + 1;
-    setDonationAmount(newAmount);
-    setInputValue(newAmount.toString());
-  };
-
-  const decrementDonation = () => {
-    if (donationAmount > 1) {
-      const newAmount = donationAmount - 1;
-      setDonationAmount(newAmount);
-      setInputValue(newAmount.toString());
-    }
-  };
-
-  const handleInputChange = (value: string) => {
-    const numericValue = value.replace(/[^0-9]/g, '');
-    setInputValue(numericValue);
-  };
-
-  const handleInputBlur = () => {
-    const numValue = parseInt(inputValue) || 1;
-    const finalValue = numValue < 5 ? 5 : numValue;
-    setDonationAmount(finalValue);
-    setInputValue(finalValue.toString());
+  const handleSliderChange = (value: number) => {
+    const roundedValue = Math.round(value);
+    setDonationAmount(roundedValue);
+    setInputValue(roundedValue.toString());
   };
 
   if (checkout) {
@@ -158,41 +139,39 @@ export default function DonationScreen() {
                       all of the organizations in your box.
                     </Text>
 
-                    {/* Amount Selector */}
+                    {/* Amount Selector with Slider */}
                     <View style={styles.amountSection}>
                       <Text style={styles.amountTitle}>
-                        Enter monthly donation
+                        Set monthly donation amount
                       </Text>
 
-                      <View style={styles.amountSelector}>
-                        <TouchableOpacity
-                          onPress={decrementDonation}
-                          style={styles.amountButton}
-                        >
-                          <Minus size={18} color="#374151" />
-                        </TouchableOpacity>
+                      {/* Amount Display */}
+                      <View style={styles.amountDisplay}>
+                        <Text style={styles.amountValue}>${donationAmount}</Text>
+                        <Text style={styles.amountLabel}>per month</Text>
+                      </View>
 
-                        <View style={styles.amountInput}>
-                          <Text style={styles.dollarSign}>$</Text>
-                          <TextInput
-                            value={inputValue}
-                            onChangeText={handleInputChange}
-                            onBlur={handleInputBlur}
-                            style={styles.amountText}
-                            keyboardType="numeric"
-                          />
+                      {/* Slider */}
+                      <View style={styles.sliderContainer}>
+                        <Slider
+                          style={styles.slider}
+                          minimumValue={5}
+                          maximumValue={100}
+                          value={donationAmount}
+                          onValueChange={handleSliderChange}
+                          minimumTrackTintColor="#2563eb"
+                          maximumTrackTintColor="#d1d5db"
+                          thumbTintColor="#2563eb"
+                          step={1}
+                        />
+                        <View style={styles.sliderLabels}>
+                          <Text style={styles.sliderLabel}>$5</Text>
+                          <Text style={styles.sliderLabel}>$100</Text>
                         </View>
-
-                        <TouchableOpacity
-                          onPress={incrementDonation}
-                          style={styles.amountButton}
-                        >
-                          <Plus size={18} color="#374151" />
-                        </TouchableOpacity>
                       </View>
 
                       <Text style={styles.amountHint}>
-                        Input amount over $5
+                        Drag to adjust your monthly donation amount
                       </Text>
                     </View>
 
@@ -413,48 +392,40 @@ const styles = StyleSheet.create({
     color: '#1f2937',
     marginBottom: 12,
   },
-  amountSelector: {
-    flexDirection: 'row',
-    backgroundColor: '#ffffff',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    overflow: 'hidden',
-    marginBottom: 8,
-  },
-  amountButton: {
-    width: 48,
-    height: 48,
+  amountDisplay: {
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#ffffff',
+    marginBottom: 20,
   },
-  amountInput: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 48,
-    paddingHorizontal: 16,
-    borderLeftWidth: 1,
-    borderRightWidth: 1,
-    borderColor: '#e5e7eb',
-  },
-  dollarSign: {
-    fontSize: 24,
+  amountValue: {
+    fontSize: 32,
     fontWeight: 'bold',
     color: '#2563eb',
+    marginBottom: 4,
   },
-  amountText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#2563eb',
-    textAlign: 'center',
-    width: 80,
+  amountLabel: {
+    fontSize: 14,
+    color: '#6b7280',
+  },
+  sliderContainer: {
+    marginBottom: 16,
+  },
+  slider: {
+    width: '100%',
+    height: 40,
+  },
+  sliderLabels: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 8,
+  },
+  sliderLabel: {
+    fontSize: 12,
+    color: '#6b7280',
   },
   amountHint: {
     fontSize: 12,
     color: '#6b7280',
+    textAlign: 'center',
   },
   securityMessage: {
     flexDirection: 'row',

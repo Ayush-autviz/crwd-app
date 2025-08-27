@@ -5,24 +5,22 @@ import MainHeaderNav from '../components/MainHeaderNav';
 import { LightGrey, PrimaryBlue, PrimaryGrey, SecondaryBlue, SecondaryGrey } from '../Constants/Colors';
 import { Bookmark, Plus } from 'lucide-react-native';
 import { TextInput } from 'react-native-gesture-handler';
-import OneTimeDonation from '../components/donation/OneTimeDonation';
 import { Organization, RECENTS, SUGGESTED } from '../Constants/organizations';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
 export default function CreateCRWD() {
   const navigation = useNavigation();
-  const [count, setcount] = useState(5)
-  const [checkout, setCheckout] = useState(false);
+  const [step, setStep] = useState(1);
+  const [name, setName] = useState('');
+  const [desc, setDesc] = useState('');
   const [selectedOrganizations, setSelectedOrganizations] = useState<string[]>([]);
   const [bookmarkedOrgs, setBookmarkedOrgs] = useState<string[]>([]);
   const [showNameTooltip, setShowNameTooltip] = useState(false);
   const [showDescTooltip, setShowDescTooltip] = useState(false);
-  const [name, setName] = useState('');
-  const [desc, setDesc] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
   const confettiRef = useRef<ConfettiCannon>(null);
-
 
   const toggleOrganization = (orgId: string) => {
     if (selectedOrganizations.includes(orgId)) {
@@ -41,6 +39,25 @@ export default function CreateCRWD() {
   };
 
   const handleCreateCRWD = () => {
+    // Check fields from top to bottom
+    if (name.trim() === '') {
+      setToast('Please enter a name for your CRWD');
+      setTimeout(() => setToast(null), 4000);
+      return;
+    }
+    if (desc.trim() === '') {
+      setToast('Please enter a description for your CRWD');
+      setTimeout(() => setToast(null), 4000);
+      return;
+    }
+    if (selectedOrganizations.length === 0) {
+      setToast('Please select at least one cause');
+      setTimeout(() => setToast(null), 4000);
+      return;
+    }
+
+    // Proceed if no errors
+    setStep(2);
     setShowSuccess(true);
     
     // Fire confetti after modal appears
@@ -87,19 +104,67 @@ export default function CreateCRWD() {
     );
   };
 
+  if (step === 2) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <MainHeaderNav menu={false} post={false} show={true} />
+        
+        <View style={styles.successContainer}>
+          <Image 
+            source={require('../assets/logo/CRWD.png')} 
+            style={styles.successLogo}
+            resizeMode="contain"
+          />
+          <Text style={styles.successTitle}>You've started a CRWD!</Text>
+          <View style={styles.successButtons}>
+            <TouchableOpacity
+              style={styles.inviteButton}
+              onPress={() => {
+                Share.share({
+                  message: `Join me in my new CRWD "${name}"! We're working together to make a difference. Download the CRWD app to get involved!`,
+                  title: `Join my CRWD: ${name}`,
+                });
+              }}
+            >
+              <Text style={styles.inviteButtonText}>Invite Friends</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.viewButton}
+              onPress={() => {
+                setShowSuccess(false);
+                navigation.navigate('GroupCRWD' as never);
+              }}
+            >
+              <Text style={styles.viewButtonText}>View CRWD</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <MainHeaderNav menu={false} post={false} show={true} />
       
-            <ScrollView style={styles.content}>
-        <Text style={styles.title}>Create a CRWD</Text>
-        <Text style={styles.subtitle}>Be the inspiration to your community. Choose a causes, invite friends, discuss and make an impact together</Text>
-        <View style={{ flexDirection: 'row', gap: 20, alignItems: 'center', marginVertical: 20 }}>
-          <View style={{ borderColor: SecondaryGrey, borderWidth: 1, padding: 15, borderRadius: 10 }}>
-            <Plus color={SecondaryGrey} size={20} />
+      {/* Toast Notification */}
+      {toast && (
+        <View style={styles.toastContainer}>
+          <View style={styles.toast}>
+            <Text style={styles.toastText}>{toast}</Text>
+            <TouchableOpacity
+              onPress={() => setToast(null)}
+              style={styles.toastClose}
+            >
+              <Text style={styles.toastCloseText}>✕</Text>
+            </TouchableOpacity>
           </View>
-          <Text style={{ color: SecondaryGrey }}>Choose a photo</Text>
         </View>
+      )}
+
+      <ScrollView style={styles.content}>
+        <Text style={styles.title}>Create a CRWD</Text>
+        <Text style={styles.subtitle}>Be the inspiration to your community. Choose causes, invite friends, discuss and make an impact together</Text>
 
         <View style={{ position: 'relative', marginBottom: 10 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -170,7 +235,7 @@ export default function CreateCRWD() {
 
         <TextInput 
           style={{ borderColor: SecondaryGrey, borderWidth: 1, borderRadius: 10, padding: 15, marginBottom: 20 }} 
-          placeholder='Atlanta Food Friends' 
+          placeholder='e.g. Atlanta Food Friends' 
           placeholderTextColor={SecondaryGrey}
           value={name}
           onChangeText={setName}
@@ -178,7 +243,7 @@ export default function CreateCRWD() {
 
         <View style={{ position: 'relative', marginBottom: 10 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Text style={{ color: PrimaryGrey, fontSize: 16 }}>Describe your CRWD</Text>
+            <Text style={{ color: PrimaryGrey, fontSize: 16 }}>What brings this group together?</Text>
             <TouchableOpacity
               onPress={() => setShowDescTooltip(!showDescTooltip)}
               style={{ padding: 8 }}
@@ -247,32 +312,15 @@ export default function CreateCRWD() {
           style={{ borderColor: SecondaryGrey, borderWidth: 1, borderRadius: 10, padding: 15, marginBottom: 20 }} 
           multiline={true} 
           numberOfLines={2} 
-          placeholder='We support shelters & meals programs in ATL.' 
+          placeholder='e.g., "We support shelters & meals programs in ATL."' 
           placeholderTextColor={SecondaryGrey}
           value={desc}
           onChangeText={setDesc}
         />
 
-        {/* <Text style={{ color: SecondaryGrey, marginBottom: 10, fontSize: 16 }}>Enter Suggested Amount</Text>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, backgroundColor: LightGrey, padding: 15, borderRadius: 10 }}>
-          <Text style={{ color: SecondaryGrey, fontSize: 16 }}>Input amount over $5</Text>
-          <View style={{ flexDirection: 'row', gap: 10 , justifyContent: 'space-around', alignContent: 'center', backgroundColor: SecondaryBlue, borderRadius: 10, padding: 15 }}>
-            <TouchableOpacity onPress={() => setcount(prev => prev - 1)} disabled={count === 5}>
-              <Minus color={PrimaryBlue} size={20} />
-            </View>
-          </View>
-        </View> */}
-
         <Text style={{ color: PrimaryGrey, fontSize: 16 }}>Choose one or more causes for your CRWD</Text>
 
-        {/* <OneTimeDonation
-              setCheckout={setCheckout}
-              selectedOrganizations={selectedOrganizations}
-              setSelectedOrganizations={setSelectedOrganizations}
-              show={false}
-            /> */}
-
-<Text style={styles.subsectionTitle}>Select from your causes (if any)</Text>
+        <Text style={styles.subsectionTitle}>Select from your causes (if any)</Text>
         {RECENTS.map(renderOrganizationCard)}
 
         <Text style={styles.subsectionTitle}>Suggested Causes</Text>
@@ -281,78 +329,19 @@ export default function CreateCRWD() {
 
       <TouchableOpacity
         onPress={handleCreateCRWD}
-        disabled={selectedOrganizations.length === 0 || name === '' || desc === ''}
+        // disabled={selectedOrganizations.length === 0 || name === '' || desc === ''}
         style={[
           styles.donateButton,
-          (selectedOrganizations.length === 0 || name === '' || desc === '') && styles.disabledButton
+          // (selectedOrganizations.length === 0 || name === '' || desc === '') && styles.disabledButton
         ]}
       >
         <Text style={[
           styles.donateButtonText,
-          (selectedOrganizations.length === 0 || name === '' || desc === '') && styles.disabledButtonText
+          // (selectedOrganizations.length === 0 || name === '' || desc === '') && styles.disabledButtonText
         ]}>
-          Create
+          Create CRWD
         </Text>
       </TouchableOpacity>
-
-      {/* Success Modal */}
-      <Modal
-        visible={showSuccess}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => setShowSuccess(false)}
-      >
-        <View style={styles.modalOverlay}>
-          {/* Confetti Cannon */}
-          <ConfettiCannon
-            ref={confettiRef}
-            count={200}
-            origin={{ x: -10, y: 0 }}
-            autoStart={false}
-            colors={['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8']}
-            fadeOut={true}
-          />
-          
-          <View style={styles.modalContent}>
-            {/* Close Button */}
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => setShowSuccess(false)}
-            >
-              <Text style={styles.closeButtonText}>✕</Text>
-            </TouchableOpacity>
-            
-            <Image 
-              source={require('../assets/logo/CRWD.png')} 
-              style={styles.successLogo}
-              resizeMode="contain"
-            />
-            <Text style={styles.successTitle}>You've started a CRWD!</Text>
-            <View style={styles.successButtons}>
-              <TouchableOpacity
-                style={styles.inviteButton}
-                onPress={() => {
-                  Share.share({
-                    message: `Join me in my new CRWD "${name}"! We're working together to make a difference. Download the CRWD app to get involved!`,
-                    title: `Join my CRWD: ${name}`,
-                  });
-                }}
-              >
-                <Text style={styles.inviteButtonText}>Invite Friends</Text>
-              </TouchableOpacity>
-                              <TouchableOpacity
-                  style={styles.viewButton}
-                  onPress={() => {
-                    setShowSuccess(false);
-                    navigation.navigate('GroupCRWD' as never);
-                  }}
-                >
-                  <Text style={styles.viewButtonText}>View CRWD</Text>
-                </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
     </SafeAreaView>
   );
 } 
@@ -375,110 +364,6 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 13,
     color: PrimaryGrey,
-    // textAlign: 'center',
-  },
-  amountSection: {
-    backgroundColor: '#eff6ff',
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 24,
-  },
-  amountTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1f2937',
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  amountSelector: {
-    flexDirection: 'row',
-    backgroundColor: '#ffffff',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    overflow: 'hidden',
-    marginBottom: 8,
-  },
-  amountButton: {
-    width: 48,
-    height: 48,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#ffffff',
-  },
-  amountInput: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 48,
-    paddingHorizontal: 16,
-    borderLeftWidth: 1,
-    borderRightWidth: 1,
-    borderColor: '#e5e7eb',
-  },
-  dollarSign: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#2563eb',
-  },
-  amountText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#2563eb',
-    textAlign: 'center',
-    width: 80,
-  },
-  amountHint: {
-    fontSize: 12,
-    color: '#6b7280',
-    textAlign: 'center',
-  },
-  selectedSection: {
-    marginBottom: 24,
-  },
-  selectedTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1f2937',
-    marginBottom: 12,
-  },
-
-  selectedOrgImage: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    marginRight: 12,
-  },
-  selectedOrgInfo: {
-    flex: 1,
-  },
-  selectedOrgName: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1f2937',
-  },
-  selectedOrgAmount: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#2563eb',
-  },
-  removeButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#fef2f2',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  orgSection: {
-    marginBottom: 24,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#1f2937',
-    marginBottom: 16,
   },
   subsectionTitle: {
     fontSize: 14,
@@ -516,7 +401,7 @@ const styles = StyleSheet.create({
   orgName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1f2937',
+    color: '#1F2937',
     marginBottom: 4,
   },
   orgDesc: {
@@ -557,9 +442,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
   },
-  donateSection: {
-    paddingBottom: 40,
-  },
   donateButton: {
     backgroundColor: '#2563eb',
     paddingVertical: 16,
@@ -590,11 +472,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 100,
   },
-  successContent: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-  },
   successLogo: {
     width: 120,
     height: 120,
@@ -617,7 +494,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
     width: '100%',
-    
   },
   inviteButtonText: {
     fontSize: 18,
@@ -632,63 +508,45 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#d1d5db',
     width: '100%',
-    
   },
   viewButtonText: {
     fontSize: 18,
     fontWeight: '600',
     color: '#6b7280',
   },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    // alignItems: 'center',
-  },
-  modalContent: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 32,
-    alignItems: 'center',
-    marginHorizontal: 20,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 10,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 10,
-    elevation: 10,
-  },
-  confettiContainer: {
+  toastContainer: {
     position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+    top: 130,
+    left: 20,
+    right: 20,
     zIndex: 1000,
   },
-  confettiPiece: {
-    position: 'absolute',
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 16,
-    right: 16,
-    width: 32,
-    height: 32,
+  toast: {
+    backgroundColor: '#ef4444',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderRadius: 16,
-    backgroundColor: '#f3f4f6',
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 1001,
+    justifyContent: 'space-between',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
   },
-  closeButtonText: {
-    fontSize: 18,
+  toastText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '500',
+    flex: 1,
+  },
+  toastClose: {
+    marginLeft: 12,
+  },
+  toastCloseText: {
+    color: 'white',
+    fontSize: 16,
     fontWeight: 'bold',
-    color: '#6b7280',
   },
 });

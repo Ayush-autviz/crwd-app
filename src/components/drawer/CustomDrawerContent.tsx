@@ -89,8 +89,9 @@ export default function CustomDrawerContent(props: DrawerContentComponentProps) 
           <TouchableOpacity onPress={() => console.log('Terms of Service')}>
             <Text style={styles.footerLink}>Terms of Service</Text>
           </TouchableOpacity>
-          <Text style={{fontSize: 12, color: PrimaryGrey}}>CRWD @2025</Text>
         </View>
+        <Text style={{fontSize: 12, color: PrimaryGrey, textAlign: 'center', marginTop: 8}}>CRWD ©2025</Text>
+
       </View>
     </SafeAreaView>
   );
@@ -156,7 +157,7 @@ const styles = StyleSheet.create({
   },
   footerLinks: {
     flexDirection: 'row',
-    // justifyContent: 'space-around',
+    justifyContent: 'center',
     gap: 8,
     paddingHorizontal: 16,
   },

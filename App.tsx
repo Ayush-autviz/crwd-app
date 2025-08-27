@@ -41,13 +41,13 @@ import Statistics from './src/screens/Statistics'
 import Members from './src/screens/Members'
 import CRWDScreen from './src/screens/CRWDScreen'
 import ManageCRWD from './src/screens/ManageCRWD'
-import { User } from 'lucide-react-native'
 import Interests from './src/screens/Interests'
 import UserProfile from './src/screens/UserProfile'
 import SplashScreen from './src/screens/SplashScreen'
 import ClaimProfile from './src/components/onboarding/ClaimProfile'
 import AddPhoto from './src/components/onboarding/AddPhoto'
 import NonProfitInterests from './src/components/onboarding/NonProfitInterests'
+import CompleteOnboard from './src/components/onboarding/CompleteOnboard'
 import {FontAwesome6} from '@react-native-vector-icons/fontawesome6'
 import { Image } from 'react-native'
 
@@ -130,6 +130,7 @@ export default function App() {
         <Stack.Screen name="ClaimProfile" component={ClaimProfile} />
         <Stack.Screen name="AddPhoto" component={AddPhoto} />
         <Stack.Screen name="NonProfitInterests" component={NonProfitInterests} />
+        <Stack.Screen name="CompleteOnboard" component={CompleteOnboard} />
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="Signup" component={Signup} />
         <Stack.Screen name="ForgotPassword" component={ForgotPassword} />

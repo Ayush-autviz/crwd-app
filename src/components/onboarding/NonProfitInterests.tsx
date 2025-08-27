@@ -8,8 +8,9 @@ import {
   SafeAreaView,
   ScrollView,
   Dimensions,
+  TextInput,
 } from 'react-native';
-import { Check, ChevronLeft } from 'lucide-react-native';
+import { Check, ChevronLeft, Search, Loader2 } from 'lucide-react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -71,10 +72,24 @@ const nonProfitInterests = [
   ...interestsData.map((item, index) => ({ ...item, id: item.id + (index * 1000) + 300 })),
   ...interestsData.map((item, index) => ({ ...item, id: item.id + (index * 1000) + 400 })),
   ...interestsData.map((item, index) => ({ ...item, id: item.id + (index * 1000) + 500 }))
-]
+];
+
+const categories = [
+  "Health",
+  "Education",
+  "Environment",
+  "Arts",
+  "Animals",
+  "Poverty",
+  "Veterans",
+  "Children",
+];
 
 export default function NonProfitInterests() {
   const [selectedInterests, setSelectedInterests] = useState<number[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const navigation = useNavigation<any>()   
   const continueButtonScale = useSharedValue(1);
 
@@ -97,17 +112,13 @@ export default function NonProfitInterests() {
       return;
     }
 
-    navigation.navigate('DrawerNav')
+    setIsLoading(true);
 
-    // continueButtonScale.value = withTiming(0.95, { duration: 100 }, () => {
-    //   continueButtonScale.value = withTiming(1, { duration: 100 }, () => {
-    //     // Navigate to next screen or complete onboarding
-    //     runOnJS(() => {
-    //       console.log('Selected interests:', selectedInterests);
-    //       // You can navigate to the next screen here
-    //     })();
-    //   });
-    // });
+    // Show loader for 2 seconds then navigate
+    setTimeout(() => {
+      setIsLoading(false);
+      navigation.navigate('CompleteOnboard' as never);
+    }, 2000);
   };
 
   const handleBack = () => {
@@ -138,7 +149,10 @@ export default function NonProfitInterests() {
 
     return (
       <TouchableOpacity
-        style={styles.interestCard}
+        style={[
+          styles.interestCard,
+          isSelected && styles.interestCardSelected
+        ]}
         onPress={() => handleInterestSelect(interest.id)}
         activeOpacity={0.8}
       >
@@ -148,12 +162,13 @@ export default function NonProfitInterests() {
         </View>
         
         {/* Selection Overlay */}
-        <Animated.View style={[styles.selectionOverlay, overlayAnimatedStyle]}>
-          <Animated.View style={[styles.checkContainer, checkAnimatedStyle]}>
-            {/* <Text style={styles.checkmark}>✓</Text> */}
-            <Check size={18} color="white" />
-          </Animated.View>
-        </Animated.View>
+        {isSelected && (
+          <View style={styles.selectionOverlay}>
+            <View style={styles.checkContainer}>
+              <Check size={18} color="white" />
+            </View>
+          </View>
+        )}
       </TouchableOpacity>
     );
   };
@@ -164,12 +179,59 @@ export default function NonProfitInterests() {
       <OnboardingHeader />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-      {/* <OnboardingHeader /> */}
+        {/* Step Indicator */}
+        <View style={styles.stepIndicator}>
+          <View style={styles.stepBar}>
+            <View style={[styles.stepDot, styles.stepDotInactive]} />
+            <View style={[styles.stepDot, styles.stepDotInactive]} />
+            <View style={[styles.stepDot, styles.stepDotActive]} />
+          </View>
+        </View>
 
-          <Text style={styles.title}>Select a few Non Profits </Text>     
-        <Text style={styles.subtitle}>
-          You might be interested in
-        </Text>
+        {/* Heading */}
+        <View style={styles.headingContainer}>
+          <Text style={styles.title}>Find causes that fit you</Text>     
+          <Text style={styles.subtitle}>
+            Choose at least 1 to start. You can add more anytime.
+          </Text>
+        </View>
+
+        {/* Search Bar */}
+        <View style={styles.searchContainer}>
+          <Search size={16} color="#9ca3af" style={styles.searchIcon} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search causes or nonprofits"
+            placeholderTextColor="#9ca3af"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+        </View>
+
+        {/* Category Filters */}
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.categoriesContainer}
+        >
+          {categories.map((category) => (
+            <TouchableOpacity
+              key={category}
+              style={[
+                styles.categoryButton,
+                selectedCategory === category && styles.categoryButtonSelected
+              ]}
+              onPress={() => setSelectedCategory(selectedCategory === category ? '' : category)}
+            >
+              <Text style={[
+                styles.categoryButtonText,
+                selectedCategory === category && styles.categoryButtonTextSelected
+              ]}>
+                {category}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
 
         {/* Interests Grid */}
         <View style={styles.interestsGrid}>
@@ -178,44 +240,41 @@ export default function NonProfitInterests() {
           ))}
         </View>
 
-        {/* Continue Button */}
-        {/* <View style={styles.buttonContainer}>
-          <Animated.View style={continueButtonAnimatedStyle}>
-            <TouchableOpacity 
-              style={[
-                styles.continueButton, 
-                selectedInterests.length === 0 && styles.continueButtonDisabled
-              ]} 
-              onPress={handleContinue}
-              disabled={selectedInterests.length === 0}
-              activeOpacity={1}
-            >
-              <Text style={[
-                styles.continueButtonText,
-                selectedInterests.length === 0 && styles.continueButtonTextDisabled
-              ]}>
-                Continue ({selectedInterests.length})
-              </Text>
-            </TouchableOpacity>
-          </Animated.View>
-        </View> */}
+        {/* Selection Summary */}
+        {selectedInterests.length > 0 && (
+          <View style={styles.selectionSummary}>
+            <Text style={styles.selectionSummaryText}>
+              You've chosen {selectedInterests.length} cause{selectedInterests.length !== 1 ? 's' : ''}.
+            </Text>
+          </View>
+        )}
       </ScrollView>
-      <View style={styles.footer}> <TouchableOpacity 
-              style={[
-                styles.continueButton, 
-                selectedInterests.length === 0 && styles.continueButtonDisabled
-              ]} 
-              onPress={handleContinue}
-              disabled={selectedInterests.length === 0}
-              activeOpacity={1}
-            >
-              <Text style={[
-                styles.continueButtonText,
-                selectedInterests.length === 0 && styles.continueButtonTextDisabled
-              ]}>
-                Continue {selectedInterests.length > 0 && `(${selectedInterests.length})`}
-              </Text>
-            </TouchableOpacity></View>
+
+      <View style={styles.footer}> 
+        <TouchableOpacity 
+          style={[
+            styles.continueButton, 
+            selectedInterests.length === 0 && styles.continueButtonDisabled
+          ]} 
+          onPress={handleContinue}
+          disabled={selectedInterests.length === 0 || isLoading}
+          activeOpacity={1}
+        >
+          {isLoading ? (
+            <View style={styles.loadingContainer}>
+              <Loader2 size={16} color="white" style={styles.spinner} />
+              <Text style={styles.continueButtonText}>Loading...</Text>
+            </View>
+          ) : (
+            <Text style={[
+              styles.continueButtonText,
+              selectedInterests.length === 0 && styles.continueButtonTextDisabled
+            ]}>
+              Continue
+            </Text>
+          )}
+        </TouchableOpacity>
+      </View>
       </View>
     </SafeAreaView>
   );
@@ -226,11 +285,9 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
     backgroundColor: 'white',
-    // paddingBottom: 200,
   },
   scrollContent: {
     flexGrow: 1,
-    // paddingHorizontal: 24,
     paddingBottom: 50,
   },
   header: {
@@ -238,33 +295,97 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 20,
     marginBottom: 20,
-    
   },
   backButton: {
     padding: 8,
     marginRight: 12,
   },
+  stepIndicator: {
+    alignItems: 'center',
+    marginTop: 20,
+    marginBottom: 20,
+  },
+  stepBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  stepDot: {
+    width: 48,
+    height: 4,
+    borderRadius: 2,
+  },
+  stepDotActive: {
+    backgroundColor: 'black',
+  },
+  stepDotInactive: {
+    backgroundColor: '#d1d5db',
+  },
+  headingContainer: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
   title: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: '700',
     color: '#111827',
-    marginBottom: 12,
+    marginBottom: 8,
     textAlign: 'center',
-    marginTop: 20,
   },
   subtitle: {
-    fontSize: 16,
-    color: PrimaryGrey,
+    fontSize: 14,
+    color: '#6b7280',
     textAlign: 'center',
-    lineHeight: 24,
-    marginBottom : 20,
+    lineHeight: 20,
+    marginBottom: 20,
+  },
+  searchContainer: {
+    position: 'relative',
+    marginBottom: 20,
+  },
+  searchIcon: {
+    position: 'absolute',
+    left: 12,
+    top: 12,
+    zIndex: 1,
+  },
+  searchInput: {
+    height: 40,
+    backgroundColor: '#f3f4f6',
+    borderRadius: 8,
+    paddingLeft: 40,
+    paddingRight: 16,
+    fontSize: 14,
+    color: '#111827',
+  },
+  categoriesContainer: {
+    paddingBottom: 16,
+    gap: 8,
+  },
+  categoryButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: '#e5e7eb',
+    borderRadius: 20,
+    marginRight: 8,
+  },
+  categoryButtonSelected: {
+    backgroundColor: '#374151',
+  },
+  categoryButtonText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#374151',
+  },
+  categoryButtonTextSelected: {
+    color: 'white',
   },
   interestsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
     gap: 16,
-    marginBottom: 40,
+    marginBottom: 20,
   },
   interestCard: {
     padding: 10,
@@ -272,14 +393,19 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     overflow: 'hidden',
-    // borderWidth: 1,
-    borderColor: '#000000',
+    borderWidth: 2,
+    borderColor: '#e5e7eb',
     shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4,
     marginBottom: 16,
+  },
+  interestCardSelected: {
+    borderColor: PrimaryBlue,
+    shadowOpacity: 0.2,
+    elevation: 8,
   },
   interestImage: {
     width: '80%',
@@ -298,34 +424,26 @@ const styles = StyleSheet.create({
   },
   selectionOverlay: {
     position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    // backgroundColor: 'rgba(124, 58, 237, 0.9)',
-    // backgroundColor: 'black',
-    borderWidth: 3,
-    
-    borderColor: PrimaryBlue,
-    borderRadius: 16,
-    // justifyContent: 'center',
-    alignItems: 'flex-end',
-    padding: 5,
+    top: 8,
+    left: 8,
+    alignItems: 'flex-start',
   },
   checkContainer: {
-    width: 25,
-    height: 25,
-    borderRadius: 24,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
     backgroundColor: PrimaryBlue,
     justifyContent: 'center',
     alignItems: 'center',
-    // borderWidth: 3,
-    borderColor: '#000000',
   },
-  checkmark: {
-    color: '#000000',
-    fontSize: 24,
-    fontWeight: 'bold',
+  selectionSummary: {
+    alignItems: 'center',
+    marginBottom: 20,
+    minHeight: 24,
+  },
+  selectionSummaryText: {
+    fontSize: 14,
+    color: '#6b7280',
   },
   buttonContainer: {
     paddingBottom: 40,
@@ -334,28 +452,27 @@ const styles = StyleSheet.create({
     backgroundColor: PrimaryBlue, 
     padding: 15, 
     borderRadius: 12, 
-    // marginTop: 20,
     alignItems: 'center',
-    // borderWidth: 1,
-    // borderColor: '#000000',
-    // shadowColor: '#000000',
-    // shadowOffset: { width: 0, height: 6 },
-    // shadowOpacity: 1,
-    // shadowRadius: 0,
-    // elevation: 12,
   },
   continueButtonDisabled: {
-    backgroundColor: PrimaryBlue,
+    backgroundColor: '#d1d5db',
   },
   continueButtonText: {
     color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 16,
+    fontWeight: '600',
     textAlign: 'center',
   },
   continueButtonTextDisabled: {
-    color: '#D1D5DB',
-    fontWeight: 'bold',
+    color: '#9ca3af',
+    fontWeight: '600',
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  spinner: {
+    marginRight: 8,
   },
   footer: {
     position: 'absolute',
@@ -366,8 +483,5 @@ const styles = StyleSheet.create({
     padding: 20,
     borderTopWidth: 1,
     borderTopColor: '#e5e7eb',
-    // flexDirection: 'row',
-    // justifyContent: 'space-between',
-    // alignItems: 'center',
   },
 });

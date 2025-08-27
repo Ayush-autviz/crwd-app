@@ -79,6 +79,7 @@ export default function Search2() {
                 <View style={{ marginVertical: 10, padding: 10, backgroundColor: LightGrey, borderRadius: 8 }}>
                     <TextInput 
                         placeholder='Search for non-profits, CRWDs, or posts' 
+                        placeholderTextColor={PrimaryGrey} 
                         value={search}
                         onChangeText={setSearch}
                     />

@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { CheckCircle, Bookmark, ShieldCheck } from 'lucide-react-native';
 import { PrimaryBlue, LightGrey, PrimaryGrey } from '../../Constants/Colors';
+import { useNavigation } from '@react-navigation/native';
 
 interface CauseProfileCardProps {
   onLearnMoreClick?: () => void;
@@ -10,6 +11,7 @@ interface CauseProfileCardProps {
 const interests = ['Animal Welfare', 'Environment', 'Food Insecurity'];
 
 const CauseProfileCard: React.FC<CauseProfileCardProps> = ({ onLearnMoreClick }) => {
+  const navigation = useNavigation();
   return (
     <View style={{ backgroundColor: 'white', paddingHorizontal: 12, paddingVertical: 16, marginHorizontal: 12, marginBottom: 8 }}>
       {/* Profile */}
@@ -52,14 +54,14 @@ const CauseProfileCard: React.FC<CauseProfileCardProps> = ({ onLearnMoreClick })
       {/* Interest Tags */}
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
         {interests.map((interest, index) => (
-          <View key={index} style={{ 
+          <TouchableOpacity onPress={() => navigation.navigate('Interests' as never)} key={index} style={{ 
             backgroundColor: LightGrey, 
             paddingHorizontal: 12, 
             paddingVertical: 6, 
             borderRadius: 20 
           }}>
             <Text style={{ fontSize: 12, color: '#374151' }}>{interest}</Text>
-          </View>
+            </TouchableOpacity>
         ))}
       </View>
 

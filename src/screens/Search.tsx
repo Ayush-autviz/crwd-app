@@ -267,7 +267,7 @@ export default function SearchScreen() {
                 {showSearchResults && (
                     <>
 
-                        <View style={{
+                        <TouchableOpacity onPress={() => navigation.navigate('Interests' as never)} style={{
                             backgroundColor: LightGrey,
                             paddingHorizontal: 13,
                             paddingVertical: 12,
@@ -278,7 +278,7 @@ export default function SearchScreen() {
                             maxWidth: '90%'
                           }}>
                             <Text style={{ fontSize: 13, color: '#000', fontWeight: '500' }}>Animal Welfare</Text>
-                          </View>
+                          </TouchableOpacity>
 
                         <NearbyCauses />
                         

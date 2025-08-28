@@ -334,7 +334,7 @@ export default function OnBoard() {
         {/* Get Started button */}
         <TouchableOpacity
           style={{
-            backgroundColor: '#111827',
+            backgroundColor: PrimaryBlue,
             padding: 14,
             borderRadius: 8,
             marginBottom: 12,

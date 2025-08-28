@@ -69,11 +69,12 @@ export default function CompleteOnboard() {
         <View style={styles.card}>
           {/* CRWD Logo */}
           <View style={styles.logoContainer}>
-            <Image
+            {/* <Image
               source={require('../../assets/logo/logo3.webp')}
               style={styles.logo}
               resizeMode="contain"
-            />
+            /> */}
+            <Image source={require('../../assets/logo/main.png')} style={{ resizeMode: 'contain', width: 120, height: 60 }} />
           </View>
 
           {/* Welcome Message */}

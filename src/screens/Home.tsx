@@ -147,7 +147,7 @@ export default function Home() {
                     horizontal={true}
                     showsHorizontalScrollIndicator={false}
                     renderItem={({ item,index }) => (
-                        <View key={index} style={{
+                        <TouchableOpacity onPress={() => navigation.navigate('Interests' as never)} key={index} style={{
                             backgroundColor: LightGrey,
                             paddingHorizontal: 13,
                             paddingVertical: 12,
@@ -156,7 +156,7 @@ export default function Home() {
                             marginLeft:10
                           }}>
                             <Text style={{ fontSize: 13, color: '#000',fontWeight:'500' }}>{item}</Text>
-                          </View>
+                          </TouchableOpacity>
                     )}
                 />
 

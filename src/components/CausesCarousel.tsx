@@ -118,6 +118,7 @@ export default function CausesCarousel() {
                     color: '#6c757d',
                     lineHeight: 22,
                     textAlign: 'left',
+                    width: '80%',
                   }}>
                     {item.subHeading}
                   </Text>

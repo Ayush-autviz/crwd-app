@@ -108,11 +108,12 @@ export default function ResetPassword() {
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           {/* Logo and Header */}
           <View style={styles.header}>
-            <Image 
+            {/* <Image 
               source={require('../assets/logo/logo3.webp')} 
               style={styles.logo}
               resizeMode="contain"
-            />
+            /> */}
+            <Image source={require('../assets/logo/main.png')} style={{ resizeMode: 'contain', width: 100, height: 80 }} />
             <Text style={styles.title}>Create new password</Text>
             <Text style={styles.subtitle}>
               Choose a strong password for your account{'\n'}

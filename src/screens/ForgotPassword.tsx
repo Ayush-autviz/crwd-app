@@ -63,11 +63,12 @@ export default function ForgotPassword() {
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           {/* Logo and Header */}
           <View style={styles.header}>
-            <Image 
+            {/* <Image 
               source={require('../assets/logo/logo3.webp')} 
               style={styles.logo}
               resizeMode="contain"
-            />
+            /> */}
+            <Image source={require('../assets/logo/main.png')} style={{ resizeMode: 'contain', width: 90, height: 60 }} />
             <Text style={styles.title}>Forgot your password?</Text>
             <Text style={styles.subtitle}>
               No worries! Enter your email address and we'll send you a verification code to reset your password.

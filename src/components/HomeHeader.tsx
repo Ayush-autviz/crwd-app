@@ -29,7 +29,7 @@ export default function HomeHeader({ show = false, menu = true, post = true }) {
 
     return (
         <SafeAreaView style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 10, alignItems: 'center', marginHorizontal: 20, borderBottomWidth: 2, borderBottomColor: LightGrey, }}>
-            <Image source={require('../assets/logo/logo3.webp')} style={{ resizeMode: 'center', width: imageWidth }} />
+            <Image source={require('../assets/logo/main.png')} style={{ resizeMode: 'contain', width: 90, height: '60' }} />
             <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, justifyContent: 'space-between', backgroundColor: LightGrey, padding: 10, borderRadius: 40 }}>
                 <TextInput
                     placeholder='Search'

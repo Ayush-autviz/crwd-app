@@ -39,7 +39,9 @@ export default function MainHeaderNav({ show = false, menu = true, post = true }
                 
 
             </View>
-            <Image source={require('../assets/logo/logo3.webp')} style={{ resizeMode: 'center', width: imageWidth }} />
+            {/* <Image source={require('../assets/logo/logo3.webp')} style={{ resizeMode: 'center', width: imageWidth }} /> */}
+            <Image source={require('../assets/logo/main.png')} style={{ resizeMode: 'contain', width: 90, height: 60 }} />
+            
             <View style={{ flexDirection: 'row', gap: 20 }}>
                <TouchableOpacity onPress={handlePostPress} disabled={!post}>
                         <Plus color={post ? '#000' : '#fff'} />

@@ -129,14 +129,14 @@ const GroupCRWDHeader: React.FC<GroupCRWDHeaderProps> = ({
       {/* Interest Tags */}
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 24 }}>
         {interests.map((interest, index) => (
-          <View key={index} style={{ 
+          <TouchableOpacity onPress={() => navigation.navigate('Interests' as never)} key={index} style={{ 
             backgroundColor: LightGrey, 
             paddingHorizontal: 10, 
             paddingVertical: 10, 
             borderRadius: 10,
           }}>
             <Text style={{ fontSize: 13, color: '#000', fontWeight: '500' }}>{interest}</Text>
-          </View>
+          </TouchableOpacity>
         ))}
       </View>
 

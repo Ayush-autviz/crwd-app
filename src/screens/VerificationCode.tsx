@@ -64,11 +64,12 @@ export default function VerificationCode() {
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           {/* Logo and Header */}
           <View style={styles.header}>
-            <Image 
+            {/* <Image 
               source={require('../assets/logo/logo3.webp')} 
               style={styles.logo}
               resizeMode="contain"
-            />
+            /> */}
+            <Image source={require('../assets/logo/main.png')} style={{ resizeMode: 'contain', width: 100, height: 80 }} />
             <Text style={styles.title}>Enter verification code</Text>
             <Text style={styles.subtitle}>
               We've sent a 6-digit verification code to{'\n'}

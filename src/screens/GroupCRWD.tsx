@@ -10,7 +10,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Check, Share2, X } from 'lucide-react-native';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import { Share } from 'react-native';
-import { PrimaryBlue, PrimaryGrey } from '../Constants/Colors';
+import { LightGrey, PrimaryBlue, PrimaryGrey, SecondaryGrey } from '../Constants/Colors';
 
 const { width, height } = Dimensions.get('window');
 
@@ -330,10 +330,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 6,
-    backgroundColor: 'white',
+    backgroundColor: SecondaryGrey,
   },
   shareButtonText: {
-    color: PrimaryGrey,
+    color: 'black',
     fontSize: 14,
     fontWeight: '500',
   },

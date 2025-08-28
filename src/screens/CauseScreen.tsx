@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import { View, ScrollView, Text, TouchableOpacity, Share, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import { PrimaryBlue } from '../Constants/Colors';
+import { PrimaryBlue, SecondaryBlue, SecondaryGrey } from '../Constants/Colors';
 import MainHeaderNav from '../components/MainHeaderNav';
 import CauseProfileCard from '../components/cause/CauseProfileCard';
 import CauseRecentDonations from '../components/cause/CauseRecentDonations';
@@ -53,7 +53,7 @@ export default function CauseScreen() {
         borderBottomColor: '#e5e7eb'
       }}>
         <View style={{ 
-          backgroundColor: '#eff6ff', 
+          backgroundColor: SecondaryBlue, 
           paddingHorizontal: 8, 
           paddingVertical: 4, 
           borderRadius: 8 
@@ -69,11 +69,12 @@ export default function CauseScreen() {
             borderColor: '#d1d5db', 
             paddingHorizontal: 16, 
             paddingVertical: 8, 
-            borderRadius: 8 
+            borderRadius: 8,
+            backgroundColor: SecondaryGrey,
           }}
           onPress={handleShare}
         >
-          <Text style={{ color: '#374151', fontSize: 14, fontWeight: '500' }}>Share</Text>
+          <Text style={{ color: 'black', fontSize: 14, fontWeight: '500' }}>Share</Text>
         </TouchableOpacity>
         <TouchableOpacity 
           style={{ 

@@ -1,7 +1,7 @@
 import { View, Text, FlatList, Image, TouchableOpacity } from 'react-native'
 import React from 'react'
 import { useNavigation } from '@react-navigation/native'
-import { PrimaryBlue, PrimaryGreen, SecondaryGreen, TertiaryBlue } from '../Constants/Colors';
+import { PrimaryBlue, PrimaryGreen, SecondaryBlue, SecondaryGreen, TertiaryBlue } from '../Constants/Colors';
 
 export default function NearbyCauses() {
     const navigation = useNavigation();
@@ -42,7 +42,7 @@ export default function NearbyCauses() {
             <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
               <Image source={item.image} style={{ width: 40, height: 40, borderRadius: 20, }} />
               <View style={{width: '55%'}}>
-                <View style={{backgroundColor: item.type === "CRWD" ? SecondaryGreen : TertiaryBlue, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10, marginBottom: 5, alignSelf: 'flex-start'}}>
+                <View style={{backgroundColor: item.type === "CRWD" ? SecondaryGreen : SecondaryBlue, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10, marginBottom: 5, alignSelf: 'flex-start'}}>
                   <Text style={{ fontSize: 12, color: item.type === "CRWD" ? PrimaryGreen : PrimaryBlue, fontWeight: '500'}}>{item.type}</Text>
                 </View>
                 <Text style={{ fontSize: 14, fontWeight: 500 }}>{item.name}</Text>

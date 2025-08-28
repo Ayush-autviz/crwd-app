@@ -1,7 +1,7 @@
 import { View, Text, FlatList, Image, TouchableOpacity } from 'react-native'
 import React from 'react'
 import { useNavigation } from '@react-navigation/native'
-import { PrimaryBlue, TertiaryBlue } from '../Constants/Colors';
+import { PrimaryBlue, SecondaryBlue, TertiaryBlue } from '../Constants/Colors';
 import { ChevronRight } from 'lucide-react-native';
 
 export default function SuggestdCauses() {
@@ -45,7 +45,7 @@ export default function SuggestdCauses() {
                         <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
                         <Image source={item.image} style={{ width: 40, height: 40, borderRadius: 20, }} />
                         <View style={{width: '55%'}}>
-                            <View style={{backgroundColor: TertiaryBlue, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10, marginBottom: 5, alignSelf: 'flex-start'}}>
+                            <View style={{backgroundColor: SecondaryBlue, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10, marginBottom: 5, alignSelf: 'flex-start'}}>
                                 <Text style={{ fontSize: 12, color: PrimaryBlue, fontWeight: '500'}}>Nonprofit</Text>
                             </View>
                             <Text style={{ fontSize: 14, fontWeight: 500 }}>{item.name}</Text>

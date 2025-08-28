@@ -183,7 +183,7 @@ export default function SearchScreen() {
                             <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 16 }}>Find Your Cause</Text>
                             <View style={{ gap: 20 }}>
                                 {suggestedCauses.map((cause, index) => (
-                                    <TouchableOpacity key={index} style={{ 
+                                    <View key={index} style={{ 
                                         flexDirection: 'row', 
                                         justifyContent: 'space-between', 
                                         alignItems: 'center',
@@ -215,7 +215,9 @@ export default function SearchScreen() {
                                             </View>
                                         </View>
                                         <View style={{ alignItems: 'center' }}>
-                                            <TouchableOpacity style={{
+                                            <TouchableOpacity
+                                            onPress={() => navigation.navigate('DrawerNav' as never, { screen: 'Donation' })}
+                                            style={{
                                                 backgroundColor: PrimaryBlue,
                                                 paddingVertical: 8,
                                                 paddingHorizontal: 12,
@@ -224,11 +226,11 @@ export default function SearchScreen() {
                                             }}>
                                                 <Text style={{ color: 'white', fontSize: 12 }}>Donate Now</Text>
                                             </TouchableOpacity>
-                                            <TouchableOpacity>
+                                            <TouchableOpacity onPress={() => navigation.navigate('CauseScreen' as never)}>
                                                 <Text style={{ color: PrimaryBlue, fontSize: 12 }}>Visit Profile</Text>
                                             </TouchableOpacity>
                                         </View>
-                                    </TouchableOpacity>
+                                    </View>
                                 ))}
                             </View>
                         </View>

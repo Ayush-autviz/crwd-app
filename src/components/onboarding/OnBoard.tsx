@@ -304,7 +304,7 @@ export default function OnBoard() {
           style={{
             borderWidth: 1,
             borderColor: '#d1d5db',
-            padding: 10,
+            padding: 12,
             borderRadius: 8,
             flexDirection: 'row',
             alignItems: 'center',
@@ -319,7 +319,7 @@ export default function OnBoard() {
             <ActivityIndicator size="small" color={PrimaryGrey} style={{ marginRight: 8 }} />
           ) : (
             <View style={{ marginRight: 8 }}>
-              <SvgXml xml={googleXml} style={{ width: 24, height: 24 }} />
+              <SvgXml xml={googleXml} style={{ width: 20, height: 20 }} />
             </View>
           )}
           <Text style={{

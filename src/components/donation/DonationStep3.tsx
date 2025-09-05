@@ -10,12 +10,14 @@ import {
 import { Trash2, Bookmark } from 'lucide-react-native';
 import { CROWDS, RECENTS, SUGGESTED, Organization } from '../../Constants/organizations';
 import PaymentSection from './PaymentSection';
+import { PrimaryBlue } from '../../Constants/Colors';
 
 interface DonationStep3Props {
   selectedOrganizations: string[];
   setSelectedOrganizations: (orgs: string[]) => void;
   setCheckout: (checkout: boolean) => void;
   setStep: (step: number) => void;
+  donationAmount: number;
 }
 
 export default function DonationStep3({
@@ -23,137 +25,113 @@ export default function DonationStep3({
   setSelectedOrganizations,
   setCheckout,
   setStep,
+  donationAmount,
 }: DonationStep3Props) {
   const [bookmarkedOrgs, setBookmarkedOrgs] = useState<string[]>([]);
 
-  const getOrganizationById = (orgId: string): Organization | undefined => {
-    return [...CROWDS, ...RECENTS, ...SUGGESTED].find(org => org.id === orgId);
+  const getOrganizationDescription = (orgName: string): string => {
+    const descriptions: { [key: string]: string } = {
+      "Hunger Initiative": "Fighting hunger in local communities",
+      "Clean Water Initiative": "Providing clean water access",
+      "Education for All": "Quality education access",
+      "Animal Rescue Network": "Rescuing and caring for animals",
+    };
+    return descriptions[orgName] || "Making a positive impact in the community";
   };
 
-  const selectedOrgs = selectedOrganizations
-    .map(id => getOrganizationById(id))
-    .filter((org): org is Organization => !!org);
-
-  const removeOrganization = (orgId: string) => {
-    setSelectedOrganizations(selectedOrganizations.filter(id => id !== orgId));
+  const removeOrganization = (orgName: string) => {
+    setSelectedOrganizations(selectedOrganizations.filter(name => name !== orgName));
   };
 
-  const toggleBookmark = (orgId: string) => {
-    if (bookmarkedOrgs.includes(orgId)) {
-      setBookmarkedOrgs(bookmarkedOrgs.filter(id => id !== orgId));
+  const toggleBookmark = (orgName: string) => {
+    if (bookmarkedOrgs.includes(orgName)) {
+      setBookmarkedOrgs(bookmarkedOrgs.filter(name => name !== orgName));
     } else {
-      setBookmarkedOrgs([...bookmarkedOrgs, orgId]);
+      setBookmarkedOrgs([...bookmarkedOrgs, orgName]);
     }
-  };
-
-  const renderOrganizationCard = (org: Organization) => {
-    const isBookmarked = bookmarkedOrgs.includes(org.id);
-
-    return (
-      <View key={org.id} style={styles.orgCard}>
-        <View style={styles.orgHeader}>
-          <Image source={{ uri: org.imageUrl }} style={styles.orgImage} />
-          <View style={styles.orgInfo}>
-            <Text style={styles.orgName}>{org.name}</Text>
-            <Text style={styles.orgDesc}>{org.shortDesc}</Text>
-          </View>
-          <View style={styles.orgActions}>
-            <TouchableOpacity
-              onPress={() => toggleBookmark(org.id)}
-              style={[styles.actionButton, isBookmarked && styles.bookmarkedButton]}
-            >
-              <Bookmark
-                size={16}
-                color={isBookmarked ? '#ffffff' : '#6b7280'}
-                fill={isBookmarked ? '#ffffff' : 'none'}
-              />
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => removeOrganization(org.id)}
-              style={styles.actionButton}
-            >
-              <Trash2 size={16} color="#ef4444" />
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
-    );
   };
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Review Your Selection</Text>
-        <Text style={styles.headerSubtitle}>
-          {selectedOrgs.length} organization{selectedOrgs.length !== 1 ? 's' : ''} selected
-        </Text>
-      </View>
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        {/* Selected Organizations Section */}
+        <View style={styles.organizationsCard}>
+          <Text style={styles.organizationsTitle}>
+            Selected Organizations
+          </Text>
 
-      {/* Selected Organizations */}
-      <ScrollView style={styles.orgList} showsVerticalScrollIndicator={false}>
-        {selectedOrgs.map(renderOrganizationCard)}
-
-        {selectedOrgs.length === 0 && (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyStateText}>
-              No organizations selected. Go back to add some causes to your donation box.
-            </Text>
-            <TouchableOpacity
-              onPress={() => setStep(2)}
-              style={styles.addButton}
-            >
-              <Text style={styles.addButtonText}>Add Organizations</Text>
-            </TouchableOpacity>
+          {/* Organization List */}
+          <View style={styles.organizationsList}>
+            {selectedOrganizations.map((orgName: string, index: number) => (
+              <View
+                key={`${orgName}-${index}`}
+                style={styles.organizationItem}
+              >
+                <View style={[styles.orgAvatar, { backgroundColor: '#dbeafe' }]}>
+                  <Text style={[styles.orgAvatarText, { color: '#2563eb' }]}>
+                    {orgName.charAt(0)}
+                  </Text>
+                </View>
+                <View style={styles.orgInfo}>
+                  <Text style={styles.orgName}>{orgName}</Text>
+                  <Text style={styles.orgDescription}>
+                    {getOrganizationDescription(orgName)}
+                  </Text>
+                </View>
+                <View style={styles.orgActions}>
+                  <TouchableOpacity
+                    style={styles.actionButton}
+                    onPress={() => toggleBookmark(orgName)}
+                  >
+                    <Bookmark
+                      size={20}
+                      color={bookmarkedOrgs.includes(orgName) ? '#2563eb' : '#6b7280'}
+                      fill={bookmarkedOrgs.includes(orgName) ? '#2563eb' : 'none'}
+                    />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => removeOrganization(orgName)}
+                    style={styles.actionButton}
+                  >
+                    <Trash2 size={20} color="#ef4444" />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ))}
           </View>
-        )}
-      </ScrollView>
-
-      {/* Distribution Info */}
-      {selectedOrgs.length > 0 && (
-        <>
-          <View style={styles.distributionInfo}>
-            <Text style={styles.distributionTitle}>Distribution</Text>
-            <Text style={styles.distributionText}>
-              Your donation will be evenly distributed across all {selectedOrgs.length} organization{selectedOrgs.length !== 1 ? 's' : ''}.
-            </Text>
-            <Text style={styles.distributionPercentage}>
-              Each organization receives: {Math.floor(100 / selectedOrgs.length)}%
-            </Text>
-          </View>
-
-           {/* Action Buttons */}
-      <View style={styles.actionSection}>
-        <TouchableOpacity
-          onPress={() => setStep(2)}
-          style={styles.backButton}
-        >
-          <Text style={styles.backButtonText}>Add More</Text>
-        </TouchableOpacity>
         </View>
 
-          <PaymentSection setCheckout={setCheckout} amount={7} />
-        </>
-      )}
+        {/* Distribution Details */}
+        <View style={styles.distributionCard}>
+          <Text style={styles.distributionTitle}>
+            Distribution
+          </Text>
+          <Text style={styles.distributionDescription}>
+            Your ${donationAmount} becomes ${(donationAmount * 0.9).toFixed(2)}{" "}
+            after fees, split evenly across causes. Your donation will be evenly
+            distributed across all {selectedOrganizations.length} organizations.
+          </Text>
+          <Text style={styles.distributionAmount}>
+            Each organization receives: $
+            {selectedOrganizations.length > 0
+              ? (donationAmount / selectedOrganizations.length).toFixed(2)
+              : "0.00"}{" "}
+            per month
+          </Text>
+        </View>
+      </ScrollView>
 
-      {/* Action Buttons
-      <View style={styles.actionSection}>
+      {/* Action Buttons */}
+      {/* <View style={styles.actionButtons}>
         <TouchableOpacity
-          onPress={() => setStep(2)}
-          style={styles.backButton}
+          onPress={() => setCheckout(true)}
+          style={styles.confirmButton}
         >
-          <Text style={styles.backButtonText}>Add More</Text>
-        </TouchableOpacity> */}
-
-        {/* {selectedOrgs.length > 0 && (
-          <TouchableOpacity
-            onPress={() => setCheckout(true)}
-            style={styles.continueButton}
-          >
-            <Text style={styles.continueButtonText}>Continue to Checkout</Text>
-          </TouchableOpacity>
-        )} */}
-      {/* </View> */}
+          <Text style={styles.confirmButtonText}>
+            Confirm your donation
+          </Text>
+        </TouchableOpacity>
+      </View> */}
     </View>
   );
 }
@@ -161,31 +139,20 @@ export default function DonationStep3({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
+    backgroundColor: '#ffffff',
   },
-  header: {
-    marginBottom: 20,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1f2937',
-    marginBottom: 4,
-  },
-  headerSubtitle: {
-    fontSize: 16,
-    color: '#6b7280',
-  },
-  orgList: {
+  scrollView: {
     flex: 1,
+    paddingHorizontal: 16,
+    paddingTop: 8,
   },
-  orgCard: {
+  organizationsCard: {
     backgroundColor: '#ffffff',
     borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    padding: 24,
+    marginBottom: 24,
     borderWidth: 1,
-    borderColor: '#f3f4f6',
+    borderColor: '#e5e7eb',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -195,15 +162,35 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 1,
   },
-  orgHeader: {
+  organizationsTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginBottom: 16,
+  },
+  organizationsList: {
+    gap: 16,
+  },
+  organizationItem: {
     flexDirection: 'row',
     alignItems: 'center',
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    borderRadius: 8,
+    backgroundColor: '#ffffff',
   },
-  orgImage: {
+  orgAvatar: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    marginRight: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 16,
+  },
+  orgAvatarText: {
+    fontSize: 18,
+    fontWeight: '600',
   },
   orgInfo: {
     flex: 1,
@@ -214,7 +201,7 @@ const styles = StyleSheet.create({
     color: '#1f2937',
     marginBottom: 4,
   },
-  orgDesc: {
+  orgDescription: {
     fontSize: 14,
     color: '#6b7280',
   },
@@ -223,88 +210,48 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   actionButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: '#f3f4f6',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  bookmarkedButton: {
-    backgroundColor: '#2563eb',
-  },
-  emptyState: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 40,
-  },
-  emptyStateText: {
-    fontSize: 16,
-    color: '#6b7280',
-    textAlign: 'center',
-    marginBottom: 20,
-    lineHeight: 24,
-  },
-  addButton: {
-    backgroundColor: '#2563eb',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-  },
-  addButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#ffffff',
-  },
-  distributionInfo: {
+  distributionCard: {
     backgroundColor: '#eff6ff',
     borderRadius: 12,
-    padding: 16,
-    marginVertical: 16,
+    padding: 24,
+    marginBottom: 24,
   },
   distributionTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
     color: '#1f2937',
-    marginBottom: 8,
+    marginBottom: 12,
   },
-  distributionText: {
+  distributionDescription: {
     fontSize: 14,
     color: '#6b7280',
-    marginBottom: 4,
+    lineHeight: 20,
+    marginBottom: 12,
   },
-  distributionPercentage: {
-    fontSize: 14,
+  distributionAmount: {
+    fontSize: 16,
     fontWeight: '600',
     color: '#2563eb',
   },
-  actionSection: {
-    flexDirection: 'row',
-    gap: 12,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#f3f4f6',
+  actionButtons: {
+    paddingHorizontal: 16,
+    paddingVertical: 20,
+    paddingBottom: 40,
   },
-  backButton: {
-    flex: 1,
-    backgroundColor: '#f3f4f6',
+  confirmButton: {
+    backgroundColor: PrimaryBlue,
     paddingVertical: 16,
     borderRadius: 8,
     alignItems: 'center',
   },
-  backButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#374151',
-  },
-  continueButton: {
-    flex: 2,
-    backgroundColor: '#2563eb',
-    paddingVertical: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  continueButtonText: {
+  confirmButtonText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#ffffff',

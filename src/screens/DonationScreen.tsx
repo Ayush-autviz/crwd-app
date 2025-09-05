@@ -8,7 +8,7 @@ import {
   StyleSheet,
   Dimensions,
 } from 'react-native';
-import { ArrowLeft, X, Minus, Plus } from 'lucide-react-native';
+import { ChevronLeft, Plus } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import Slider from '@react-native-community/slider';
 import DonationStep2 from '../components/donation/DonationStep2';
@@ -17,6 +17,7 @@ import OneTimeDonation from '../components/donation/OneTimeDonation';
 import CheckoutScreen from '../components/donation/CheckoutScreen';
 import PaymentSection from '../components/donation/PaymentSection';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { PrimaryBlue } from '../Constants/Colors';
 
 
 const { width } = Dimensions.get('window');
@@ -40,6 +41,7 @@ export default function DonationScreen() {
     return (
       <CheckoutScreen
         donationAmount={donationAmount}
+        selectedOrganizations={selectedOrganizations}
         onBack={() => setCheckout(false)}
       />
     );
@@ -55,14 +57,14 @@ export default function DonationScreen() {
             onPress={() => setStep(s => s - 1)}
             style={styles.headerButton}
           >
-            <ArrowLeft size={20} color="#374151" />
+            <ChevronLeft size={20} color="#374151" />
           </TouchableOpacity>
         ) : (
           <TouchableOpacity
             onPress={() => navigation.goBack()}
             style={styles.headerButton}
           >
-            <X size={20} color="#374151" />
+            <Text style={styles.closeIcon}>×</Text>
           </TouchableOpacity>
         )}
 
@@ -121,84 +123,209 @@ export default function DonationScreen() {
             <>
               {step === 1 ? (
                 <View style={styles.stepContent}>
-                  {/* Welcome Card */}
-                  <View style={styles.welcomeCard}>
-                    <View style={styles.welcomeHeader}>
-                      <View style={styles.iconContainer}>
-                        <Text style={styles.iconText}>$</Text>
-                      </View>
-                      <Text style={styles.welcomeTitle}>
-                        Welcome to your donation box
+                  {/* Set Monthly Donation Amount Section */}
+                  <View style={styles.amountCard}>
+                    <Text style={styles.amountCardTitle}>
+                      Set monthly donation amount
                       </Text>
-                    </View>
-
-                    <Text style={styles.welcomeDescription}>
-                      Your donation box makes giving back easy! Just set your
-                      price and you can add as many of your favorite causes at
-                      any time. Your donation will be evenly distributed across
-                      all of the organizations in your box.
+                    <Text style={styles.amountCardDescription}>
+                      Set one monthly amount and we'll split it across causes
+                      you're passionate about. You can edit at any time.
                     </Text>
 
-                    {/* Amount Selector with Slider */}
-                    <View style={styles.amountSection}>
-                      <Text style={styles.amountTitle}>
-                        Set monthly donation amount
-                      </Text>
-
-                      {/* Amount Display */}
+                    {/* Amount Selector */}
+                    <View style={styles.amountSelectorContainer}>
+                      <TouchableOpacity
+                        onPress={() => {
+                          if (donationAmount > 5) {
+                            const newAmount = donationAmount - 1;
+                            setDonationAmount(newAmount);
+                            setInputValue(newAmount.toString());
+                          }
+                        }}
+                        style={styles.amountButton}
+                      >
+                        <Text style={styles.minusIcon}>−</Text>
+                      </TouchableOpacity>
+                      
                       <View style={styles.amountDisplay}>
                         <Text style={styles.amountValue}>${donationAmount}</Text>
                         <Text style={styles.amountLabel}>per month</Text>
                       </View>
 
-                      {/* Slider */}
-                      <View style={styles.sliderContainer}>
-                        <Slider
-                          style={styles.slider}
-                          minimumValue={5}
-                          maximumValue={100}
-                          value={donationAmount}
-                          onValueChange={handleSliderChange}
-                          minimumTrackTintColor="#2563eb"
-                          maximumTrackTintColor="#d1d5db"
-                          thumbTintColor="#2563eb"
-                          step={1}
-                        />
-                        <View style={styles.sliderLabels}>
-                          <Text style={styles.sliderLabel}>$5</Text>
-                          <Text style={styles.sliderLabel}>$100</Text>
-                        </View>
-                      </View>
+                      <TouchableOpacity
+                        onPress={() => {
+                          const newAmount = donationAmount + 1;
+                          setDonationAmount(newAmount);
+                          setInputValue(newAmount.toString());
+                        }}
+                        style={styles.amountButton}
+                      >
+                        <Plus size={20} color="#6b7280" />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
 
-                      <Text style={styles.amountHint}>
-                        Drag to adjust your monthly donation amount
+                  {/* Choose Organizations Section */}
+                  <View style={styles.organizationsCard}>
+                    <Text style={styles.organizationsTitle}>
+                      Choose organizations to support
+                    </Text>
+
+                    {/* Organization List */}
+                    <View style={styles.organizationsList}>
+                      {/* Hunger Initiative */}
+                      <TouchableOpacity
+                        style={[
+                          styles.organizationItem,
+                          selectedOrganizations.includes('Hunger Initiative') && styles.selectedOrganizationItem
+                        ]}
+                        onPress={() => {
+                          if (selectedOrganizations.includes('Hunger Initiative')) {
+                            setSelectedOrganizations(selectedOrganizations.filter(org => org !== 'Hunger Initiative'));
+                          } else {
+                            setSelectedOrganizations([...selectedOrganizations, 'Hunger Initiative']);
+                          }
+                        }}
+                      >
+                        <View style={[styles.orgAvatar, { backgroundColor: '#fed7aa' }]}>
+                          <Text style={[styles.orgAvatarText, { color: '#ea580c' }]}>H</Text>
+                        </View>
+                        <View style={styles.orgInfo}>
+                          <Text style={styles.orgName}>Hunger Initiative</Text>
+                          <Text style={styles.orgDescription}>
+                            Fighting hunger in local communities
+                          </Text>
+                        </View>
+                        <View style={[
+                          styles.checkbox,
+                          selectedOrganizations.includes('Hunger Initiative') && styles.checkedBox
+                        ]}>
+                          {selectedOrganizations.includes('Hunger Initiative') && (
+                            <Text style={styles.checkmark}>✓</Text>
+                          )}
+                        </View>
+                      </TouchableOpacity>
+
+                      {/* Clean Water Initiative */}
+                      <TouchableOpacity
+                        style={[
+                          styles.organizationItem,
+                          selectedOrganizations.includes('Clean Water Initiative') && styles.selectedOrganizationItem
+                        ]}
+                        onPress={() => {
+                          if (selectedOrganizations.includes('Clean Water Initiative')) {
+                            setSelectedOrganizations(selectedOrganizations.filter(org => org !== 'Clean Water Initiative'));
+                          } else {
+                            setSelectedOrganizations([...selectedOrganizations, 'Clean Water Initiative']);
+                          }
+                        }}
+                      >
+                        <View style={[styles.orgAvatar, { backgroundColor: '#dbeafe' }]}>
+                          <Text style={[styles.orgAvatarText, { color: '#2563eb' }]}>C</Text>
+                        </View>
+                        <View style={styles.orgInfo}>
+                          <Text style={styles.orgName}>Clean Water Initiative</Text>
+                          <Text style={styles.orgDescription}>
+                            Providing clean water access
+                          </Text>
+                        </View>
+                        <View style={[
+                          styles.checkbox,
+                          selectedOrganizations.includes('Clean Water Initiative') && styles.checkedBox
+                        ]}>
+                          {selectedOrganizations.includes('Clean Water Initiative') && (
+                            <Text style={styles.checkmark}>✓</Text>
+                          )}
+                      </View>
+                      </TouchableOpacity>
+
+                      {/* Education for All */}
+                      <TouchableOpacity
+                        style={[
+                          styles.organizationItem,
+                          selectedOrganizations.includes('Education for All') && styles.selectedOrganizationItem
+                        ]}
+                        onPress={() => {
+                          if (selectedOrganizations.includes('Education for All')) {
+                            setSelectedOrganizations(selectedOrganizations.filter(org => org !== 'Education for All'));
+                          } else {
+                            setSelectedOrganizations([...selectedOrganizations, 'Education for All']);
+                          }
+                        }}
+                      >
+                        <View style={[styles.orgAvatar, { backgroundColor: '#dcfce7' }]}>
+                          <Text style={[styles.orgAvatarText, { color: '#16a34a' }]}>E</Text>
+                        </View>
+                        <View style={styles.orgInfo}>
+                          <Text style={styles.orgName}>Education for All</Text>
+                          <Text style={styles.orgDescription}>
+                            Quality education access
                       </Text>
                     </View>
+                        <View style={[
+                          styles.checkbox,
+                          selectedOrganizations.includes('Education for All') && styles.checkedBox
+                        ]}>
+                          {selectedOrganizations.includes('Education for All') && (
+                            <Text style={styles.checkmark}>✓</Text>
+                          )}
+                        </View>
+                      </TouchableOpacity>
 
-                    {/* Security Message */}
-                    <View style={styles.securityMessage}>
-                      <View style={styles.checkIcon}>
-                        <Text style={styles.checkText}>✓</Text>
+                      {/* Related Section */}
+                      <View style={styles.relatedSection}>
+                        <Text style={styles.relatedTitle}>Related</Text>
+                        
+                        {/* Animal Rescue Network */}
+                        <TouchableOpacity
+                          style={[
+                            styles.organizationItem,
+                            selectedOrganizations.includes('Animal Rescue Network') && styles.selectedOrganizationItem
+                          ]}
+                          onPress={() => {
+                            if (selectedOrganizations.includes('Animal Rescue Network')) {
+                              setSelectedOrganizations(selectedOrganizations.filter(org => org !== 'Animal Rescue Network'));
+                            } else {
+                              setSelectedOrganizations([...selectedOrganizations, 'Animal Rescue Network']);
+                            }
+                          }}
+                        >
+                          <View style={[styles.orgAvatar, { backgroundColor: '#e9d5ff' }]}>
+                            <Text style={[styles.orgAvatarText, { color: '#9333ea' }]}>A</Text>
+                          </View>
+                          <View style={styles.orgInfo}>
+                            <Text style={styles.orgName}>Animal Rescue Network</Text>
+                            <Text style={styles.orgDescription}>
+                              Rescuing and caring for animals
+                            </Text>
+                          </View>
+                          <View style={[
+                            styles.checkbox,
+                            selectedOrganizations.includes('Animal Rescue Network') && styles.checkedBox
+                          ]}>
+                            {selectedOrganizations.includes('Animal Rescue Network') && (
+                              <Text style={styles.checkmark}>✓</Text>
+                            )}
+                          </View>
+                        </TouchableOpacity>
                       </View>
-                      <Text style={styles.securityText}>
-                        Your donation is protected and guaranteed.{' '}
-                        <Text style={styles.learnMore}>Learn More</Text>
-                      </Text>
                     </View>
                   </View>
                 </View>
+              // ) : step === 2 ? (
+              //   <DonationStep2
+              //     selectedOrganizations={selectedOrganizations}
+              //     setSelectedOrganizations={setSelectedOrganizations}
+              //     setStep={setStep}
+              //   />
               ) : step === 2 ? (
-                <DonationStep2
-                  selectedOrganizations={selectedOrganizations}
-                  setSelectedOrganizations={setSelectedOrganizations}
-                  setStep={setStep}
-                />
-              ) : step === 3 ? (
                 <DonationStep3
                   setCheckout={setCheckout}
                   selectedOrganizations={selectedOrganizations}
                   setSelectedOrganizations={setSelectedOrganizations}
                   setStep={setStep}
+                  donationAmount={donationAmount}
                 />
               ) : null}
             </>
@@ -210,33 +337,35 @@ export default function DonationScreen() {
       </View>
     {/* </SafeAreaView> */}
     {activeTab === 'setup' && step === 1 && (
-          <View style={styles.footer}>
-            <View style={styles.nextSection}>
-              <Text style={styles.nextText}>Now let's add some causes</Text>
+          <View style={styles.summaryBar}>
+            <View style={styles.summaryContent}>
+              <View>
+                <Text style={styles.summaryAmount}>${donationAmount} per month</Text>
+                <Text style={styles.summaryCount}>
+                  {selectedOrganizations.length} organizations selected
+                </Text>
+              </View>
               <TouchableOpacity
                 onPress={() => setStep(2)}
                 style={styles.nextButton}
               >
                 <Text style={styles.nextButtonText}>Next</Text>
+                <Text style={styles.nextButtonIcon}>→</Text>
               </TouchableOpacity>
             </View>
           </View>
         )}
 
 {activeTab === 'setup' && step === 2 && (
-          <View style={styles.footer}>
-        <View style={styles.nextSection}>
-          <Text style={styles.selectedCount}>
-            {selectedOrganizations.length} organization{selectedOrganizations.length !== 1 ? 's' : ''} selected
-          </Text>
+          <View style={styles.footer}>     
           <TouchableOpacity
-            onPress={() => setStep(3)}
-            style={styles.nextButton}
+            onPress={() => setCheckout(true)}
+            style={styles.confirmButton}
           >
-            <Text style={styles.nextButtonText}>Next</Text>
+            <Text style={styles.confirmButtonText}>Confirm your donation</Text>
           </TouchableOpacity>
         </View>
-          </View>
+          
         )}
 
         {/* {activeTab === 'setup' && step === 3 && (
@@ -295,6 +424,16 @@ const styles = StyleSheet.create({
   headerSpacer: {
     width: 32,
   },
+  closeIcon: {
+    fontSize: 20,
+    color: '#374151',
+    fontWeight: 'bold',
+  },
+  minusIcon: {
+    fontSize: 20,
+    color: '#6b7280',
+    fontWeight: 'bold',
+  },
   tabContainer: {
     paddingHorizontal: 16,
     paddingTop: 16,
@@ -314,7 +453,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
   },
   activeTab: {
-    backgroundColor: '#2563eb',
+    backgroundColor: PrimaryBlue,
   },
   tabText: {
     fontSize: 14,
@@ -333,13 +472,13 @@ const styles = StyleSheet.create({
   stepContent: {
     padding: 16,
   },
-  welcomeCard: {
-    backgroundColor: '#ffffff',
+  amountCard: {
+    backgroundColor: '#eff6ff',
     borderRadius: 12,
     padding: 24,
     marginBottom: 24,
     borderWidth: 1,
-    borderColor: '#f3f4f6',
+    borderColor: '#e5e7eb',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -349,112 +488,166 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 1,
   },
-  welcomeHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#dbeafe',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  iconText: {
+  amountCardTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#2563eb',
-  },
-  welcomeTitle: {
-    fontSize: 20,
-    fontWeight: '600',
     color: '#1f2937',
-    flex: 1,
+    marginBottom: 12,
   },
-  welcomeDescription: {
+  amountCardDescription: {
     fontSize: 14,
     color: '#6b7280',
     lineHeight: 20,
     marginBottom: 24,
   },
-  amountSection: {
-    backgroundColor: '#eff6ff',
-    borderRadius: 8,
-    padding: 20,
-    marginBottom: 16,
+  amountSelectorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 24,
   },
-  amountTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1f2937',
-    marginBottom: 12,
+  amountButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#f3f4f6',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   amountDisplay: {
     alignItems: 'center',
-    marginBottom: 20,
+    marginHorizontal: 24,
   },
   amountValue: {
-    fontSize: 32,
+    fontSize: 48,
     fontWeight: 'bold',
     color: '#2563eb',
     marginBottom: 4,
   },
   amountLabel: {
+    fontSize: 18,
+    color: '#6b7280',
+  },
+  organizationsCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 24,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  organizationsTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginBottom: 16,
+  },
+  organizationsList: {
+    gap: 16,
+  },
+  organizationItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    borderRadius: 8,
+    backgroundColor: '#ffffff',
+  },
+  selectedOrganizationItem: {
+    backgroundColor: '#f8fafc',
+    borderColor: '#2563eb',
+  },
+  orgAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 16,
+  },
+  orgAvatarText: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  orgInfo: {
+    flex: 1,
+  },
+  orgName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1f2937',
+    marginBottom: 4,
+  },
+  orgDescription: {
     fontSize: 14,
     color: '#6b7280',
   },
-  sliderContainer: {
-    marginBottom: 16,
-  },
-  slider: {
-    width: '100%',
-    height: 40,
-  },
-  sliderLabels: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 8,
-  },
-  sliderLabel: {
-    fontSize: 12,
-    color: '#6b7280',
-  },
-  amountHint: {
-    fontSize: 12,
-    color: '#6b7280',
-    textAlign: 'center',
-  },
-  securityMessage: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 12,
-    backgroundColor: '#f9fafb',
-    borderRadius: 8,
-  },
-  checkIcon: {
+  checkbox: {
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#dcfce7',
+    borderWidth: 2,
+    borderColor: '#d1d5db',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 8,
   },
-  checkText: {
+  checkedBox: {
+    backgroundColor: '#2563eb',
+    borderColor: '#2563eb',
+  },
+  checkmark: {
+    color: '#ffffff',
     fontSize: 14,
-    color: '#16a34a',
+    fontWeight: 'bold',
   },
-  securityText: {
+  relatedSection: {
+    marginTop: 24,
+  },
+  relatedTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1f2937',
+    marginBottom: 16,
+  },
+  summaryBar: {
+    backgroundColor: '#ffffff',
+    paddingHorizontal: 16,
+    paddingVertical: 20,
+    paddingBottom: 30,
+    borderTopWidth: 1,
+    borderTopColor: '#f3f4f6',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: -2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  summaryContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  summaryAmount: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1f2937',
+    marginBottom: 4,
+  },
+  summaryCount: {
     fontSize: 14,
     color: '#6b7280',
-    flex: 1,
-  },
-  learnMore: {
-    color: '#2563eb',
-    fontWeight: '500',
   },
   nextSection: {
     flexDirection: 'row',
@@ -466,17 +659,33 @@ const styles = StyleSheet.create({
     color: '#6b7280',
   },
   nextButton: {
-    backgroundColor: '#22c55e',
+    backgroundColor: PrimaryBlue,
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 4,
   },
   nextButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#000000',
+    color: '#ffffff',
+  },
+  nextButtonIcon: {
+    fontSize: 16,
+    color: '#ffffff',
+  },
+  confirmButton: {
+    backgroundColor: PrimaryBlue,
+    paddingVertical: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  confirmButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ffffff',
   },
   footer: {
     backgroundColor: '#ffffff',

@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { ArrowLeft, Minus, Plus, CreditCard, DollarSign, Trash2 } from 'lucide-react-native';
 import { Organization } from '../../Constants/organizations';
+import { PrimaryBlue } from '../../Constants/Colors';
 
 interface ManageDonationBoxProps {
   amount: number;
@@ -26,6 +27,8 @@ export default function ManageDonationBox({
 }: ManageDonationBoxProps) {
   const [editableAmount, setEditableAmount] = useState(amount);
   const [isEditingAmount, setIsEditingAmount] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [temporarilyRemovedCauses, setTemporarilyRemovedCauses] = useState<string[]>([]);
 
   const incrementAmount = () => {
     setEditableAmount(prev => prev + 1);
@@ -46,6 +49,19 @@ export default function ManageDonationBox({
     }
   };
 
+  const handleRemove = (causeId: string) => {
+    // Temporarily remove the cause
+    setTemporarilyRemovedCauses(prev => [...prev, causeId]);
+  };
+
+  const handleEditCauses = () => {
+    if (isEditMode) {
+      // "Close" clicked - restore temporarily removed causes
+      setTemporarilyRemovedCauses([]);
+    }
+    setIsEditMode(!isEditMode);
+  };
+
   const handleRemoveCause = (causeId: string) => {
     Alert.alert(
       'Remove Cause',
@@ -53,20 +69,32 @@ export default function ManageDonationBox({
       [
         { text: 'Cancel', style: 'cancel' },
         { text: 'Remove', style: 'destructive', onPress: () => {
-          // Handle remove logic here
-          console.log('Removing cause:', causeId);
+          handleRemove(causeId);
         }},
       ]
     );
   };
 
   const handleSave = () => {
+    // Permanently remove the causes
+    temporarilyRemovedCauses.forEach((id) => {
+      // Handle permanent removal logic here
+      console.log('Permanently removing cause:', id);
+    });
+    // Clear the temporarily removed causes
+    setTemporarilyRemovedCauses([]);
+    setIsEditMode(false);
     Alert.alert(
       'Changes Saved',
       'Your donation box has been updated successfully.',
       [{ text: 'OK' }]
     );
   };
+
+  // Filter out temporarily removed causes for display
+  const visibleCauses = causes.filter(
+    (cause) => !temporarilyRemovedCauses.includes(cause.id)
+  );
 
   const handleDeactivate = () => {
     Alert.alert(
@@ -150,19 +178,12 @@ export default function ManageDonationBox({
           </View>
         </View>
 
-        {/* Edit Causes Button */}
-        <View style={styles.editCausesSection}>
-          <TouchableOpacity style={styles.editCausesButton}>
-            <Text style={styles.editCausesButtonText}>Edit Causes</Text>
-          </TouchableOpacity>
-        </View>
-
         {/* Causes List */}
         <View style={styles.causesSection}>
           <Text style={styles.sectionTitle}>CAUSES</Text>
 
           <View style={styles.causesList}>
-            {causes.map((cause) => (
+            {visibleCauses.map((cause) => (
               <View key={cause.id} style={styles.causeItem}>
                 <View style={styles.causeImageContainer}>
                   {cause.imageUrl ? (
@@ -179,39 +200,112 @@ export default function ManageDonationBox({
                 <View style={styles.causeInfo}>
                   <View style={styles.causeHeader}>
                     <Text style={styles.causeName}>{cause.name}</Text>
-                    <Text style={styles.causeUsername}>
+                    {/* <Text style={styles.causeUsername}>
                       @{cause.name.replace(/\s+/g, '').toLowerCase()}
-                    </Text>
+                    </Text> */}
                   </View>
-
-                  <TouchableOpacity
-                    style={styles.removeButton}
-                    onPress={() => handleRemoveCause(cause.id)}
-                  >
-                    <Text style={styles.removeText}>Remove</Text>
-                    <Trash2 size={16} color="#6b7280" />
-                  </TouchableOpacity>
+                  {cause.description && (
+                    <Text style={styles.causeDescription}>
+                      {cause.description}
+                    </Text>
+                  )}
                 </View>
+
+                {isEditMode && (
+                  <View style={styles.editActions}>
+                    <TouchableOpacity
+                      style={styles.removeButton}
+                      onPress={() => handleRemoveCause(cause.id)}
+                    >
+                      <Trash2 size={12} color="#6b7280" />
+                      <Text style={styles.removeText}>Remove</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
               </View>
             ))}
           </View>
+        </View>
 
-          <Text style={styles.allocationNote}>
-            Allocations will automatically adjust for 100% distribution
+        {/* Distribution Details */}
+        <View style={styles.distributionSection}>
+          <Text style={styles.distributionText}>
+            Your ${editableAmount} becomes ${(editableAmount * 0.9).toFixed(2)}{" "}
+            after fees, split evenly across causes. Your donation will be evenly
+            distributed across all {visibleCauses.length} organizations.
           </Text>
+        </View>
+
+        {/* Payment Method Section */}
+        <View style={styles.paymentSection}>
+          <Text style={styles.sectionTitle}>PAYMENT METHOD</Text>
+          <View style={styles.paymentCard}>
+            <View style={styles.paymentInfo}>
+              <View style={styles.paymentIcon}>
+                <CreditCard size={16} color="#6b7280" />
+              </View>
+              <View style={styles.paymentDetails}>
+                <Text style={styles.paymentNumber}>**** **** **** 4242</Text>
+                <Text style={styles.paymentExpiry}>12/25</Text>
+              </View>
+            </View>
+            <TouchableOpacity style={styles.changeButton}>
+              <Text style={styles.changeButtonText}>Change</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Next Payment Section */}
+        <View style={styles.nextPaymentSection}>
+          <Text style={styles.sectionTitle}>NEXT PAYMENT</Text>
+          <View style={styles.nextPaymentCard}>
+            <View style={styles.nextPaymentInfo}>
+              <Text style={styles.nextPaymentLabel}>Next payment date</Text>
+              <Text style={styles.nextPaymentDate}>December 26, 2024</Text>
+            </View>
+            <View style={styles.nextPaymentAmount}>
+              <Text style={styles.nextPaymentValue}>${editableAmount}</Text>
+              <Text style={styles.nextPaymentFrequency}>Monthly</Text>
+            </View>
+          </View>
+        </View>
+
+        <Text style={styles.allocationNote}>
+          Allocations will automatically adjust for 100% distribution
+        </Text>
+
+        {/* Edit Causes Button */}
+        <View style={styles.editCausesSection}>
+          <TouchableOpacity 
+            style={styles.editCausesButton}
+            onPress={handleEditCauses}
+          >
+            <Text style={styles.editCausesButtonText}>
+              {isEditMode ? "Close" : "Edit Causes"}
+            </Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
 
-      {/* Footer */}
-      <View style={styles.footer}>
-        <TouchableOpacity onPress={handleDeactivate}>
-          <Text style={styles.deactivateText}>Deactivate donation box</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-          <Text style={styles.saveButtonText}>Save</Text>
-        </TouchableOpacity>
-      </View>
+      {/* Footer - Only show in edit mode */}
+      {isEditMode && (
+        <View style={styles.footer}>
+          {visibleCauses.length > 0 && (
+            <TouchableOpacity onPress={handleDeactivate}>
+              <Text style={styles.deactivateText}>Deactivate donation box</Text>
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity 
+            style={[
+              styles.saveButton, 
+              visibleCauses.length === 0 && styles.saveButtonFull
+            ]} 
+            onPress={handleSave}
+          >
+            <Text style={styles.saveButtonText}>Save</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
@@ -349,8 +443,8 @@ const styles = StyleSheet.create({
     color: '#1d4ed8',
   },
   causesSection: {
-    flex: 1,
     paddingHorizontal: 32,
+    marginTop: 16,
   },
   sectionTitle: {
     fontSize: 16,
@@ -365,9 +459,20 @@ const styles = StyleSheet.create({
   causeItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
+    padding: 16,
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#dbeafe',
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
   causeImageContainer: {
     marginRight: 16,
@@ -395,7 +500,7 @@ const styles = StyleSheet.create({
   causeHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 4,
     gap: 8,
   },
   causeName: {
@@ -407,12 +512,121 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#6b7280',
   },
+  causeDescription: {
+    fontSize: 12,
+    color: '#6b7280',
+    marginTop: 4,
+  },
+  editActions: {
+    justifyContent: 'flex-end',
+  },
   removeButton: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
+    backgroundColor: '#f3f4f6',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
   },
   removeText: {
+    fontSize: 12,
+    color: '#6b7280',
+  },
+  distributionSection: {
+    paddingHorizontal: 32,
+    paddingVertical: 16,
+  },
+  distributionText: {
+    fontSize: 14,
+    color: '#6b7280',
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  paymentSection: {
+    paddingHorizontal: 32,
+    paddingVertical: 16,
+  },
+  paymentCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  paymentInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  paymentIcon: {
+    width: 32,
+    height: 32,
+    backgroundColor: '#f3f4f6',
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  paymentDetails: {
+    gap: 2,
+  },
+  paymentNumber: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#111827',
+  },
+  paymentExpiry: {
+    fontSize: 12,
+    color: '#6b7280',
+  },
+  changeButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  changeButtonText: {
+    fontSize: 14,
+    color: '#2563eb',
+    fontWeight: '500',
+  },
+  nextPaymentSection: {
+    paddingHorizontal: 32,
+    paddingVertical: 16,
+  },
+  nextPaymentCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  nextPaymentInfo: {
+    gap: 2,
+  },
+  nextPaymentLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#111827',
+  },
+  nextPaymentDate: {
+    fontSize: 12,
+    color: '#6b7280',
+  },
+  nextPaymentAmount: {
+    alignItems: 'flex-end',
+    gap: 2,
+  },
+  nextPaymentValue: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#111827',
+  },
+  nextPaymentFrequency: {
     fontSize: 12,
     color: '#6b7280',
   },
@@ -421,6 +635,7 @@ const styles = StyleSheet.create({
     color: '#9ca3af',
     textAlign: 'center',
     marginTop: 20,
+    paddingHorizontal: 32,
   },
   footer: {
     flexDirection: 'row',
@@ -436,10 +651,15 @@ const styles = StyleSheet.create({
     color: '#9ca3af',
   },
   saveButton: {
-    backgroundColor: '#2563eb',
+    backgroundColor: PrimaryBlue,
     borderRadius: 20,
     paddingHorizontal: 32,
     paddingVertical: 12,
+    alignItems: 'center',
+  },
+  saveButtonFull: {
+    flex: 1,
+    marginLeft: 0,
   },
   saveButtonText: {
     fontSize: 16,

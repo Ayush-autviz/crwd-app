@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,17 +8,19 @@ import {
   Image,
   SafeAreaView,
 } from 'react-native';
-import { ArrowLeft, HelpCircle, Settings } from 'lucide-react-native';
+import { ChevronLeft } from 'lucide-react-native';
 import { CROWDS, RECENTS, SUGGESTED, Organization } from '../../Constants/organizations';
 import ManageDonationBox from './ManageDonationBox';
 
+import { useNavigation } from '@react-navigation/native';
+
 interface CheckoutScreenProps {
   donationAmount?: number;
+  selectedOrganizations?: string[];
   onBack: () => void;
 }
 
-// Mock data for demonstration
-const mockSelectedOrganizations = ['1', '4', '7']; // Some organization IDs
+// Mock data for CRWDS section
 const mockCrowds = [
   { id: '1', name: 'Feed the hungry', color: '#1a8cff' },
   { id: '2', name: 'Clean Water', color: '#00bcd4' },
@@ -26,25 +28,40 @@ const mockCrowds = [
 
 export default function CheckoutScreen({
   donationAmount = 25,
+  selectedOrganizations = [],
   onBack,
 }: CheckoutScreenProps) {
   const [showManageDonationBox, setShowManageDonationBox] = useState(false);
+  const navigation = useNavigation();
 
-  const getOrganizationById = (orgId: string): Organization | undefined => {
-    return [...CROWDS, ...RECENTS, ...SUGGESTED].find(org => org.id === orgId);
+
+  const getOrganizationDescription = (orgName: string): string => {
+    const descriptions: { [key: string]: string } = {
+      "Hunger Initiative": "Fighting hunger in local communities",
+      "Clean Water Initiative": "Providing clean water access",
+      "Education for All": "Quality education access",
+      "Animal Rescue Network": "Rescuing and caring for animals",
+    };
+    return descriptions[orgName] || "Making a positive impact in the community";
   };
 
-  const selectedOrgs = mockSelectedOrganizations
-    .map(id => getOrganizationById(id))
-    .filter((org): org is Organization => !!org);
+  // Use selectedOrganizations prop - no fallback to mock data
+  const orgNames = selectedOrganizations;
 
-  const distributionPercentage = selectedOrgs.length > 0 ? Math.floor(100 / selectedOrgs.length) : 0;
+  const distributionPercentage = orgNames.length > 0 ? Math.floor(100 / orgNames.length) : 0;
 
   if (showManageDonationBox) {
     return (
       <ManageDonationBox
         amount={donationAmount}
-        causes={selectedOrgs}
+        causes={orgNames.map(name => ({
+          id: name,
+          name: name,
+          imageUrl: '',
+          color: '#9333ea',
+          shortDesc: getOrganizationDescription(name),
+          description: getOrganizationDescription(name)
+        }))}
         onBack={() => setShowManageDonationBox(false)}
       />
     );
@@ -56,7 +73,7 @@ export default function CheckoutScreen({
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <ArrowLeft size={20} color="#374151" />
+          <ChevronLeft size={20} color="#374151" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Donation Box</Text>
         <View style={styles.headerSpacer} />
@@ -69,13 +86,13 @@ export default function CheckoutScreen({
             <Text style={styles.amountText}>${donationAmount}</Text>
             <View style={styles.perMonthSection}>
               <Text style={styles.perMonthText}>per month</Text>
-              <HelpCircle size={16} color="#ffffff" style={styles.helpIcon} />
+              <Text style={styles.helpIcon}>?</Text>
             </View>
           </View>
 
           <View style={styles.statsSection}>
             <View style={styles.statItem}>
-              <Text style={styles.statNumber}>{selectedOrgs.length}</Text>
+              <Text style={styles.statNumber}>{orgNames.length}</Text>
               <Text style={styles.statLabel}>Causes</Text>
             </View>
             <View style={styles.statDivider} />
@@ -83,12 +100,14 @@ export default function CheckoutScreen({
               <Text style={styles.statNumber}>{mockCrowds.length}</Text>
               <Text style={styles.statLabel}>CRWDS</Text>
             </View>
+            <View style={styles.statDivider} />
+
             <View style={styles.manageSection}>
               <TouchableOpacity
                 onPress={() => setShowManageDonationBox(true)}
                 style={styles.manageButton}
               >
-                <Settings size={16} color="#ffffff" />
+                <Text style={styles.settingsIcon}>⚙</Text>
                 <Text style={styles.manageText}>Manage</Text>
               </TouchableOpacity>
             </View>
@@ -99,76 +118,69 @@ export default function CheckoutScreen({
         <View style={styles.causesSection}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>CAUSES</Text>
-            <HelpCircle size={16} color="#6b7280" />
+            {/* <Text style={styles.helpIconGray}>?</Text> */}
           </View>
 
           <View style={styles.causesList}>
-            {selectedOrgs.map((org) => (
-              <View key={org.id} style={styles.causeItem}>
-                <Image source={{ uri: org.imageUrl }} style={styles.causeImage} />
-                <View style={styles.causeInfo}>
-                  <Text style={styles.causeName}>{org.name}</Text>
-                  <Text style={styles.causeDescription}>{org.shortDesc || org.description}</Text>
+            {orgNames.length > 0 ? (
+              orgNames.map((orgName, index) => (
+                <View key={`${orgName}-${index}`} style={styles.causeItem}>
+                  <View style={[styles.causeAvatar, { backgroundColor: '#9333ea' }]}>
+                    <Text style={styles.causeAvatarText}>
+                      {orgName.charAt(0)}
+                    </Text>
+                  </View>
+                  <View style={styles.causeInfo}>
+                    <Text style={styles.causeName}>{orgName}</Text>
+                    <Text style={styles.causeDescription}>{getOrganizationDescription(orgName)}</Text>
+                  </View>
+                  <Text style={styles.causePercentage}>{distributionPercentage}%</Text>
                 </View>
-                <Text style={styles.causePercentage}>{distributionPercentage}%</Text>
+              ))
+            ) : (
+              <View style={styles.noCausesMessage}>
+                <Text style={styles.noCausesText}>No organizations selected</Text>
+                <Text style={styles.noCausesSubtext}>Go back to select organizations for your donation</Text>
               </View>
-            ))}
+            )}
           </View>
         </View>
 
-        {/* CROWDS Section */}
-        <View style={styles.crowdsSection}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>CRWDS</Text>
-            <HelpCircle size={16} color="#6b7280" />
-          </View>
-
-          <View style={styles.crowdGrid}>
-            {mockCrowds.map((crowd) => (
-              <View
-                key={crowd.id}
-                style={[styles.crowdItem, { backgroundColor: crowd.color }]}
-              >
-                <Text style={styles.crowdInitial}>
-                  {crowd.name.charAt(0)}
-                </Text>
-              </View>
-            ))}
-          </View>
+        {/* Want to give together? Card */}
+        <View style={styles.giveTogetherCard}>
+          <Text style={styles.giveTogetherText}>Want to give together? Turn this into a CRWD</Text>
+          <TouchableOpacity>
+            <Text style={styles.learnMoreLink}>Learn more</Text>
+          </TouchableOpacity>
         </View>
 
-        {/* Payment Method */}
-        <View style={styles.paymentSection}>
-          <Text style={styles.sectionTitle}>PAYMENT METHOD</Text>
-          <View style={styles.paymentCard}>
-            <View style={styles.cardInfo}>
-              <Text style={styles.cardNumber}>•••• •••• •••• 4242</Text>
-              <Text style={styles.cardExpiry}>12/25</Text>
-            </View>
-            <TouchableOpacity style={styles.changeButton}>
-              <Text style={styles.changeButtonText}>Change</Text>
-            </TouchableOpacity>
-          </View>
+        {/* Add more causes Card */}
+        <View style={styles.addMoreCard}>
+          <Text style={styles.addMoreTitle}>Add up to 45 more causes to this box</Text>
+          <Text style={styles.addMoreDescription}>
+            Allocations will automatically adjust for 100% distribution
+          </Text>
+          <Text style={styles.taxNote}>Donations are not tax deductible at this time</Text>
+          <TouchableOpacity>
+            <Text style={styles.learnMoreLink}>Learn More</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.addMoreButton} onPress={() => navigation.navigate('Search' as never)}>
+            <Text style={styles.addMoreButtonText}>+ Add More Causes</Text>
+          </TouchableOpacity>
         </View>
-
-        {/* Next Payment */}
-        <View style={styles.nextPaymentSection}>
-          <Text style={styles.sectionTitle}>NEXT PAYMENT</Text>
-          <Text style={styles.nextPaymentDate}>January 26, 2024</Text>
-        </View>
-
-        {/* Action Buttons */}
       </ScrollView>
 
     </SafeAreaView>
 
-          <View style={styles.footer}>
+          {/* <View style={styles.footer}>
           <TouchableOpacity style={styles.confirmButton}>
             <Text style={styles.confirmButtonText}>
               Confirm ${donationAmount}/month
             </Text>
           </TouchableOpacity>
-          </View>
+          </View> */}
+
+
 
     </>
   );
@@ -237,7 +249,20 @@ const styles = StyleSheet.create({
     marginRight: 4,
   },
   helpIcon: {
+    fontSize: 16,
+    color: '#ffffff',
     opacity: 0.8,
+    marginLeft: 4,
+  },
+  helpIconGray: {
+    fontSize: 16,
+    color: '#6b7280',
+    marginLeft: 8,
+  },
+  settingsIcon: {
+    fontSize: 16,
+    color: '#ffffff',
+    marginRight: 4,
   },
   statsSection: {
     flexDirection: 'row',
@@ -265,13 +290,13 @@ const styles = StyleSheet.create({
   },
   manageSection: {
     flex: 1,
-    alignItems: 'flex-end',
+    alignItems: 'center',
     paddingLeft: 16,
   },
   manageButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 6,
@@ -313,6 +338,19 @@ const styles = StyleSheet.create({
     height: 48,
     borderRadius: 8,
     marginRight: 12,
+  },
+  causeAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 8,
+    marginRight: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  causeAvatarText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#ffffff',
   },
   causeInfo: {
     flex: 1,
@@ -400,6 +438,79 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#374151',
     marginTop: 8,
+  },
+  giveTogetherCard: {
+    backgroundColor: '#ffffff',
+    marginHorizontal: 16,
+    marginVertical: 8,
+    padding: 20,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  giveTogetherText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#374151',
+    marginBottom: 8,
+  },
+  learnMoreLink: {
+    fontSize: 14,
+    color: '#2563eb',
+    fontWeight: '500',
+  },
+  addMoreCard: {
+    backgroundColor: '#ffffff',
+    marginHorizontal: 16,
+    marginVertical: 8,
+    padding: 20,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  addMoreTitle: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#374151',
+    marginBottom: 8,
+  },
+  addMoreDescription: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginBottom: 12,
+  },
+  taxNote: {
+    fontSize: 12,
+    color: '#9ca3af',
+    marginBottom: 8,
+  },
+  addMoreButton: {
+    backgroundColor: '#2563eb',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  addMoreButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ffffff',
+  },
+  noCausesMessage: {
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  noCausesText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#6b7280',
+    marginBottom: 8,
+  },
+  noCausesSubtext: {
+    fontSize: 14,
+    color: '#9ca3af',
+    textAlign: 'center',
   },
   actionButtons: {
     paddingHorizontal: 32,

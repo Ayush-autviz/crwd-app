@@ -79,7 +79,7 @@ export default function App() {
 
             return focused ? <Image source={require('./src/assets/icons/bell-fill.png')} style={{width: 25, height: 25}} /> : <Image source={require('./src/assets/icons/bell.png')} style={{width: 22, height: 22}} />
 
-          } else if (route.name === 'Profile') {
+          } else if (route.name === 'Me') {
             // return <User color={PrimaryGrey} size={22} />
 
             return focused ? <Image source={require('./src/assets/icons/user-fill.png')} style={{width: 22, height: 22}} /> : <Image source={require('./src/assets/icons/user.png')} style={{width: 22, height: 22}} />
@@ -90,7 +90,7 @@ export default function App() {
         <Tab.Screen name="Search" component={SearchScreen} />
         <Tab.Screen name="Donation" component={DonationScreen} />
         <Tab.Screen name="Activity" component={Activity} />
-        <Tab.Screen name="Profile" component={Profile} />
+        <Tab.Screen name="Me" component={Profile} />
       </Tab.Navigator>
     )
   }

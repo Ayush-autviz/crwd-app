@@ -120,7 +120,7 @@ export const navigationGroups: NavigationGroup[] = [
       {
         id: 'your-crwds',
         icon: Users,
-        label: 'Your CRWDs',
+        label: 'Your Giving Circles',
         route: 'YourCRWDs',
         handleNavigation: (navigation) => navigation.navigate('YourCRWDs')
       },

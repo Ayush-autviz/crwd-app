@@ -56,7 +56,7 @@ export default function About() {
     },
     {
       id: 'what-are-crwds',
-      title: 'What Are CRWDs?',
+      title: 'What Are Giving Circles?',
       icon: <Users size={20} color={PrimaryBlue} />
     },
     {
@@ -224,7 +224,7 @@ export default function About() {
 
         {/* What Are CRWDs Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>What Are CRWDs?</Text>
+          <Text style={styles.sectionTitle}>What Are Giving Circles?</Text>
           <Text style={styles.paragraphText}>
             CRWDs are curated collections of nonprofits tied to a shared cause or identity.
           </Text>

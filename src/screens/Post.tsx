@@ -201,7 +201,7 @@ export default function Post() {
       <MainHeaderNav show post={false} menu={false}/>
       <ScrollView style={{paddingHorizontal: 20}}>
       <View style={{marginTop: 20}}>
-          <Text style={{fontSize: 16, fontWeight: 'bold', marginBottom: 10}}>Post to a CRWD</Text>
+          <Text style={{fontSize: 16, fontWeight: 'bold', marginBottom: 10}}>Post to a Giving Circle</Text>
           
           {/* CRWD Selection */}
           <TouchableOpacity
@@ -238,7 +238,7 @@ export default function Post() {
                 </>
               ) : (
                 <Text style={{ fontSize: 14, color: PrimaryGrey }}>
-                  Select a CRWD (required)
+                  Select a Giving Circle (required)
                 </Text>
               )}
             </View>

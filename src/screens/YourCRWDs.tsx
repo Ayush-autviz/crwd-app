@@ -19,21 +19,21 @@ export default function YourCRWDs() {
     {
       id: 1,
       name: "Feed the Hungry",
-      description: "Solving world hunger a...",
+      description: "Solving world hunger and providing food to the needy.",
       avatar: "F",
       backgroundColor: "#2563eb"
     },
     {
       id: 2,
       name: "Clean Water Initiative",
-      description: "Providing clean water to...",
+      description: "Providing clean water to the needy.",
       avatar: "C",
       backgroundColor: "#059669"
     },
     {
       id: 3,
       name: "Education for All",
-      description: "Supporting education in...",
+      description: "Supporting education in the needy.",
       avatar: "E",
       backgroundColor: "#dc2626"
     }
@@ -78,7 +78,7 @@ export default function YourCRWDs() {
 
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>Your CRWDs</Text>
+        <Text style={styles.title}>Your Giving Circles</Text>
       </View>
 
       {/* CRWDs List */}
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: PrimaryGrey,
     marginTop: 2,
-    maxWidth: 140,
+    maxWidth: '90%',
   },
   manageButton: {
     marginLeft: 8,

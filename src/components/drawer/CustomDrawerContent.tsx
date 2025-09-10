@@ -51,7 +51,7 @@ export default function CustomDrawerContent(props: DrawerContentComponentProps) 
         >
           <View style={styles.menuItemContent}>
             <Text style={styles.plusIcon}>+</Text>
-            <Text style={styles.menuLabel}>Create a CRWD</Text>
+            <Text style={styles.menuLabel}>Create a Giving Circle</Text>
           </View>
         </TouchableOpacity>
         

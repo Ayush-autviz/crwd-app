@@ -16,7 +16,7 @@ export default function NearbyCauses() {
       name: "The Red Cross",
       description: "An health organization that provides medical care to those in need",
       image: require("../assets/images/redcross.png"),
-      type: "CRWD"
+      type: "Circle"
     },
     {
       name: "St. Judes",
@@ -28,7 +28,7 @@ export default function NearbyCauses() {
       name: "Women's Healthcare of At...",
       description: "We are Atlanta's #1 healthcare organization",
       image: require("../assets/images/redcross.png"),
-      type: "CRWD"
+      type: "Circle"
     },
   ];
 
@@ -42,8 +42,8 @@ export default function NearbyCauses() {
             <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
               <Image source={item.image} style={{ width: 40, height: 40, borderRadius: 20, }} />
               <View style={{width: '55%'}}>
-                <View style={{backgroundColor: item.type === "CRWD" ? SecondaryGreen : SecondaryBlue, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10, marginBottom: 5, alignSelf: 'flex-start'}}>
-                  <Text style={{ fontSize: 12, color: item.type === "CRWD" ? PrimaryGreen : PrimaryBlue, fontWeight: '500'}}>{item.type}</Text>
+                <View style={{backgroundColor: item.type === "Circle" ? SecondaryGreen : SecondaryBlue, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10, marginBottom: 5, alignSelf: 'flex-start'}}>
+                  <Text style={{ fontSize: 12, color: item.type === "Circle" ? PrimaryGreen : PrimaryBlue, fontWeight: '500'}}>{item.type}</Text>
                 </View>
                 <Text style={{ fontSize: 14, fontWeight: 500 }}>{item.name}</Text>
                 <Text style={{ fontSize: 12, color: 'grey'}} numberOfLines={2}>{item.description}</Text>
@@ -60,9 +60,9 @@ export default function NearbyCauses() {
                   </TouchableOpacity>
                 </>
               )}
-              {item.type === "CRWD" && (
+              {item.type === "Circle" && (
                 <TouchableOpacity onPress={() => navigation.navigate('GroupCRWD' as never)} style={{backgroundColor: PrimaryGreen, paddingVertical: 10, paddingHorizontal: 10, borderRadius: 10}}>
-                  <Text style={{color: 'white'}}>Join CRWD</Text>
+                  <Text style={{color: 'white'}}>Join Circle</Text>
                 </TouchableOpacity>
               )}
             </View>

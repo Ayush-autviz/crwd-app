@@ -37,7 +37,9 @@ export default function SuggestedCrwd() {
     <View style={{marginVertical: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'}}>
       <Text style={{fontSize: 18, fontWeight: 'bold'}}>Discover giving in action</Text>
       <TouchableOpacity onPress={() => navigation.navigate('CreateCRWD')}>
-      <Text style={{color: PrimaryBlue}}>Create a CRWD</Text>
+      <Text style={{color: PrimaryBlue, 
+        fontSize: 12,
+      }}>Create a Giving Circle</Text>
       </TouchableOpacity>
     </View>
     <FlatList data={suggestedCRWDs}

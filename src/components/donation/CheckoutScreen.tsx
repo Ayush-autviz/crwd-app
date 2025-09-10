@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -7,12 +7,16 @@ import {
   StyleSheet,
   Image,
   SafeAreaView,
+  Modal,
+  Dimensions,
 } from 'react-native';
-import { ChevronLeft } from 'lucide-react-native';
+import { ChevronLeft, Check } from 'lucide-react-native';
 import { CROWDS, RECENTS, SUGGESTED, Organization } from '../../Constants/organizations';
 import ManageDonationBox from './ManageDonationBox';
-
+import ConfettiCannon from 'react-native-confetti-cannon';
 import { useNavigation } from '@react-navigation/native';
+
+const { width, height } = Dimensions.get('window');
 
 interface CheckoutScreenProps {
   donationAmount?: number;
@@ -32,7 +36,26 @@ export default function CheckoutScreen({
   onBack,
 }: CheckoutScreenProps) {
   const [showManageDonationBox, setShowManageDonationBox] = useState(false);
+  const [showCongratulationsModal, setShowCongratulationsModal] = useState(false);
+  const confettiRef = useRef<ConfettiCannon>(null);
   const navigation = useNavigation();
+
+  // Show congratulations modal when component mounts
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowCongratulationsModal(true);
+      // Fire confetti after modal appears
+      setTimeout(() => {
+        confettiRef.current?.start();
+      }, 300);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleCloseCongratulationsModal = () => {
+    setShowCongratulationsModal(false);
+  };
 
 
   const getOrganizationDescription = (orgName: string): string => {
@@ -81,7 +104,7 @@ export default function CheckoutScreen({
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Blue Summary Card */}
-        <View style={styles.summaryCard}>
+        <View style={styles.blueSummaryCard}>
           <View style={styles.amountSection}>
             <Text style={styles.amountText}>${donationAmount}</Text>
             <View style={styles.perMonthSection}>
@@ -148,7 +171,7 @@ export default function CheckoutScreen({
 
         {/* Want to give together? Card */}
         <View style={styles.giveTogetherCard}>
-          <Text style={styles.giveTogetherText}>Want to give together? Turn this into a CRWD</Text>
+          <Text style={styles.giveTogetherText}>Want to give together? Turn this into a Giving Circle</Text>
           <TouchableOpacity>
             <Text style={styles.learnMoreLink}>Learn more</Text>
           </TouchableOpacity>
@@ -180,7 +203,98 @@ export default function CheckoutScreen({
           </TouchableOpacity>
           </View> */}
 
+    {/* Congratulations Modal */}
+    <Modal
+      visible={showCongratulationsModal}
+      transparent={true}
+      animationType="fade"
+      onRequestClose={handleCloseCongratulationsModal}
+    >
+      <View style={styles.modalOverlay}>
+        {/* Confetti */}
+        <View style={styles.confettiContainer}>
+          <ConfettiCannon
+            ref={confettiRef}
+            count={200}
+            origin={{ x: width / 2, y: 0 }}
+            autoStart={false}
+            colors={['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8']}
+            fadeOut
+          />
+        </View>
+        
+        <View style={styles.modalContent}>
+          <TouchableOpacity
+            style={styles.closeButton}
+            onPress={handleCloseCongratulationsModal}
+          >
+            <Text style={styles.closeButtonText}>×</Text>
+          </TouchableOpacity>
+          
+          <View style={styles.modalBody}>
+            {/* Success Icon and Message */}
+            <View style={styles.successIconContainer}>
+              <View style={styles.successIcon}>
+                <Check size={32} color="#ffffff" />
+              </View>
+            </View>
+            
+            <Text style={styles.modalTitle}>Donation Successful!</Text>
+            <Text style={styles.modalDescription}>
+              You gave ${donationAmount}/month to {selectedOrganizations.length} causes.
+            </Text>
 
+            {/* Donation Summary Card */}
+            <View style={styles.summaryCard}>
+              <Text style={styles.summaryTitle}>Donation Summary</Text>
+              
+              <View style={styles.summaryDetails}>
+                <View style={styles.summaryRow}>
+                  <Text style={styles.summaryAmount}>
+                    ${(donationAmount * 0.9).toFixed(2)}
+                  </Text>
+                  <Text style={styles.summaryLabel}>Causes</Text>
+                </View>
+                <View style={styles.summaryRow}>
+                  <Text style={styles.summaryAmount}>
+                    ${(donationAmount * 0.1).toFixed(2)}
+                  </Text>
+                  <Text style={styles.summaryLabel}>CRWD+ Processing</Text>
+                </View>
+              </View>
+
+              <Text style={styles.distributionNote}>
+                Distributed every 45 days.
+              </Text>
+
+              <TouchableOpacity
+                style={styles.seeDonationButton}
+                onPress={handleCloseCongratulationsModal}
+              >
+                <Text style={styles.seeDonationButtonText}>
+                  See Your Donation
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Explore CRWD Button */}
+            <TouchableOpacity
+              style={styles.exploreButton}
+              onPress={() => navigation.navigate('Home' as never)}
+            >
+              <Text style={styles.exploreButtonText}>
+                Explore CRWD
+              </Text>
+            </TouchableOpacity>
+
+            {/* Download App Text */}
+            <Text style={styles.downloadText}>
+              Download the app to track and update anytime.
+            </Text>
+          </View>
+        </View>
+      </View>
+    </Modal>
 
     </>
   );
@@ -221,7 +335,7 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
-  summaryCard: {
+  blueSummaryCard: {
     backgroundColor: '#2563eb',
     margin: 16,
     borderRadius: 12,
@@ -552,5 +666,144 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 5,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 24,
+    width: '100%',
+    maxWidth: 400,
+    position: 'relative',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    padding: 8,
+    backgroundColor: '#f3f4f6',
+    borderRadius: 20,
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000,
+  },
+  closeButtonText: {
+    fontSize: 18,
+    color: '#9ca3af',
+    fontWeight: 'bold',
+  },
+  modalBody: {
+    alignItems: 'center',
+  },
+  successIconContainer: {
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  successIcon: {
+    width: 64,
+    height: 64,
+    backgroundColor: '#10B981',
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#111827',
+    marginBottom: 4,
+    textAlign: 'center',
+  },
+  modalDescription: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginBottom: 24,
+    textAlign: 'center',
+  },
+  summaryCard: {
+    backgroundColor: '#F9FAFB',
+    borderRadius: 12,
+    padding: 16,
+    width: '100%',
+    marginBottom: 16,
+  },
+  summaryTitle: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#111827',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  summaryDetails: {
+    marginBottom: 16,
+  },
+  summaryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  summaryAmount: {
+    fontSize: 14,
+    color: '#6B7280',
+  },
+  summaryLabel: {
+    fontSize: 14,
+    color: '#111827',
+    fontWeight: '500',
+  },
+  distributionNote: {
+    fontSize: 12,
+    color: '#6B7280',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  seeDonationButton: {
+    backgroundColor: '#2563eb',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    width: '100%',
+    alignItems: 'center',
+  },
+  seeDonationButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  exploreButton: {
+    backgroundColor: '#1F2937',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    width: '100%',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  exploreButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  downloadText: {
+    fontSize: 12,
+    color: '#6B7280',
+    textAlign: 'center',
+  },
+  confettiContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 999,
+    pointerEvents: 'none',
   },
 });

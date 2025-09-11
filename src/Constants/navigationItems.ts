@@ -96,9 +96,11 @@ import {
   HelpCircle,
   Settings,
   Shuffle,
+  Heart,
 
 } from 'lucide-react-native';
 import { NavigationProp } from '@react-navigation/native';
+import { Book } from 'lucide-react-native';
 
 export interface NavigationItem {
   id: string;
@@ -145,7 +147,7 @@ export const navigationGroups: NavigationGroup[] = [
       },
       {
         id: 'saved',
-        icon: Bookmark,
+        icon: Heart,
         label: 'Saved',
         route: 'Saved',
         handleNavigation: (navigation) => navigation.navigate('Saved')
@@ -180,6 +182,13 @@ export const navigationGroups: NavigationGroup[] = [
         label: 'About',
         route: 'About',
         handleNavigation: (navigation) => navigation.navigate('About')
+      },
+      {
+        id: 'articles',
+        icon: Book,
+        label: 'Articles',
+        route: '#',
+        handleNavigation: (navigation) => navigation.navigate('PrivacyPolicy')
       },
       {
         id: 'help',

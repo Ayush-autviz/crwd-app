@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, Image, TouchableOpacity } from 'react-native';
-import { CheckCircle, Bookmark, ShieldCheck } from 'lucide-react-native';
+import { CheckCircle, Bookmark, ShieldCheck, Heart } from 'lucide-react-native';
 import { PrimaryBlue, LightGrey, PrimaryGrey } from '../../Constants/Colors';
 import { useNavigation } from '@react-navigation/native';
 
@@ -12,6 +12,9 @@ const interests = ['Animal Welfare', 'Environment', 'Food Insecurity'];
 
 const CauseProfileCard: React.FC<CauseProfileCardProps> = ({ onLearnMoreClick }) => {
   const navigation = useNavigation();
+  const [isLiked, setIsLiked] = useState(false);
+
+
   return (
     <View style={{ backgroundColor: 'white', paddingHorizontal: 12, paddingVertical: 16, marginHorizontal: 12, marginBottom: 8 }}>
       {/* Profile */}
@@ -28,14 +31,16 @@ const CauseProfileCard: React.FC<CauseProfileCardProps> = ({ onLearnMoreClick })
             in 6 CRWDS · 162 donations
           </Text>
         </View>
-        <TouchableOpacity style={{ 
+        <TouchableOpacity 
+        onPress={() => setIsLiked(!isLiked)}
+        style={{ 
           borderWidth: 1, 
           borderColor: '#d1d5db', 
           paddingHorizontal: 12, 
           paddingVertical: 6, 
           borderRadius: 8 
         }}>
-          <Bookmark size={16} color={PrimaryGrey} />
+          <Heart size={16} color={isLiked ? 'red' : PrimaryGrey} fill={isLiked ? 'red' : 'none'} />
         </TouchableOpacity>
       </View>
 

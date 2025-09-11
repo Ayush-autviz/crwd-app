@@ -12,6 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import HomeHeader from '../components/HomeHeader'
 import CausesCarousel from '../components/CausesCarousel'
 import { useNavigation } from '@react-navigation/native'
+import { setDiscoverMode } from '../utils/discoverMode'
 
 // Sample data generator for infinite posts
 const generateMorePosts = (startId: number, count: number) => {
@@ -38,17 +39,43 @@ export default function Home() {
     const [posts, setPosts] = useState(() => generateMorePosts(1, 4));
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const navigation = useNavigation();
-    // Sample data for categories
+    // Sample data for categories with colors
     const categories = [
-        "Animal Welfare",
-        "Environment",
-        "Food Insecurity",
-        "Food Insecurity",
-        "Environment",
-        "Education",
-        "Healthcare",
-        "Social Justice",
-        "Homelessness",
+        {
+            name: "Animal Welfare",
+            text: "#E36414",      // Orange-Red
+            background: "#FFE1CC", // Softer warm orange tint
+        },
+        {
+            name: "Environment",
+            text: "#6A994E",      // Olive Green
+            background: "#DFF0D6", // Fresh leafy green tint
+        },
+        {
+            name: "Food Insecurity",
+            text: "#FF9F1C",      // Carrot Orange
+            background: "#FFE6CC", // Light orange tint (not too pale)
+        },
+        {
+            name: "Education",
+            text: "#FFB84D",      // Amber
+            background: "#FFEFD1", // Gentle amber tint
+        },
+        {
+            name: "Healthcare",
+            text: "#D62828",      // Crimson
+            background: "#FFD6D6", // Soft rosy red tint
+        },
+        {
+            name: "Social Justice",
+            text: "#780000",      // Maroon
+            background: "#F2C7C7", // Muted pinkish tint
+        },
+        {
+            name: "Homelessness",
+            text: "#8D6E63",      // Brown
+            background: "#EADFD9", // Warm earthy beige tint
+        },
     ];
 
     const handleLoadMore = async () => {
@@ -141,24 +168,61 @@ export default function Home() {
 
                 <SuggestedCrwd />
 
-                <Text style={{ fontSize: 18, fontWeight: 'bold', marginTop: 20 }}>Explore Categories</Text>
-                <FlatList 
-                    data={categories}
-                    horizontal={true}
-                    showsHorizontalScrollIndicator={false}
-                    renderItem={({ item,index }) => (
-                        <TouchableOpacity onPress={() => navigation.navigate('Interests' as never)} key={index} style={{
-                            backgroundColor: LightGrey,
-                            paddingHorizontal: 13,
-                            paddingVertical: 12,
-                            borderRadius: 10,
-                            marginTop:15,
-                            marginLeft:10
-                          }}>
-                            <Text style={{ fontSize: 13, color: '#000',fontWeight:'500' }}>{item}</Text>
-                          </TouchableOpacity>
-                    )}
-                />
+                {/* Categories Section */}
+                <View style={{ marginTop: 32 }}>
+                    <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 16, color: '#111827' }}>Explore Categories</Text>
+                    <ScrollView 
+                        horizontal={true}
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={{ paddingRight: 16 }}
+                    >
+                        <View style={{ flexDirection: 'row', gap: 8 }}>
+                            {categories.map((category, index) => (
+                                <TouchableOpacity 
+                                    key={index}
+                                    onPress={() => navigation.navigate('Interests' as never)} 
+                                    style={{
+                                        backgroundColor: category.background,
+                                        paddingHorizontal: 16,
+                                        paddingVertical: 8,
+                                        borderRadius: 8,
+                                        borderWidth: 1,
+                                        borderColor: '#E5E7EB',
+                                    }}
+                                >
+                                    <Text style={{ 
+                                        fontSize: 14, 
+                                        color: category.text, 
+                                        fontWeight: '500' 
+                                    }}>
+                                        {category.name}
+                                    </Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+                    </ScrollView>
+                    
+                    {/* Discover More Button */}
+                    <View style={{ alignItems: 'flex-end', marginTop: 16 }}>
+                        <TouchableOpacity 
+                            onPress={() => {
+                                setDiscoverMode(true);
+                                navigation.navigate('Search' as never);
+                            }}
+                            style={{ flexDirection: 'row', alignItems: 'center' }}
+                        >
+                            <Text style={{ 
+                                fontSize: 14, 
+                                color: '#2563eb', 
+                                fontWeight: '500',
+                                marginRight: 4
+                            }}>
+                                Discover More
+                            </Text>
+                            <Text style={{ fontSize: 16, color: '#2563eb' }}>›</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
 
                 <SuggestdCauses />
 

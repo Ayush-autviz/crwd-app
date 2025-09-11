@@ -8,7 +8,7 @@ import {
   Image,
   TextInput,
 } from 'react-native';
-import { Minus, Plus, Bookmark, Trash2 } from 'lucide-react-native';
+import { Minus, Plus, Bookmark, Trash2, Heart } from 'lucide-react-native';
 import { CROWDS, RECENTS, SUGGESTED, Organization } from '../../Constants/organizations';
 import PaymentSection from './PaymentSection';
 
@@ -103,10 +103,10 @@ export default function OneTimeDonation({
               }}
               style={[styles.actionButton, isBookmarked && styles.bookmarkedButton]}
             >
-              <Bookmark
+              <Heart
                 size={16}
-                color={isBookmarked ? '#ffffff' : '#6b7280'}
-                fill={isBookmarked ? '#ffffff' : 'none'}
+                color={isBookmarked ? 'red' : '#6b7280'}
+                fill={isBookmarked ? 'red' : 'none'}
               />
             </TouchableOpacity>
             <View style={[styles.checkbox, isSelected && styles.checkedBox]}>
@@ -377,7 +377,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   bookmarkedButton: {
-    backgroundColor: '#2563eb',
+    // backgroundColor: '#2563eb',
   },
   checkbox: {
     width: 24,

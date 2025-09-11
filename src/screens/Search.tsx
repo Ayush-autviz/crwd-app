@@ -1,13 +1,14 @@
 import { View, Text, ScrollView, TextInput, TouchableOpacity, Image } from 'react-native'
-import React, { useState } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import MainHeaderNav from '../components/MainHeaderNav'
 import SuggestdCauses from '../components/SuggestdCauses'
 import PopularPosts from '../components/PopularPosts'
 import { LightGrey, PrimaryBlue, PrimaryGrey } from '../Constants/Colors'
-import { useNavigation, useRoute } from '@react-navigation/native'
+import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native'
 import { Clock, TrendingUp, X, Search } from 'lucide-react-native'
 import NearbyCauses from '../components/NearbyCauses'
+import { getDiscoverMode, resetDiscoverMode } from '../utils/discoverMode'
 
 
 // Sample data generator for infinite posts
@@ -32,14 +33,27 @@ const generateMorePosts = (startId: number, count: number) => {
 };
 
 export default function SearchScreen() {
-    const route = useRoute()
-    const routeParams = route.params as { discover?: boolean } | undefined
-    const discover = routeParams?.discover || false
+    const [discover, setDiscover] = useState(false) // Always start with false
     
     const [posts, setPosts] = useState(() => generateMorePosts(1, 4));
     const [search, setSearch] = useState("")
     const navigation = useNavigation()
     
+    // Check discover mode when screen comes into focus
+    useFocusEffect(useCallback(() => {
+        console.log('Search screen focus effect triggered');
+        
+        // Check if discover mode should be shown
+        if (getDiscoverMode()) {
+            console.log('Setting discover to true from global variable');
+            setDiscover(true)
+            // Reset the global variable after using it
+            resetDiscoverMode()
+        } else {
+            console.log('Setting discover to false - no discover mode set');
+            setDiscover(false)
+        }
+    }, []))
     // Show search results when typing, show default content when empty
     const showSearchResults = search.trim().length > 0
     
@@ -144,96 +158,141 @@ export default function SearchScreen() {
         },
     ];
 
+    // Categories for discover mode
+    const discoverCategories = [
+        { name: "All", text: "#000000", background: "#f5f5f5" },
+        { name: "Animal Welfare", text: "#E36414", background: "#FFE9DC" },
+        { name: "Arts", text: "#FF6B6B", background: "#FFECEC" },
+        { name: "Community", text: "#06D6A0", background: "#D6FAF0" },
+        { name: "Education", text: "#FFB84D", background: "#FFF3E0" },
+        { name: "Environment", text: "#6A994E", background: "#E8F4E4" },
+        { name: "Food Insecurity", text: "#FF9F1C", background: "#FFF0D9" },
+        { name: "General", text: "#ADB5BD", background: "#F3F4F6" },
+        { name: "Global", text: "#48CAE4", background: "#D7F0FB" },
+        { name: "Healthcare", text: "#D62828", background: "#FFE5E5" },
+        { name: "Housing", text: "#8D6E63", background: "#F5E9E3" },
+        { name: "Jobs", text: "#6C757D", background: "#ECEFF1" },
+        { name: "Legal", text: "#FFBE0B", background: "#FFF7D6" },
+        { name: "Membership", text: "#5E6472", background: "#EBEDF1" },
+        { name: "Mental", text: "#9D4EDD", background: "#F3E8FA" },
+        { name: "Philanthropy", text: "#FF006E", background: "#FFE0ED" },
+        { name: "Public", text: "#2A9D8F", background: "#D6F4F1" },
+        { name: "Relief", text: "#F94144", background: "#FFE3E3" },
+        { name: "Religion", text: "#E9C46A", background: "#FFF7E0" },
+        { name: "Research", text: "#3A86FF", background: "#DDE8FF" },
+        { name: "Rights", text: "#780000", background: "#FFDADA" },
+        { name: "Science", text: "#023E8A", background: "#D7E3FF" },
+        { name: "Services", text: "#3F37C9", background: "#E2E0FA" },
+        { name: "Society", text: "#577590", background: "#EAF0F5" },
+        { name: "Sports", text: "#90BE6D", background: "#EBF6E2" },
+        { name: "Wellness", text: "#F28482", background: "#FFEAEA" },
+        { name: "Youth", text: "#4CC9F0", background: "#E0F7FF" },
+    ];
+
+    const [selectedCategory, setSelectedCategory] = useState("All");
+
     // If in discover mode, show discover-focused layout
     if (discover) {
         return (
-            <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }} edges={['top', 'left', 'right']}>
-                <MainHeaderNav title="Discover" showBackButton={true} />
+            <SafeAreaView style={{ backgroundColor: '#f9fafb', flex: 1 }} edges={['top', 'left', 'right']}>
+                <MainHeaderNav  />
                 <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-                    <View style={{ paddingHorizontal: 20 }}>
-                        {/* Search Input for discover mode */}
-                        <View style={{ marginBottom: 32, marginTop: 16 }}>
-                            <View style={{ 
-                                position: 'relative', 
-                                backgroundColor: LightGrey, 
-                                borderRadius: 10, 
-                                flexDirection: 'row', 
-                                alignItems: 'center',
-                                paddingHorizontal: 16,
-                                paddingVertical: 16
+                    <View style={{ paddingHorizontal: 16, paddingVertical: 24 }}>
+                        {/* Title and Description */}
+                        <View style={{ alignItems: 'center', marginBottom: 32 }}>
+                            <Text style={{ 
+                                fontSize: 30, 
+                                fontWeight: '700', 
+                                color: '#111827', 
+                                marginBottom: 16,
+                                textAlign: 'center'
                             }}>
-                                <Search size={20} color={PrimaryGrey} style={{ marginRight: 12 }} />
-                                <TextInput
-                                    placeholder="Search non-profits, CRWDs, or posts"
-                                    placeholderTextColor={PrimaryGrey} 
-                                    style={{ flex: 1, fontSize: 16 }}
-                                    value={search}
-                                    onChangeText={setSearch}
-                                />
-                                {search ? (
-                                    <TouchableOpacity onPress={() => setSearch("")}>
-                                        <Text style={{ fontSize: 18, color: PrimaryGrey }}>✕</Text>
-                                    </TouchableOpacity>
-                                ) : null}
-                            </View>
+                                Discover Your Impact
+                            </Text>
+                            <Text style={{ 
+                                fontSize: 18, 
+                                color: '#6b7280', 
+                                textAlign: 'center',
+                                lineHeight: 24,
+                                maxWidth: 350
+                            }}>
+                                Find and support organizations that align with your passions. Your next favorite cause is just a click away.
+                            </Text>
                         </View>
 
-                        {/* Suggested Causes Section */}
-                        <View style={{ marginBottom: 32 }}>
-                            <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 16 }}>Find Your Cause</Text>
-                            <View style={{ gap: 20 }}>
-                                {suggestedCauses.map((cause, index) => (
-                                    <View key={index} style={{ 
-                                        flexDirection: 'row', 
-                                        justifyContent: 'space-between', 
-                                        alignItems: 'center',
-                                        padding: 16,
-                                        backgroundColor: '#f8f9fa',
-                                        borderRadius: 12
-                                    }}>
-                                        <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center', flex: 1 }}>
-                                            <Image source={cause.image} style={{ width: 40, height: 40, borderRadius: 20 }} />
-                                            <View style={{ flex: 1 }}>
-                                                <View style={{
-                                                    backgroundColor: '#e3f2fd',
-                                                    paddingHorizontal: 10,
-                                                    paddingVertical: 4,
-                                                    borderRadius: 8,
-                                                    marginBottom: 4,
-                                                    alignSelf: 'flex-start'
-                                                }}>
-                                                    <Text style={{ fontSize: 12, color: PrimaryBlue, fontWeight: '500' }}>
-                                                        {cause.type}
-                                                    </Text>
-                                                </View>
-                                                <Text style={{ fontSize: 14, fontWeight: '500', marginBottom: 4 }}>
-                                                    {cause.name}
-                                                </Text>
-                                                <Text style={{ fontSize: 12, color: 'grey' }} numberOfLines={2}>
-                                                    {cause.description}
-                                                </Text>
-                                            </View>
-                                        </View>
-                                        <View style={{ alignItems: 'center' }}>
-                                            <TouchableOpacity
-                                            onPress={() => navigation.navigate('DrawerNav' as never, { screen: 'Donation' })}
-                                            style={{
-                                                backgroundColor: PrimaryBlue,
-                                                paddingVertical: 8,
-                                                paddingHorizontal: 12,
-                                                borderRadius: 8,
-                                                marginBottom: 4
-                                            }}>
-                                                <Text style={{ color: 'white', fontSize: 12 }}>Donate Now</Text>
-                                            </TouchableOpacity>
-                                            <TouchableOpacity onPress={() => navigation.navigate('CauseScreen' as never)}>
-                                                <Text style={{ color: PrimaryBlue, fontSize: 12 }}>Visit Profile</Text>
-                                            </TouchableOpacity>
-                                        </View>
-                                    </View>
+                        {/* Search Input for discover mode */}
+                        <View style={{ marginBottom: 32, alignItems: 'center' }}>
+                            <TouchableOpacity 
+                                style={{ 
+                                    width: '100%',
+                                    maxWidth: 500,
+                                    backgroundColor: 'white', 
+                                    borderRadius: 25, 
+                                    flexDirection: 'row', 
+                                    alignItems: 'center',
+                                    paddingHorizontal: 16,
+                                    paddingVertical: 16,
+                                    borderWidth: 2,
+                                    borderColor: '#e5e7eb',
+                                    shadowColor: '#000',
+                                    shadowOffset: { width: 0, height: 1 },
+                                    shadowOpacity: 0.05,
+                                    shadowRadius: 2,
+                                    elevation: 1,
+                                }}
+                                onPress={() => setDiscover(false)}
+                            >
+                                <Search size={20} color={PrimaryGrey} style={{ marginRight: 12 }} />
+                                <Text style={{ 
+                                    flex: 1, 
+                                    fontSize: 16, 
+                                    color: '#9ca3af' 
+                                }}>
+                                    Search for nonprofits or causes...
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+
+                        {/* Category Filters - Centered and non-scrollable */}
+                        <View style={{ marginBottom: 32, alignItems: 'center' }}>
+                            <View style={{ 
+                                flexDirection: 'row', 
+                                flexWrap: 'wrap', 
+                                justifyContent: 'center',
+                                gap: 8,
+                                width: '100%',
+                                maxWidth: 400
+                            }}>
+                                {discoverCategories.map((category) => (
+                                    <TouchableOpacity
+                                        key={category.name}
+                                        style={{
+                                            backgroundColor: selectedCategory === category.name 
+                                                ? category.text 
+                                                : category.background,
+                                            paddingHorizontal: 16,
+                                            paddingVertical: 8,
+                                            borderRadius: 20,
+                                            borderWidth: 1,
+                                            borderColor: '#E5E7EB',
+                                        }}
+                                        onPress={() => setSelectedCategory(selectedCategory === category.name ? "All" : category.name)}
+                                    >
+                                        <Text style={{ 
+                                            fontSize: 14, 
+                                            color: selectedCategory === category.name 
+                                                ? "white" 
+                                                : category.text,
+                                            fontWeight: '500' 
+                                        }}>
+                                            {category.name}
+                                        </Text>
+                                    </TouchableOpacity>
                                 ))}
                             </View>
                         </View>
+
+                     
                     </View>
                 </ScrollView>
             </SafeAreaView>
@@ -257,7 +316,7 @@ export default function SearchScreen() {
                         placeholder='Search for non-profits CRWDs, or posts' 
                         placeholderTextColor={PrimaryGrey}
                         value={search}
-                        onChangeText={setSearch}
+                    onChangeText={setSearch}
                         clearButtonMode="while-editing"
                         style={{ flex: 1 }}
                     />
@@ -268,7 +327,7 @@ export default function SearchScreen() {
                     <>
 
                         <TouchableOpacity onPress={() => navigation.navigate('Interests' as never)} style={{
-                            backgroundColor: LightGrey,
+                            backgroundColor: "#FFE9DC",
                             paddingHorizontal: 13,
                             paddingVertical: 12,
                             borderRadius: 10,
@@ -277,7 +336,7 @@ export default function SearchScreen() {
                             alignSelf: 'flex-start',
                             maxWidth: '90%'
                           }}>
-                            <Text style={{ fontSize: 13, color: '#000', fontWeight: '500' }}>Animal Welfare</Text>
+                            <Text style={{ fontSize: 13, color: '#E36414', fontWeight: '500' }}>Animal Welfare</Text>
                           </TouchableOpacity>
 
                         <NearbyCauses />

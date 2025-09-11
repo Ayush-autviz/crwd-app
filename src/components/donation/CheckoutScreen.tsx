@@ -228,69 +228,46 @@ export default function CheckoutScreen({
             style={styles.closeButton}
             onPress={handleCloseCongratulationsModal}
           >
-            <Text style={styles.closeButtonText}>×</Text>
+            <Text style={styles.closeButtonText}>x</Text>
           </TouchableOpacity>
           
-          <View style={styles.modalBody}>
-            {/* Success Icon and Message */}
-            <View style={styles.successIconContainer}>
-              <View style={styles.successIcon}>
-                <Check size={32} color="#ffffff" />
-              </View>
-            </View>
-            
-            <Text style={styles.modalTitle}>Donation Successful!</Text>
+            <View style={styles.modalBody}>
+              <Text style={styles.modalTitle}>Welcome to Checkout!</Text>
             <Text style={styles.modalDescription}>
-              You gave ${donationAmount}/month to {selectedOrganizations.length} causes.
+              Here's your donation summary:
             </Text>
 
             {/* Donation Summary Card */}
             <View style={styles.summaryCard}>
-              <Text style={styles.summaryTitle}>Donation Summary</Text>
-              
-              <View style={styles.summaryDetails}>
-                <View style={styles.summaryRow}>
-                  <Text style={styles.summaryAmount}>
-                    ${(donationAmount * 0.9).toFixed(2)}
-                  </Text>
-                  <Text style={styles.summaryLabel}>Causes</Text>
+              <View style={styles.summaryCardContent}>
+                <View style={styles.summaryIcon}>
+                  <Text style={styles.heartEmoji}>💝</Text>
                 </View>
-                <View style={styles.summaryRow}>
-                  <Text style={styles.summaryAmount}>
-                    ${(donationAmount * 0.1).toFixed(2)}
-                  </Text>
-                  <Text style={styles.summaryLabel}>CRWD+ Processing</Text>
+                <View style={styles.summaryTextContainer}>
+                  <Text style={styles.summaryCardTitle}>Monthly Donation Box</Text>
+                  <Text style={styles.summaryCardAmount}>${donationAmount}/month</Text>
                 </View>
               </View>
-
-              <Text style={styles.distributionNote}>
-                Distributed every 45 days.
-              </Text>
-
-              <TouchableOpacity
-                style={styles.seeDonationButton}
-                onPress={handleCloseCongratulationsModal}
-              >
-                <Text style={styles.seeDonationButtonText}>
-                  See Your Donation
-                </Text>
-              </TouchableOpacity>
             </View>
 
+            <Text style={styles.supportingText}>
+              Supporting {selectedOrganizations.length} nonprofits with your monthly donation.
+            </Text>
+
             {/* Explore CRWD Button */}
-            <TouchableOpacity
+            {/* <TouchableOpacity
               style={styles.exploreButton}
               onPress={() => navigation.navigate('Home' as never)}
             >
               <Text style={styles.exploreButtonText}>
                 Explore CRWD
               </Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
             {/* Download App Text */}
-            <Text style={styles.downloadText}>
+            {/* <Text style={styles.downloadText}>
               Download the app to track and update anytime.
-            </Text>
+            </Text> */}
           </View>
         </View>
       </View>
@@ -686,11 +663,12 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 16,
     right: 16,
-    padding: 8,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
     backgroundColor: '#f3f4f6',
     borderRadius: 20,
-    width: 32,
-    height: 32,
+    // width: 32,
+    // height: 32,
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 1000,
@@ -716,10 +694,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   modalTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 20,
+    fontWeight: '700',
     color: '#111827',
-    marginBottom: 4,
+    marginBottom: 8,
     textAlign: 'center',
   },
   modalDescription: {
@@ -729,54 +707,47 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   summaryCard: {
-    backgroundColor: '#F9FAFB',
+    backgroundColor: '#F3F4F6',
     borderRadius: 12,
     padding: 16,
     width: '100%',
-    marginBottom: 16,
+    marginBottom: 20,
   },
-  summaryTitle: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#111827',
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  summaryDetails: {
-    marginBottom: 16,
-  },
-  summaryRow: {
+  summaryCardContent: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  summaryAmount: {
-    fontSize: 14,
-    color: '#6B7280',
-  },
-  summaryLabel: {
-    fontSize: 14,
-    color: '#111827',
-    fontWeight: '500',
-  },
-  distributionNote: {
-    fontSize: 12,
-    color: '#6B7280',
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  seeDonationButton: {
-    backgroundColor: '#2563eb',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    width: '100%',
     alignItems: 'center',
   },
-  seeDonationButtonText: {
-    color: '#ffffff',
+  summaryIcon: {
+    width: 48,
+    height: 48,
+    backgroundColor: '#2563eb',
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  heartEmoji: {
+    fontSize: 20,
+  },
+  summaryTextContainer: {
+    flex: 1,
+  },
+  summaryCardTitle: {
     fontSize: 16,
     fontWeight: '600',
+    color: '#111827',
+    marginBottom: 4,
+  },
+  summaryCardAmount: {
+    fontSize: 14,
+    color: '#6B7280',
+  },
+  supportingText: {
+    fontSize: 14,
+    color: '#6B7280',
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 20,
   },
   exploreButton: {
     backgroundColor: '#1F2937',

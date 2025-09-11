@@ -7,7 +7,7 @@ import {
   StyleSheet,
   Image,
 } from 'react-native';
-import { Trash2, Bookmark } from 'lucide-react-native';
+import { Trash2, Bookmark, Heart } from 'lucide-react-native';
 import { CROWDS, RECENTS, SUGGESTED, Organization } from '../../Constants/organizations';
 import PaymentSection from './PaymentSection';
 import { PrimaryBlue } from '../../Constants/Colors';
@@ -83,10 +83,10 @@ export default function DonationStep3({
                     style={styles.actionButton}
                     onPress={() => toggleBookmark(orgName)}
                   >
-                    <Bookmark
+                    <Heart
                       size={20}
-                      color={bookmarkedOrgs.includes(orgName) ? '#2563eb' : '#6b7280'}
-                      fill={bookmarkedOrgs.includes(orgName) ? '#2563eb' : 'none'}
+                      color={bookmarkedOrgs.includes(orgName) ? 'red' : '#6b7280'}
+                      fill={bookmarkedOrgs.includes(orgName) ? 'red' : 'none'}
                     />
                   </TouchableOpacity>
                   <TouchableOpacity

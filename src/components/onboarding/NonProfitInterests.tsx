@@ -75,19 +75,56 @@ const nonProfitInterests = [
 ];
 
 const categories = [
-  "Health",
-  "Education",
-  "Environment",
-  "Arts",
-  "Animals",
-  "Poverty",
-  "Veterans",
-  "Children",
+  {
+    name: "All",
+    text: "#000000",
+    background: "#f5f5f5",
+  },
+  {
+    name: "Health",
+    text: "#D62828",
+    background: "#FFE5E5",
+  },
+  {
+    name: "Education",
+    text: "#FFB84D",
+    background: "#FFF3E0",
+  },
+  {
+    name: "Environment",
+    text: "#6A994E",
+    background: "#E8F4E4",
+  },
+  {
+    name: "Arts",
+    text: "#FF6B6B",
+    background: "#FFECEC",
+  },
+  {
+    name: "Animals",
+    text: "#E36414",
+    background: "#FFE9DC",
+  },
+  {
+    name: "Poverty", // mapped to Relief
+    text: "#F94144",
+    background: "#FFE3E3",
+  },
+  {
+    name: "Veterans", // mapped to Society
+    text: "#577590",
+    background: "#EAF0F5",
+  },
+  {
+    name: "Children", // mapped to Youth
+    text: "#4CC9F0",
+    background: "#E0F7FF",
+  },
 ];
 
 export default function NonProfitInterests() {
   const [selectedInterests, setSelectedInterests] = useState<number[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigation = useNavigation<any>()   
@@ -216,18 +253,26 @@ export default function NonProfitInterests() {
         >
           {categories.map((category) => (
             <TouchableOpacity
-              key={category}
+              key={category.name}
               style={[
                 styles.categoryButton,
-                selectedCategory === category && styles.categoryButtonSelected
+                {
+                  backgroundColor: selectedCategory === category.name 
+                    ? category.text 
+                    : category.background,
+                }
               ]}
-              onPress={() => setSelectedCategory(selectedCategory === category ? '' : category)}
+              onPress={() => setSelectedCategory(selectedCategory === category.name ? '' : category.name)}
             >
               <Text style={[
                 styles.categoryButtonText,
-                selectedCategory === category && styles.categoryButtonTextSelected
+                {
+                  color: selectedCategory === category.name 
+                    ? "white" 
+                    : category.text
+                }
               ]}>
-                {category}
+                {category.name}
               </Text>
             </TouchableOpacity>
           ))}
@@ -365,20 +410,12 @@ const styles = StyleSheet.create({
   categoryButton: {
     paddingHorizontal: 16,
     paddingVertical: 8,
-    backgroundColor: '#e5e7eb',
     borderRadius: 20,
     marginRight: 8,
-  },
-  categoryButtonSelected: {
-    backgroundColor: '#374151',
   },
   categoryButtonText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#374151',
-  },
-  categoryButtonTextSelected: {
-    color: 'white',
   },
   interestsGrid: {
     flexDirection: 'row',

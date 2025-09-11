@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Modal, Sha
 import ConfettiCannon from 'react-native-confetti-cannon';
 import MainHeaderNav from '../components/MainHeaderNav';
 import { LightGrey, PrimaryBlue, PrimaryGrey, SecondaryBlue, SecondaryGrey } from '../Constants/Colors';
-import { Bookmark, Plus } from 'lucide-react-native';
+import { Bookmark, Heart, Plus } from 'lucide-react-native';
 import { TextInput } from 'react-native-gesture-handler';
 import { Organization, RECENTS, SUGGESTED } from '../Constants/organizations';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -90,9 +90,10 @@ export default function CreateCRWD() {
               }}
               style={[styles.actionButton, isBookmarked && styles.bookmarkedButton]}
             >
-              <Bookmark
+              <Heart
                 size={16}
-                color={isBookmarked ? '#ffffff' : '#6b7280'}
+                color={isBookmarked ? 'red' : PrimaryGrey}
+                fill={isBookmarked ? 'red' : 'none'}
               />
             </TouchableOpacity>
             <View style={[styles.checkbox, isSelected && styles.checkedBox]}>
@@ -414,15 +415,15 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   actionButton: {
-    width: 32,
-    height: 32,
+    width: 24,
+    height: 24,
     borderRadius: 16,
     backgroundColor: '#f3f4f6',
     alignItems: 'center',
     justifyContent: 'center',
   },
   bookmarkedButton: {
-    backgroundColor: '#2563eb',
+    // backgroundColor: 'red',
   },
   checkbox: {
     width: 24,

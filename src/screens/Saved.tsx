@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, FlatList, Image, Modal, TouchableOpacity, Pressable } from 'react-native';
 import MainHeaderNav from '../components/MainHeaderNav';
-import { Bookmark } from 'lucide-react-native';
+import { Bookmark, Heart } from 'lucide-react-native';
 import { PrimaryGrey, SecondaryGrey, PrimaryBlue, LightGrey } from '../Constants/Colors';
 import { useToast } from '../contexts/ToastContext';
 import FilledBookmark from '../components/FilledBookmark';
@@ -55,7 +55,7 @@ export default function Saved() {
   const renderEmptyState = () => (
     <View style={styles.emptyState}>
       <View style={{ marginBottom: 16 }}>
-        <Bookmark size={48} color={PrimaryGrey} />
+        <Heart size={48} color={PrimaryGrey} />
       </View>
       <Text style={styles.emptyTitle}>No saved items</Text>
       <Text style={styles.emptySubtitle}>Items you save will appear here</Text>
@@ -83,7 +83,7 @@ export default function Saved() {
               onPress={() => handleUnsave(item)}
               style={styles.bookmarkButton}
             >
-              <FilledBookmark size={20} color={PrimaryBlue} />
+              <Heart size={20} fill={'red'} stroke={'red'} />
             </TouchableOpacity>
           </View>
         )} 

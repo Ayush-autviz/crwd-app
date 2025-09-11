@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, Image, TouchableOpacity } from 'react-native';
-import { Bookmark } from 'lucide-react-native';
+import { Bookmark, Heart } from 'lucide-react-native';
 import { PrimaryBlue, LightGrey, PrimaryGrey } from '../../Constants/Colors';
 import { useNavigation } from '@react-navigation/native';
 
@@ -37,6 +37,7 @@ const GroupCRWDHeader: React.FC<GroupCRWDHeaderProps> = ({
   id = "",
 }) => {
   const navigation = useNavigation();
+  const [isLiked, setIsLiked] = useState(false);
 
   const handleStatsPress = (type: string) => {
     if (type === 'causes') {
@@ -77,14 +78,16 @@ const GroupCRWDHeader: React.FC<GroupCRWDHeaderProps> = ({
         />
         <Text style={{ fontSize: 14, color: '#6b7280' }}>Founded by</Text>
         <Text style={{ fontSize: 14, fontWeight: '600', color: '#374151' }}>@ChadFofana1</Text>
-        <TouchableOpacity style={{ 
+        <TouchableOpacity 
+        onPress={() => setIsLiked(!isLiked)}
+        style={{ 
           borderWidth: 1, 
           borderColor: LightGrey, 
           padding: 8, 
           borderRadius: 6,
           backgroundColor: 'white'
         }}>
-          <Bookmark size={20} color={PrimaryGrey} />
+          <Heart size={20} color={isLiked ? 'red' : PrimaryGrey} fill={isLiked ? 'red' : 'none'} />
         </TouchableOpacity>
       </View>
 

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Dimensions, Image, Text, View } from "react-native";
+import { Dimensions, Text, View } from "react-native";
 import { useSharedValue } from "react-native-reanimated";
 import Carousel, {
   ICarouselInstance,
@@ -8,19 +8,19 @@ import Carousel, {
 import { LightGrey, PrimaryBlue, SecondaryBlue, TertiaryBlue, PrimaryGrey } from "../Constants/Colors";
  
 const data = [{
-    image: require('../assets/images/grocery.jpg'),
     heading: 'Pick your Causes',
-    subHeading: 'Search or explore non-profits by category or local CRWDS.'
+    subHeading: 'Search or explore non-profits by category or local CRWDS.',
+    backgroundColor: '#3730A3' // indigo-800
 },
 {
-    image: require('../assets/images/grocery.jpg'),
     heading: 'Set One Donation',
-    subHeading: 'Decide your amount once - it splits across your chosen causes.'
+    subHeading: 'Decide your amount once - it splits across your chosen causes.',
+    backgroundColor: '#15803D' // lime-700
 },
 {
-    image: require('../assets/images/grocery.jpg'),
     heading: 'Give Together',
-    subHeading: 'Join CRWDs to give alongside others and see your shared impact.'
+    subHeading: 'Join CRWDs to give alongside others and see your shared impact.',
+    backgroundColor: '#DC2626' // red-600
 }];
 
 const width = Dimensions.get("window").width;
@@ -43,86 +43,61 @@ export default function CausesCarousel() {
     return (
       <View style={{ 
         flex: 1, 
-        backgroundColor: '#f8f9fa', 
         marginTop: 10, 
-        padding: 20, 
-        borderRadius: 20,
-        shadowColor: "#000",
-        shadowOffset: {
-          width: 0,
-          height: 2,
-        },
-        shadowOpacity: 0.1,
-        shadowRadius: 3.84,
-        elevation: 5,
-        borderWidth: 1,
-        borderColor: '#e9ecef'
+        // paddingHorizontal: 20,
       }}>
         <Carousel
           ref={ref}
-          width={width - 60}
+          width={width - 40}
           autoPlay
           autoPlayInterval={3000}
-          height={120}
+          height={130}
           data={data}
           onProgressChange={progress}
           renderItem={({item, index }) => (
             <View
               style={{
                 flex: 1,
+                backgroundColor: item.backgroundColor,
+                borderRadius: 16,
+                padding: 20,
+                shadowColor: "#000",
+                shadowOffset: {
+                  width: 0,
+                  height: 2,
+                },
+                shadowOpacity: 0.1,
+                shadowRadius: 3.84,
+                elevation: 5,
+                borderWidth: 1,
+                borderColor: '#E5E7EB',
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
             >
               <View style={{
-                flexDirection: "row",
                 alignItems: 'center',
-                justifyContent: 'space-between',
+                justifyContent: 'center',
                 width: '100%',
-                gap: 20,  
               }}>
-                <Image 
-                  source={item.image} 
-                  style={{ 
-                    width: 96, 
-                    height: 96, 
-                    resizeMode: 'cover',
-                    borderRadius: 12,
-                    shadowColor: "#000",
-                    shadowOffset: {
-                      width: 0,
-                      height: 2,
-                    },
-                    shadowOpacity: 0.1,
-                    shadowRadius: 3.84,
-                    
-                  }} 
-                />
-                <View style={{
-                  flex: 1,
-                  alignItems: 'flex-start',
-                  justifyContent: 'center',
+                <Text style={{ 
+                  fontSize: 20, 
+                  fontWeight: 'bold',
+                  color: 'white',
+                  marginBottom: 8,
+                  textAlign: 'center',
                 }}>
-                  <Text style={{ 
-                    fontSize: 22, 
-                    fontWeight: '800',
-                    color: '#6c757d',
-                    marginBottom: 8,
-                    textAlign: 'left',
-                    lineHeight: 28,
-                  }}>
-                    {item.heading}
-                  </Text>
-                  <Text style={{ 
-                    fontSize: 16, 
-                    color: '#6c757d',
-                    lineHeight: 22,
-                    textAlign: 'left',
-                    width: '80%',
-                  }}>
-                    {item.subHeading}
-                  </Text>
-                </View>
+                  {item.heading}
+                </Text>
+                <Text style={{ 
+                  fontSize: 16, 
+                  color: 'white',
+                  lineHeight: 22,
+                  textAlign: 'center',
+                  opacity: 0.9,
+                }}>
+                  {item.subHeading}
+                </Text>
               </View>
             </View>
           )}
@@ -145,6 +120,7 @@ export default function CausesCarousel() {
             marginTop: 24,
             alignItems: 'center',
             alignSelf: 'flex-end',
+            marginRight: 10,
           }}
           onPress={onPressPagination}
         />

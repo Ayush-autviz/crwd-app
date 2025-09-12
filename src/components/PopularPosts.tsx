@@ -1,6 +1,6 @@
 import { View, Text, FlatList, Image, Dimensions, TouchableOpacity, StyleSheet, Modal, Pressable, ActivityIndicator, Alert, Share } from 'react-native'
 import React, { useState } from 'react'
-import { LightGrey, PrimaryBlue, PrimaryGrey } from '../Constants/Colors'
+import { LightGrey, PrimaryBlue, PrimaryGrey, SecondaryGrey } from '../Constants/Colors'
 import { Ellipsis, Heart, MessageCircle, Flag, Trash2, Share2 } from 'lucide-react-native'
 import { useNavigation, NavigationProp } from '@react-navigation/native'
 import SocialShare from './SocialShare'
@@ -26,6 +26,7 @@ interface PopularPostsProps {
     hasMore?: boolean;
     related?: boolean;
     title?: string;
+    postButton?: boolean;
 }
 
 type RootStackParamList = {
@@ -38,6 +39,7 @@ export default function PopularPosts({
     showDelete = false,
     related = false,
     title = 'Recent Posts to CRWDs',
+    postButton = false,
     onLoadMore = async () => {
         // Default implementation to make button visible
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -115,6 +117,7 @@ export default function PopularPosts({
         <View style={{marginTop: 20, marginBottom: 50}}>
             {showTitle && (
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                     <Text style={{fontSize: 18, fontWeight: '600'}}>{related ? 'Related Posts' : title}</Text>
                     <TouchableOpacity
                         onPress={() => setShowTooltip(!showTooltip)}
@@ -131,6 +134,13 @@ export default function PopularPosts({
                             <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>?</Text>
                         </View>
                     </TouchableOpacity>
+                    </View>
+                    <TouchableOpacity
+                        onPress={() => setShowTooltip(!showTooltip)}
+                        style={{ padding: 8, backgroundColor: SecondaryGrey, borderRadius: 8 }}
+                    >
+                        <Text style={{ fontSize: 14,}}>Post Something</Text>
+                    </TouchableOpacity>
                 </View>
             )}
 
@@ -139,7 +149,7 @@ export default function PopularPosts({
                 <View style={{
                     position: 'absolute',
                     top: 50,
-                    right: 10,
+                    left: 10,
                     backgroundColor: '#000',
                     paddingHorizontal: 12,
                     paddingVertical: 8,
@@ -166,7 +176,7 @@ export default function PopularPosts({
                     <View style={{
                         position: 'absolute',
                         top: -6,
-                        right: 12,
+                        left: 40,
                         width: 0,
                         height: 0,
                         borderLeftWidth: 6,

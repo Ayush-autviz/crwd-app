@@ -22,19 +22,19 @@ export default function Saved() {
     {
       id: '1',
       name: "The Red Cross",
-      description: "An health organization that...",
+      description: "An health organization that helps people in need",
       image: require("../assets/images/redcross.png"),
     },
     {
       id: '2',
       name: "St. Judes",
-      description: "The leading children's hea...",
+      description: "The leading children's health organization",
       image: require("../assets/images/grocery.jpg"),
     },
     {
       id: '3',
       name: "Women's Healthcare of At...",
-      description: "We are Atlanta's #1 healthca...",
+      description: "We are Atlanta's #1 healthca organization",
       image: require("../assets/images/redcross.png"),
     },
   ]);
@@ -155,6 +155,7 @@ const styles = StyleSheet.create({
   itemDescription: {
     fontSize: 12,
     color: PrimaryGrey,
+    maxWidth: '90%',
   },
   bookmarkButton: {
     padding: 8,

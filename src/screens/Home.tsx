@@ -40,43 +40,81 @@ export default function Home() {
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const navigation = useNavigation();
     // Sample data for categories with colors
+    // const categories = [
+    //     {
+    //         name: "Animal Welfare",
+    //         text: "#E36414",      // Orange-Red
+    //         background: "#FFE1CC", // Softer warm orange tint
+    //     },
+    //     {
+    //         name: "Environment",
+    //         text: "#6A994E",      // Olive Green
+    //         background: "#DFF0D6", // Fresh leafy green tint
+    //     },
+    //     {
+    //         name: "Food Insecurity",
+    //         text: "#FF9F1C",      // Carrot Orange
+    //         background: "#FFE6CC", // Light orange tint (not too pale)
+    //     },
+    //     {
+    //         name: "Education",
+    //         text: "#FFB84D",      // Amber
+    //         background: "#FFEFD1", // Gentle amber tint
+    //     },
+    //     {
+    //         name: "Healthcare",
+    //         text: "#D62828",      // Crimson
+    //         background: "#FFD6D6", // Soft rosy red tint
+    //     },
+    //     {
+    //         name: "Social Justice",
+    //         text: "#780000",      // Maroon
+    //         background: "#F2C7C7", // Muted pinkish tint
+    //     },
+    //     {
+    //         name: "Homelessness",
+    //         text: "#8D6E63",      // Brown
+    //         background: "#EADFD9", // Warm earthy beige tint
+    //     },
+    // ];
+
     const categories = [
         {
-            name: "Animal Welfare",
-            text: "#E36414",      // Orange-Red
-            background: "#FFE1CC", // Softer warm orange tint
+          name: "Animals",
+          text: "#E36414", // Orange-Red
+          background: "#FFE1CC", // Softer warm orange tint
         },
         {
-            name: "Environment",
-            text: "#6A994E",      // Olive Green
-            background: "#DFF0D6", // Fresh leafy green tint
+          name: "Environment",
+          text: "#6A994E", // Olive Green
+          background: "#DFF0D6", // Fresh leafy green tint
         },
         {
-            name: "Food Insecurity",
-            text: "#FF9F1C",      // Carrot Orange
-            background: "#FFE6CC", // Light orange tint (not too pale)
+          name: "Food",
+          text: "#FF9F1C", // Carrot Orange
+          background: "#FFE6CC", // Light orange tint (not too pale)
         },
         {
-            name: "Education",
-            text: "#FFB84D",      // Amber
-            background: "#FFEFD1", // Gentle amber tint
+          name: "Education",
+          text: "#FFB84D", // Amber
+          background: "#FFEFD1", // Gentle amber tint
         },
         {
-            name: "Healthcare",
-            text: "#D62828",      // Crimson
-            background: "#FFD6D6", // Soft rosy red tint
+          name: "Health",
+          text: "#D62828", // Crimson
+          background: "#FFD6D6", // Soft rosy red tint
         },
         {
-            name: "Social Justice",
-            text: "#780000",      // Maroon
-            background: "#F2C7C7", // Muted pinkish tint
+          name: "Rights",
+          text: "#780000", // Maroon
+          background: "#F2C7C7", // Muted pinkish tint
         },
         {
-            name: "Homelessness",
-            text: "#8D6E63",      // Brown
-            background: "#EADFD9", // Warm earthy beige tint
+          name: "Housing",
+          text: "#8D6E63", // Brown
+          background: "#EADFD9", // Warm earthy beige tint
         },
-    ];
+      ];
 
     const handleLoadMore = async () => {
         setIsLoadingMore(true);

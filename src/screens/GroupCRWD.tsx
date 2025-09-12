@@ -10,7 +10,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Check, Share2, X } from 'lucide-react-native';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import { Share } from 'react-native';
-import { LightGrey, PrimaryBlue, PrimaryGrey, SecondaryGrey } from '../Constants/Colors';
+import { LightGrey, PrimaryBlue, PrimaryGreen, PrimaryGrey, SecondaryGrey } from '../Constants/Colors';
 
 const { width, height } = Dimensions.get('window');
 
@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   joinButton: {
-    backgroundColor: '#16a34a',
+    backgroundColor: PrimaryGreen,
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 6,

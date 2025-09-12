@@ -62,7 +62,7 @@ export default function NearbyCauses() {
               )}
               {item.type === "Circle" && (
                 <TouchableOpacity onPress={() => navigation.navigate('GroupCRWD' as never)} style={{backgroundColor: PrimaryGreen, paddingVertical: 10, paddingHorizontal: 10, borderRadius: 10}}>
-                  <Text style={{color: 'white'}}>Join Circle</Text>
+                  <Text style={{color: 'white'}}>Learn More</Text>
                 </TouchableOpacity>
               )}
             </View>

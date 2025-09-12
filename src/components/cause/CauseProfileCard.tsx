@@ -8,7 +8,25 @@ interface CauseProfileCardProps {
   onLearnMoreClick?: () => void;
 }
 
-const interests = ['Animal Welfare', 'Environment', 'Food Insecurity'];
+// const interests = ['Animal Welfare', 'Environment', 'Food Insecurity'];
+
+const interests = [
+  {
+    name: "Animals",
+    text: "#E36414", // Orange-Red
+    background: "#FFE1CC", // Soft warm orange tint
+  },
+  {
+    name: "Environment",
+    text: "#6A994E", // Olive Green
+    background: "#DFF0D6", // Fresh leafy green tint
+  },
+  {
+    name: "Food",
+    text: "#FF9F1C", // Carrot Orange
+    background: "#FFE6CC", // Gentle light orange tint
+  },
+];
 
 const CauseProfileCard: React.FC<CauseProfileCardProps> = ({ onLearnMoreClick }) => {
   const navigation = useNavigation();
@@ -60,12 +78,12 @@ const CauseProfileCard: React.FC<CauseProfileCardProps> = ({ onLearnMoreClick })
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
         {interests.map((interest, index) => (
           <TouchableOpacity onPress={() => navigation.navigate('Interests' as never)} key={index} style={{ 
-            backgroundColor: LightGrey, 
+            backgroundColor: interest.background, 
             paddingHorizontal: 12, 
             paddingVertical: 6, 
-            borderRadius: 20 
+            borderRadius: 8
           }}>
-            <Text style={{ fontSize: 12, color: '#374151' }}>{interest}</Text>
+            <Text style={{ fontSize: 12, color: interest.text }}>{interest.name}</Text>
             </TouchableOpacity>
         ))}
       </View>

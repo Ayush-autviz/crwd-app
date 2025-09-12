@@ -23,7 +23,25 @@ const orgAvatars = [
   },
 ];
 
-const interests = ['Animal Welfare', 'Environment', 'Food Insecurity'];
+// const interests = ['Animal Welfare', 'Environment', 'Food Insecurity'];
+
+const interests = [
+  {
+    name: "Animals",
+    text: "#E36414", // Orange-Red
+    background: "#FFE1CC", // Soft warm orange tint
+  },
+  {
+    name: "Environment",
+    text: "#6A994E", // Olive Green
+    background: "#DFF0D6", // Fresh leafy green tint
+  },
+  {
+    name: "Food",
+    text: "#FF9F1C", // Carrot Orange
+    background: "#FFE6CC", // Gentle light orange tint
+  },
+];
 
 interface GroupCRWDHeaderProps {
   hasJoined?: boolean;
@@ -129,17 +147,17 @@ const GroupCRWDHeader: React.FC<GroupCRWDHeaderProps> = ({
         </TouchableOpacity>
       </View>
 
-      {/* Interest Tags */}
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 24 }}>
+           {/* Interest Tags */}
+           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
         {interests.map((interest, index) => (
           <TouchableOpacity onPress={() => navigation.navigate('Interests' as never)} key={index} style={{ 
-            backgroundColor: LightGrey, 
-            paddingHorizontal: 10, 
-            paddingVertical: 10, 
-            borderRadius: 10,
+            backgroundColor: interest.background, 
+            paddingHorizontal: 12, 
+            paddingVertical: 6, 
+            borderRadius: 8
           }}>
-            <Text style={{ fontSize: 13, color: '#000', fontWeight: '500' }}>{interest}</Text>
-          </TouchableOpacity>
+            <Text style={{ fontSize: 12, color: interest.text }}>{interest.name}</Text>
+            </TouchableOpacity>
         ))}
       </View>
 

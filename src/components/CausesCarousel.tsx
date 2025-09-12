@@ -19,7 +19,7 @@ const data = [{
 },
 {
     heading: 'Give Together',
-    subHeading: 'Join Circles to give alongside others and see your shared impact.',
+    subHeading: 'Learn Mores to give alongside others and see your shared impact.',
     backgroundColor: '#DC2626' // red-600
 }];
 

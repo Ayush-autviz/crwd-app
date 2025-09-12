@@ -107,7 +107,7 @@ export default function Statistics() {
                     {cause.type === 'Circle' && (
                         <View style={styles.causeActions}>
                             <TouchableOpacity style={styles.joinButton}>
-                                <Text style={styles.joinButtonText}>Join Circle</Text>
+                                <Text style={styles.joinButtonText}>Learn More</Text>
                             </TouchableOpacity>
                         </View>
                     )}

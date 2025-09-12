@@ -9,6 +9,7 @@ import {
   SafeAreaView,
   Modal,
   Dimensions,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import { ChevronLeft, Check } from 'lucide-react-native';
 import { CROWDS, RECENTS, SUGGESTED, Organization } from '../../Constants/organizations';
@@ -210,67 +211,71 @@ export default function CheckoutScreen({
       animationType="fade"
       onRequestClose={handleCloseCongratulationsModal}
     >
-      <View style={styles.modalOverlay}>
-        {/* Confetti */}
-        <View style={styles.confettiContainer}>
-          <ConfettiCannon
-            ref={confettiRef}
-            count={200}
-            origin={{ x: width / 2, y: 0 }}
-            autoStart={false}
-            colors={['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8']}
-            fadeOut
-          />
-        </View>
-        
-        <View style={styles.modalContent}>
-          <TouchableOpacity
-            style={styles.closeButton}
-            onPress={handleCloseCongratulationsModal}
-          >
-            <Text style={styles.closeButtonText}>x</Text>
-          </TouchableOpacity>
+      <TouchableWithoutFeedback onPress={handleCloseCongratulationsModal}>
+        <View style={styles.modalOverlay}>
+          {/* Confetti */}
+          <View style={styles.confettiContainer}>
+            <ConfettiCannon
+              ref={confettiRef}
+              count={200}
+              origin={{ x: width / 2, y: 0 }}
+              autoStart={false}
+              colors={['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8']}
+              fadeOut
+            />
+          </View>
           
-            <View style={styles.modalBody}>
-              <Text style={styles.modalTitle}>Welcome to Checkout!</Text>
-            <Text style={styles.modalDescription}>
-              Here's your donation summary:
-            </Text>
+          <TouchableWithoutFeedback onPress={() => {}}>
+            <View style={styles.modalContent}>
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={handleCloseCongratulationsModal}
+              >
+                <Text style={styles.closeButtonText}>x</Text>
+              </TouchableOpacity>
+              
+                <View style={styles.modalBody}>
+                  <Text style={styles.modalTitle}>Welcome to Checkout!</Text>
+                <Text style={styles.modalDescription}>
+                  Here's your donation summary:
+                </Text>
 
-            {/* Donation Summary Card */}
-            <View style={styles.summaryCard}>
-              <View style={styles.summaryCardContent}>
-                <View style={styles.summaryIcon}>
-                  <Text style={styles.heartEmoji}>💝</Text>
+                {/* Donation Summary Card */}
+                <View style={styles.summaryCard}>
+                  <View style={styles.summaryCardContent}>
+                    <View style={styles.summaryIcon}>
+                      <Text style={styles.heartEmoji}>💝</Text>
+                    </View>
+                    <View style={styles.summaryTextContainer}>
+                      <Text style={styles.summaryCardTitle}>Monthly Donation Box</Text>
+                      <Text style={styles.summaryCardAmount}>${donationAmount}/month</Text>
+                    </View>
+                  </View>
                 </View>
-                <View style={styles.summaryTextContainer}>
-                  <Text style={styles.summaryCardTitle}>Monthly Donation Box</Text>
-                  <Text style={styles.summaryCardAmount}>${donationAmount}/month</Text>
-                </View>
+
+                <Text style={styles.supportingText}>
+                  Supporting {selectedOrganizations.length} nonprofits with your monthly donation.
+                </Text>
+
+                {/* Explore CRWD Button */}
+                {/* <TouchableOpacity
+                  style={styles.exploreButton}
+                  onPress={() => navigation.navigate('Home' as never)}
+                >
+                  <Text style={styles.exploreButtonText}>
+                    Explore CRWD
+                  </Text>
+                </TouchableOpacity> */}
+
+                {/* Download App Text */}
+                {/* <Text style={styles.downloadText}>
+                  Download the app to track and update anytime.
+                </Text> */}
               </View>
             </View>
-
-            <Text style={styles.supportingText}>
-              Supporting {selectedOrganizations.length} nonprofits with your monthly donation.
-            </Text>
-
-            {/* Explore CRWD Button */}
-            {/* <TouchableOpacity
-              style={styles.exploreButton}
-              onPress={() => navigation.navigate('Home' as never)}
-            >
-              <Text style={styles.exploreButtonText}>
-                Explore CRWD
-              </Text>
-            </TouchableOpacity> */}
-
-            {/* Download App Text */}
-            {/* <Text style={styles.downloadText}>
-              Download the app to track and update anytime.
-            </Text> */}
-          </View>
+          </TouchableWithoutFeedback>
         </View>
-      </View>
+      </TouchableWithoutFeedback>
     </Modal>
 
     </>

@@ -1,4 +1,4 @@
-import { View, Text, Image, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform, Share, Dimensions, Modal, Pressable } from 'react-native'
+import { View, Text, Image, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform, Share, Dimensions, Modal, Pressable, TouchableWithoutFeedback } from 'react-native'
 import React, { useState, useEffect } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import MainHeaderNav from '../components/MainHeaderNav'
@@ -518,61 +518,65 @@ export default function PostDetail() {
           onRequestClose={() => setShowExitConfirmation(false)}
           animationType="fade"
         >
-          <View style={{
-            flex: 1,
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            justifyContent: 'center',
-            alignItems: 'center',
-            padding: 20
-          }}>
+          <TouchableWithoutFeedback onPress={() => setShowExitConfirmation(false)}>
             <View style={{
-              backgroundColor: 'white',
-              borderRadius: 12,
-              padding: 20,
-              width: '100%',
-              maxWidth: 400
+              flex: 1,
+              backgroundColor: 'rgba(0,0,0,0.5)',
+              justifyContent: 'center',
+              alignItems: 'center',
+              padding: 20
             }}>
-              <Text style={{
-                fontSize: 18,
-                fontWeight: '600',
-                marginBottom: 8
-              }}>Leave this page?</Text>
-              <Text style={{
-                fontSize: 14,
-                color: PrimaryGrey,
-                marginBottom: 20
-              }}>You have typed a comment. If you leave now, your comment will be lost.</Text>
-              <View style={{
-                flexDirection: 'row',
-                justifyContent: 'flex-end',
-                gap: 12
-              }}>
-                <TouchableOpacity
-                  onPress={() => setShowExitConfirmation(false)}
-                  style={{
-                    paddingHorizontal: 16,
-                    paddingVertical: 8,
-                    borderRadius: 6,
-                    borderWidth: 1,
-                    borderColor: '#E5E5E5'
-                  }}
-                >
-                  <Text>Stay on this page</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={handleConfirmExit}
-                  style={{
-                    backgroundColor: '#EF4444',
-                    paddingHorizontal: 16,
-                    paddingVertical: 8,
-                    borderRadius: 6
-                  }}
-                >
-                  <Text style={{ color: 'white' }}>Leave anyway</Text>
-                </TouchableOpacity>
-              </View>
+              <TouchableWithoutFeedback onPress={() => {}}>
+                <View style={{
+                  backgroundColor: 'white',
+                  borderRadius: 12,
+                  padding: 20,
+                  width: '100%',
+                  maxWidth: 400
+                }}>
+                  <Text style={{
+                    fontSize: 18,
+                    fontWeight: '600',
+                    marginBottom: 8
+                  }}>Leave this page?</Text>
+                  <Text style={{
+                    fontSize: 14,
+                    color: PrimaryGrey,
+                    marginBottom: 20
+                  }}>You have typed a comment. If you leave now, your comment will be lost.</Text>
+                  <View style={{
+                    flexDirection: 'row',
+                    justifyContent: 'flex-end',
+                    gap: 12
+                  }}>
+                    <TouchableOpacity
+                      onPress={() => setShowExitConfirmation(false)}
+                      style={{
+                        paddingHorizontal: 16,
+                        paddingVertical: 8,
+                        borderRadius: 6,
+                        borderWidth: 1,
+                        borderColor: '#E5E5E5'
+                      }}
+                    >
+                      <Text>Stay on this page</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={handleConfirmExit}
+                      style={{
+                        backgroundColor: '#EF4444',
+                        paddingHorizontal: 16,
+                        paddingVertical: 8,
+                        borderRadius: 6
+                      }}
+                    >
+                      <Text style={{ color: 'white' }}>Leave anyway</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </TouchableWithoutFeedback>
             </View>
-          </View>
+          </TouchableWithoutFeedback>
         </Modal>
       </KeyboardAvoidingView>
     </SafeAreaView>

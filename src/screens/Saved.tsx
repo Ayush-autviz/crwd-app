@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, Image, Modal, TouchableOpacity, Pressable } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Image, Modal, TouchableOpacity, Pressable, TouchableWithoutFeedback } from 'react-native';
 import MainHeaderNav from '../components/MainHeaderNav';
 import { Bookmark, Heart } from 'lucide-react-native';
 import { PrimaryGrey, SecondaryGrey, PrimaryBlue, LightGrey } from '../Constants/Colors';
@@ -96,31 +96,32 @@ export default function Saved() {
         visible={modalVisible}
         onRequestClose={() => setModalVisible(false)}
       >
-        <Pressable 
-          style={styles.modalOverlay} 
-          onPress={() => setModalVisible(false)}
-        >
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Unsave Item</Text>
-            <Text style={styles.modalText}>
-              Are you sure you want to remove this item from your saved list?
-            </Text>
-            <View style={styles.modalButtons}>
-              <TouchableOpacity 
-                style={[styles.modalButton, styles.cancelButton]} 
-                onPress={() => setModalVisible(false)}
-              >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={[styles.modalButton, styles.unsaveButton]} 
-                onPress={confirmUnsave}
-              >
-                <Text style={styles.unsaveButtonText}>Unsave</Text>
-              </TouchableOpacity>
-            </View>
+        <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
+          <View style={styles.modalOverlay}>
+            <TouchableWithoutFeedback onPress={() => {}}>
+              <View style={styles.modalContent}>
+                <Text style={styles.modalTitle}>Unsave Item</Text>
+                <Text style={styles.modalText}>
+                  Are you sure you want to remove this item from your saved list?
+                </Text>
+                <View style={styles.modalButtons}>
+                  <TouchableOpacity 
+                    style={[styles.modalButton, styles.cancelButton]} 
+                    onPress={() => setModalVisible(false)}
+                  >
+                    <Text style={styles.cancelButtonText}>Cancel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={[styles.modalButton, styles.unsaveButton]} 
+                    onPress={confirmUnsave}
+                  >
+                    <Text style={styles.unsaveButtonText}>Unsave</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
           </View>
-        </Pressable>
+        </TouchableWithoutFeedback>
       </Modal>
     </SafeAreaView>
   );

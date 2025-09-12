@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { View, ScrollView, Text, TouchableOpacity, Modal, StyleSheet, Dimensions } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { View, ScrollView, Text, TouchableOpacity, Modal, StyleSheet, Dimensions, TouchableWithoutFeedback } from 'react-native';
 import MainHeaderNav from '../components/MainHeaderNav';
 import GroupCRWDHeader from '../components/groupcrwd/GroupCRWDHeader';
 import GroupCRWDSuggested from '../components/groupcrwd/GroupCRWDSuggested';
@@ -72,6 +72,7 @@ export default function GroupCRWD() {
     }
   };
 
+
   return (
     <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }}>
       <MainHeaderNav show menu={false} post={false} />
@@ -138,34 +139,38 @@ export default function GroupCRWD() {
         animationType="fade"
         onRequestClose={handleCloseModal}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={handleCloseModal}
-            >
-              <X size={24} color="#9ca3af" />
-            </TouchableOpacity>
-            
-            <View style={styles.modalBody}>
-              <Text style={styles.modalTitle}>
-                Join "Save the Trees Atlanta"?
-              </Text>
-              <Text style={styles.modalDescription}>
-                This CRWD includes 3 nonprofits.
-              </Text>
-              
-              <View style={styles.modalActions}>
-                <TouchableOpacity style={styles.learnMoreButton} onPress={handleCloseModal}>
-                  <Text style={styles.learnMoreButtonText}>Learn More</Text>
+        <TouchableWithoutFeedback onPress={handleCloseModal}>
+          <View style={styles.modalOverlay}>
+            <TouchableWithoutFeedback onPress={() => {}}>
+              <View style={styles.modalContent}>
+                <TouchableOpacity
+                  style={styles.closeButton}
+                  onPress={handleCloseModal}
+                >
+                  <X size={24} color="#9ca3af" />
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.joinConfirmButton} onPress={handleJoinConfirm}>
-                  <Text style={styles.joinConfirmButtonText}>Join</Text>
-                </TouchableOpacity>
+                
+                <View style={styles.modalBody}>
+                  <Text style={styles.modalTitle}>
+                    Join "Save the Trees Atlanta"?
+                  </Text>
+                  <Text style={styles.modalDescription}>
+                    This CRWD includes 3 nonprofits.
+                  </Text>
+                  
+                  <View style={styles.modalActions}>
+                    <TouchableOpacity style={styles.learnMoreButton} onPress={handleCloseModal}>
+                      <Text style={styles.learnMoreButtonText}>Learn More</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.joinConfirmButton} onPress={handleJoinConfirm}>
+                      <Text style={styles.joinConfirmButtonText}>Join</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
               </View>
-            </View>
+            </TouchableWithoutFeedback>
           </View>
-        </View>
+        </TouchableWithoutFeedback>
       </Modal>
 
       {/* Success Modal */}
@@ -175,75 +180,79 @@ export default function GroupCRWD() {
         animationType="fade"
         onRequestClose={handleCloseSuccessModal}
       >
-        <View style={styles.modalOverlay}>
-          {/* Confetti */}
-          <View style={styles.confettiContainer}>
-            <ConfettiCannon
-              ref={confettiRef}
-              count={200}
-              origin={{ x: width / 2, y: 0 }}
-              autoStart={false}
-              colors={['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8']}
-              fadeOut
-            />
-          </View>
-          
-          <View style={styles.modalContent}>
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={handleCloseSuccessModal}
-            >
-              <X size={24} color="#9ca3af" />
-            </TouchableOpacity>
+        <TouchableWithoutFeedback onPress={handleCloseSuccessModal}>
+          <View style={styles.modalOverlay}>
+            {/* Confetti */}
+            <View style={styles.confettiContainer}>
+              <ConfettiCannon
+                ref={confettiRef}
+                count={200}
+                origin={{ x: width / 2, y: 0 }}
+                autoStart={false}
+                colors={['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8']}
+                fadeOut
+              />
+            </View>
             
-            <View style={styles.modalBody}>
-              <Text style={styles.modalTitle}>
-                You've joined Save the Trees Atlanta!
-              </Text>
-              <Text style={styles.modalDescription}>
-                Welcome to the community.
-              </Text>
-              <Text style={styles.modalDescription}>
-                Here's what's inside your CRWD:
-              </Text>
-              
-              {/* Community Info Card */}
-              <View style={styles.communityCard}>
-                <View style={styles.communityInfo}>
-                  <View style={styles.communityIcon}>
-                    <Text style={styles.communityIconText}>🌳</Text>
-                  </View>
-                  <View style={styles.communityDetails}>
-                    <Text style={styles.communityName}>
-                      Save the Trees Atlanta
-                    </Text>
-                    <View style={styles.memberInfo}>
-                      <View style={styles.avatarGroup}>
-                        <View style={styles.avatar} />
-                        <View style={styles.avatar} />
+            <TouchableWithoutFeedback onPress={() => {}}>
+              <View style={styles.modalContent}>
+                <TouchableOpacity
+                  style={styles.closeButton}
+                  onPress={handleCloseSuccessModal}
+                >
+                  <X size={24} color="#9ca3af" />
+                </TouchableOpacity>
+                
+                <View style={styles.modalBody}>
+                  <Text style={styles.modalTitle}>
+                    You've joined Save the Trees Atlanta!
+                  </Text>
+                  <Text style={styles.modalDescription}>
+                    Welcome to the community.
+                  </Text>
+                  <Text style={styles.modalDescription}>
+                    Here's what's inside your CRWD:
+                  </Text>
+                  
+                  {/* Community Info Card */}
+                  <View style={styles.communityCard}>
+                    <View style={styles.communityInfo}>
+                      <View style={styles.communityIcon}>
+                        <Text style={styles.communityIconText}>🌳</Text>
                       </View>
-                      <Text style={styles.memberCount}>44 members</Text>
+                      <View style={styles.communityDetails}>
+                        <Text style={styles.communityName}>
+                          Save the Trees Atlanta
+                        </Text>
+                        <View style={styles.memberInfo}>
+                          <View style={styles.avatarGroup}>
+                            <View style={styles.avatar} />
+                            <View style={styles.avatar} />
+                          </View>
+                          <Text style={styles.memberCount}>44 members</Text>
+                        </View>
+                      </View>
                     </View>
+                  </View>
+                  
+                  <Text style={styles.modalDescription}>
+                    We've added 3 nonprofits from Save the Trees Atlanta to your
+                    donation box. You can edit or remove them any time.
+                  </Text>
+                  
+                  <View style={styles.successActions}>
+                    <TouchableOpacity style={styles.goToCrwdButton} onPress={handleCloseSuccessModal}>
+                      <Text style={styles.goToCrwdButtonText}>GO TO CRWD</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.manageDonationsButton} onPress={handleCloseSuccessModal}>
+                      <Text style={styles.manageDonationsButtonText}>MANAGE DONATIONS</Text>
+                    </TouchableOpacity>
                   </View>
                 </View>
               </View>
-              
-              <Text style={styles.modalDescription}>
-                We've added 3 nonprofits from Save the Trees Atlanta to your
-                donation box. You can edit or remove them any time.
-              </Text>
-              
-              <View style={styles.successActions}>
-                <TouchableOpacity style={styles.goToCrwdButton} onPress={handleCloseSuccessModal}>
-                  <Text style={styles.goToCrwdButtonText}>GO TO CRWD</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.manageDonationsButton} onPress={handleCloseSuccessModal}>
-                  <Text style={styles.manageDonationsButtonText}>MANAGE DONATIONS</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
+            </TouchableWithoutFeedback>
           </View>
-        </View>
+        </TouchableWithoutFeedback>
       </Modal>
 
       {/* Confirm Unjoin Dialog */}
@@ -253,32 +262,36 @@ export default function GroupCRWD() {
         animationType="fade"
         onRequestClose={() => setShowConfirmDialog(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalBody}>
-              <Text style={styles.modalTitle}>Leave Group</Text>
-              <Text style={styles.modalDescription}>
-                Are you sure you want to leave this group? You can always join
-                back later.
-              </Text>
-              
-              <View style={styles.dialogActions}>
-                <TouchableOpacity 
-                  style={styles.cancelButton} 
-                  onPress={() => setShowConfirmDialog(false)}
-                >
-                  <Text style={styles.cancelButtonText}>Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={styles.leaveButton} 
-                  onPress={handleConfirmUnjoin}
-                >
-                  <Text style={styles.leaveButtonText}>Leave Group</Text>
-                </TouchableOpacity>
+        <TouchableWithoutFeedback onPress={() => setShowConfirmDialog(false)}>
+          <View style={styles.modalOverlay}>
+            <TouchableWithoutFeedback onPress={() => {}}>
+              <View style={styles.modalContent}>
+                <View style={styles.modalBody}>
+                  <Text style={styles.modalTitle}>Leave Group</Text>
+                  <Text style={styles.modalDescription}>
+                    Are you sure you want to leave this group? You can always join
+                    back later.
+                  </Text>
+                  
+                  <View style={styles.dialogActions}>
+                    <TouchableOpacity 
+                      style={styles.cancelButton} 
+                      onPress={() => setShowConfirmDialog(false)}
+                    >
+                      <Text style={styles.cancelButtonText}>Cancel</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity 
+                      style={styles.leaveButton} 
+                      onPress={handleConfirmUnjoin}
+                    >
+                      <Text style={styles.leaveButtonText}>Leave Group</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
               </View>
-            </View>
+            </TouchableWithoutFeedback>
           </View>
-        </View>
+        </TouchableWithoutFeedback>
       </Modal>
     </SafeAreaView>
   );

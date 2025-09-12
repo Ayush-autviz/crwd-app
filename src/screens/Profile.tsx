@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, TouchableOpacity, Share, Alert, Image, Modal } from 'react-native'
+import { View, Text, ScrollView, TouchableOpacity, Share, Alert, Image, Modal, TouchableWithoutFeedback } from 'react-native'
 import React, { useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import MainHeaderNav from '../components/MainHeaderNav'
@@ -126,51 +126,57 @@ export default function Profile() {
                     </TouchableOpacity>
 
                     {showMenu && (
-                        <View style={{
-                            position: 'absolute',
-                            right: 0,
-                            top: 40,
-                            backgroundColor: 'white',
-                            borderWidth: 1,
-                            borderColor: '#e5e7eb',
-                            borderRadius: 8,
-                            shadowColor: '#000',
-                            shadowOffset: { width: 0, height: 2 },
-                            shadowOpacity: 0.1,
-                            shadowRadius: 4,
-                            elevation: 5,
-                            width: 144,
-                            zIndex: 20,
-                        }}>
-                            <TouchableOpacity
-                                onPress={handleShare}
-                                style={{
-                                    flexDirection: 'row',
-                                    alignItems: 'center',
-                                    gap: 8,
-                                    paddingHorizontal: 12,
-                                    paddingVertical: 8,
-                                    borderBottomWidth: 1,
-                                    borderBottomColor: '#f3f4f6',
-                                }}
-                            >
-                                <Share2 size={16} color="#374151" />
-                                <Text style={{ fontSize: 14, color: '#374151' }}>Share Profile</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                onPress={handleReportProfile}
-                                style={{
-                                    flexDirection: 'row',
-                                    alignItems: 'center',
-                                    gap: 8,
-                                    paddingHorizontal: 12,
-                                    paddingVertical: 8,
-                                }}
-                            >
-                                <Flag size={16} color="#ef4444" />
-                                <Text style={{ fontSize: 14, color: '#ef4444' }}>Report Profile</Text>
-                            </TouchableOpacity>
-                        </View>
+                        <TouchableWithoutFeedback onPress={() => setShowMenu(false)}>
+                            <View style={{
+                                position: 'absolute',
+                                right: 0,
+                                top: 40,
+                                backgroundColor: 'white',
+                                borderWidth: 1,
+                                borderColor: '#e5e7eb',
+                                borderRadius: 8,
+                                shadowColor: '#000',
+                                shadowOffset: { width: 0, height: 2 },
+                                shadowOpacity: 0.1,
+                                shadowRadius: 4,
+                                elevation: 5,
+                                width: 144,
+                                zIndex: 20,
+                            }}>
+                                <TouchableWithoutFeedback onPress={() => {}}>
+                                    <View>
+                                        <TouchableOpacity
+                                            onPress={handleShare}
+                                            style={{
+                                                flexDirection: 'row',
+                                                alignItems: 'center',
+                                                gap: 8,
+                                                paddingHorizontal: 12,
+                                                paddingVertical: 8,
+                                                borderBottomWidth: 1,
+                                                borderBottomColor: '#f3f4f6',
+                                            }}
+                                        >
+                                            <Share2 size={16} color="#374151" />
+                                            <Text style={{ fontSize: 14, color: '#374151' }}>Share Profile</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity
+                                            onPress={handleReportProfile}
+                                            style={{
+                                                flexDirection: 'row',
+                                                alignItems: 'center',
+                                                gap: 8,
+                                                paddingHorizontal: 12,
+                                                paddingVertical: 8,
+                                            }}
+                                        >
+                                            <Flag size={16} color="#ef4444" />
+                                            <Text style={{ fontSize: 14, color: '#ef4444' }}>Report Profile</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                </TouchableWithoutFeedback>
+                            </View>
+                        </TouchableWithoutFeedback>
                     )}
                 </View>
                 <TouchableOpacity
@@ -314,46 +320,52 @@ export default function Profile() {
                 animationType="fade"
                 onRequestClose={() => setShowImageModal(false)}
             >
-                <View style={{
-                    flex: 1,
-                    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-                    // opacity: 0.9,
-                    justifyContent: 'center',
-                    alignItems: 'center'
-                }}>
-                    <TouchableOpacity
-                        style={{
-                            position: 'absolute',
-                            top: 50,
-                            right: 20,
-                            zIndex: 1
-                        }}
-                        onPress={() => setShowImageModal(false)}
-                    >
-                        <View style={{
-                            width: 40,
-                            height: 40,
-                            borderRadius: 20,
-                            backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                            justifyContent: 'center',
-                            alignItems: 'center'
-                        }}>
-                            <Text style={{ color: 'white', fontSize: 20, fontWeight: 'bold' }}>✕</Text>
-                        </View>
-                    </TouchableOpacity>
-                    
-                    <TouchableOpacity onPress={() => setShowImageModal(false)}>
-                        <Image
-                            source={{ uri: 'https://randomuser.me/api/portraits/women/44.jpg' }}
-                            style={{
-                                width: 300,
-                                height: 300,
-                                borderRadius: 150,
-                                resizeMode: 'cover'
-                            }}
-                        />
-                    </TouchableOpacity>
-                </View>
+                <TouchableWithoutFeedback onPress={() => setShowImageModal(false)}>
+                    <View style={{
+                        flex: 1,
+                        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                        // opacity: 0.9,
+                        justifyContent: 'center',
+                        alignItems: 'center'
+                    }}>
+                        <TouchableWithoutFeedback onPress={() => {}}>
+                            <View>
+                                <TouchableOpacity
+                                    style={{
+                                        position: 'absolute',
+                                        top: 50,
+                                        right: 20,
+                                        zIndex: 1
+                                    }}
+                                    onPress={() => setShowImageModal(false)}
+                                >
+                                    <View style={{
+                                        width: 40,
+                                        height: 40,
+                                        borderRadius: 20,
+                                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                                        justifyContent: 'center',
+                                        alignItems: 'center'
+                                    }}>
+                                        <Text style={{ color: 'white', fontSize: 20, fontWeight: 'bold' }}>✕</Text>
+                                    </View>
+                                </TouchableOpacity>
+                                
+                                <TouchableOpacity onPress={() => setShowImageModal(false)}>
+                                    <Image
+                                        source={{ uri: 'https://randomuser.me/api/portraits/women/44.jpg' }}
+                                        style={{
+                                            width: 300,
+                                            height: 300,
+                                            borderRadius: 150,
+                                            resizeMode: 'cover'
+                                        }}
+                                    />
+                                </TouchableOpacity>
+                            </View>
+                        </TouchableWithoutFeedback>
+                    </View>
+                </TouchableWithoutFeedback>
             </Modal>
         </SafeAreaView>
     )

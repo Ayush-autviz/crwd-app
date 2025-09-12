@@ -1,4 +1,4 @@
-import { View, Text, FlatList, Image, Dimensions, TouchableOpacity, StyleSheet, Modal, Pressable, ActivityIndicator, Alert, Share } from 'react-native'
+import { View, Text, FlatList, Image, Dimensions, TouchableOpacity, StyleSheet, Modal, Pressable, ActivityIndicator, Alert, Share, TouchableWithoutFeedback } from 'react-native'
 import React, { useState } from 'react'
 import { LightGrey, PrimaryBlue, PrimaryGrey, SecondaryGrey } from '../Constants/Colors'
 import { Ellipsis, Heart, MessageCircle, Flag, Trash2, Share2 } from 'lucide-react-native'
@@ -135,12 +135,14 @@ export default function PopularPosts({
                         </View>
                     </TouchableOpacity>
                     </View>
+                    {postButton && (
                     <TouchableOpacity
-                        onPress={() => setShowTooltip(!showTooltip)}
+                        // onPress={() => setShowTooltip(!showTooltip)}
                         style={{ padding: 8, backgroundColor: SecondaryGrey, borderRadius: 8 }}
                     >
                         <Text style={{ fontSize: 14,}}>Post Something</Text>
                     </TouchableOpacity>
+                    )}
                 </View>
             )}
 
@@ -239,55 +241,56 @@ export default function PopularPosts({
                 visible={tooltipVisible}
                 onRequestClose={() => setTooltipVisible(false)}
             >
-                <Pressable 
-                    style={StyleSheet.absoluteFill} 
-                    onPress={() => setTooltipVisible(false)}
-                >
-                    <View style={[
-                        styles.tooltip, 
-                        {
-                            position: 'absolute',
-                            left: tooltipPosition.x - 100,
-                            top: tooltipPosition.y - 20,
-                        }
-                    ]}>
-                        {showDelete && (
-                        <TouchableOpacity 
-                            style={styles.tooltipItem}
-                            onPress={() => {
-                                // Handle delete post
-                                setTooltipVisible(false)
-                            }}
-                        >
-                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                                <Trash2 size={16} color="#ef4444" />
-                                <Text style={[styles.tooltipText, { color: '#ef4444' }]}>Delete Post</Text>
+                <TouchableWithoutFeedback onPress={() => setTooltipVisible(false)}>
+                    <View style={StyleSheet.absoluteFill}>
+                        <TouchableWithoutFeedback onPress={() => {}}>
+                            <View style={[
+                                styles.tooltip, 
+                                {
+                                    position: 'absolute',
+                                    left: tooltipPosition.x - 100,
+                                    top: tooltipPosition.y - 20,
+                                }
+                            ]}>
+                                {showDelete && (
+                                <TouchableOpacity 
+                                    style={styles.tooltipItem}
+                                    onPress={() => {
+                                        // Handle delete post
+                                        setTooltipVisible(false)
+                                    }}
+                                >
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                                        <Trash2 size={16} color="#ef4444" />
+                                        <Text style={[styles.tooltipText, { color: '#ef4444' }]}>Delete Post</Text>
+                                    </View>
+                                </TouchableOpacity>
+                                )}
+                                <TouchableOpacity 
+                                    style={styles.tooltipItem}
+                                    onPress={handleShare}
+                                >
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                                        <Share2 size={16} color={PrimaryGrey} />
+                                        <Text style={styles.tooltipText}>Share Post</Text>
+                                    </View>
+                                </TouchableOpacity>
+                                <TouchableOpacity 
+                                    style={styles.tooltipItem}
+                                    onPress={() => {
+                                        // Handle report post
+                                        setTooltipVisible(false)
+                                    }}
+                                >
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                                        <Flag size={16} color={PrimaryGrey} />
+                                        <Text style={styles.tooltipText}>Report Post</Text>
+                                    </View>
+                                </TouchableOpacity>
                             </View>
-                        </TouchableOpacity>
-                        )}
-                        <TouchableOpacity 
-                            style={styles.tooltipItem}
-                            onPress={handleShare}
-                        >
-                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                                <Share2 size={16} color={PrimaryGrey} />
-                                <Text style={styles.tooltipText}>Share Post</Text>
-                            </View>
-                        </TouchableOpacity>
-                        <TouchableOpacity 
-                            style={styles.tooltipItem}
-                            onPress={() => {
-                                // Handle report post
-                                setTooltipVisible(false)
-                            }}
-                        >
-                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                                <Flag size={16} color={PrimaryGrey} />
-                                <Text style={styles.tooltipText}>Report Post</Text>
-                            </View>
-                        </TouchableOpacity>
+                        </TouchableWithoutFeedback>
                     </View>
-                </Pressable>
+                </TouchableWithoutFeedback>
             </Modal>
 
             <SocialShare 

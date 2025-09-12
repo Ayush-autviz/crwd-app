@@ -10,7 +10,8 @@ import {
   KeyboardAvoidingView, 
   Platform,
   Alert,
-  Modal
+  Modal,
+  TouchableWithoutFeedback
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { ChevronLeft, Users, ChevronRight, Trash2, Plus, Menu, Share2, Search } from 'lucide-react-native'
@@ -295,37 +296,41 @@ export default function ManageCRWD() {
         transparent={true}
         onRequestClose={() => setCurrentModal(null)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>{title}</Text>
-              <TouchableOpacity onPress={() => setCurrentModal(null)}>
-                <X size={24} color="#374151" />
-              </TouchableOpacity>
-            </View>
-            <ScrollView style={styles.modalList}>
-              {data.map((org) => (
-                <View key={org.id} style={styles.modalItem}>
-                  <View style={styles.modalItemInfo}>
-                    <Image source={{ uri: org.avatar }} style={styles.modalAvatar} />
-                    <Text style={styles.modalItemName}>{org.name}</Text>
-                  </View>
-                  <TouchableOpacity
-                    style={[
-                      styles.modalButton,
-                      isCurrentModal ? styles.removeButton : styles.addButton
-                    ]}
-                    onPress={() => isCurrentModal ? handleRemoveFromCurrently(org) : handleAddToCurrent(org)}
-                  >
-                    <Text style={styles.modalButtonText}>
-                      {isCurrentModal ? 'Remove' : 'Add'}
-                    </Text>
+        <TouchableWithoutFeedback onPress={() => setCurrentModal(null)}>
+          <View style={styles.modalOverlay}>
+            <TouchableWithoutFeedback onPress={() => {}}>
+              <View style={styles.modalContent}>
+                <View style={styles.modalHeader}>
+                  <Text style={styles.modalTitle}>{title}</Text>
+                  <TouchableOpacity onPress={() => setCurrentModal(null)}>
+                    <X size={24} color="#374151" />
                   </TouchableOpacity>
                 </View>
-              ))}
-            </ScrollView>
+                <ScrollView style={styles.modalList}>
+                  {data.map((org) => (
+                    <View key={org.id} style={styles.modalItem}>
+                      <View style={styles.modalItemInfo}>
+                        <Image source={{ uri: org.avatar }} style={styles.modalAvatar} />
+                        <Text style={styles.modalItemName}>{org.name}</Text>
+                      </View>
+                      <TouchableOpacity
+                        style={[
+                          styles.modalButton,
+                          isCurrentModal ? styles.removeButton : styles.addButton
+                        ]}
+                        onPress={() => isCurrentModal ? handleRemoveFromCurrently(org) : handleAddToCurrent(org)}
+                      >
+                        <Text style={styles.modalButtonText}>
+                          {isCurrentModal ? 'Remove' : 'Add'}
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                </ScrollView>
+              </View>
+            </TouchableWithoutFeedback>
           </View>
-        </View>
+        </TouchableWithoutFeedback>
       </Modal>
     )
   }
@@ -338,45 +343,49 @@ export default function ManageCRWD() {
         transparent={true}
         onRequestClose={() => setShowAddCauses(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Add New Causes</Text>
-              <TouchableOpacity onPress={() => setShowAddCauses(false)}>
-                <X size={24} color="#374151" />
-              </TouchableOpacity>
-            </View>
-            <View style={styles.searchContainer}>
-              <Search size={20} color={PrimaryGrey} />
-              <TextInput
-                style={styles.searchInput}
-                placeholder="Search causes..."
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-                placeholderTextColor={PrimaryGrey}
-              />
-            </View>
-            <ScrollView style={styles.modalList}>
-              {filteredCauses.map((cause) => (
-                <View key={cause.id} style={styles.modalItem}>
-                  <View style={styles.modalItemInfo}>
-                    <Image source={{ uri: cause.avatar }} style={styles.modalAvatar} />
-                    <Text style={styles.modalItemName}>{cause.name}</Text>
-                  </View>
-                  <TouchableOpacity
-                    style={[styles.modalButton, styles.addButton]}
-                    onPress={() => handleAddNewCause(cause)}
-                  >
-                    <Text style={styles.modalButtonText}>Add</Text>
+        <TouchableWithoutFeedback onPress={() => setShowAddCauses(false)}>
+          <View style={styles.modalOverlay}>
+            <TouchableWithoutFeedback onPress={() => {}}>
+              <View style={styles.modalContent}>
+                <View style={styles.modalHeader}>
+                  <Text style={styles.modalTitle}>Add New Causes</Text>
+                  <TouchableOpacity onPress={() => setShowAddCauses(false)}>
+                    <X size={24} color="#374151" />
                   </TouchableOpacity>
                 </View>
-              ))}
-              {filteredCauses.length === 0 && (
-                <Text style={styles.noResultsText}>No causes found</Text>
-              )}
-            </ScrollView>
+                <View style={styles.searchContainer}>
+                  <Search size={20} color={PrimaryGrey} />
+                  <TextInput
+                    style={styles.searchInput}
+                    placeholder="Search causes..."
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                    placeholderTextColor={PrimaryGrey}
+                  />
+                </View>
+                <ScrollView style={styles.modalList}>
+                  {filteredCauses.map((cause) => (
+                    <View key={cause.id} style={styles.modalItem}>
+                      <View style={styles.modalItemInfo}>
+                        <Image source={{ uri: cause.avatar }} style={styles.modalAvatar} />
+                        <Text style={styles.modalItemName}>{cause.name}</Text>
+                      </View>
+                      <TouchableOpacity
+                        style={[styles.modalButton, styles.addButton]}
+                        onPress={() => handleAddNewCause(cause)}
+                      >
+                        <Text style={styles.modalButtonText}>Add</Text>
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                  {filteredCauses.length === 0 && (
+                    <Text style={styles.noResultsText}>No causes found</Text>
+                  )}
+                </ScrollView>
+              </View>
+            </TouchableWithoutFeedback>
           </View>
-        </View>
+        </TouchableWithoutFeedback>
       </Modal>
     )
   }

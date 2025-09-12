@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Modal, TouchableOpacity, StyleSheet, Pressable, Share, Platform, Linking } from 'react-native';
+import { View, Text, Modal, TouchableOpacity, StyleSheet, Pressable, Share, Platform, Linking, TouchableWithoutFeedback } from 'react-native';
 import { Share2, MessageCircle, Mail, Phone, Globe, ArrowDown } from 'lucide-react-native';
 import { PrimaryBlue, PrimaryGrey, LightGrey } from '../Constants/Colors';
 import { useToast } from '../contexts/ToastContext';
@@ -163,45 +163,49 @@ export default function SocialShare({ visible, onClose, title = '', message, url
       visible={visible}
       onRequestClose={onClose}
     >
-      <Pressable style={styles.overlay} onPress={onClose}>
-        <View style={styles.content}>
-          <View style={styles.handle} />
-          
-          <View style={styles.header}>
-            <Text style={styles.title}>Share via</Text>
-            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <ArrowDown size={20} color={PrimaryGrey} />
-            </TouchableOpacity>
-          </View>
+      <TouchableWithoutFeedback onPress={onClose}>
+        <View style={styles.overlay}>
+          <TouchableWithoutFeedback onPress={() => {}}>
+            <View style={styles.content}>
+              <View style={styles.handle} />
+              
+              <View style={styles.header}>
+                <Text style={styles.title}>Share via</Text>
+                <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+                  <ArrowDown size={20} color={PrimaryGrey} />
+                </TouchableOpacity>
+              </View>
 
-          <View style={styles.shareButtons}>
-            {SHARE_OPTIONS.map((option, index) => (
-              <ShareButton 
-                key={index}
-                icon={option.icon}
-                label={option.label}
-                color={option.color}
-                onPress={() => handleShare(option.platform)}
-              />
-            ))}
-          </View>
+              <View style={styles.shareButtons}>
+                {SHARE_OPTIONS.map((option, index) => (
+                  <ShareButton 
+                    key={index}
+                    icon={option.icon}
+                    label={option.label}
+                    color={option.color}
+                    onPress={() => handleShare(option.platform)}
+                  />
+                ))}
+              </View>
 
-          {url && (
-            <TouchableOpacity 
-              style={styles.copyButton}
-              onPress={() => {
-                Linking.openURL(url);
-                showToast('Opening link...');
-                onClose();
-              }}
-              activeOpacity={0.7}
-            >
-              <Globe size={20} color={PrimaryGrey} style={styles.linkIcon} />
-              <Text style={styles.copyButtonText}>Open Link</Text>
-            </TouchableOpacity>
-          )}
+              {url && (
+                <TouchableOpacity 
+                  style={styles.copyButton}
+                  onPress={() => {
+                    Linking.openURL(url);
+                    showToast('Opening link...');
+                    onClose();
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Globe size={20} color={PrimaryGrey} style={styles.linkIcon} />
+                  <Text style={styles.copyButtonText}>Open Link</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </TouchableWithoutFeedback>
         </View>
-      </Pressable>
+      </TouchableWithoutFeedback>
     </Modal>
   );
 }

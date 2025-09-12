@@ -64,7 +64,7 @@ export default function GroupCRWD() {
   const handleShare = async () => {
     try {
       await Share.share({
-        message: 'Join us in supporting families experiencing food insecurity in the greater Atlanta area.',
+        message: 'Check out this Giving Circle',
         title: 'Feed the hungry - CRWD',
       });
     } catch (error) {

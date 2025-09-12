@@ -6,11 +6,14 @@ import {
   ScrollView,
   StyleSheet,
   Image,
+  Platform,
+  TextInput,
 } from 'react-native';
 import { Trash2, Bookmark, Heart } from 'lucide-react-native';
 import { CROWDS, RECENTS, SUGGESTED, Organization } from '../../Constants/organizations';
 import PaymentSection from './PaymentSection';
 import { PrimaryBlue } from '../../Constants/Colors';
+import { CreditCard } from 'lucide-react-native';
 
 interface DonationStep3Props {
   selectedOrganizations: string[];
@@ -18,6 +21,8 @@ interface DonationStep3Props {
   setCheckout: (checkout: boolean) => void;
   setStep: (step: number) => void;
   donationAmount: number;
+  selectedPaymentMethod?: string;
+  setSelectedPaymentMethod?: (method: string) => void;
 }
 
 export default function DonationStep3({
@@ -26,8 +31,15 @@ export default function DonationStep3({
   setCheckout,
   setStep,
   donationAmount,
+  selectedPaymentMethod,
+  setSelectedPaymentMethod,
 }: DonationStep3Props) {
   const [bookmarkedOrgs, setBookmarkedOrgs] = useState<string[]>([]);
+  const [cardDetails, setCardDetails] = useState({
+    cardNumber: '',
+    expiryDate: '',
+    cvv: '',
+  });
 
   const getOrganizationDescription = (orgName: string): string => {
     const descriptions: { [key: string]: string } = {
@@ -49,6 +61,20 @@ export default function DonationStep3({
     } else {
       setBookmarkedOrgs([...bookmarkedOrgs, orgName]);
     }
+  };
+
+  const formatCardNumber = (text: string) => {
+    const cleaned = text.replace(/\s/g, '');
+    const groups = cleaned.match(/.{1,4}/g);
+    return groups ? groups.join(' ') : cleaned;
+  };
+
+  const formatExpiryDate = (text: string) => {
+    const cleaned = text.replace(/\D/g, '');
+    if (cleaned.length >= 2) {
+      return `${cleaned.slice(0, 2)}/${cleaned.slice(2, 4)}`;
+    }
+    return cleaned;
   };
 
   return (
@@ -86,7 +112,6 @@ export default function DonationStep3({
                     <Heart
                       size={20}
                       color={bookmarkedOrgs.includes(orgName) ? 'red' : '#6b7280'}
-                      fill={bookmarkedOrgs.includes(orgName) ? 'red' : 'none'}
                     />
                   </TouchableOpacity>
                   <TouchableOpacity
@@ -118,6 +143,112 @@ export default function DonationStep3({
               : "0.00"}{" "}
             per month
           </Text>
+        </View>
+
+        {/* Payment Method Selection */}
+        <View style={styles.paymentSection}>
+          <Text style={styles.paymentSectionTitle}>Select Payment Method</Text>
+          <Text style={styles.paymentSectionSubtitle}>
+            Choose a payment method to complete your donation.
+          </Text>
+
+          <View style={styles.paymentOptions}>
+            {/* Apple Pay Option */}
+            {Platform.OS === 'ios' && (
+              <TouchableOpacity
+                style={[
+                  styles.paymentOption,
+                  selectedPaymentMethod === 'apple-pay' && styles.selectedPaymentOption
+                ]}
+                onPress={() => setSelectedPaymentMethod?.('apple-pay')}
+              >
+                <View style={styles.paymentIconContainer}>
+                  <Image
+                    source={require('../../assets/logo/apple-pay.png')}
+                    style={styles.applePayIcon}
+                    resizeMode="contain"
+                  />
+                </View>
+                <Text style={styles.paymentOptionText}>Apple Pay</Text>
+                {selectedPaymentMethod === 'apple-pay' && (
+                  <View style={styles.checkmarkContainer}>
+                    <Text style={styles.checkmark}>✓</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            )}
+
+            {/* Credit/Debit Card Option */}
+            <TouchableOpacity
+              style={[
+                styles.paymentOption,
+                selectedPaymentMethod === 'card' && styles.selectedPaymentOption
+              ]}
+              onPress={() => setSelectedPaymentMethod?.('card')}
+            >
+              <View style={styles.paymentIconContainer}>
+                <CreditCard size={20} color="#374151" />
+              </View>
+              <Text style={styles.paymentOptionText}>Credit or Debit Card</Text>
+              {selectedPaymentMethod === 'card' && (
+                <View style={styles.checkmarkContainer}>
+                  <Text style={styles.checkmark}>✓</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          </View>
+
+          {/* Card Details Form */}
+          {selectedPaymentMethod === 'card' && (
+            <View style={styles.cardDetailsContainer}>
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>Card Number</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="1234 5678 9012 3456"
+                  keyboardType="numeric"
+                  maxLength={19}
+                  value={cardDetails.cardNumber}
+                  onChangeText={(text) => setCardDetails({
+                    ...cardDetails,
+                    cardNumber: formatCardNumber(text)
+                  })}
+                />
+              </View>
+              
+              <View style={styles.row}>
+                <View style={[styles.inputContainer, { flex: 1, marginRight: 8 }]}>
+                  <Text style={styles.inputLabel}>Expiry Date</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="MM/YY"
+                    keyboardType="numeric"
+                    maxLength={5}
+                    value={cardDetails.expiryDate}
+                    onChangeText={(text) => setCardDetails({
+                      ...cardDetails,
+                      expiryDate: formatExpiryDate(text)
+                    })}
+                  />
+                </View>
+                
+                <View style={[styles.inputContainer, { flex: 1, marginLeft: 8 }]}>
+                  <Text style={styles.inputLabel}>CVV</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="123"
+                    keyboardType="numeric"
+                    maxLength={3}
+                    value={cardDetails.cvv}
+                    onChangeText={(text) => setCardDetails({
+                      ...cardDetails,
+                      cvv: text
+                    })}
+                  />
+                </View>
+              </View>
+            </View>
+          )}
         </View>
       </ScrollView>
 
@@ -255,5 +386,113 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#ffffff',
+  },
+  paymentSection: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 24,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  paymentSectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1f2937',
+    marginBottom: 8,
+  },
+  paymentSectionSubtitle: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginBottom: 16,
+  },
+  paymentOptions: {
+    gap: 12,
+  },
+  paymentOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    borderRadius: 8,
+    backgroundColor: '#ffffff',
+  },
+  selectedPaymentOption: {
+    borderColor: '#2563eb',
+    backgroundColor: '#eff6ff',
+  },
+  paymentIconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: '#f3f4f6',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  applePayIcon: {
+    width: 20,
+    height: 20,
+  },
+  paymentOptionText: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#374151',
+  },
+  checkmarkContainer: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#2563eb',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkmark: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  creditCardIcon: {
+    fontSize: 16,
+  },
+  cardDetailsContainer: {
+    marginTop: 16,
+    padding: 16,
+    backgroundColor: '#f9fafb',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  inputContainer: {
+    marginBottom: 16,
+  },
+  inputLabel: {
+    fontSize: 14,
+    color: '#374151',
+    marginBottom: 8,
+    fontWeight: '500',
+  },
+  input: {
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    borderRadius: 6,
+    padding: 12,
+    fontSize: 16,
+    color: '#111827',
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
 });

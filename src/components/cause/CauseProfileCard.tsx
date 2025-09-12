@@ -109,6 +109,7 @@ const CauseProfileCard: React.FC<CauseProfileCardProps> = ({ onLearnMoreClick })
           Your donation is protected by our guarantee
         </Text>
       </View>
+      <Text style={{ fontSize: 14, color: PrimaryBlue, textDecorationLine: 'underline', marginTop: 8 }}>Learn More</Text>
     </View>
   );
 };

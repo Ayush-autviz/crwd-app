@@ -1,7 +1,7 @@
 import { View, Text, TextInput, FlatList, ScrollView, TouchableOpacity } from 'react-native'
 import React, { useState } from 'react'
 import MainHeaderNav from '../components/MainHeaderNav'
-import { LightGrey, PrimaryBlue, PrimaryGrey, SecondaryBlue } from '../Constants/Colors'
+import { LightGrey, PrimaryBlue, PrimaryGreen, PrimaryGrey, SecondaryBlue } from '../Constants/Colors'
 import { Search } from 'lucide-react-native'
 import TopicList from '../components/TopicList'
 import SuggestedCrwd from '../components/SuggestedCrwd'
@@ -120,12 +120,12 @@ export default function Home() {
                         lineHeight: 26,
                     }}
                     >
-                        THE EASIEST WAY TO GIVE TO EVERYTHING YOU CARE ABOUT, AT ONCE.
+                        THE EASIEST WAY TO <Text style={{ color: PrimaryGreen }}>GIVE</Text> TO EVERYTHING YOU CARE ABOUT, AT ONCE.
                     </Text>
                     <TouchableOpacity 
                         onPress={() => navigation.navigate('Donation' as never)} 
                         style={{ 
-                            backgroundColor: '#000', 
+                            backgroundColor: PrimaryBlue, 
                             paddingVertical: 12, 
                             paddingHorizontal: 20, 
                             borderRadius: 25, 

@@ -151,7 +151,7 @@ export default function Post() {
             alignItems: 'center',
             marginBottom: 20
           }}>
-            <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Select a CRWD</Text>
+            <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Select a Giving Circle</Text>
             <TouchableOpacity onPress={() => setShowCRWDDropdown(false)}>
               <X size={24} color={PrimaryGrey} />
             </TouchableOpacity>

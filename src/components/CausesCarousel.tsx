@@ -9,7 +9,7 @@ import { LightGrey, PrimaryBlue, SecondaryBlue, TertiaryBlue, PrimaryGrey } from
  
 const data = [{
     heading: 'Pick your Causes',
-    subHeading: 'Search or explore non-profits by category or local CRWDS.',
+    subHeading: 'Search or explore non-profits by category or local Circles.',
     backgroundColor: '#3730A3' // indigo-800
 },
 {
@@ -19,7 +19,7 @@ const data = [{
 },
 {
     heading: 'Give Together',
-    subHeading: 'Join CRWDs to give alongside others and see your shared impact.',
+    subHeading: 'Join Circles to give alongside others and see your shared impact.',
     backgroundColor: '#DC2626' // red-600
 }];
 

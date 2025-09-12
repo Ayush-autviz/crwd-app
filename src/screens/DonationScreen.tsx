@@ -30,6 +30,7 @@ export default function DonationScreen() {
   const [donationAmount, setDonationAmount] = useState(7);
   const [step, setStep] = useState(1);
   const [inputValue, setInputValue] = useState('7');
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('');
 
   const handleSliderChange = (value: number) => {
     const roundedValue = Math.round(value);
@@ -326,6 +327,8 @@ export default function DonationScreen() {
                   setSelectedOrganizations={setSelectedOrganizations}
                   setStep={setStep}
                   donationAmount={donationAmount}
+                  selectedPaymentMethod={selectedPaymentMethod}
+                  setSelectedPaymentMethod={setSelectedPaymentMethod}
                 />
               ) : null}
             </>

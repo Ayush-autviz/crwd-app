@@ -79,7 +79,7 @@ export default function GroupCRWD() {
       {/* Action Buttons Header */}
       <View style={styles.actionHeader}>
         <View style={styles.crwdBadge}>
-          <Text style={styles.crwdBadgeText}>CRWD</Text>
+          <Text style={styles.crwdBadgeText}>Circle</Text>
         </View>
         <View style={styles.actionButtons}>
           {hasJoined && (
@@ -104,7 +104,7 @@ export default function GroupCRWD() {
                 <Text style={styles.joinedButtonText}>Joined</Text>
               </>
             ) : (
-              <Text style={styles.joinButtonText}>Join CRWD</Text>
+              <Text style={styles.joinButtonText}>Join Circle</Text>
             )}
           </TouchableOpacity>
         </View>
@@ -112,8 +112,9 @@ export default function GroupCRWD() {
 
       <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
         <GroupCRWDHeader />
-        <GroupCRWDSuggested />
         <GroupCRWDUpdates />
+        <GroupCRWDSuggested />
+
         {/* <GroupCRWDEvent /> */}
         <View style={{ height: 100 }} />
       </ScrollView>

@@ -16,27 +16,27 @@ const { width, height } = Dimensions.get('window');
 
 export default function CompleteOnboard() {
   const navigation = useNavigation<any>();
-  const [showConfetti, setShowConfetti] = useState(false);
-  const confettiRef = React.useRef<ConfettiCannon>(null);
+  // const [showConfetti, setShowConfetti] = useState(false);
+  // const confettiRef = React.useRef<ConfettiCannon>(null);
 
-  useEffect(() => {
-    // Show confetti after a short delay
-    const timer = setTimeout(() => {
-      setShowConfetti(true);
-      // Add a small delay to ensure the component is fully rendered
-      setTimeout(() => {
-        console.log('Starting confetti...');
-        if (confettiRef.current) {
-          confettiRef.current.start();
-          console.log('Confetti started!');
-        } else {
-          console.log('Confetti ref is null');
-        }
-      }, 200);
-    }, 800);
+  // useEffect(() => {
+  //   // Show confetti after a short delay
+  //   const timer = setTimeout(() => {
+  //     setShowConfetti(true);
+  //     // Add a small delay to ensure the component is fully rendered
+  //     setTimeout(() => {
+  //       console.log('Starting confetti...');
+  //       if (confettiRef.current) {
+  //         confettiRef.current.start();
+  //         console.log('Confetti started!');
+  //       } else {
+  //         console.log('Confetti ref is null');
+  //       }
+  //     }, 200);
+  //   }, 800);
 
-    return () => clearTimeout(timer);
-  }, []);
+  //   return () => clearTimeout(timer);
+  // }, []);
 
   const handleGoToDonationBox = () => {
     navigation.navigate('DrawerNav' as never, { screen: 'Donation' } as never);
@@ -49,7 +49,7 @@ export default function CompleteOnboard() {
   return (
     <SafeAreaView style={styles.container}>
       {/* Confetti Overlay */}
-      {showConfetti && (
+      {/* {showConfetti && (
         <View style={styles.confettiContainer}>
           <ConfettiCannon
             ref={confettiRef}
@@ -62,7 +62,7 @@ export default function CompleteOnboard() {
             fallSpeed={4000}
           />
         </View>
-      )}
+      )} */}
 
       {/* Main Content */}
       <View style={styles.content}>
@@ -81,7 +81,7 @@ export default function CompleteOnboard() {
           <View style={styles.welcomeContainer}>
             <Text style={styles.welcomeTitle}>Welcome to CRWD!</Text>
             <Text style={styles.welcomeSubtitle}>
-              Start giving now, or explore causes and CRWDs first.
+              Start giving now, or explore causes and Circles first.
             </Text>
           </View>
 

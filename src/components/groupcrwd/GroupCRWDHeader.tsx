@@ -58,7 +58,7 @@ const GroupCRWDHeader: React.FC<GroupCRWDHeaderProps> = ({
   };
 
   return (
-    <View style={{ backgroundColor: 'white', padding: 16, margin: 8, borderRadius: 12 }}>
+    <View style={{ backgroundColor: 'white', padding: 8, margin: 8, borderRadius: 12 }}>
       {/* Top Row - Group Title */}
       <View style={{ alignItems: 'center', marginBottom: 16 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
@@ -111,7 +111,7 @@ const GroupCRWDHeader: React.FC<GroupCRWDHeaderProps> = ({
           style={{ flex: 1, alignItems: 'center', borderRightWidth: 1, borderRightColor: '#e5e7eb' }}
         >
           <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#111827', marginBottom: 4 }}>10</Text>
-          <Text style={{ fontSize: 12, color: '#6b7280', textAlign: 'center', width: '70%' }}>Causes Supported</Text>
+          <Text style={{ fontSize: 12, color: '#6b7280', textAlign: 'center', width: '70%' }}>Causes</Text>
         </TouchableOpacity>
         <TouchableOpacity 
           onPress={() => handleStatsPress('members')}
@@ -125,7 +125,7 @@ const GroupCRWDHeader: React.FC<GroupCRWDHeaderProps> = ({
           style={{ flex: 1, alignItems: 'center' }}
         >
           <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#111827', marginBottom: 4 }}>12</Text>
-          <Text style={{ fontSize: 12, color: '#6b7280', textAlign: 'center', width: '70%' }}>Collective Donations</Text>
+          <Text style={{ fontSize: 12, color: '#6b7280', textAlign: 'center', width: '70%' }}>Donations</Text>
         </TouchableOpacity>
       </View>
 
@@ -144,12 +144,20 @@ const GroupCRWDHeader: React.FC<GroupCRWDHeaderProps> = ({
       </View>
 
       {/* Recently Supported Nonprofits */}
-      <Text style={{ fontSize: 16, fontWeight: '700', color: '#374151', marginBottom: 16 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+      <Text style={{ fontSize: 16, fontWeight: '700', color: '#374151'}}>
         Recently Supported Nonprofits
       </Text>
+      <Text 
+          style={{ color: PrimaryBlue, textDecorationLine: 'underline' }}
+          onPress={handleSeeAllPress}
+        >
+          See All
+        </Text>
+      </View>
 
       {/* Organization Avatars */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16, justifyContent: 'space-between' }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
         {orgAvatars.map((org, index) => (
           <TouchableOpacity key={index} onPress={handleOrgPress} style={{ alignItems: 'center', marginRight: 20 }}>
             <Image 
@@ -169,7 +177,7 @@ const GroupCRWDHeader: React.FC<GroupCRWDHeaderProps> = ({
       </View>
 
       {/* Supporting Text */}
-      <Text style={{ fontSize: 12, color: '#6b7280', lineHeight: 16 }}>
+      {/* <Text style={{ fontSize: 12, color: '#6b7280', lineHeight: 16 }}>
         Currently supporting{' '}
         <Text style={{ fontWeight: '600' }}>10 Non Profits</Text>: Grocery Spot, Food for Thought, Meals on Wheels, American Red Cross, & Pizza Hut…{' '}
         <Text 
@@ -178,7 +186,7 @@ const GroupCRWDHeader: React.FC<GroupCRWDHeaderProps> = ({
         >
           See All
         </Text>
-      </Text>
+      </Text> */}
     </View>
   );
 };

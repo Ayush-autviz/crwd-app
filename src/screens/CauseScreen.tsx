@@ -21,7 +21,7 @@ export default function CauseScreen() {
   const handleShare = async () => {
     try {
       const result = await Share.share({
-        message: 'Check out this amazing cause: Helping Humanity - CRWD. Join us in supporting families experiencing food insecurity in the greater Atlanta area. Every donation makes a difference!',
+        message: 'check out this Nonprofit',
         title: 'Helping Humanity - CRWD',
       });
     } catch (error) {

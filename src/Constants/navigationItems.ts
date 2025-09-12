@@ -92,15 +92,10 @@ import {
   Search,
   Archive,
   Bell,
-  Info,
-  HelpCircle,
-  Settings,
-  Shuffle,
   Heart,
-
 } from 'lucide-react-native';
 import { NavigationProp } from '@react-navigation/native';
-import { Book } from 'lucide-react-native';
+import { setDiscoverMode } from '../utils/discoverMode';
 
 export interface NavigationItem {
   id: string;
@@ -143,12 +138,15 @@ export const navigationGroups: NavigationGroup[] = [
         icon: Search,
         label: 'Explore',
         route: 'Search',
-        handleNavigation: (navigation) => navigation.navigate('MainTabs', { screen: 'Search' })
+        handleNavigation: (navigation) => {
+          setDiscoverMode(true);
+          navigation.navigate('MainTabs', { screen: 'Search' });
+        }
       },
       {
         id: 'saved',
         icon: Heart,
-        label: 'Saved',
+        label: 'Favorites',
         route: 'Saved',
         handleNavigation: (navigation) => navigation.navigate('Saved')
       }
@@ -166,7 +164,7 @@ export const navigationGroups: NavigationGroup[] = [
       },
       {
         id: 'transaction-history',
-        icon: Shuffle,
+        icon: Archive,
         label: 'Transaction history',
         route: 'TransactionHistory',
         handleNavigation: (navigation) => navigation.navigate('TransactionHistory')
@@ -178,28 +176,28 @@ export const navigationGroups: NavigationGroup[] = [
     items: [
       {
         id: 'about',
-        icon: Info,
+        icon: Search,
         label: 'About',
         route: 'About',
         handleNavigation: (navigation) => navigation.navigate('About')
       },
       {
         id: 'articles',
-        icon: Book,
+        icon: Bookmark,
         label: 'Articles',
         route: '#',
         handleNavigation: (navigation) => navigation.navigate('PrivacyPolicy')
       },
       {
         id: 'help',
-        icon: HelpCircle,
+        icon: Bell,
         label: 'Help',
         route: 'HelpCenter',
         handleNavigation: (navigation) => navigation.navigate('HelpCenter')
       },
       {
         id: 'settings',
-        icon: Settings,
+        icon: Archive,
         label: 'Settings',
         route: 'Settings',
         handleNavigation: (navigation) => navigation.navigate('Settings')

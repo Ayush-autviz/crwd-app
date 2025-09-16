@@ -138,14 +138,14 @@ const Circles = () => {
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Your Giving Circles</Text>
         <Text style={styles.headerSubtitle}>
-          Amplify your impact by giving together. Join a crwd or start your own.
+          Amplify your impact by giving together. Join a giving circle or start your own.
         </Text>
         <TouchableOpacity
           style={styles.createButton}
           onPress={() => navigation.navigate('CreateCRWD' as never)}
           activeOpacity={0.8}
         >
-          <Text style={styles.createButtonText}>Create a New Crwd</Text>
+          <Text style={styles.createButtonText}>Create a New Giving Circle</Text>
         </TouchableOpacity>
       </View>
 
@@ -155,7 +155,7 @@ const Circles = () => {
           onPress={() => setActiveTab('my-crwds')}
           activeOpacity={0.7}
         >
-          <Text style={[styles.tabText, activeTab === 'my-crwds' && styles.tabTextActive]}>My CRWDs</Text>
+          <Text style={[styles.tabText, activeTab === 'my-crwds' && styles.tabTextActive]}>My Giving Circles</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tabButton, activeTab === 'discover' && styles.tabButtonActive]}
@@ -168,9 +168,9 @@ const Circles = () => {
 
       {activeTab === 'my-crwds' ? (
         <View style={styles.placeholderWrapper}>
-          <Text style={styles.placeholderTitle}>You have no CRWDs yet</Text>
+          <Text style={styles.placeholderTitle}>You have no Giving Circles yet</Text>
           <Text style={styles.placeholderDescription}>
-            Create or join a CRWD to start giving together.
+            Create or join a Giving to start giving together.
           </Text>
         </View>
       ) : (

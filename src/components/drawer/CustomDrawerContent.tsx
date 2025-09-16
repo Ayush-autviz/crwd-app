@@ -46,12 +46,12 @@ export default function CustomDrawerContent(props: DrawerContentComponentProps) 
         <Text style={styles.sectionHeading}>Giving</Text>
         <TouchableOpacity
           style={styles.menuItem}
-          onPress={() => navigation.navigate('CreateCRWD')}
+          onPress={() => navigation.navigate('Circles')}
           activeOpacity={0.7}
         >
           <View style={styles.menuItemContent}>
             <Text style={styles.plusIcon}>+</Text>
-            <Text style={styles.menuLabel}>Create a Giving Circle</Text>
+            <Text style={styles.menuLabel}>Giving Circles</Text>
           </View>
         </TouchableOpacity>
         

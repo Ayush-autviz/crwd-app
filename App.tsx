@@ -50,6 +50,7 @@ import NonProfitInterests from './src/components/onboarding/NonProfitInterests'
 import CompleteOnboard from './src/components/onboarding/CompleteOnboard'
 import {FontAwesome6} from '@react-native-vector-icons/fontawesome6'
 import { Image } from 'react-native'
+import Circles from './src/screens/Circles'
 
 export default function App() {
 
@@ -71,7 +72,7 @@ export default function App() {
           } else if (route.name === 'Search') {
           //  return <Search color={PrimaryGrey} size={22} />
           return focused ? <Image source={require('./src/assets/icons/search-fill.png')} style={{width: 22, height: 22}} /> : <Image source={require('./src/assets/icons/search.png')} style={{width: 22, height: 22}} />
-          } else if (route.name === 'Donation') {
+          } else if (route.name === 'My Giving') {
             // return <Archive color={PrimaryGrey} size={22} />
             return focused ? <Image source={require('./src/assets/icons/box-fill.png')} style={{width: 22, height: 22}} /> : <Image source={require('./src/assets/icons/box.png')} style={{width: 22, height: 22}} />
           } else if (route.name === 'Activity') {
@@ -87,9 +88,9 @@ export default function App() {
         }
       })}>
         <Tab.Screen name="Home" component={Home} />
-        <Tab.Screen name="Search" component={SearchScreen} />
-        <Tab.Screen name="Donation" component={DonationScreen} />
-        <Tab.Screen name="Activity" component={Activity} />
+        {/* <Tab.Screen name="Search" component={SearchScreen} /> */}
+        <Tab.Screen name="My Giving" component={DonationScreen} />
+        {/* <Tab.Screen name="Activity" component={Activity} /> */}
         <Tab.Screen name="Me" component={Profile} />
       </Tab.Navigator>
     )
@@ -156,6 +157,7 @@ export default function App() {
         <Stack.Screen name="ManageCRWD" component={ManageCRWD} />
         <Stack.Screen name="Interests" component={Interests} />
         <Stack.Screen name="UserProfile" component={UserProfile} />
+        <Stack.Screen name="Circles" component={Circles} />
       </Stack.Navigator>
     )
   }

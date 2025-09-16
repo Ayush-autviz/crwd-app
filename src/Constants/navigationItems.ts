@@ -114,13 +114,13 @@ export interface NavigationGroup {
 export const navigationGroups: NavigationGroup[] = [
   {
     items: [
-      {
-        id: 'your-crwds',
-        icon: Users,
-        label: 'Your Giving Circles',
-        route: 'YourCRWDs',
-        handleNavigation: (navigation) => navigation.navigate('YourCRWDs')
-      },
+      // {
+      //   id: 'your-crwds',
+      //   icon: Users,
+      //   label: 'Your Giving Circles',
+      //   route: 'YourCRWDs',
+      //   handleNavigation: (navigation) => navigation.navigate('YourCRWDs')
+      // },
       {
         id: 'donation-box',
         icon: Archive,

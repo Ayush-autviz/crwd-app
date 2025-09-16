@@ -132,33 +132,20 @@ export default function Home() {
 
                 {/* Main Message */}
                 <View style={{ 
-                    backgroundColor: '#f8f9fa', 
                     padding: 24, 
-                    borderRadius: 20, 
                     alignItems: 'center', 
                     marginTop: 15,
                     marginBottom: 12,
-                    shadowColor: "#000",
-                    shadowOffset: {
-                        width: 0,
-                        height: 2,
-                    },
-                    shadowOpacity: 0.1,
-                    shadowRadius: 3.84,
-                    elevation: 5,
-                    borderWidth: 1,
-                    borderColor: '#e9ecef'
                 }}>
                     <Text style={{ 
                         fontSize: 20, 
                         fontWeight: '800', 
                         textAlign: 'center', 
-                        color: '#495057',
                         marginBottom: 10,
                         lineHeight: 26,
                     }}
                     >
-                        THE EASIEST WAY TO <Text style={{ color: PrimaryGreen }}>GIVE</Text> TO EVERYTHING YOU CARE ABOUT, AT ONCE.
+                        The easiest way to <Text style={{ color: PrimaryGreen, fontStyle: 'italic' }}>give</Text> to everything you care about, at once.
                     </Text>
                     <TouchableOpacity 
                         onPress={() => navigation.navigate('Donation' as never)} 
@@ -166,7 +153,7 @@ export default function Home() {
                             backgroundColor: PrimaryBlue, 
                             paddingVertical: 12, 
                             paddingHorizontal: 20, 
-                            borderRadius: 25, 
+                            borderRadius: 10, 
                         }}
                     >
                         <Text style={{ 

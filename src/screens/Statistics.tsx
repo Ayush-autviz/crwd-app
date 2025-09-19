@@ -185,7 +185,7 @@ export default function Statistics() {
 
     return (
         <SafeAreaView style={styles.container}>
-            <MainHeaderNav show menu={false} post={false} />
+            <MainHeaderNav show menu={false} title={'Statistics'}  />
             
            
 

@@ -404,7 +404,7 @@ export default function Activity() {
 
     return (
         <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }} edges={['top', 'left', 'right']}>
-            <MainHeaderNav   />
+            <MainHeaderNav show menu={false} title={'Notifications'}  />
             
             {/* Tab Headers */}
             <View style={{ flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: LightGrey }}>

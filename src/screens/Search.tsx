@@ -225,7 +225,7 @@ export default function SearchScreen() {
     if (discover) {
         return (
             <SafeAreaView style={{ backgroundColor: '#f9fafb', flex: 1 }} edges={['top', 'left', 'right']}>
-                <MainHeaderNav  />
+                <MainHeaderNav menu={false} show title={'Search'} />
                 <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
                     <View style={{ paddingHorizontal: 16, paddingVertical: 24 }}>
                         {/* Title and Description */}
@@ -331,7 +331,7 @@ export default function SearchScreen() {
 
     return (
         <SafeAreaView style={{backgroundColor: 'white', flex: 1}} edges={['top', 'left', 'right']}>
-            <MainHeaderNav />
+            <MainHeaderNav title={'Search'} show menu={false} />
             <ScrollView style={{ paddingHorizontal: 20 }}>
                 <View style={{ 
                     marginVertical: 10, 

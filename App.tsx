@@ -119,7 +119,7 @@ export default function App() {
         <Drawer.Screen name="Donation" component={DonationScreen} />
         <Drawer.Screen name='Settings' component={Settings} />
         <Drawer.Screen name='TransactionHistory' component={TransactionHistory} />
-        <Stack.Screen name="Post" component={Post} />
+        {/* <Stack.Screen name="Post" component={Post} /> */}
       </Drawer.Navigator>
     )
   }
@@ -158,6 +158,9 @@ export default function App() {
         <Stack.Screen name="Interests" component={Interests} />
         <Stack.Screen name="UserProfile" component={UserProfile} />
         <Stack.Screen name="Circles" component={Circles} />
+        <Stack.Screen name='Search' component={SearchScreen} />
+        <Stack.Screen name='Activity' component={Activity} />
+        <Stack.Screen name="Post" component={Post} />
       </Stack.Navigator>
     )
   }

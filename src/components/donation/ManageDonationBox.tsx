@@ -10,7 +10,7 @@ import {
   TextInput,
   Alert,
 } from 'react-native';
-import { ArrowLeft, Minus, Plus, CreditCard, DollarSign, Trash2 } from 'lucide-react-native';
+import { ArrowLeft, Minus, Plus, CreditCard, DollarSign, Trash2, ChevronLeft } from 'lucide-react-native';
 import { Organization } from '../../Constants/organizations';
 import { PrimaryBlue } from '../../Constants/Colors';
 
@@ -114,7 +114,8 @@ export default function ManageDonationBox({
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <ArrowLeft size={20} color="#374151" />
+          {/* <ArrowLeft color="#374151" /> */}
+          <ChevronLeft />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Manage Donation Box</Text>
         <View style={styles.headerSpacer} />
@@ -328,13 +329,14 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#f3f4f6',
+    // backgroundColor: '#f3f4f6',
     alignItems: 'center',
     justifyContent: 'center',
+    marginRight: 5
   },
   headerTitle: {
     flex: 1,
-    textAlign: 'center',
+    // textAlign: 'center',
     fontSize: 20,
     fontWeight: 'bold',
     color: '#111827',

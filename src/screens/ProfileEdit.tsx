@@ -141,7 +141,7 @@ export default function ProfileEdit() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <MainHeaderNav show={true} menu={false} post={false} />
+      <MainHeaderNav show={true} menu={false} title={'Edit Profile'}/>
       
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}

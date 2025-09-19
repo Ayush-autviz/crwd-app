@@ -17,7 +17,7 @@ export default function Password() {
 
   return (
     <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }}>
-      <MainHeaderNav show={true} post={false} menu={false} />
+      <MainHeaderNav show={true} title={'Channge Password'} menu={false} />
       <ScrollView style={{ paddingHorizontal: 20, marginTop: 10 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 }}>
           <Lock size={20} color={PrimaryBlue} />

@@ -97,7 +97,7 @@ export default function CheckoutScreen({
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <ChevronLeft size={20} color="#374151" />
+          <ChevronLeft color="#374151" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Donation Box</Text>
         <View style={styles.headerSpacer} />
@@ -300,13 +300,14 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#f3f4f6',
+    // backgroundColor: '#f3f4f6',
     alignItems: 'center',
     justifyContent: 'center',
+    marginRight: 5
   },
   headerTitle: {
     flex: 1,
-    textAlign: 'center',
+    // textAlign: 'center',
     fontSize: 20,
     fontWeight: 'bold',
     color: '#111827',

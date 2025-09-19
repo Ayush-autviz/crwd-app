@@ -12,7 +12,7 @@ export default function Settings() {
 
     return (
         <SafeAreaView style={{ backgroundColor: '#fff', flex: 1 }}>
-            <MainHeaderNav show={true} menu={false} post={false} />
+            <MainHeaderNav show={true} menu={false} title={'Settings'} />
 
             <ScrollView style={{ paddingHorizontal: 20 }}>
                 <View style={styles.container}>

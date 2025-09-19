@@ -233,7 +233,7 @@ export default function Members() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <MainHeaderNav show={true} />
+      <MainHeaderNav show={true} title={'Members'}/>
       
       {/* Tabs */}
       <View style={styles.tabsContainer}>

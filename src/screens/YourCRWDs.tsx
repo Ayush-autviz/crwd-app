@@ -74,7 +74,7 @@ export default function YourCRWDs() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <MainHeaderNav show={true} menu={false} post={false} />
+      <MainHeaderNav show={true} menu={false} title={'Your Giving Circles'}/>
 
       {/* Header */}
       <View style={styles.header}>

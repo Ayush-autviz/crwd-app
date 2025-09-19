@@ -11,6 +11,7 @@ import { DrawerContentScrollView, DrawerContentComponentProps } from '@react-nav
 import { navigationGroups } from '../../Constants/navigationItems';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PrimaryGrey } from '../../Constants/Colors';
+import { Bell } from 'lucide-react-native';
 
 export default function CustomDrawerContent(props: DrawerContentComponentProps) {
   const { navigation } = props;
@@ -38,6 +39,29 @@ export default function CustomDrawerContent(props: DrawerContentComponentProps) 
             <Text style={styles.profileLink}>Go to your profile</Text>
           </TouchableOpacity>
         </View>
+        <TouchableOpacity
+          onPress={() => navigation.navigate('Activity')}
+          activeOpacity={0.8}
+          style={{ padding: 6, position: 'relative', marginRight: 15 }}
+        >
+          <Bell size={22} color="#111827" />
+          <View
+            style={{
+              position: 'absolute',
+              top: -2,
+              right: -4,
+              backgroundColor: 'red',
+              borderRadius: 8,
+              minWidth: 16,
+              height: 16,
+              alignItems: 'center',
+              justifyContent: 'center',
+              paddingHorizontal: 3,
+            }}
+          >
+            <Text style={{ color: 'white', fontSize: 10, fontWeight: '700' }}>5</Text>
+          </View>
+        </TouchableOpacity>
       </View>
 
       {/* Navigation Items */}
@@ -66,7 +90,7 @@ export default function CustomDrawerContent(props: DrawerContentComponentProps) 
                 <TouchableOpacity
                   key={item.id}
                   style={styles.menuItem}
-                  onPress={() => item.handleNavigation?.(navigation)}
+                  onPress={() => item.handleNavigation?.(navigation as any)}
                   activeOpacity={0.7}
                 >
                   <View style={styles.menuItemContent}>
@@ -105,7 +129,9 @@ const styles = StyleSheet.create({
   profileSection: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     padding: 16,
+    width: '95%',
     borderBottomWidth: 1,
     borderBottomColor: '#f3f4f6',
   },

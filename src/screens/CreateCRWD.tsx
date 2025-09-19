@@ -108,7 +108,7 @@ export default function CreateCRWD() {
   if (step === 2) {
     return (
       <SafeAreaView style={styles.container}>
-        <MainHeaderNav menu={false} post={false} show={true} />
+        <MainHeaderNav menu={false} title={'Create a Giving Circle'} show={true} />
         
         <View style={styles.successContainer}>
           <Image 
@@ -146,7 +146,7 @@ export default function CreateCRWD() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <MainHeaderNav menu={false} post={false} show={true} />
+      <MainHeaderNav menu={false} title={'Create a Giving Circle'} show={true} />
       
       {/* Toast Notification */}
       {toast && (

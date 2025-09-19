@@ -6,7 +6,7 @@ import { PrimaryBlue, PrimaryGrey, SecondaryGrey } from '../../Constants/Colors'
 export default function PrivacyPolicy() {
   return (
     <SafeAreaView style={styles.container}>
-      <MainHeaderNav show={true} post={false} menu={false} />
+      <MainHeaderNav show={true} title={'Privacy Policy'} menu={false} />
       <ScrollView style={styles.scrollView}>
         <Text style={styles.title}>Privacy Policy</Text>
         

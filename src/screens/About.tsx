@@ -125,7 +125,7 @@ export default function About() {
         <Text style={styles.title}>About CRWD</Text>
         <View style={styles.headerSpacer} />
       </View> */}
-      <MainHeaderNav show menu={false} post={false} />
+      <MainHeaderNav show menu={false} title={'About'} />
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Hero Section */}

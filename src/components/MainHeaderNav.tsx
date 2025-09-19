@@ -1,7 +1,7 @@
 import { View, Text, Image, Dimensions, TouchableOpacity, SafeAreaView } from 'react-native'
 import React from 'react'
 import { AlignJustify, ChevronLeft, Plus } from 'lucide-react-native'
-import { LightGrey, PrimaryGrey } from '../Constants/Colors';
+import { LightGrey, PrimaryGreen, PrimaryGrey, SecondaryGrey } from '../Constants/Colors';
 import { useNavigation, DrawerActions } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
@@ -13,7 +13,7 @@ type RootStackParamList = {
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
-export default function MainHeaderNav({ show = false, menu = true, post = true }) {
+export default function MainHeaderNav({ show = false, menu = true, postButton = false, title }) {
     const navigation = useNavigation<NavigationProp>();
     const screenWidth = Dimensions.get('window').width;
     const imageWidth = screenWidth * 0.25;
@@ -28,31 +28,43 @@ export default function MainHeaderNav({ show = false, menu = true, post = true }
 
 
     return (
-        <SafeAreaView style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginHorizontal: 20, borderBottomWidth: 2, borderBottomColor: LightGrey, }}>
-            <View style={{ flexDirection: 'row', gap: 20 }}>
-                <TouchableOpacity disabled={!show} onPress={() => navigation.goBack()}>
+        <SafeAreaView style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginHorizontal: 20, borderBottomWidth: 2, borderBottomColor: LightGrey, height: 60 }}>
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+                {show &&
+                <TouchableOpacity disabled={!show} onPress={() => navigation.goBack()} style={{marginTop: 1}}>
                     <ChevronLeft color={show ? '#000' : '#fff'} />
                 </TouchableOpacity>
-                <TouchableOpacity>
+}
+                
+                {title && <Text style={{fontSize: 20, fontWeight: 600}}>{title}</Text>}
+                {/* <TouchableOpacity>
                         <AlignJustify color="#fff" />
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
                 
 
             </View>
             {/* <Image source={require('../assets/logo/logo3.webp')} style={{ resizeMode: 'center', width: imageWidth }} /> */}
-            <Image source={require('../assets/logo/main.png')} style={{ resizeMode: 'contain', width: 90, height: 60 }} />
+            {/* <Image source={require('../assets/logo/main.png')} style={{ resizeMode: 'contain', width: 70, height: 60 }} /> */}
             
             <View style={{ flexDirection: 'row', gap: 20 }}>
-               <TouchableOpacity onPress={handlePostPress} disabled={!post}>
+                    {/* <TouchableOpacity onPress={handlePostPress} disabled={!post}>
                         <Plus color={post ? '#000' : '#fff'} />
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
+                    {postButton &&
+                       <TouchableOpacity
+                       onPress={() => navigation.navigate('Post' as never)}
+                       style={{ padding: 8, backgroundColor: '#E5E7EB', borderRadius: 8 }}
+                   >
+                       <Text style={{ fontSize: 14,}}>Post Something</Text>
+                   </TouchableOpacity>
+                    }
                 
-            
+            {menu &&
              <TouchableOpacity onPress={handleMenuPress} disabled={!menu}>
                         <AlignJustify color={menu ? '#000' : '#fff'} />
                     </TouchableOpacity>
                 
-
+            }
 
 
 

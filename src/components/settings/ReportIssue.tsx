@@ -60,7 +60,7 @@ export default function ReportIssue() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <MainHeaderNav show={true} post={false} menu={false} />
+      <MainHeaderNav show={true} title={'Report an Issue'} menu={false} />
       <ScrollView style={styles.scrollView}>
         <View style={styles.header}>
           {/* <MessageSquare size={24} color={PrimaryBlue} /> */}

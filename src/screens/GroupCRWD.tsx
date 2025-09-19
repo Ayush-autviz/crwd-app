@@ -75,7 +75,7 @@ export default function GroupCRWD() {
 
   return (
     <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }}>
-      <MainHeaderNav show menu={false} post={false} />
+      <MainHeaderNav show menu={false} title={'Group Circle'}/>
       
       {/* Action Buttons Header */}
       <View style={styles.actionHeader}>

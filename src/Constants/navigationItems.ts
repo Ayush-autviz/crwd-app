@@ -140,7 +140,7 @@ export const navigationGroups: NavigationGroup[] = [
         route: 'Search',
         handleNavigation: (navigation) => {
           setDiscoverMode(true);
-          navigation.navigate('MainTabs', { screen: 'Search' });
+          navigation.navigate('Search');
         }
       },
       {
@@ -160,14 +160,14 @@ export const navigationGroups: NavigationGroup[] = [
         icon: Bell,
         label: 'Notifications',
         route: 'Notifications',
-        handleNavigation: (navigation) => navigation.navigate('MainTabs', {screen: 'Activity'})
+        handleNavigation: (navigation) => navigation.navigate('Activity')
       },
       {
-        id: 'transaction-history',
+        id: 'community-updates',
         icon: Archive,
-        label: 'Transaction history',
-        route: 'TransactionHistory',
-        handleNavigation: (navigation) => navigation.navigate('TransactionHistory')
+        label: 'Community Updates',
+        route: 'Notificatios',
+        handleNavigation: (navigation) => navigation.navigate('Activity')
       }
     ]
   },

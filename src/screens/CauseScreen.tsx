@@ -38,7 +38,7 @@ export default function CauseScreen() {
 
   return (
     <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }}>
-      <MainHeaderNav show={true} menu={false} post={false} />
+      <MainHeaderNav show={true} menu={false} title={'Nonprofit'}/>
       
       {/* Action Buttons Header */}
       <View style={{ 

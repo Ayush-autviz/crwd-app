@@ -53,21 +53,23 @@ export default function DonationScreen() {
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       {/* Header */}
       <View style={styles.header}>
-        {step > 1 && activeTab !== 'onetime' ? (
+        {step > 1 && activeTab !== 'onetime' && (
           <TouchableOpacity
             onPress={() => setStep(s => s - 1)}
             style={styles.headerButton}
           >
-            <ChevronLeft size={20} color="#374151" />
+            <ChevronLeft  color="#374151"  />
           </TouchableOpacity>
-        ) : (
+        ) }
+        
+        {/* : (
           <TouchableOpacity
             onPress={() => navigation.goBack()}
             style={styles.headerButton}
           >
             <Text style={styles.closeIcon}>×</Text>
           </TouchableOpacity>
-        )}
+        )} */}
 
         <Text style={styles.headerTitle}>Donation Box</Text>
         <View style={styles.headerSpacer} />
@@ -413,13 +415,14 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#f3f4f6',
+    // backgroundColor: '#f3f4f6',
     alignItems: 'center',
     justifyContent: 'center',
+    marginRight: 5
   },
   headerTitle: {
     flex: 1,
-    textAlign: 'center',
+    // textAlign: 'center',
     fontSize: 20,
     fontWeight: 'bold',
     color: '#111827',

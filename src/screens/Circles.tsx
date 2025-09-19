@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native'
 import { PrimaryBlue, PrimaryGreen, SecondaryBlue, SecondaryGreen } from '../Constants/Colors'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import MainHeaderNav from '../components/MainHeaderNav'
+import { Plus, Search, Users } from 'lucide-react-native'
 
 type TabKey = 'my-crwds' | 'discover'
 
@@ -134,7 +135,7 @@ const Circles = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-        <MainHeaderNav show={true} menu={false} post={false} />
+        <MainHeaderNav title={'Circles'} show={true} menu={false} postButton={true} />
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Your Giving Circles</Text>
         <Text style={styles.headerSubtitle}>
@@ -142,9 +143,10 @@ const Circles = () => {
         </Text>
         <TouchableOpacity
           style={styles.createButton}
-          onPress={() => navigation.navigate('CreateCRWD' as never)}
+          onPress={() => navigation.navigate('DrawerNav' as never, { screen: 'CreateCRWD'})}
           activeOpacity={0.8}
         >
+            <Plus color='#ffffff' size={18}  />
           <Text style={styles.createButtonText}>Create a New Giving Circle</Text>
         </TouchableOpacity>
       </View>
@@ -155,22 +157,24 @@ const Circles = () => {
           onPress={() => setActiveTab('my-crwds')}
           activeOpacity={0.7}
         >
-          <Text style={[styles.tabText, activeTab === 'my-crwds' && styles.tabTextActive]}>My Giving Circles</Text>
+            <Users size={18} color={activeTab === 'my-crwds' ? '#000' : '#6B7280'}/>
+          <Text style={[styles.tabText, activeTab === 'my-crwds' && styles.tabTextActive]}>My Circles (0)</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tabButton, activeTab === 'discover' && styles.tabButtonActive]}
           onPress={() => setActiveTab('discover')}
           activeOpacity={0.7}
         >
+            <Search color={activeTab === 'discover' ? '#000' : '#6B7280'} size={18} />
           <Text style={[styles.tabText, activeTab === 'discover' && styles.tabTextActive]}>Discover</Text>
         </TouchableOpacity>
       </View>
 
       {activeTab === 'my-crwds' ? (
         <View style={styles.placeholderWrapper}>
-          <Text style={styles.placeholderTitle}>You have no Giving Circles yet</Text>
+          <Text style={styles.placeholderTitle}>You haven't joined any giving circles yet.</Text>
           <Text style={styles.placeholderDescription}>
-            Create or join a Giving to start giving together.
+            Checkout the Discover tab to find a giving circle! 
           </Text>
         </View>
       ) : (
@@ -213,7 +217,10 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   createButton: {
-    backgroundColor: '#16A34A',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: PrimaryGreen,
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 10,
@@ -232,6 +239,9 @@ const styles = StyleSheet.create({
   },
   tabButton: {
     flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 10,
     paddingVertical: 10,
     borderRadius: 8,
     backgroundColor: '#F3F4F6',
@@ -330,6 +340,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#111827',
     marginBottom: 6,
+    textAlign: 'center'
   },
   placeholderDescription: {
     fontSize: 14,

@@ -198,7 +198,7 @@ export default function Post() {
 
   return (
     <SafeAreaView style={{backgroundColor: 'white', flex: 1}}>
-      <MainHeaderNav show post={false} menu={false}/>
+      <MainHeaderNav show title={'Create a Post'} menu={false}/>
       <ScrollView style={{paddingHorizontal: 20}}>
       <View style={{marginTop: 20}}>
           <Text style={{fontSize: 16, fontWeight: 'bold', marginBottom: 10}}>Post to a Giving Circle</Text>

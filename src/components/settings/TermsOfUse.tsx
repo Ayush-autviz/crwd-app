@@ -6,7 +6,7 @@ import { PrimaryBlue, PrimaryGrey, SecondaryGrey } from '../../Constants/Colors'
 export default function TermsOfUse() {
   return (
     <SafeAreaView style={styles.container}>
-      <MainHeaderNav show={true} post={false} menu={false} />
+      <MainHeaderNav show={true} title={'Terms of Use'} menu={false} />
       <ScrollView style={styles.scrollView}>
         <Text style={styles.title}>Terms of Use</Text>
         

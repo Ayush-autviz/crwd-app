@@ -141,7 +141,7 @@ export default function HelpCenter() {
         <Text style={styles.title}>Help & Support</Text>
         <View style={styles.headerSpacer} />
       </View> */}
-      <MainHeaderNav show menu={false} post={false} />
+      <MainHeaderNav show menu={false} title={'Help & Support'} />
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Welcome Section */}
         <View style={styles.welcomeSection}>

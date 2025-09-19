@@ -148,7 +148,7 @@ export default function Home() {
                         The easiest way to <Text style={{ color: PrimaryGreen, fontStyle: 'italic' }}>give</Text> to everything you care about, at once.
                     </Text>
                     <TouchableOpacity 
-                        onPress={() => navigation.navigate('Donation' as never)} 
+                        onPress={() => navigation.navigate('SplashScreen' as never)} 
                         style={{ 
                             backgroundColor: PrimaryBlue, 
                             paddingVertical: 12, 

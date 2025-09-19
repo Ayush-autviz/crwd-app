@@ -64,7 +64,7 @@ export default function Saved() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <MainHeaderNav show={true} menu={false} post={false} />
+      <MainHeaderNav show={true} menu={false} title={'Favorites'}/>
       
       <FlatList 
         data={savedItems}

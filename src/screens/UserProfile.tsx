@@ -69,7 +69,7 @@ export default function UserProfile({route}: {route: any}) {
 
     return (
         <SafeAreaView style={{backgroundColor: 'white', flex: 1}}>
-            <MainHeaderNav show={true} menu={false} post={false} />
+            <MainHeaderNav show={true} menu={false} title={'Profile'}/>
             <ScrollView style={{flex: 1}}>
                 {/* Top right buttons */}
                 <View style={{flexDirection: 'row', justifyContent: 'flex-end', gap: 12, paddingHorizontal: 20, paddingTop: 16}}>

@@ -110,7 +110,7 @@ export default function Profile() {
 
     return (
         <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }} edges={['top', 'left', 'right']}>
-            <MainHeaderNav title={'Me'} />
+            <MainHeaderNav title={'Me'} show />
 
             {/* Top right buttons */}
             <View style={{ flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingTop: 24, paddingBottom: 8 }}>

@@ -4,7 +4,7 @@ import { Search } from 'lucide-react-native';
 import MainHeaderNav from '../components/MainHeaderNav';
 import { LightGrey, PrimaryBlue, PrimaryGrey } from '../Constants/Colors';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 
 // Type declarations
 interface Member {
@@ -66,6 +66,7 @@ export default function Members() {
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState<TabType>(defaultTab);
   const [showRecentDonations, setShowRecentDonations] = useState(false);
+  const navigation = useNavigation()
 
   const filteredMembers = members.filter(m => 
     m.name.toLowerCase().includes(search.toLowerCase()) || 
@@ -116,17 +117,17 @@ export default function Members() {
             </View>
             {cause.type === 'Nonprofit' && (
               <View style={styles.causeActions}>
-                <TouchableOpacity style={styles.donateButton}>
+                <TouchableOpacity onPress={() => navigation.navigate('CauseScreen' as never)} style={styles.donateButton}>
                   <Text style={styles.donateButtonText}>Donate Now</Text>
                 </TouchableOpacity>
-                <TouchableOpacity>
+                <TouchableOpacity onPress={() => navigation.navigate('CauseScreen' as never)}>
                   <Text style={styles.visitProfileText}>Visit Profile</Text>
                 </TouchableOpacity>
               </View>
             )}
             {cause.type === 'Circle' && (
               <View style={styles.causeActions}>
-                <TouchableOpacity style={styles.joinButton}>
+                <TouchableOpacity onPress={() => navigation.navigate('GroupCRWD' as never)} style={styles.joinButton}>
                   <Text style={styles.joinButtonText}>Learn More</Text>
                 </TouchableOpacity>
               </View>

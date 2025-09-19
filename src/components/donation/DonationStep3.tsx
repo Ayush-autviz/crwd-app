@@ -39,6 +39,7 @@ export default function DonationStep3({
     cardNumber: '',
     expiryDate: '',
     cvv: '',
+    cardAddress: ''
   });
 
   const getOrganizationDescription = (orgName: string): string => {
@@ -247,6 +248,22 @@ export default function DonationStep3({
                   />
                 </View>
               </View>
+
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>Card Address</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Card Address"
+                  keyboardType="default"
+                  // maxLength={19}
+                  value={cardDetails.cardAddress}
+                  onChangeText={(text) => setCardDetails({
+                    ...cardDetails,
+                    cardAddress: text
+                  })}
+                />
+              </View>
+
             </View>
           )}
         </View>

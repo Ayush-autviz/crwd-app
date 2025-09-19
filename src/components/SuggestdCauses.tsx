@@ -53,7 +53,7 @@ export default function SuggestdCauses() {
                         </View>
                         </View>
                         <View style={{alignItems: 'center'}}>
-                            <TouchableOpacity onPress={() =>  navigation.navigate('Donation' as never)} style={{backgroundColor: PrimaryBlue, paddingVertical: 10, paddingHorizontal: 10, borderRadius: 10, marginBottom: 5}}>
+                            <TouchableOpacity onPress={() =>  navigation.navigate('CauseScreen' as never)} style={{backgroundColor: PrimaryBlue, paddingVertical: 10, paddingHorizontal: 10, borderRadius: 10, marginBottom: 5}}>
                                 <Text style={{color: 'white'}}>Donate Now</Text>
                             </TouchableOpacity>
                         <TouchableOpacity

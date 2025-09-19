@@ -52,7 +52,7 @@ export default function NearbyCauses() {
             <View style={{alignItems: 'center'}}>
               {item.type === "Nonprofit" && (
                 <>
-                  <TouchableOpacity onPress={() => navigation.navigate('Donation' as never)} style={{backgroundColor: PrimaryBlue, paddingVertical: 10, paddingHorizontal: 10, borderRadius: 10, marginBottom: 5}}>
+                  <TouchableOpacity onPress={() => navigation.navigate('CauseScreen' as never)} style={{backgroundColor: PrimaryBlue, paddingVertical: 10, paddingHorizontal: 10, borderRadius: 10, marginBottom: 5}}>
                     <Text style={{color: 'white'}}>Donate Now</Text>
                   </TouchableOpacity>
                   <TouchableOpacity onPress={handleVisitCause}>

@@ -4,11 +4,13 @@ import MainHeaderNav from '../components/MainHeaderNav'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import PopularPosts from '../components/PopularPosts'
 import { LightGrey, PrimaryBlue, PrimaryGrey } from '../Constants/Colors'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation, useRoute } from '@react-navigation/native'
 import { ArrowLeftRight, Trophy, Heart, MessageCircle, MoreHorizontal } from 'lucide-react-native'
 
 export default function Activity() {
-    const [activeTab, setActiveTab] = useState<'community' | 'notifications'>('community')
+    const route = useRoute()
+    const {tab} = route.params ?? 'community'
+    const [activeTab, setActiveTab] = useState<'community' | 'notifications'>(tab ?? 'community')
     const navigation = useNavigation()
 
     // Regular notifications data

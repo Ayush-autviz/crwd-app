@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import MainHeaderNav from '../components/MainHeaderNav'
 import { LightGrey, PrimaryBlue, PrimaryGrey } from '../Constants/Colors'
 import { Search } from 'lucide-react-native'
-import { useRoute } from '@react-navigation/native'
+import { useNavigation, useRoute } from '@react-navigation/native'
 
 export default function Statistics() {
     const route = useRoute()
@@ -13,6 +13,7 @@ export default function Statistics() {
     const [activeTab, setActiveTab] = useState<'causes' | 'following' | 'followers' | 'crwds'>(defaultTab)
     const [causesSearch, setCausesSearch] = useState('')
     const [crwdsSearch, setCrwdsSearch] = useState('')
+    const navigation = useNavigation()
 
     const causes = [
         { name: "Red Cross", avatar: "https://randomuser.me/api/portraits/men/32.jpg", impact: "Donated $500" },
@@ -96,17 +97,17 @@ export default function Statistics() {
                     </View>
                     {cause.type === 'Nonprofit' && (
                         <View style={styles.causeActions}>
-                            <TouchableOpacity style={styles.donateButton}>
+                            <TouchableOpacity style={styles.donateButton} onPress={() => navigation.navigate('CauseScreen' as never)}>
                                 <Text style={styles.donateButtonText}>Donate Now</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity>
+                            <TouchableOpacity onPress={() => navigation.navigate('CauseScreen' as never)}>
                                 <Text style={styles.visitProfileText}>Visit Profile</Text>
                             </TouchableOpacity>
                         </View>
                     )}
                     {cause.type === 'Circle' && (
                         <View style={styles.causeActions}>
-                            <TouchableOpacity style={styles.joinButton}>
+                            <TouchableOpacity  onPress={() => navigation.navigate('GroupCRWD' as never)} style={styles.joinButton}>
                                 <Text style={styles.joinButtonText}>Learn More</Text>
                             </TouchableOpacity>
                         </View>

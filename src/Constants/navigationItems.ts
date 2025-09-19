@@ -160,7 +160,7 @@ export const navigationGroups: NavigationGroup[] = [
         icon: Bell,
         label: 'Notifications',
         route: 'Notifications',
-        handleNavigation: (navigation) => navigation.navigate('Activity')
+        handleNavigation: (navigation) => navigation.navigate('Activity', {tab: 'notifications'})
       },
       {
         id: 'community-updates',

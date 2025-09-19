@@ -9,6 +9,7 @@ import { Share2 } from 'lucide-react-native'
 import { PrimaryBlue } from '../Constants/Colors'
 import { useToast } from '../contexts/ToastContext'
 import { Upload } from 'lucide-react-native'
+import { useRoute } from '@react-navigation/native'
 
 // Sample data generator for profile posts
 const generateMoreProfilePosts = (startId: number, count: number, imageUrl: string, username: string) => {
@@ -35,7 +36,8 @@ const generateMoreProfilePosts = (startId: number, count: number, imageUrl: stri
     }));
 };
 
-export default function UserProfile({route}: {route: any}) {
+export default function UserProfile() {
+    const route = useRoute()
     const { imageUrl, username } = route.params;
     const [profilePosts, setProfilePosts] = useState(() => generateMoreProfilePosts(1, 4, imageUrl, username));
     const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -74,7 +76,7 @@ export default function UserProfile({route}: {route: any}) {
                 {/* Top right buttons */}
                 <View style={{flexDirection: 'row', justifyContent: 'flex-end', gap: 12, paddingHorizontal: 20, paddingTop: 16}}>
                     <TouchableOpacity 
-                        onPress={handleShare}
+                        onPress={() => handleShare}
                         style={{
                             height: 32,
                             paddingHorizontal: 12,
@@ -89,7 +91,7 @@ export default function UserProfile({route}: {route: any}) {
                         <Upload size={16} color="#374151" />
                     </TouchableOpacity>
                     <TouchableOpacity 
-                        onPress={handleFollowClick}
+                        onPress={() => handleFollowClick}
                         style={{
                             height: 32,
                             paddingHorizontal: 16,

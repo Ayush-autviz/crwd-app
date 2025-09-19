@@ -186,7 +186,7 @@ export const navigationGroups: NavigationGroup[] = [
         icon: Bookmark,
         label: 'Articles',
         route: '#',
-        handleNavigation: (navigation) => navigation.navigate('PrivacyPolicy')
+        handleNavigation: (navigation) => navigation.navigate('')
       },
       {
         id: 'help',

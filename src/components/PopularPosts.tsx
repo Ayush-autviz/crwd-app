@@ -31,6 +31,7 @@ interface PopularPostsProps {
 
 type RootStackParamList = {
     PostDetail: { post: Post };
+    UserProfile: { imageUrl: string; username: string };
 };
 
 export default function PopularPosts({
@@ -177,7 +178,7 @@ export default function PopularPosts({
                     </Text>
                     <View style={{
                         position: 'absolute',
-                        top: -6,
+                        top: 0,
                         left: 40,
                         width: 0,
                         height: 0,
@@ -197,7 +198,7 @@ export default function PopularPosts({
                         style={styles.container}
                         onPress={() => handlePostPress(item)}
                     >
-                        <TouchableOpacity onPress={() => {}}>
+                        <TouchableOpacity onPress={() => navigation.navigate('UserProfile', { imageUrl: item.avatarUrl, username: item.username })}>
                             <Image source={{ uri: item.avatarUrl }} style={{ width: 40, height: 40, borderRadius: 20 }} />
                         </TouchableOpacity>
                         <View style={{ flex: 1 }}>

@@ -28,8 +28,8 @@ export default function MainHeaderNav({ show = false, menu = true, postButton = 
 
 
     return (
-        <SafeAreaView style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginHorizontal: 20, borderBottomWidth: 2, borderBottomColor: LightGrey, height: 60 }}>
-            <View style={{ flexDirection: 'row', gap: 10 }}>
+        <SafeAreaView style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderBottomWidth: 2, borderBottomColor: LightGrey, height: 60 }}>
+            <View style={{ flexDirection: 'row', gap: 10, marginLeft: 20 }}>
                 {show &&
                 <TouchableOpacity disabled={!show} onPress={() => navigation.goBack()} style={{marginTop: 1}}>
                     <ChevronLeft color={show ? '#000' : '#fff'} />
@@ -46,7 +46,7 @@ export default function MainHeaderNav({ show = false, menu = true, postButton = 
             {/* <Image source={require('../assets/logo/logo3.webp')} style={{ resizeMode: 'center', width: imageWidth }} /> */}
             {/* <Image source={require('../assets/logo/main.png')} style={{ resizeMode: 'contain', width: 70, height: 60 }} /> */}
             
-            <View style={{ flexDirection: 'row', gap: 20 }}>
+            <View style={{ flexDirection: 'row', gap: 10, marginRight: 20 }}>
                     {/* <TouchableOpacity onPress={handlePostPress} disabled={!post}>
                         <Plus color={post ? '#000' : '#fff'} />
                     </TouchableOpacity> */}

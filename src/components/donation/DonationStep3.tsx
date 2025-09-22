@@ -9,11 +9,12 @@ import {
   Platform,
   TextInput,
 } from 'react-native';
+import { Country, State } from 'country-state-city';
 import { Trash2, Bookmark, Heart } from 'lucide-react-native';
 import { CROWDS, RECENTS, SUGGESTED, Organization } from '../../Constants/organizations';
 import PaymentSection from './PaymentSection';
-import { PrimaryBlue } from '../../Constants/Colors';
-import { CreditCard } from 'lucide-react-native';
+import { PrimaryBlue, SecondaryGrey } from '../../Constants/Colors';
+// import { CreditCard } from 'lucide-react-native';
 
 interface DonationStep3Props {
   selectedOrganizations: string[];
@@ -39,8 +40,14 @@ export default function DonationStep3({
     cardNumber: '',
     expiryDate: '',
     cvv: '',
-    cardAddress: ''
+    cardAddress: '',
+    country: '',
+    state: '',
+    zipCode: ''
   });
+
+  const [countryPickerVisible, setCountryPickerVisible] = useState(false);
+  const [statePickerVisible, setStatePickerVisible] = useState(false);
 
   const getOrganizationDescription = (orgName: string): string => {
     const descriptions: { [key: string]: string } = {
@@ -188,7 +195,7 @@ export default function DonationStep3({
               onPress={() => setSelectedPaymentMethod?.('card')}
             >
               <View style={styles.paymentIconContainer}>
-                <CreditCard size={20} color="#374151" />
+                <Text style={{ fontSize: 16, color: '#374151' }}>💳</Text>
               </View>
               <Text style={styles.paymentOptionText}>Credit or Debit Card</Text>
               {selectedPaymentMethod === 'card' && (
@@ -207,6 +214,7 @@ export default function DonationStep3({
                 <TextInput
                   style={styles.input}
                   placeholder="1234 5678 9012 3456"
+                  placeholderTextColor={SecondaryGrey}
                   keyboardType="numeric"
                   maxLength={19}
                   value={cardDetails.cardNumber}
@@ -223,6 +231,7 @@ export default function DonationStep3({
                   <TextInput
                     style={styles.input}
                     placeholder="MM/YY"
+                    placeholderTextColor={SecondaryGrey}
                     keyboardType="numeric"
                     maxLength={5}
                     value={cardDetails.expiryDate}
@@ -238,6 +247,7 @@ export default function DonationStep3({
                   <TextInput
                     style={styles.input}
                     placeholder="123"
+                    placeholderTextColor={SecondaryGrey}
                     keyboardType="numeric"
                     maxLength={3}
                     value={cardDetails.cvv}
@@ -249,18 +259,52 @@ export default function DonationStep3({
                 </View>
               </View>
 
+
+              {/* Country and State */}
+              <View style={styles.row}>
+                <View style={[styles.inputContainer, { flex: 1, marginRight: 8 }]}>
+                  <Text style={styles.inputLabel}>Country</Text>
+                  <TouchableOpacity
+                    style={[styles.input, { justifyContent: 'center' }]}
+                    onPress={() => setCountryPickerVisible(true)}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={{ color: cardDetails.country ? '#111827': SecondaryGrey, flexShrink: 1 }} numberOfLines={1} ellipsizeMode='tail'>
+                      {cardDetails.country ? (Country.getCountryByCode(cardDetails.country)?.name || cardDetails.country) : 'Select Country'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+
+                <View style={[styles.inputContainer, { flex: 1, marginLeft: 8 }]}>
+                  <Text style={styles.inputLabel}>State</Text>
+                  <TouchableOpacity
+                    style={[styles.input, { justifyContent: 'center' }]}
+                    onPress={() => cardDetails.country && setStatePickerVisible(true)}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={{ color: cardDetails.state ? '#111827' : SecondaryGrey, flexShrink: 1 }} numberOfLines={1} ellipsizeMode='tail'>
+                      {!cardDetails.country ? 'Select State' : (cardDetails.state ? (State.getStateByCodeAndCountry(cardDetails.state, cardDetails.country)?.name || cardDetails.state) : 'Select State')}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Zip Code */}
               <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>Card Address</Text>
+                <Text style={styles.inputLabel}>Zip Code</Text>
                 <TextInput
                   style={styles.input}
-                  placeholder="Card Address"
-                  keyboardType="default"
-                  // maxLength={19}
-                  value={cardDetails.cardAddress}
-                  onChangeText={(text) => setCardDetails({
-                    ...cardDetails,
-                    cardAddress: text
-                  })}
+                  placeholder="12345"
+                  keyboardType="numeric"
+                  placeholderTextColor={SecondaryGrey}
+                  maxLength={10}
+                  value={cardDetails.zipCode}
+                  onChangeText={(text) => {
+                    const value = text.replace(/\D/g, '');
+                    if (value.length <= 10) {
+                      setCardDetails({ ...cardDetails, zipCode: value })
+                    }
+                  }}
                 />
               </View>
 
@@ -268,6 +312,62 @@ export default function DonationStep3({
           )}
         </View>
       </ScrollView>
+
+      {/* Country Picker Modal */}
+      {countryPickerVisible && (
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Select Country</Text>
+              <TouchableOpacity onPress={() => setCountryPickerVisible(false)}>
+                <Text style={styles.modalClose}>Close</Text>
+              </TouchableOpacity>
+            </View>
+            <ScrollView>
+              {Country.getAllCountries().map((c) => (
+                <TouchableOpacity
+                  key={c.isoCode}
+                  style={styles.modalItem}
+                  onPress={() => {
+                    setCardDetails({ ...cardDetails, country: c.isoCode, state: '' })
+                    setCountryPickerVisible(false)
+                  }}
+                >
+                  <Text style={styles.modalItemText}>{c.name}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      )}
+
+      {/* State Picker Modal */}
+      {statePickerVisible && (
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Select State</Text>
+              <TouchableOpacity onPress={() => setStatePickerVisible(false)}>
+                <Text style={styles.modalClose}>Close</Text>
+              </TouchableOpacity>
+            </View>
+            <ScrollView>
+              {State.getStatesOfCountry(cardDetails.country).map((s) => (
+                <TouchableOpacity
+                  key={s.isoCode}
+                  style={styles.modalItem}
+                  onPress={() => {
+                    setCardDetails({ ...cardDetails, state: s.isoCode })
+                    setStatePickerVisible(false)
+                  }}
+                >
+                  <Text style={styles.modalItemText}>{s.name}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      )}
 
       {/* Action Buttons */}
       {/* <View style={styles.actionButtons}>
@@ -387,6 +487,50 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#2563eb',
+  },
+  modalOverlay: {
+    position: 'absolute',
+    top: 500,
+    left: 0,
+    right: 0,
+    bottom: 20,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'flex-end'
+  },
+  modalContent: {
+    maxHeight: '70%',
+    backgroundColor: 'white',
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+    paddingBottom: 16
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    // borderBottomWidth: StyleSheet.hairlineWidth,
+    // borderBottomColor: '#E5E7EB'
+  },
+  modalTitle: {
+    fontSize: 16,
+    fontWeight: '600'
+  },
+  modalClose: {
+    color: '#2563eb',
+    fontSize: 14,
+    fontWeight: '500'
+  },
+  modalItem: {
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#E5E7EB'
+  },
+  modalItemText: {
+    fontSize: 14,
+    color: '#111827'
   },
   actionButtons: {
     paddingHorizontal: 16,

@@ -16,6 +16,7 @@
     "@react-navigation/drawer": "^7.3.12",
     "@react-navigation/native": "^7.1.9",
     "@react-navigation/native-stack": "^7.3.13",
+    "country-state-city": "^3.2.1",
     "date-fns": "^4.1.0",
     "lucide-react-native": "^0.511.0",
     "react": "19.0.0",

@@ -5,6 +5,7 @@ import PopularPosts from '../PopularPosts';
 
 interface GroupCRWDUpdatesProps {
   showEmpty?: boolean;
+  joined?: boolean;
 }
 
 // Sample data generator for infinite posts
@@ -30,6 +31,7 @@ const generateMorePosts = (startId: number, count: number) => {
 
 const GroupCRWDUpdates: React.FC<GroupCRWDUpdatesProps> = ({
   showEmpty = false,
+  joined = false
 }) => {
   // Show empty state if showEmpty is true
   if (showEmpty) {
@@ -84,7 +86,7 @@ const GroupCRWDUpdates: React.FC<GroupCRWDUpdatesProps> = ({
 
   return (
     <View style={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 }}>
-      <PopularPosts posts={posts} hasMore={false} title="Activity" />  
+      <PopularPosts posts={posts} hasMore={false} title="Activity" postButton={joined} />  
       <View style={{ maxWidth: 600 }}>
         {/* Member Action Post */}
         <View style={{

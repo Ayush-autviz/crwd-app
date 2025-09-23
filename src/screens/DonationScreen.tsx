@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -9,7 +9,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { ChevronLeft, Plus } from 'lucide-react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import Slider from '@react-native-community/slider';
 import DonationStep2 from '../components/donation/DonationStep2';
 import DonationStep3 from '../components/donation/DonationStep3';
@@ -24,6 +24,7 @@ const { width } = Dimensions.get('window');
 
 export default function DonationScreen() {
   const navigation = useNavigation();
+  const route = useRoute();
   const [activeTab, setActiveTab] = useState<'setup' | 'onetime'>('setup');
   const [checkout, setCheckout] = useState(false);
   const [selectedOrganizations, setSelectedOrganizations] = useState<string[]>([]);
@@ -37,6 +38,14 @@ export default function DonationScreen() {
     setDonationAmount(roundedValue);
     setInputValue(roundedValue.toString());
   };
+
+  useEffect(() => {
+    // If navigated with initialTab param, open the requested tab
+    const maybeParams: any = (route as any)?.params;
+    if (maybeParams?.initialTab === 'onetime') {
+      setActiveTab('onetime');
+    }
+  }, [route]);
 
   if (checkout) {
     return (

@@ -7,7 +7,8 @@ const GroupCRWDBottomBar: React.FC = () => {
   const navigation = useNavigation();
 
   const handleDonate = () => {
-    navigation.navigate('Donation' as never);
+    // @ts-ignore
+    navigation.navigate('Donation', { initialTab: 'onetime' });
   };
 
   return (

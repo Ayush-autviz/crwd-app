@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { View, ScrollView, Text, TouchableOpacity, Modal, StyleSheet, Dimensions, TouchableWithoutFeedback } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import MainHeaderNav from '../components/MainHeaderNav';
 import GroupCRWDHeader from '../components/groupcrwd/GroupCRWDHeader';
 import GroupCRWDSuggested from '../components/groupcrwd/GroupCRWDSuggested';
@@ -7,7 +8,7 @@ import GroupCRWDUpdates from '../components/groupcrwd/GroupCRWDUpdates';
 import GroupCRWDEvent from '../components/groupcrwd/GroupCRWDEvent';
 import GroupCRWDBottomBar from '../components/groupcrwd/GroupCRWDBottomBar';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Check, Share2, X } from 'lucide-react-native';
+import { Check, Share2 } from 'lucide-react-native';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import { Share } from 'react-native';
 import { LightGrey, PrimaryBlue, PrimaryGreen, PrimaryGrey, SecondaryGrey } from '../Constants/Colors';
@@ -15,6 +16,7 @@ import { LightGrey, PrimaryBlue, PrimaryGreen, PrimaryGrey, SecondaryGrey } from
 const { width, height } = Dimensions.get('window');
 
 export default function GroupCRWD() {
+  const navigation = useNavigation();
   const [hasJoined, setHasJoined] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
@@ -84,7 +86,12 @@ export default function GroupCRWD() {
         </View>
         <View style={styles.actionButtons}>
           {hasJoined && (
-            <TouchableOpacity style={styles.donateButton}>
+            <TouchableOpacity style={styles.donateButton} onPress={() => {
+              (navigation as any).navigate('DrawerNav', {
+                screen: 'Donation',
+                params: { initialTab: 'onetime' }
+              });
+            }}>
               <Text style={styles.donateButtonText}>Donate</Text>
             </TouchableOpacity>
           )}
@@ -113,7 +120,7 @@ export default function GroupCRWD() {
 
       <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
         <GroupCRWDHeader />
-        <GroupCRWDUpdates />
+        <GroupCRWDUpdates joined={hasJoined} />
         <GroupCRWDSuggested />
 
         {/* <GroupCRWDEvent /> */}
@@ -147,7 +154,7 @@ export default function GroupCRWD() {
                   style={styles.closeButton}
                   onPress={handleCloseModal}
                 >
-                  <X size={24} color="#9ca3af" />
+                  <Text style={{fontSize: 24, color: '#9ca3af', lineHeight: 24}}>×</Text>
                 </TouchableOpacity>
                 
                 <View style={styles.modalBody}>
@@ -200,7 +207,7 @@ export default function GroupCRWD() {
                   style={styles.closeButton}
                   onPress={handleCloseSuccessModal}
                 >
-                  <X size={24} color="#9ca3af" />
+                  <Text style={{fontSize: 24, color: '#9ca3af', lineHeight: 24}}>×</Text>
                 </TouchableOpacity>
                 
                 <View style={styles.modalBody}>

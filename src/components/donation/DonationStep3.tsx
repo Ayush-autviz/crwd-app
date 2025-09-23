@@ -14,6 +14,7 @@ import { Trash2, Bookmark, Heart } from 'lucide-react-native';
 import { CROWDS, RECENTS, SUGGESTED, Organization } from '../../Constants/organizations';
 import PaymentSection from './PaymentSection';
 import { PrimaryBlue, SecondaryGrey } from '../../Constants/Colors';
+import { CreditCard } from 'lucide-react-native';
 // import { CreditCard } from 'lucide-react-native';
 
 interface DonationStep3Props {
@@ -195,7 +196,7 @@ export default function DonationStep3({
               onPress={() => setSelectedPaymentMethod?.('card')}
             >
               <View style={styles.paymentIconContainer}>
-                <Text style={{ fontSize: 16, color: '#374151' }}>💳</Text>
+              <CreditCard size={20} color="#374151" />
               </View>
               <Text style={styles.paymentOptionText}>Credit or Debit Card</Text>
               {selectedPaymentMethod === 'card' && (

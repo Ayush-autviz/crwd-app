@@ -28,7 +28,7 @@ const Circles = () => {
         name: 'The Red Cross',
         description: 'An health organization that helps people in need',
         image: require('../assets/images/redcross.png'),
-        type: 'Circle',
+        type: 'Collective',
         members: 1250,
       },
       {
@@ -36,7 +36,7 @@ const Circles = () => {
         name: 'St. Judes',
         description: "The leading children's health organization",
         image: require('../assets/images/grocery.jpg'),
-        type: 'Circle',
+        type: 'Collective',
         members: 890,
       },
       {
@@ -44,7 +44,7 @@ const Circles = () => {
         name: "Women's Healthcare of At...",
         description: "We are Atlanta's #1 healthcare organization",
         image: require('../assets/images/redcross.png'),
-        type: 'Circle',
+        type: 'Collective',
         members: 456,
       },
       {
@@ -52,7 +52,7 @@ const Circles = () => {
         name: 'St. Judes',
         description: "The leading children's health organization",
         image: require('../assets/images/grocery.jpg'),
-        type: 'Circle',
+        type: 'Collective',
         members: 890,
       },
       {
@@ -60,7 +60,7 @@ const Circles = () => {
         name: "Women's Healthcare of At...",
         description: "We are Atlanta's #1 healthcare organization",
         image: require('../assets/images/redcross.png'),
-        type: 'Circle',
+        type: 'Collective',
         members: 456,
       },
     ],
@@ -68,7 +68,7 @@ const Circles = () => {
   )
 
   const renderDiscoverItem = ({ item }: { item: DiscoverCircle }) => {
-    const isCircle = item.type === 'Circle'
+    const isCircle = item.type === 'Collective'
     return (
       <TouchableOpacity
         onPress={() => (isCircle ? navigation.navigate('GroupCRWD' as never) : navigation.navigate('CauseScreen' as never))}
@@ -135,11 +135,11 @@ const Circles = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-        <MainHeaderNav title={'Circles'} show={true} menu={false} postButton={true} />
+        <MainHeaderNav title={'CRWD Collectives'} show={true} menu={false} postButton={false} />
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Your Giving Circles</Text>
+        <Text style={styles.headerTitle}>Discover Collectives</Text>
         <Text style={styles.headerSubtitle}>
-          Amplify your impact by giving together. Join a giving circle or start your own.
+          Join Communities of people supporting cause together or start your own.
         </Text>
         <TouchableOpacity
           style={styles.createButton}
@@ -147,7 +147,7 @@ const Circles = () => {
           activeOpacity={0.8}
         >
             <Plus color='#ffffff' size={18}  />
-          <Text style={styles.createButtonText}>Create a New Giving Circle</Text>
+          <Text style={styles.createButtonText}>Start a Collective</Text>
         </TouchableOpacity>
       </View>
 
@@ -158,7 +158,7 @@ const Circles = () => {
           activeOpacity={0.7}
         >
             <Users size={18} color={activeTab === 'my-crwds' ? '#000' : '#6B7280'}/>
-          <Text style={[styles.tabText, activeTab === 'my-crwds' && styles.tabTextActive]}>My Circles (0)</Text>
+          <Text style={[styles.tabText, activeTab === 'my-crwds' && styles.tabTextActive]}>My Collectives (0)</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tabButton, activeTab === 'discover' && styles.tabButtonActive]}
@@ -172,9 +172,9 @@ const Circles = () => {
 
       {activeTab === 'my-crwds' ? (
         <View style={styles.placeholderWrapper}>
-          <Text style={styles.placeholderTitle}>You haven't joined any giving circles yet.</Text>
+          <Text style={styles.placeholderTitle}>You're not in a Collective yet.</Text>
           <Text style={styles.placeholderDescription}>
-            Checkout the Discover tab to find a giving circle! 
+            Collectives are communities built around causes. Joinn one to instantly add its nonprofits to your Donation Box or start your own.
           </Text>
         </View>
       ) : (

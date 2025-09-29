@@ -35,11 +35,11 @@ export default function SuggestedCrwd() {
     return (
     <>
     <View style={{marginVertical: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'}}>
-      <Text style={{fontSize: 18, fontWeight: 'bold'}}>Discover giving in action</Text>
+      <Text style={{fontSize: 17, fontWeight: 'bold'}}>Discover giving in action</Text>
       <TouchableOpacity onPress={() => navigation.navigate('CreateCRWD')}>
       <Text style={{color: PrimaryBlue, 
-        fontSize: 12,
-      }}>Create a Giving Circle</Text>
+        fontSize: 11,
+      }}>Create a CRWD Collective</Text>
       </TouchableOpacity>
     </View>
     <FlatList data={suggestedCRWDs}

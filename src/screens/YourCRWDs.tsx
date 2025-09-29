@@ -74,11 +74,11 @@ export default function YourCRWDs() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <MainHeaderNav show={true} menu={false} title={'Your Giving Circles'}/>
+      <MainHeaderNav show={true} menu={false} title={'Your CRWD Collectives'}/>
 
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>Your Giving Circles</Text>
+        <Text style={styles.title}>Your CRWD Collectives</Text>
       </View>
 
       {/* CRWDs List */}

@@ -8,18 +8,18 @@ import Carousel, {
 import { LightGrey, PrimaryBlue, SecondaryBlue, TertiaryBlue, PrimaryGrey } from "../Constants/Colors";
  
 const data = [{
-    heading: 'Pick your Causes',
-    subHeading: 'Search or explore non-profits by category or local Circles.',
+    heading: 'Choose Causes You Care About',
+    subHeading: 'Add nonprofits you love in seconds',
     backgroundColor: '#3730A3' // indigo-800
 },
 {
-    heading: 'Set One Donation',
-    subHeading: 'Decide your amount once - it splits across your chosen causes.',
+    heading: 'One Donation, Split Automatically.',
+    subHeading: "Set your gift once, and we'll divide it across your causes.",
     backgroundColor: '#15803D' // lime-700
 },
 {
-    heading: 'Give Together',
-    subHeading: 'Learn Mores to give alongside others and see your shared impact.',
+    heading: 'Join or Start a Collective',
+    subHeading: 'Give together with friends, coworkers or your community.',
     backgroundColor: '#DC2626' // red-600
 }];
 

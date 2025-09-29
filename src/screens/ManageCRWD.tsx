@@ -392,7 +392,7 @@ export default function ManageCRWD() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <MainHeaderNav show={true} menu={false} title={'Manage Circles'} />
+      <MainHeaderNav show={true} menu={false} title={'Manage Collectives'} />
       
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}

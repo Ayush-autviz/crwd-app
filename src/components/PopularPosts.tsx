@@ -27,6 +27,7 @@ interface PopularPostsProps {
     related?: boolean;
     title?: string;
     postButton?: boolean;
+    subheading?: boolean
 }
 
 type RootStackParamList = {
@@ -41,6 +42,7 @@ export default function PopularPosts({
     related = false,
     title = 'Recent Posts to CRWDs',
     postButton = false,
+    subheading = false,
     onLoadMore = async () => {
         // Default implementation to make button visible
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -141,11 +143,13 @@ export default function PopularPosts({
                         // onPress={() => setShowTooltip(!showTooltip)}
                         style={{ padding: 8, backgroundColor: SecondaryGrey, borderRadius: 8 }}
                     >
-                        <Text style={{ fontSize: 14,}}>Post Something</Text>
+                        <Text style={{ fontSize: 14,}}>Start a Conversation</Text>
                     </TouchableOpacity>
                     )}
                 </View>
             )}
+
+            {subheading && <Text style={{fontSize: 12, fontStyle: 'italic', color: 'grey', marginBottom: 8}}>Members share updates, questions and articles here.</Text>}
 
             {/* Tooltip */}
             {showTooltip && showTitle && (

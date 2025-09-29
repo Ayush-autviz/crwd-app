@@ -151,7 +151,7 @@ export default function Post() {
             alignItems: 'center',
             marginBottom: 20
           }}>
-            <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Select a Giving Circle</Text>
+            <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Select a CRWD Collective</Text>
             <TouchableOpacity onPress={() => setShowCRWDDropdown(false)}>
               <X size={24} color={PrimaryGrey} />
             </TouchableOpacity>
@@ -201,7 +201,7 @@ export default function Post() {
       <MainHeaderNav show title={'Create a Post'} menu={false}/>
       <ScrollView style={{paddingHorizontal: 20}}>
       <View style={{marginTop: 20}}>
-          <Text style={{fontSize: 16, fontWeight: 'bold', marginBottom: 10}}>Post to a Giving Circle</Text>
+          <Text style={{fontSize: 16, fontWeight: 'bold', marginBottom: 10}}>Post to a CRWD Collective</Text>
           
           {/* CRWD Selection */}
           <TouchableOpacity
@@ -238,7 +238,7 @@ export default function Post() {
                 </>
               ) : (
                 <Text style={{ fontSize: 14, color: PrimaryGrey }}>
-                  Select a Giving Circle (required)
+                  Select a CRWD Collective (required)
                 </Text>
               )}
             </View>

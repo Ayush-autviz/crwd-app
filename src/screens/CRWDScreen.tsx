@@ -74,11 +74,11 @@ export default function CRWDScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <MainHeaderNav title={'Your Giving Circles'} show={true} />
+      <MainHeaderNav title={'Your CRWD Collectives'} show={true} />
 
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>Your Giving Circles</Text>
+        <Text style={styles.title}>Your CRWD Collectives</Text>
       </View>
 
       {/* CRWDs List */}

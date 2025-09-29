@@ -82,11 +82,11 @@ export default function Statistics() {
                         <View style={styles.causeDetails}>
                             <View style={[
                                 styles.typeBadge,
-                                cause.type === 'Circle' ? styles.crwdBadge : styles.nonprofitBadge
+                                cause.type === 'Collective' ? styles.crwdBadge : styles.nonprofitBadge
                             ]}>
                                 <Text style={[
                                     styles.typeText,
-                                    cause.type === 'Circle' ? styles.crwdText : styles.nonprofitText
+                                    cause.type === 'Collective' ? styles.crwdText : styles.nonprofitText
                                 ]}>
                                     {cause.type}
                                 </Text>
@@ -105,7 +105,7 @@ export default function Statistics() {
                             </TouchableOpacity>
                         </View>
                     )}
-                    {cause.type === 'Circle' && (
+                    {cause.type === 'Collective' && (
                         <View style={styles.causeActions}>
                             <TouchableOpacity  onPress={() => navigation.navigate('GroupCRWD' as never)} style={styles.joinButton}>
                                 <Text style={styles.joinButtonText}>Learn More</Text>

@@ -18,7 +18,7 @@ interface Cause {
   name: string;
   description: string;
   image: any;
-  type: 'Circle' | 'Nonprofit';
+  type: 'Collective' | 'Nonprofit';
 }
 
 // Sample members data
@@ -102,11 +102,11 @@ export default function Members() {
               <View style={styles.causeDetails}>
                 <View style={[
                   styles.typeBadge,
-                  cause.type === 'Circle' ? styles.crwdBadge : styles.nonprofitBadge
+                  cause.type === 'Collective' ? styles.crwdBadge : styles.nonprofitBadge
                 ]}>
                   <Text style={[
                     styles.typeText,
-                    cause.type === 'Circle' ? styles.crwdText : styles.nonprofitText
+                    cause.type === 'Collective' ? styles.crwdText : styles.nonprofitText
                   ]}>
                     {cause.type}
                   </Text>
@@ -125,7 +125,7 @@ export default function Members() {
                 </TouchableOpacity>
               </View>
             )}
-            {cause.type === 'Circle' && (
+            {cause.type === 'Collective' && (
               <View style={styles.causeActions}>
                 <TouchableOpacity onPress={() => navigation.navigate('GroupCRWD' as never)} style={styles.joinButton}>
                   <Text style={styles.joinButtonText}>Learn More</Text>
@@ -263,7 +263,7 @@ export default function Members() {
                 styles.tabText,
                 activeTab === tab && styles.activeTabText
               ]}>
-                {tab}
+                {tab === 'Causes' ? tab : tab === 'Members' ? 'Community' : 'Contributions' }
               </Text>
             </View>
           </TouchableOpacity>

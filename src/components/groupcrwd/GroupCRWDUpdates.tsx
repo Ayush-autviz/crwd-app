@@ -86,7 +86,7 @@ const GroupCRWDUpdates: React.FC<GroupCRWDUpdatesProps> = ({
 
   return (
     <View style={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 }}>
-      <PopularPosts posts={posts} hasMore={false} title="Activity" postButton={joined} />  
+      <PopularPosts posts={posts} hasMore={false} title="Conversations" postButton={joined} subheading/>  
       <View style={{ maxWidth: 600 }}>
         {/* Member Action Post */}
         <View style={{

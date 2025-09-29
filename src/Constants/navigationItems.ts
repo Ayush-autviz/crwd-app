@@ -117,7 +117,7 @@ export const navigationGroups: NavigationGroup[] = [
       // {
       //   id: 'your-crwds',
       //   icon: Users,
-      //   label: 'Your Giving Circles',
+      //   label: 'Your CRWD Collectives',
       //   route: 'YourCRWDs',
       //   handleNavigation: (navigation) => navigation.navigate('YourCRWDs')
       // },

@@ -66,7 +66,7 @@ export default function GroupCRWD() {
   const handleShare = async () => {
     try {
       await Share.share({
-        message: 'Check out this Giving Circle',
+        message: 'Check out this CRWD Collective',
         title: 'Feed the hungry - CRWD',
       });
     } catch (error) {
@@ -77,12 +77,12 @@ export default function GroupCRWD() {
 
   return (
     <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }}>
-      <MainHeaderNav show menu={false} title={'Group Circle'}/>
+      <MainHeaderNav show menu={false} title={'Collective'}/>
       
       {/* Action Buttons Header */}
       <View style={styles.actionHeader}>
         <View style={styles.crwdBadge}>
-          <Text style={styles.crwdBadgeText}>Circle</Text>
+          <Text style={styles.crwdBadgeText}>Collective</Text>
         </View>
         <View style={styles.actionButtons}>
           {hasJoined && (
@@ -112,7 +112,7 @@ export default function GroupCRWD() {
                 <Text style={styles.joinedButtonText}>Joined</Text>
               </>
             ) : (
-              <Text style={styles.joinButtonText}>Join Circle</Text>
+              <Text style={styles.joinButtonText}>Join This Collective</Text>
             )}
           </TouchableOpacity>
         </View>
@@ -317,8 +317,8 @@ const styles = StyleSheet.create({
   },
   crwdBadge: {
     backgroundColor: '#dcfce7',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 6,
     borderRadius: 6,
   },
   crwdBadgeText: {

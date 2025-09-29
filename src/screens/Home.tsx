@@ -162,7 +162,7 @@ export default function Home() {
                             fontWeight: '600',
                             textAlign: 'center',
                         }}>
-                            Start Giving
+                            Start Your Donation Box
                         </Text>
                     </TouchableOpacity>
                 </View>

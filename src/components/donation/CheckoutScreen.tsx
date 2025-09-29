@@ -172,7 +172,7 @@ export default function CheckoutScreen({
 
         {/* Want to give together? Card */}
         <View style={styles.giveTogetherCard}>
-          <Text style={styles.giveTogetherText}>Want to give together? Turn this into a Giving Circle</Text>
+          <Text style={styles.giveTogetherText}>Want to give together? Turn this into a CRWD Collective</Text>
           <TouchableOpacity>
             <Text style={styles.learnMoreLink}>Learn more</Text>
           </TouchableOpacity>

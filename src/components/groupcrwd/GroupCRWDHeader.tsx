@@ -3,6 +3,7 @@ import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { Bookmark, Heart } from 'lucide-react-native';
 import { PrimaryBlue, LightGrey, PrimaryGrey } from '../../Constants/Colors';
 import { useNavigation } from '@react-navigation/native';
+import { Link } from 'lucide-react-native';
 
 const orgAvatars = [
   {
@@ -136,14 +137,14 @@ const GroupCRWDHeader: React.FC<GroupCRWDHeaderProps> = ({
           style={{ flex: 1, alignItems: 'center', borderRightWidth: 1, borderRightColor: '#e5e7eb' }}
         >
           <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#111827', marginBottom: 4 }}>58</Text>
-          <Text style={{ fontSize: 12, color: '#6b7280', textAlign: 'center' }}>Members</Text>
+          <Text style={{ fontSize: 12, color: '#6b7280', textAlign: 'center' }}>Community</Text>
         </TouchableOpacity>
         <TouchableOpacity 
           onPress={() => handleStatsPress('donations')}
           style={{ flex: 1, alignItems: 'center' }}
         >
           <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#111827', marginBottom: 4 }}>12</Text>
-          <Text style={{ fontSize: 12, color: '#6b7280', textAlign: 'center', width: '70%' }}>Donations</Text>
+          <Text style={{ fontSize: 12, color: '#6b7280', textAlign: 'center', width: '70%' }}>Contributions</Text>
         </TouchableOpacity>
       </View>
 
@@ -162,17 +163,18 @@ const GroupCRWDHeader: React.FC<GroupCRWDHeaderProps> = ({
       </View>
 
       {/* Recently Supported Nonprofits */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
       <Text style={{ fontSize: 16, fontWeight: '700', color: '#374151'}}>
         Recently Supported Nonprofits
       </Text>
-      <Text 
+      {/* <Text 
           style={{ color: PrimaryBlue, textDecorationLine: 'underline' }}
           onPress={handleSeeAllPress}
         >
           See All
-        </Text>
+        </Text> */}
       </View>
+      <Text style={{fontSize: 12, fontStyle: 'italic', color: 'grey', marginBottom: 12}}>Your donations here are split evenly across these nonprofits</Text>
 
       {/* Organization Avatars */}
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -192,6 +194,16 @@ const GroupCRWDHeader: React.FC<GroupCRWDHeaderProps> = ({
             </Text>
           </TouchableOpacity>
         ))}
+      </View>
+
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 16, gap: 10 }}>
+        <Link size={16} />
+      <Text 
+          style={{ color: PrimaryBlue, textDecorationLine: 'underline' }}
+          onPress={handleSeeAllPress}
+        >
+          See All
+        </Text>
       </View>
 
       {/* Supporting Text */}

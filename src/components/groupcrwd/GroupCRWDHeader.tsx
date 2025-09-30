@@ -137,7 +137,7 @@ const GroupCRWDHeader: React.FC<GroupCRWDHeaderProps> = ({
           style={{ flex: 1, alignItems: 'center', borderRightWidth: 1, borderRightColor: '#e5e7eb' }}
         >
           <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#111827', marginBottom: 4 }}>58</Text>
-          <Text style={{ fontSize: 12, color: '#6b7280', textAlign: 'center' }}>Community</Text>
+          <Text style={{ fontSize: 12, color: '#6b7280', textAlign: 'center' }}>Members</Text>
         </TouchableOpacity>
         <TouchableOpacity 
           onPress={() => handleStatsPress('donations')}
@@ -197,7 +197,7 @@ const GroupCRWDHeader: React.FC<GroupCRWDHeaderProps> = ({
       </View>
 
       <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 16, gap: 10 }}>
-        <Link size={16} />
+        {/* <Link size={16} /> */}
       <Text 
           style={{ color: PrimaryBlue, textDecorationLine: 'underline' }}
           onPress={handleSeeAllPress}

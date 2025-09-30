@@ -263,7 +263,7 @@ export default function Members() {
                 styles.tabText,
                 activeTab === tab && styles.activeTabText
               ]}>
-                {tab === 'Causes' ? tab : tab === 'Members' ? 'Community' : 'Contributions' }
+                {tab === 'Causes' ? tab : tab === 'Members' ? 'Members' : 'Contributions' }
               </Text>
             </View>
           </TouchableOpacity>

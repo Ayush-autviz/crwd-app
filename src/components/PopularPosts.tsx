@@ -40,7 +40,7 @@ export default function PopularPosts({
     showTitle = true,
     showDelete = false,
     related = false,
-    title = 'Recent Posts to CRWDs',
+    title = 'Recent Posts to Collectives',
     postButton = false,
     subheading = false,
     onLoadMore = async () => {
@@ -178,7 +178,7 @@ export default function PopularPosts({
                         fontWeight: '500',
                         textAlign: 'center'
                     }}>
-                        You can engage with others in CRWDs.
+                        You can engage with others in Collectives.
                     </Text>
                     <View style={{
                         position: 'absolute',

@@ -81,7 +81,7 @@ export default function CausesCarousel() {
                 width: '100%',
               }}>
                 <Text style={{ 
-                  fontSize: 20, 
+                  fontSize: 18, 
                   fontWeight: 'bold',
                   color: 'white',
                   marginBottom: 8,
@@ -90,7 +90,7 @@ export default function CausesCarousel() {
                   {item.heading}
                 </Text>
                 <Text style={{ 
-                  fontSize: 16, 
+                  fontSize: 15, 
                   color: 'white',
                   lineHeight: 22,
                   textAlign: 'center',

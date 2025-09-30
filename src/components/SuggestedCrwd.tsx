@@ -2,6 +2,7 @@ import { View, Text, FlatList, Image, TouchableOpacity } from 'react-native'
 import React from 'react'
 import { useNavigation } from '@react-navigation/native'
 import { PrimaryBlue, PrimaryGreen } from '../Constants/Colors'
+import { ChevronRight } from 'lucide-react-native';
 
 export default function SuggestedCrwd() {
   const navigation = useNavigation();
@@ -34,12 +35,13 @@ export default function SuggestedCrwd() {
 
     return (
     <>
-    <View style={{marginVertical: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'}}>
+    <View style={{marginVertical: 20, flexDirection: 'row', alignItems: 'center', gap: 5}}>
       <Text style={{fontSize: 17, fontWeight: 'bold'}}>Discover giving in action</Text>
       <TouchableOpacity onPress={() => navigation.navigate('CreateCRWD')}>
-      <Text style={{color: PrimaryBlue, 
+      {/* <Text style={{color: PrimaryBlue, 
         fontSize: 11,
-      }}>Create a CRWD Collective</Text>
+      }}>Create a CRWD Collective</Text> */}
+      <ChevronRight color={PrimaryBlue} size={19} style={{marginTop: 1}}/>
       </TouchableOpacity>
     </View>
     <FlatList data={suggestedCRWDs}

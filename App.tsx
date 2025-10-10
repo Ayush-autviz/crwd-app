@@ -51,12 +51,25 @@ import CompleteOnboard from './src/components/onboarding/CompleteOnboard'
 import {FontAwesome6} from '@react-native-vector-icons/fontawesome6'
 import { Image } from 'react-native'
 import Circles from './src/screens/Circles'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 export default function App() {
 
   const Tab = createBottomTabNavigator()
   const Drawer = createDrawerNavigator()
   const Stack = createNativeStackNavigator()
+
+
+  // Create QueryClient once
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
   function BottomTabs() {
     return (
@@ -167,9 +180,11 @@ export default function App() {
 
   return (
     <NavigationContainer>
+      <QueryClientProvider client={queryClient}>
       <ToastProvider>
         <StackNavigator />
       </ToastProvider>
+      </QueryClientProvider>
     </NavigationContainer>
   )
 

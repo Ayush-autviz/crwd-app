@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, ScrollView, Text, TouchableOpacity, Modal, StyleSheet, Dimensions, TouchableWithoutFeedback } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { View, ScrollView, Text, TouchableOpacity, Modal, StyleSheet, Dimensions, TouchableWithoutFeedback, ActivityIndicator } from 'react-native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import MainHeaderNav from '../components/MainHeaderNav';
 import GroupCRWDHeader from '../components/groupcrwd/GroupCRWDHeader';
 import GroupCRWDSuggested from '../components/groupcrwd/GroupCRWDSuggested';
@@ -12,32 +13,57 @@ import { Check, Share2 } from 'lucide-react-native';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import { Share } from 'react-native';
 import { LightGrey, PrimaryBlue, PrimaryGreen, PrimaryGrey, SecondaryGrey } from '../Constants/Colors';
+import { getCollectiveById, joinCollective, leaveCollective } from '../services/api/crwd';
+import { getPosts } from '../services/api/social';
+import { useToast } from '../contexts/ToastContext';
 
 const { width, height } = Dimensions.get('window');
 
 export default function GroupCRWD() {
   const navigation = useNavigation();
+  const route = useRoute();
+  const queryClient = useQueryClient();
+  const { showToast } = useToast();
+  
+  // Get collective ID from route params
+  const collectiveId = (route.params as any)?.collectiveId || "1";
+  
   const [hasJoined, setHasJoined] = useState(false);
-  const [showToast, setShowToast] = useState(false);
+  const [showToastState, setShowToastState] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const confettiRef = useRef<ConfettiCannon>(null);
 
+  // Fetch collective data
+  const { data: collectiveData, isLoading: isLoadingCollective } = useQuery({
+    queryKey: ['collective', collectiveId],
+    queryFn: () => getCollectiveById(collectiveId),
+    enabled: !!collectiveId,
+  });
+
+  // Fetch posts for this collective
+  const { data: posts, isLoading: isLoadingPosts } = useQuery({
+    queryKey: ['posts', collectiveId],
+    queryFn: () => getPosts('', collectiveId),
+    enabled: !!collectiveId,
+  });
+
+
+  // Update hasJoined state when collectiveData changes
+  useEffect(() => {
+    if (collectiveData?.is_joined !== undefined) {
+      setHasJoined(collectiveData.is_joined);
+    }
+  }, [collectiveData?.is_joined]);
+
   const handleCloseModal = () => {
     setShowJoinModal(false);
   };
 
   const handleJoinConfirm = () => {
-    setHasJoined(true);
-    setShowJoinModal(false);
-    setShowSuccessModal(true);
-    
-    // Fire confetti after modal appears
-    setTimeout(() => {
-      confettiRef.current?.start();
-    }, 300);
+    joinCollectiveMutation.mutate(collectiveId);
   };
 
   const handleCloseSuccessModal = () => {
@@ -55,13 +81,52 @@ export default function GroupCRWD() {
   };
 
   const handleConfirmUnjoin = () => {
-    setHasJoined(false);
-    setShowToast(true);
-    setShowConfirmDialog(false);
-    
-    // Hide toast after 3 seconds
-    setTimeout(() => setShowToast(false), 3000);
+    leaveCollectiveMutation.mutate(collectiveId);
   };
+
+  // Join collective mutation
+  const joinCollectiveMutation = useMutation({
+    mutationFn: joinCollective,
+    onSuccess: (response) => {
+      console.log('Join collective successful:', response);
+      setHasJoined(true);
+      setShowJoinModal(false);
+      setShowSuccessModal(true);
+      showToast('Successfully joined the collective!', 3000);
+      
+      // Fire confetti after modal appears
+      setTimeout(() => {
+        confettiRef.current?.start();
+      }, 300);
+      
+      // Invalidate queries to refresh data
+      queryClient.invalidateQueries({ queryKey: ['collective', collectiveId] });
+    },
+    onError: (error: any) => {
+      console.error('Join collective error:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to join collective';
+      showToast(errorMessage, 3000);
+    },
+  });
+
+  // Leave collective mutation
+  const leaveCollectiveMutation = useMutation({
+    mutationFn: leaveCollective,
+    onSuccess: (response) => {
+      console.log('Leave collective successful:', response);
+      setHasJoined(false);
+      setShowConfirmDialog(false);
+      showToast('Successfully left the collective', 3000);
+      
+      // Invalidate queries to refresh data
+      queryClient.invalidateQueries({ queryKey: ['collective', collectiveId] });
+    },
+    onError: (error: any) => {
+      console.error('Leave collective error:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to leave collective';
+      showToast(errorMessage, 3000);
+    },
+  });
 
   const handleShare = async () => {
     try {
@@ -74,6 +139,19 @@ export default function GroupCRWD() {
     }
   };
 
+
+  // Show loading state
+  if (isLoadingCollective) {
+    return (
+      <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }}>
+        <MainHeaderNav show menu={false} title={'Collective'}/>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color={PrimaryBlue} />
+          <Text style={{ marginTop: 16, color: PrimaryGrey }}>Loading collective...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }}>
@@ -119,17 +197,27 @@ export default function GroupCRWD() {
       </View>
 
       <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-        <GroupCRWDHeader />
-        <GroupCRWDUpdates joined={hasJoined} />
+        <GroupCRWDHeader 
+          hasJoined={hasJoined} 
+          onJoin={handleJoin} 
+          id={collectiveId} 
+          crwdData={collectiveData} 
+        />
+        <GroupCRWDUpdates 
+          joined={hasJoined} 
+          collectiveData={collectiveData}
+          posts={posts?.results || []}
+          isLoading={isLoadingPosts}
+        />
         <GroupCRWDSuggested />
 
         {/* <GroupCRWDEvent /> */}
-        <View style={{ height: 100 }} />
+        <View style={{ height: 10 }} />
       </ScrollView>
       {/* <GroupCRWDBottomBar /> */}
 
       {/* Toast Notification */}
-      {showToast && (
+      {showToastState && (
         <View style={styles.toastContainer}>
           <View style={styles.toast}>
             <Text style={styles.toastText}>

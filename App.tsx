@@ -140,6 +140,7 @@ const queryClient = new QueryClient({
   function StackNavigator() {
     return (
       <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="DrawerNav" component={DrawerNavigator} />
         <Stack.Screen name="SplashScreen" component={SplashScreen} />
         <Stack.Screen name="ClaimProfile" component={ClaimProfile} />
         <Stack.Screen name="AddPhoto" component={AddPhoto} />
@@ -150,7 +151,7 @@ const queryClient = new QueryClient({
         <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
         <Stack.Screen name="VerificationCode" component={VerificationCode} />
         <Stack.Screen name="ResetPassword" component={ResetPassword} />
-        <Stack.Screen name="DrawerNav" component={DrawerNavigator} />
+        {/* <Stack.Screen name="DrawerNav" component={DrawerNavigator} /> */}
         <Stack.Screen name="GroupCRWD" component={GroupCRWD} />
         <Stack.Screen name="CauseScreen" component={CauseScreen} />
         <Stack.Screen name="Search2" component={Search2} />

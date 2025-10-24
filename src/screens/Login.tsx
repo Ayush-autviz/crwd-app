@@ -13,10 +13,15 @@ import {
   Alert
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { Eye, EyeOff } from 'lucide-react-native'
 import { useNavigation } from '@react-navigation/native'
 import { PrimaryGrey, PrimaryBlue, LightGrey } from '../Constants/Colors'
 import { SvgXml } from 'react-native-svg'
+import { useMutation } from '@tanstack/react-query'
+import { login } from '../services/api/auth'
+import { useAuthStore } from '../store/store'
+import { useToast } from '../contexts/ToastContext'
+import { Eye } from 'lucide-react-native'
+import { EyeOff } from 'lucide-react-native'
 
 const googleXml = `<svg className="w-4 h-4 mr-2" viewBox="0 0 24 24">
                     <path
@@ -39,14 +44,46 @@ const googleXml = `<svg className="w-4 h-4 mr-2" viewBox="0 0 24 24">
 
 export default function Login() {
   const navigation = useNavigation()
+  const { showToast } = useToast()
+  const { setUser, setToken } = useAuthStore()
+  
   const [showPassword, setShowPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
+  
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   })
+
+  // React Query hooks
+  const loginMutation = useMutation({
+    mutationFn: login,
+    onSuccess: (response) => {
+      console.log('Login successful:', response)
+      
+      // Store user data and token in the store
+      if (response.user) {
+        setUser(response.user)
+      }
+      if (response.access_token) {
+        setToken({ 
+          access_token: response.access_token, 
+          refresh_token: response.refresh_token 
+        })
+      }
+      
+      // Navigate to main app
+      navigation.navigate('DrawerNav' as never)
+    },
+    onError: (error: any) => {
+      console.error('Login error:', error)
+      const errorMessage = error?.response?.data?.message || error.message || 'Login failed'
+      showToast(errorMessage)
+    },
+  })
+
+
 
   const handleInputChange = (name: string, value: string) => {
     setFormData(prev => ({
@@ -56,23 +93,15 @@ export default function Login() {
   }
 
   const handleSubmit = async () => {
-    if (!formData.email || !formData.password) {
-      Alert.alert('Error', 'Please fill in all fields')
+    if (!formData.email.trim() || !formData.password.trim()) {
+      showToast('Please enter both email and password')
       return
     }
 
-    setIsLoading(true)
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      Alert.alert('Success', 'Welcome back!', [
-        { text: 'OK', onPress: () => navigation.navigate('DrawerNav' as never) }
-      ])
-    } catch (error) {
-      Alert.alert('Error', 'Invalid credentials. Please check your email and password.')
-    } finally {
-      setIsLoading(false)
-    }
+    loginMutation.mutate({
+      email: formData.email.trim(),
+      password: formData.password,
+    })
   }
 
   const handleGoogleLogin = async () => {
@@ -203,9 +232,9 @@ export default function Login() {
             <TouchableOpacity
               style={styles.submitButton}
               onPress={handleSubmit}
-              disabled={isLoading}
+              disabled={loginMutation.isPending}
             >
-              {isLoading ? (
+              {loginMutation.isPending ? (
                 <View style={styles.loadingContainer}>
                   <ActivityIndicator size="small" color="white" />
                   <Text style={styles.loadingText}>Signing in...</Text>

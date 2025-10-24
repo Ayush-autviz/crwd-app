@@ -31,14 +31,24 @@ export const deleteComment = async (id: string) => {
     return response.data;
 };
 
+export const getCommentReplies = async (commentId: string) => {
+    const response = await axiosClient.get(`/social/comments/${commentId}/replies/`);
+    return response.data;
+};
+
+export const createCommentReply = async (commentId: string, data: { content: string }) => {
+    const response = await axiosClient.post(`/social/comments/${commentId}/replies/`, data);
+    return response.data;
+};
+
 // Follow/Unfollow API endpoints
 export const followUser = async (followeeId: string) => {
-    const response = await axiosClient.post(`/social/follow/${followeeId}/`);
+    const response = await axiosClient.post(`/social/users/${followeeId}/follow/`);
     return response.data;
 };
 
 export const unfollowUser = async (followeeId: string) => {
-    const response = await axiosClient.delete(`/social/unfollow/${followeeId}/`);
+    const response = await axiosClient.delete(`/social/users/${followeeId}/unfollow/`);
     return response.data;
 };
 
@@ -59,8 +69,8 @@ export const deleteLike = async (id: string) => {
 };
 
 // Posts API endpoints
-export const getPosts = async () => {
-    const response = await axiosClient.get('/social/posts/');
+export const getPosts = async (user_id?: string, collective_id?: string) => {
+    const response = await axiosClient.get(`/social/posts/?user_id=${user_id}&collective_id=${collective_id}`);
     return response.data;
 };
 
@@ -95,7 +105,7 @@ export const getPostComments = async (postId: string) => {
     return response.data;
 };
 
-export const createPostComment = async (postId: string, data: any) => {
+export const createPostComment = async (postId: string, data: { content: string; parent_comment_id?: number }) => {
     const response = await axiosClient.post(`/social/posts/${postId}/comments/`, data);
     return response.data;
 };
@@ -111,6 +121,17 @@ export const unlikePost = async (postId: string) => {
     return response.data;
 };
 
+// Comment Like/Unlike API endpoints
+export const likeComment = async (commentId: string) => {
+    const response = await axiosClient.post(`/social/comments/${commentId}/like/`);
+    return response.data;
+};
+
+export const unlikeComment = async (commentId: string) => {
+    const response = await axiosClient.delete(`/social/comments/${commentId}/unlike/`);
+    return response.data;
+};
+
 // User Followers/Following API endpoints
 export const getUserFollowers = async (userId: string) => {
     const response = await axiosClient.get(`/social/users/${userId}/followers/`);
@@ -119,5 +140,62 @@ export const getUserFollowers = async (userId: string) => {
 
 export const getUserFollowing = async (userId: string) => {
     const response = await axiosClient.get(`/social/users/${userId}/following/`);
+    return response.data;
+};
+
+// Cause Favorites API endpoints
+export const favoriteCause = async (causeId: string) => {
+    const response = await axiosClient.post(`/social/causes/${causeId}/favorite/`);
+    return response.data;
+};
+
+export const unfavoriteCause = async (causeId: string) => {
+    const response = await axiosClient.delete(`/social/causes/${causeId}/unfavorite/`);
+    return response.data;
+};
+
+export const bulkAddCauseFavorites = async (causeIds: string[]) => {
+    const response = await axiosClient.post('/social/causes/favorites/bulk-add/', {
+        cause_ids: causeIds
+    });
+    return response.data;
+};
+
+// Collective Favorites API endpoints
+export const favoriteCollective = async (collectiveId: string) => {
+    const response = await axiosClient.post(`/social/collectives/${collectiveId}/favorite/`);
+    return response.data;
+};
+
+export const unfavoriteCollective = async (collectiveId: string) => {
+    const response = await axiosClient.delete(`/social/collectives/${collectiveId}/unfavorite/`);
+    return response.data;
+};
+
+export const getFavoriteCauses = async () => {
+    const response = await axiosClient.get('/social/users/favorite-causes/');
+    return response.data;
+};
+
+export const getFavoriteCollectives = async () => {
+    const response = await axiosClient.get('/social/users/favorite-collectives/');
+    return response.data;
+};
+
+// Get User Profile by ID
+export const getUserProfileById = async (userId: string) => {
+    const response = await axiosClient.get(`/social/users/${userId}/profile/`);
+    return response.data;
+};
+
+// Follow User by ID
+export const followUserById = async (followeeId: string) => {
+    const response = await axiosClient.post(`/social/users/${followeeId}/follow/`);
+    return response.data;
+};
+
+// Unfollow User by ID
+export const unfollowUserById = async (followeeId: string) => {
+    const response = await axiosClient.delete(`/social/users/${followeeId}/unfollow/`);
     return response.data;
 };

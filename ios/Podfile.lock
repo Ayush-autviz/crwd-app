@@ -1505,6 +1505,30 @@ PODS:
     - ReactCommon/turbomodule/core
     - Yoga
   - react-native-vector-icons-fontawesome6 (12.2.0)
+  - react-native-webview (13.16.0):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.11.18.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-hermes
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - React-NativeModulesApple (0.79.2):
     - glog
     - hermes-engine
@@ -1827,6 +1851,30 @@ PODS:
     - React-logger (= 0.79.2)
     - React-perflogger (= 0.79.2)
     - React-utils (= 0.79.2)
+  - RNCAsyncStorage (2.2.0):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.11.18.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-hermes
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - RNGestureHandler (2.25.0):
     - DoubleConversion
     - glog
@@ -2148,6 +2196,7 @@ DEPENDENCIES:
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - "react-native-slider (from `../node_modules/@react-native-community/slider`)"
   - "react-native-vector-icons-fontawesome6 (from `../node_modules/@react-native-vector-icons/fontawesome6`)"
+  - react-native-webview (from `../node_modules/react-native-webview`)
   - React-NativeModulesApple (from `../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios`)
   - React-oscompat (from `../node_modules/react-native/ReactCommon/oscompat`)
   - React-perflogger (from `../node_modules/react-native/ReactCommon/reactperflogger`)
@@ -2179,6 +2228,7 @@ DEPENDENCIES:
   - ReactAppDependencyProvider (from `build/generated/ios`)
   - ReactCodegen (from `build/generated/ios`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
+  - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
@@ -2278,6 +2328,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-community/slider"
   react-native-vector-icons-fontawesome6:
     :path: "../node_modules/@react-native-vector-icons/fontawesome6"
+  react-native-webview:
+    :path: "../node_modules/react-native-webview"
   React-NativeModulesApple:
     :path: "../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios"
   React-oscompat:
@@ -2340,6 +2392,8 @@ EXTERNAL SOURCES:
     :path: build/generated/ios
   ReactCommon:
     :path: "../node_modules/react-native/ReactCommon"
+  RNCAsyncStorage:
+    :path: "../node_modules/@react-native-async-storage/async-storage"
   RNGestureHandler:
     :path: "../node_modules/react-native-gesture-handler"
   RNReanimated:
@@ -2397,6 +2451,7 @@ SPEC CHECKSUMS:
   react-native-safe-area-context: 00d03dc688ba86664be66f9e3f203fc7d747d899
   react-native-slider: dcd0321a3c47241b8afc50b4271be675d8dd2e34
   react-native-vector-icons-fontawesome6: 1b667969bef2f430d1d7515163b980b856f58670
+  react-native-webview: 31e5182717002afb31a4452498e890daf28a77de
   React-NativeModulesApple: 452b86b29fae99ed0a4015dca3ad9cd222f88abf
   React-oscompat: ef5df1c734f19b8003e149317d041b8ce1f7d29c
   React-perflogger: 6fd2f6811533e9c19a61e855c3033eecbf4ad2a0
@@ -2428,6 +2483,7 @@ SPEC CHECKSUMS:
   ReactAppDependencyProvider: d5dcc564f129632276bd3184e60f053fcd574d6b
   ReactCodegen: fda99a79c866370190e162083a35602fdc314e5d
   ReactCommon: 4d0da92a5eb8da86c08e3ec34bd23ab439fb2461
+  RNCAsyncStorage: 2cf7d05f5b1bc38680b6c83971e535a6ae9c5bc7
   RNGestureHandler: 5d8431415d4b8518e86e289e9ad5bb9be78f6dba
   RNReanimated: 8b24b49fc13fce9a6e1729ccff645a63d2b7a6d1
   RNScreens: c5c07a86e4088ce92f0d3854082250dfa9c61f75

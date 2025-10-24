@@ -16,42 +16,44 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { ArrowLeft, Mail } from 'lucide-react-native'
 import { useNavigation } from '@react-navigation/native'
 import { PrimaryGrey, PrimaryBlue, LightGrey } from '../Constants/Colors'
+import { useMutation } from '@tanstack/react-query'
+import { forgotPassword } from '../services/api/auth'
+import { useToast } from '../contexts/ToastContext'
 
 export default function ForgotPassword() {
   const navigation = useNavigation()
-  const [isLoading, setIsLoading] = useState(false)
   const [email, setEmail] = useState('')
+  const { showToast } = useToast()
+
+  // Forgot password mutation
+  const forgotPasswordMutation = useMutation({
+    mutationFn: forgotPassword,
+    onSuccess: (response) => {
+      console.log('Forgot password successful:', response)
+      showToast('Verification code sent! Check your email for the verification code.', 'success')
+      navigation.navigate('VerificationCode', { email } as never)
+    },
+    onError: (error: any) => {
+      console.error('Forgot password error:', error)
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to send reset code'
+      showToast(errorMessage, 'error')
+    },
+  })
 
   const handleSubmit = async () => {
-    if (!email) {
-      Alert.alert('Error', 'Please enter your email address')
+    if (!email.trim()) {
+      showToast('Please enter your email address', 'error')
       return
     }
 
     if (!email.includes('@')) {
-      Alert.alert('Error', 'Please enter a valid email address')
+      showToast('Please enter a valid email address', 'error')
       return
     }
 
-    setIsLoading(true)
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      Alert.alert(
-        'Success', 
-        'Verification code sent! Check your email for the verification code.',
-        [
-          { 
-            text: 'OK', 
-            onPress: () => navigation.navigate('VerificationCode', { email } as never) 
-          }
-        ]
-      )
-    } catch (error) {
-      Alert.alert('Error', 'Something went wrong. Please try again later.')
-    } finally {
-      setIsLoading(false)
-    }
+    forgotPasswordMutation.mutate({
+      email: email.trim(),
+    })
   }
 
   return (
@@ -96,11 +98,11 @@ export default function ForgotPassword() {
 
             {/* Submit Button */}
             <TouchableOpacity
-              style={[styles.submitButton, (!email || isLoading) && styles.submitButtonDisabled]}
+              style={[styles.submitButton, (!email || forgotPasswordMutation.isPending) && styles.submitButtonDisabled]}
               onPress={handleSubmit}
-              disabled={isLoading || !email}
+              disabled={forgotPasswordMutation.isPending || !email}
             >
-              {isLoading ? (
+              {forgotPasswordMutation.isPending ? (
                 <View style={styles.loadingContainer}>
                   <ActivityIndicator size="small" color="white" />
                   <Text style={styles.loadingText}>Sending code...</Text>

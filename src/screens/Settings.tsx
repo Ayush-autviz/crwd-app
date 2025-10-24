@@ -5,16 +5,19 @@ import { CircleHelp, CreditCard, FileText, Info, Lock, Mail, MessageSquare, Shie
 import { LightGrey, PrimaryBlue, PrimaryGrey, SecondaryGrey } from '../Constants/Colors'
 import { useNavigation } from '@react-navigation/native'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { useAuthStore } from '../store/store'
 
 export default function Settings() {
 
     const navigation = useNavigation();
+    const { user: currentUser } = useAuthStore();
 
     return (
         <SafeAreaView style={{ backgroundColor: '#fff', flex: 1 }}>
             <MainHeaderNav show={true} menu={false} title={'Settings'} />
 
             <ScrollView style={{ paddingHorizontal: 20 }}>
+                {currentUser?.id && (
                 <View style={styles.container}>
                     <View style={{ flexDirection: 'row', alignItems: 'center',marginVertical: 10, gap: 10 }}>
                         <User size={20} color={PrimaryBlue} />
@@ -33,6 +36,8 @@ export default function Settings() {
                         <Text>Password</Text>
                     </TouchableOpacity>
                 </View>
+                )}
+                {currentUser?.id && (
                 <View style={styles.container}>
                     <View style={{ flexDirection: 'row', alignItems: 'center',marginVertical: 10, gap: 10 }}>
                         <CreditCard size={20} color={PrimaryBlue} />
@@ -52,6 +57,7 @@ export default function Settings() {
                         <Text>Transaction History</Text>
                     </TouchableOpacity>
                 </View>
+)}
                 <View style={styles.container}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 10, gap: 10 }}>
                         <CircleHelp size={20} color={PrimaryBlue} />

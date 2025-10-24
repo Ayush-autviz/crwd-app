@@ -1,4 +1,4 @@
-import { View, Text, TextInput, FlatList, ScrollView, TouchableOpacity } from 'react-native'
+import { View, Text, TextInput, FlatList, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native'
 import React, { useState } from 'react'
 import MainHeaderNav from '../components/MainHeaderNav'
 import { LightGrey, PrimaryBlue, PrimaryGreen, PrimaryGrey, SecondaryBlue } from '../Constants/Colors'
@@ -13,115 +13,150 @@ import HomeHeader from '../components/HomeHeader'
 import CausesCarousel from '../components/CausesCarousel'
 import { useNavigation } from '@react-navigation/native'
 import { setDiscoverMode } from '../utils/discoverMode'
+import { useQuery } from '@tanstack/react-query'
+import { getPosts } from '../services/api/social'
+import { getCauses, getCollectives, getCausesByLocation } from '../services/api/crwd'
+import { useAuthStore } from '../store/store'
+import { categories } from '../Constants/categories'
 
-// Sample data generator for infinite posts
-const generateMorePosts = (startId: number, count: number) => {
-    return Array.from({ length: count }, (_, index) => ({
-        id: String(startId + index),
-        avatarUrl: `https://randomuser.me/api/portraits/${Math.random() > 0.5 ? 'men' : 'women'}/${Math.floor(Math.random() * 70)}.jpg`,
-        username: `user${startId + index}`,
-        time: `${Math.floor(Math.random() * 7)}d`,
-        org: ["youth4change", "cleanwaternow", "treeplanters", "literacyforall"][Math.floor(Math.random() * 4)],
-        text: [
-            "Making a difference in our community one step at a time! 🌟",
-            "Another successful volunteer event completed! Thank you to all participants! 🙏",
-            "Working together for a better tomorrow. Join us in our mission! 💪",
-            "Every small action counts. Let's create positive change together! ✨"
-        ][Math.floor(Math.random() * 4)],
-        imageUrl: Math.random() > 0.5 ? `https://picsum.photos/600/400?random=${startId + index}` : undefined,
-        likes: Math.floor(Math.random() * 100),
-        comments: Math.floor(Math.random() * 20),
-        shares: Math.floor(Math.random() * 10),
-    }));
-};
+
 
 export default function Home() {
-    const [posts, setPosts] = useState(() => generateMorePosts(1, 4));
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const navigation = useNavigation();
-    // Sample data for categories with colors
+    const { user: currentUser } = useAuthStore();
+
+    // Fetch posts from API
+    const { data: postsData, isLoading: isLoadingPosts, error: postsError } = useQuery({
+        queryKey: ['posts', 'all'],
+        queryFn: () => getPosts('', ''),
+        enabled: true,
+    });
+
+    // Fetch causes from API
+    const { data: causesData, isLoading: isLoadingCauses, error: causesError } = useQuery({
+        queryKey: ['causes'],
+        queryFn: getCauses,
+        enabled: true,
+    });
+
+    // Fetch collectives from API
+    const { data: collectivesData, isLoading: isLoadingCollectives, error: collectivesError } = useQuery({
+        queryKey: ['collectives'],
+        queryFn: getCollectives,
+        enabled: true,
+    });
+
+    // Fetch causes by location (if location is available)
+    const { data: causesByLocationData, isLoading: isLoadingLocationCauses, error: locationCausesError } = useQuery({
+        queryKey: ['causesByLocation'],
+        queryFn: () => getCausesByLocation(0, 0), // You can implement location detection here
+        enabled: false, // Disable for now, enable when location is available
+    });
+
+    // Transform API response to match Post interface
+    const posts = postsData?.results?.map((post: any) => ({
+        id: String(post.id),
+        avatarUrl: post.user?.profile_picture,
+        username: post.user?.username || post.user?.full_name || 'Unknown User',
+        time: new Date(post.created_at).toLocaleDateString(),
+        org: post.collective?.name || 'Unknown Collective',
+        text: post.content || '',
+        imageUrl: post.media || undefined,
+        likes: post.likes_count || 0,
+        comments: post.comments_count || 0,
+        shares: 0, // API doesn't provide shares count
+        isLiked: post.is_liked || false,
+    })) || [];
+
+    // Transform causes data for components
+    const causes = causesData?.results?.map((cause: any) => ({
+        id: String(cause.id),
+        name: cause.name || 'Unknown Cause',
+        description: cause.description || cause.mission || 'No description available',
+        image: cause.image || require('../assets/images/redcross.png'),
+        type: 'Nonprofit',
+        category: cause.category || 'General',
+        taxId: cause.tax_id_number || '',
+        established: cause.established || cause.established_at || '',
+        state: cause.state || '',
+        city: cause.city || '',
+        street: cause.street || '',
+        is_favorite: cause.is_favorite || false,
+    })) || [];
+
+    // Transform collectives data for components
+    const collectives = collectivesData?.results?.map((collective: any) => ({
+        id: String(collective.id),
+        name: collective.name || 'Unknown Collective',
+        description: collective.description || 'No description available',
+        members: `${collective.member_count || 0} Members`,
+        image: collective.image || require('../assets/images/grocery.jpg'),
+        createdBy: collective.created_by?.first_name + ' ' + collective.created_by?.last_name || 'Unknown Creator',
+        isJoined: collective.is_joined || false,
+        memberCount: collective.member_count || 0,
+        adminCount: collective.admin_count || 0,
+        is_favorite: collective.is_favorite || false,
+    })) || [];
+
+    // Transform location-based causes
+    const nearbyCauses = causesByLocationData?.results?.map((cause: any) => ({
+        id: String(cause.id),
+        name: cause.name || 'Unknown Cause',
+        description: cause.description || cause.mission || 'No description available',
+        image: cause.image || require('../assets/images/redcross.png'),
+        type: 'Nonprofit',
+        category: cause.category || 'General',
+        taxId: cause.tax_id_number || '',
+        established: cause.established || cause.established_at || '',
+        state: cause.state || '',
+        city: cause.city || '',
+        street: cause.street || '',
+        is_favorite: cause.is_favorite || false,
+    })) || [];
+
     // const categories = [
     //     {
-    //         name: "Animal Welfare",
-    //         text: "#E36414",      // Orange-Red
-    //         background: "#FFE1CC", // Softer warm orange tint
+    //       name: "Animals",
+    //       text: "#E36414", // Orange-Red
+    //       background: "#FFE1CC", // Softer warm orange tint
     //     },
     //     {
-    //         name: "Environment",
-    //         text: "#6A994E",      // Olive Green
-    //         background: "#DFF0D6", // Fresh leafy green tint
+    //       name: "Environment",
+    //       text: "#6A994E", // Olive Green
+    //       background: "#DFF0D6", // Fresh leafy green tint
     //     },
     //     {
-    //         name: "Food Insecurity",
-    //         text: "#FF9F1C",      // Carrot Orange
-    //         background: "#FFE6CC", // Light orange tint (not too pale)
+    //       name: "Food",
+    //       text: "#FF9F1C", // Carrot Orange
+    //       background: "#FFE6CC", // Light orange tint (not too pale)
     //     },
     //     {
-    //         name: "Education",
-    //         text: "#FFB84D",      // Amber
-    //         background: "#FFEFD1", // Gentle amber tint
+    //       name: "Education",
+    //       text: "#FFB84D", // Amber
+    //       background: "#FFEFD1", // Gentle amber tint
     //     },
     //     {
-    //         name: "Healthcare",
-    //         text: "#D62828",      // Crimson
-    //         background: "#FFD6D6", // Soft rosy red tint
+    //       name: "Health",
+    //       text: "#D62828", // Crimson
+    //       background: "#FFD6D6", // Soft rosy red tint
     //     },
     //     {
-    //         name: "Social Justice",
-    //         text: "#780000",      // Maroon
-    //         background: "#F2C7C7", // Muted pinkish tint
+    //       name: "Rights",
+    //       text: "#780000", // Maroon
+    //       background: "#F2C7C7", // Muted pinkish tint
     //     },
     //     {
-    //         name: "Homelessness",
-    //         text: "#8D6E63",      // Brown
-    //         background: "#EADFD9", // Warm earthy beige tint
+    //       name: "Housing",
+    //       text: "#8D6E63", // Brown
+    //       background: "#EADFD9", // Warm earthy beige tint
     //     },
-    // ];
-
-    const categories = [
-        {
-          name: "Animals",
-          text: "#E36414", // Orange-Red
-          background: "#FFE1CC", // Softer warm orange tint
-        },
-        {
-          name: "Environment",
-          text: "#6A994E", // Olive Green
-          background: "#DFF0D6", // Fresh leafy green tint
-        },
-        {
-          name: "Food",
-          text: "#FF9F1C", // Carrot Orange
-          background: "#FFE6CC", // Light orange tint (not too pale)
-        },
-        {
-          name: "Education",
-          text: "#FFB84D", // Amber
-          background: "#FFEFD1", // Gentle amber tint
-        },
-        {
-          name: "Health",
-          text: "#D62828", // Crimson
-          background: "#FFD6D6", // Soft rosy red tint
-        },
-        {
-          name: "Rights",
-          text: "#780000", // Maroon
-          background: "#F2C7C7", // Muted pinkish tint
-        },
-        {
-          name: "Housing",
-          text: "#8D6E63", // Brown
-          background: "#EADFD9", // Warm earthy beige tint
-        },
-      ];
+    //   ];
 
     const handleLoadMore = async () => {
         setIsLoadingMore(true);
         // Simulate API call delay
         await new Promise(resolve => setTimeout(resolve, 1000));
-        const newPosts = generateMorePosts(posts.length + 1, 4);
-        setPosts(prevPosts => [...prevPosts, ...newPosts]);
         setIsLoadingMore(false);
     };
 
@@ -191,7 +226,33 @@ export default function Home() {
 
                 {/* <TopicList /> */}
 
-                <SuggestedCrwd />
+                {/* Suggested CRWDs Section */}
+                <View>
+                    {isLoadingCollectives ? (
+                        <View style={{ padding: 20, alignItems: 'center' }}>
+                            <ActivityIndicator size="large" color={PrimaryBlue} />
+                            <Text style={{ marginTop: 10, color: PrimaryGrey }}>Loading collectives...</Text>
+                        </View>
+                    ) : collectivesError ? (
+                        <View style={{ padding: 20, alignItems: 'center' }}>
+                            <Text style={{ color: 'red', textAlign: 'center' }}>
+                                Failed to load collectives. Please try again.
+                            </Text>
+                        </View>
+                    ) : collectives.length === 0 ? (
+                        <View style={{ padding: 20, alignItems: 'center' }}>
+                            <Text style={{ color: PrimaryGrey, textAlign: 'center' }}>
+                                No collectives found
+                            </Text>
+                        </View>
+                    ) : (
+                        <SuggestedCrwd 
+                            collectives={collectives}
+                            isLoading={isLoadingCollectives}
+                            error={collectivesError}
+                        />
+                    )}
+                </View>
 
                 {/* Categories Section */}
                 <View style={{ marginTop: 32 }}>
@@ -205,7 +266,10 @@ export default function Home() {
                             {categories.map((category, index) => (
                                 <TouchableOpacity 
                                     key={index}
-                                    onPress={() => navigation.navigate('Interests' as never)} 
+                                    onPress={() => navigation.navigate('Search' as never, { 
+                                        categoryId: category.id, 
+                                        categoryName: category.name 
+                                    } as never)} 
                                     style={{
                                         backgroundColor: category.background,
                                         paddingHorizontal: 16,
@@ -230,10 +294,7 @@ export default function Home() {
                     {/* Discover More Button */}
                     <View style={{ alignItems: 'flex-end', marginTop: 16 }}>
                         <TouchableOpacity 
-                            onPress={() => {
-                                setDiscoverMode(true);
-                                navigation.navigate('Search' as never);
-                            }}
+                            onPress={() => navigation.navigate('Search' as never, { discover: true } as never)}
                             style={{ flexDirection: 'row', alignItems: 'center' }}
                         >
                             <Text style={{ 
@@ -249,7 +310,35 @@ export default function Home() {
                     </View>
                 </View>
 
-                <SuggestdCauses />
+                {/* Suggested Causes Section */}
+                <View>
+                   
+
+                    {isLoadingCauses ? (
+                        <View style={{ padding: 20, alignItems: 'center' }}>
+                            <ActivityIndicator size="large" color={PrimaryBlue} />
+                            <Text style={{ marginTop: 10, color: PrimaryGrey }}>Loading causes...</Text>
+                        </View>
+                    ) : causesError ? (
+                        <View style={{ padding: 20, alignItems: 'center' }}>
+                            <Text style={{ color: 'red', textAlign: 'center' }}>
+                                Failed to load causes. Please try again.
+                            </Text>
+                        </View>
+                    ) : causes.length === 0 ? (
+                        <View style={{ padding: 20, alignItems: 'center' }}>
+                            <Text style={{ color: PrimaryGrey, textAlign: 'center' }}>
+                                No causes found
+                            </Text>
+                        </View>
+                    ) : (
+                        <SuggestdCauses 
+                            causes={causes}
+                            isLoading={isLoadingCauses}
+                            error={causesError}
+                        />
+                    )}
+                </View>
 
                 {/* Why CRWDs Section */}
                 <View style={{ marginTop: 32, marginBottom: 24 }}>
@@ -299,13 +388,76 @@ export default function Home() {
                     </View>
                 </View>
 
-                <NearbyCauses />
+                {/* Nearby Causes Section */}
+                <View style={{ marginTop: 32 }}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                        <Text style={{ fontSize: 18, fontWeight: '600', color: '#111827' }}>Nearby Causes</Text>
+                        <TouchableOpacity 
+                            onPress={() => navigation.navigate('Search' as never)}
+                            style={{ flexDirection: 'row', alignItems: 'center' }}
+                        >
+                            <Text style={{ fontSize: 14, color: '#2563eb', fontWeight: '500', marginRight: 4 }}>
+                                View All
+                            </Text>
+                            <Text style={{ fontSize: 16, color: '#2563eb' }}>›</Text>
+                        </TouchableOpacity>
+                    </View>
 
-                <PopularPosts
-                    posts={posts}
-                    onLoadMore={handleLoadMore}
-                    hasMore={true}
-                />
+                    {isLoadingLocationCauses ? (
+                        <View style={{ padding: 20, alignItems: 'center' }}>
+                            <ActivityIndicator size="large" color={PrimaryBlue} />
+                            <Text style={{ marginTop: 10, color: PrimaryGrey }}>Loading nearby causes...</Text>
+                        </View>
+                    ) : locationCausesError ? (
+                        <View style={{ padding: 20, alignItems: 'center' }}>
+                            <Text style={{ color: 'red', textAlign: 'center' }}>
+                                Failed to load nearby causes. Please try again.
+                            </Text>
+                        </View>
+                    ) : nearbyCauses.length === 0 ? (
+                        <View style={{ padding: 20, alignItems: 'center' }}>
+                            <Text style={{ color: PrimaryGrey, textAlign: 'center' }}>
+                                No nearby causes found
+                            </Text>
+                        </View>
+                    ) : (
+                        <NearbyCauses 
+                            causes={nearbyCauses}
+                            isLoading={isLoadingLocationCauses}
+                            error={locationCausesError}
+                        />
+                    )}
+                </View>
+
+                {/* Popular Posts Section */}
+                <View >
+                    
+
+                    {isLoadingPosts ? (
+                        <View style={{ padding: 20, alignItems: 'center' }}>
+                            <ActivityIndicator size="large" color={PrimaryBlue} />
+                            <Text style={{ marginTop: 10, color: PrimaryGrey }}>Loading posts...</Text>
+                        </View>
+                    ) : postsError ? (
+                        <View style={{ padding: 20, alignItems: 'center' }}>
+                            <Text style={{ color: 'red', textAlign: 'center' }}>
+                                Failed to load posts. Please try again.
+                            </Text>
+                        </View>
+                    ) : posts.length === 0 ? (
+                        <View style={{ padding: 20, alignItems: 'center' }}>
+                            <Text style={{ color: PrimaryGrey, textAlign: 'center' }}>
+                                No posts found
+                            </Text>
+                        </View>
+                    ) : (
+                        <PopularPosts
+                            posts={posts}
+                            onLoadMore={handleLoadMore}
+                            hasMore={true}
+                        />
+                    )}
+                </View>
 
             </ScrollView>
         </SafeAreaView>

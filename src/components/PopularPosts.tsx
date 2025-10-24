@@ -1,9 +1,13 @@
 import { View, Text, FlatList, Image, Dimensions, TouchableOpacity, StyleSheet, Modal, Pressable, ActivityIndicator, Alert, Share, TouchableWithoutFeedback } from 'react-native'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { LightGrey, PrimaryBlue, PrimaryGrey, SecondaryGrey } from '../Constants/Colors'
 import { Ellipsis, Heart, MessageCircle, Flag, Trash2, Share2 } from 'lucide-react-native'
 import { useNavigation, NavigationProp } from '@react-navigation/native'
 import SocialShare from './SocialShare'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { likePost, unlikePost } from '../services/api/social'
+import { useToast } from '../contexts/ToastContext'
+import { Avatar, AvatarFallback, AvatarImage } from './ui/Avatar'
 
 interface Post {
     id: string;
@@ -16,6 +20,7 @@ interface Post {
     likes: number;
     comments: number;
     shares: number;
+    isLiked?: boolean;
 }
 
 interface PopularPostsProps {
@@ -27,7 +32,8 @@ interface PopularPostsProps {
     related?: boolean;
     title?: string;
     postButton?: boolean;
-    subheading?: boolean
+    subheading?: boolean;
+    collectiveId?: string | number;
 }
 
 type RootStackParamList = {
@@ -43,6 +49,7 @@ export default function PopularPosts({
     title = 'Recent Posts to Collectives',
     postButton = false,
     subheading = false,
+    collectiveId,
     onLoadMore = async () => {
         // Default implementation to make button visible
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -57,6 +64,87 @@ export default function PopularPosts({
     const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
     const [isLoading, setIsLoading] = useState(false);
     const [shareModalVisible, setShareModalVisible] = useState(false);
+    const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
+    const [postsLikesCount, setPostsLikesCount] = useState<Record<string, number>>({});
+
+    const queryClient = useQueryClient();
+    const { showToast } = useToast();
+
+    console.log(posts, 'posts from API');
+
+    // Handle start conversation button press
+    const handleStartConversation = () => {
+        console.log('Start conversation clicked with collectiveId:', collectiveId);
+        if (collectiveId) {
+            navigation.navigate('Post' as any, { collectiveId: collectiveId });
+        }
+    };
+
+    // Like post mutation
+    const likeMutation = useMutation({
+        mutationFn: likePost,
+        onSuccess: (data, postId) => {
+            setLikedPosts(prev => new Set([...prev, postId]));
+            setPostsLikesCount(prev => ({
+                ...prev,
+                [postId]: (prev[postId] || 0) + 1
+            }));
+            showToast('Post liked!', 2000);
+            queryClient.invalidateQueries({ queryKey: ['posts'] });
+        },
+        onError: (error) => {
+            console.error('Error liking post:', error);
+            showToast('Failed to like post', 2000);
+        },
+    });
+
+    // Unlike post mutation
+    const unlikeMutation = useMutation({
+        mutationFn: unlikePost,
+        onSuccess: (data, postId) => {
+            setLikedPosts(prev => {
+                const newSet = new Set(prev);
+                newSet.delete(postId);
+                return newSet;
+            });
+            setPostsLikesCount(prev => ({
+                ...prev,
+                [postId]: Math.max((prev[postId] || 1) - 1, 0)
+            }));
+            showToast('Post unliked!', 2000);
+            queryClient.invalidateQueries({ queryKey: ['posts'] });
+        },
+        onError: (error) => {
+            console.error('Error unliking post:', error);
+            showToast('Failed to unlike post', 2000);
+        },
+    });
+
+    // Initialize liked posts state based on posts data
+    useEffect(() => {
+        const likedSet = new Set<string>();
+        const likesCount: Record<string, number> = {};
+        
+        posts.forEach(post => {
+            if (post.isLiked) {
+                likedSet.add(post.id);
+            }
+            likesCount[post.id] = post.likes;
+        });
+        
+        setLikedPosts(likedSet);
+        setPostsLikesCount(likesCount);
+    }, [posts]);
+
+    // Handle like button press
+    const handleLikePress = (postId: string) => {
+        const isLiked = likedPosts.has(postId);
+        if (isLiked) {
+            unlikeMutation.mutate(postId);
+        } else {
+            likeMutation.mutate(postId);
+        }
+    };
 
     const handlePostPress = (post: Post) => {
         navigation.navigate('PostDetail', { post });
@@ -140,7 +228,7 @@ export default function PopularPosts({
                     </View>
                     {postButton && (
                     <TouchableOpacity
-                        // onPress={() => setShowTooltip(!showTooltip)}
+                        onPress={handleStartConversation}
                         style={{ padding: 8, backgroundColor: SecondaryGrey, borderRadius: 8 }}
                     >
                         <Text style={{ fontSize: 14,}}>Start a Conversation</Text>
@@ -203,14 +291,20 @@ export default function PopularPosts({
                         onPress={() => handlePostPress(item)}
                     >
                         <TouchableOpacity onPress={() => navigation.navigate('UserProfile', { imageUrl: item.avatarUrl, username: item.username })}>
-                            <Image source={{ uri: item.avatarUrl }} style={{ width: 40, height: 40, borderRadius: 20 }} />
+                            {/* <Image source={{ uri: item.avatarUrl }} style={{ width: 40, height: 40, borderRadius: 20 }} /> */}
+                            <Avatar size={40}>
+                                <AvatarImage src={item.avatarUrl} />
+                                <AvatarFallback>
+                                    {item.username.split(' ')[0][0].toUpperCase()}
+                                </AvatarFallback>
+                            </Avatar>
                         </TouchableOpacity>
                         <View style={{ flex: 1 }}>
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, justifyContent: 'space-between' }}>
                                 <View style={{ flexDirection: 'row', gap: 5, alignItems: 'center' }}>
                                     <Text style={{ fontSize: 14, fontWeight: '500' }}>{item.username}</Text>
                                     <Text style={{ fontSize: 14, color: PrimaryGrey }}>•</Text>
-                                    <Text style={{ fontSize: 12, color: PrimaryGrey }}>{item.time}</Text>
+                                    <Text style={{ fontSize: 12, color: PrimaryGrey }}>{item.time}ww</Text>
                                 </View>
                                 <TouchableOpacity onPress={(event) => handleEllipsisPress(event, item)}>
                                     <Ellipsis size={18} color={PrimaryGrey} />
@@ -221,9 +315,19 @@ export default function PopularPosts({
                             { item.imageUrl && <Image source={{ uri: item.imageUrl }} style={{ width: screenWidth - 120, height: 150, borderRadius: 10, marginTop: 10 }} />}
                             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: screenWidth - 120, gap: 10, marginTop: 10 }}>
                                 <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
-                                    <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                                        <Heart size={18} color={PrimaryGrey} />
-                                        <Text style={{ color: PrimaryGrey }}>{item.likes}</Text>
+                                    <TouchableOpacity 
+                                        style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}
+                                        onPress={() => handleLikePress(item.id)}
+                                        disabled={likeMutation.isPending || unlikeMutation.isPending}
+                                    >
+                                        <Heart 
+                                            size={18} 
+                                            color={likedPosts.has(item.id) ? '#ef4444' : PrimaryGrey}
+                                            fill={likedPosts.has(item.id) ? '#ef4444' : 'none'}
+                                        />
+                                        <Text style={{ color: PrimaryGrey }}>
+                                            {postsLikesCount[item.id] !== undefined ? postsLikesCount[item.id] : item.likes}
+                                        </Text>
                                     </TouchableOpacity>
                                     <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                                         <MessageCircle size={18} color={PrimaryGrey} />
@@ -232,7 +336,7 @@ export default function PopularPosts({
                                 </View>
                                 <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                                     <Image source={require('../assets/icons/forward.png')} style={{ width: 18, height: 18 }} />
-                                    <Text style={{ color: PrimaryGrey }}>{item.shares}</Text>
+                                    
                                 </TouchableOpacity>
                             </View>
                         </View>

@@ -1,6 +1,7 @@
-import { View, Text, ScrollView, TouchableOpacity, Share, Alert, Image, Modal, TouchableWithoutFeedback } from 'react-native'
+import { View, Text, ScrollView, TouchableOpacity, Share, Alert, Image, Modal, TouchableWithoutFeedback, ActivityIndicator } from 'react-native'
 import React, { useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { useQuery } from '@tanstack/react-query'
 import MainHeaderNav from '../components/MainHeaderNav'
 import ProfileBio from '../components/ProfileBio'
 import ProfileStats from '../components/ProfileStats'
@@ -8,7 +9,11 @@ import PopularPosts from '../components/PopularPosts'
 import ProfileInterests from '../components/ProfileInterests'
 import { PrimaryBlue, PrimaryGrey } from '../Constants/Colors'
 import { useNavigation, NavigationProp } from '@react-navigation/native'
-import { Share2, Flag, ChevronRight } from 'lucide-react-native'
+import { Share2, Flag, ChevronRight, Ellipsis, MapPin } from 'lucide-react-native'
+import { getPosts, getUserProfileById, getUserFollowers, getUserFollowing } from '../services/api/social'
+import { useAuthStore } from '../store/store'
+import { Pencil } from 'lucide-react-native'
+import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/Avatar'
 
 type RootStackParamList = {
     ProfileEdit: undefined;
@@ -16,69 +21,44 @@ type RootStackParamList = {
     Search: undefined;
 };
 
-// Sample data for recently supported organizations
-const orgAvatars = [
-    {
-        name: "ASPCA",
-        image: require('../assets/images/redcross.png'),
-    },
-    {
-        name: "CRI",
-        image: require('../assets/images/grocery.jpg'),
-    },
-    {
-        name: "CureSearch",
-        image: require('../assets/images/redcross.png'),
-    },
-    {
-        name: "Paws",
-        image: require('../assets/images/grocery.jpg'),
-    },
-];
-
-// Sample data generator for profile posts
-const generateMoreProfilePosts = (startId: number, count: number) => {
-    const organizations = ["marchofdimes", "feedthehungry", "greenearth", "animalrescue"];
-    const messages = [
-        "Just finished another amazing volunteer session! Making a real difference in our community. 💪",
-        "Grateful to be part of such an impactful initiative. Every small action counts! 🙏",
-        "Working together to create positive change. Join us in our next event! 🌟",
-        "Thank you to everyone who participated today. Your support means everything! ❤️",
-        "Another successful community event completed. The smiles make it all worth it! 😊"
-    ];
-
-    return Array.from({ length: count }, (_, i) => ({
-        id: (startId + i).toString(),
-        username: "mynameismya",
-        avatarUrl: "https://randomuser.me/api/portraits/women/44.jpg",
-        time: `${Math.floor(Math.random() * 23) + 1}h`,
-        org: organizations[Math.floor(Math.random() * organizations.length)],
-        text: messages[Math.floor(Math.random() * messages.length)],
-        imageUrl: Math.random() > 0.5 ? `https://picsum.photos/500/300?random=${startId + i}` : undefined,
-        likes: Math.floor(Math.random() * 100),
-        comments: Math.floor(Math.random() * 20),
-        shares: Math.floor(Math.random() * 10)
-    }));
-};
-
-// Sample interests data
-const interests = ['Environment', 'Food Insecurity', 'Education', 'Healthcare'];
 
 export default function Profile() {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-    const [profilePosts, setProfilePosts] = useState(() => generateMoreProfilePosts(1, 4));
-    const [isLoadingMore, setIsLoadingMore] = useState(false);
+    const { user } = useAuthStore();
     const [showMenu, setShowMenu] = useState(false);
     const [showImageModal, setShowImageModal] = useState(false);
 
-    const handleLoadMore = async () => {
-        setIsLoadingMore(true);
-        // Simulate API call delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        const newPosts = generateMoreProfilePosts(profilePosts.length + 1, 4);
-        setProfilePosts(prevPosts => [...prevPosts, ...newPosts]);
-        setIsLoadingMore(false);
-    };
+    // API integrations - matching Vite version
+    const { data: profileData, isLoading: profileLoading, error: profileError, refetch: refetchProfile } = useQuery({
+        queryKey: ['userProfile', user?.id],
+        queryFn: () => getUserProfileById(user?.id?.toString() || ''),
+        enabled: !!user?.id,
+    });
+
+    // Fetch user posts - matching Vite version
+    const postsQuery = useQuery({
+        queryKey: ['posts', user?.id],
+        queryFn: () => getPosts(user?.id?.toString() || '', ''),
+        enabled: !!user?.id,
+    });
+
+
+    // Transform posts data to match PostDetail interface - matching Vite version
+    const userPosts = postsQuery?.data?.results?.map((post: any) => ({
+        id: post.id,
+        userId: post.user?.id,
+        avatarUrl: post.user?.profile_picture,
+        username: post.user?.username || post.user?.full_name || 'Unknown User',
+        time: new Date(post.created_at).toLocaleDateString(),
+        org: post.collective?.name || 'Unknown Collective',
+        orgUrl: post.collective?.id,
+        text: post.content || '',
+        imageUrl: post.media || undefined,
+        likes: post.likes_count || 0,
+        comments: post.comments_count || 0,
+        shares: 0, // API doesn't provide shares count
+        isLiked: post.is_liked || false,
+    })) || [];
 
     const handleShare = async () => {
         try {
@@ -100,13 +80,136 @@ export default function Profile() {
         setShowMenu(false);
     };
 
-    const handleFollow = () => {
-        Alert.alert('Follow', 'Follow functionality would go here');
+    const handleEditProfile = () => {
+        navigation.navigate('ProfileEdit' as never);
+        setShowMenu(false);
     };
+
 
     const handleMoreInterests = () => {
         navigation.navigate('Interests' as never);
     };
+
+    // Show login prompt if user is not logged in - matching Vite version
+    if (!user?.id) {
+        return (
+            <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }} edges={['top', 'left', 'right']}>
+                <MainHeaderNav title={'Me'} show />
+                <View style={{ 
+                    flex: 1, 
+                    justifyContent: 'center', 
+                    alignItems: 'center', 
+                    paddingHorizontal: 32,
+                    backgroundColor: 'white'
+                }}>
+                    {/* Icon */}
+                    <View style={{
+                        width: 80,
+                        height: 80,
+                        backgroundColor: '#dbeafe',
+                        borderRadius: 40,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        marginBottom: 24
+                    }}>
+                        <Text style={{ fontSize: 40, color: '#2563eb' }}>👤</Text>
+                    </View>
+                    
+                    {/* Title */}
+                    <Text style={{
+                        fontSize: 24,
+                        fontWeight: 'bold',
+                        color: '#111827',
+                        marginBottom: 12,
+                        textAlign: 'center'
+                    }}>
+                        Sign in to view your profile
+                    </Text>
+                    
+                    {/* Description */}
+                    <Text style={{
+                        fontSize: 16,
+                        color: '#6b7280',
+                        marginBottom: 32,
+                        textAlign: 'center',
+                        lineHeight: 24
+                    }}>
+                        Sign in to view your profile, manage your causes, and connect with your community.
+                    </Text>
+                    
+                    {/* CTA Button */}
+                    <TouchableOpacity
+                        onPress={() => navigation.navigate('Login' as never)}
+                        style={{
+                            backgroundColor: '#2563eb',
+                            paddingHorizontal: 32,
+                            paddingVertical: 12,
+                            borderRadius: 8,
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            gap: 8
+                        }}
+                    >
+                        <Text style={{ color: 'white', fontSize: 16, fontWeight: '500' }}>
+                            Sign In to Continue
+                        </Text>
+                    </TouchableOpacity>
+                    
+                    {/* Additional Info */}
+                    <Text style={{
+                        fontSize: 14,
+                        color: '#6b7280',
+                        marginTop: 24,
+                        textAlign: 'center'
+                    }}>
+                        Don't have an account? 
+                        <Text style={{ color: '#2563eb', fontWeight: '500' }}> Create one here</Text>
+                    </Text>
+                </View>
+            </SafeAreaView>
+        );
+    }
+
+    // Show loading state - matching Vite version
+    if (profileLoading) {
+        return (
+            <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }} edges={['top', 'left', 'right']}>
+                <MainHeaderNav title={'Me'} show />
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                    <ActivityIndicator size="large" color={PrimaryBlue} />
+                    <Text style={{ marginTop: 16, fontSize: 16, color: '#6b7280' }}>
+                        Loading profile...
+                    </Text>
+                </View>
+            </SafeAreaView>
+        );
+    }
+
+    // Show error state - matching Vite version
+    if (profileError) {
+        return (
+            <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }} edges={['top', 'left', 'right']}>
+                <MainHeaderNav title={'Me'} show />
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                    <Text style={{ fontSize: 16, color: '#ef4444' }}>
+                        Error loading profile
+                    </Text>
+                    <TouchableOpacity 
+                        onPress={() => refetchProfile()}
+                        style={{ 
+                            marginTop: 16, 
+                            paddingHorizontal: 16, 
+                            paddingVertical: 8, 
+                            backgroundColor: '#374151', 
+                            borderRadius: 6 
+                        }}
+                    >
+                        <Text style={{ color: 'white' }}>Try Again</Text>
+                    </TouchableOpacity>
+                </View>
+            </SafeAreaView>
+        );
+    }
 
     return (
         <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }} edges={['top', 'left', 'right']}>
@@ -118,11 +221,12 @@ export default function Profile() {
                     <TouchableOpacity
                         onPress={() => setShowMenu(!showMenu)}
                         style={{
-                            padding: 8,
+                            paddingHorizontal: 8,
                             borderRadius: 20,
                         }}
                     >
-                        <Text style={{ fontSize: 24, color: '#374151' }}>⋯</Text>
+                        {/* <Text style={{ fontSize: 24, color: '#374151' }}>⋯</Text> */}
+                        <Ellipsis size={24} color="#374151" />
                     </TouchableOpacity>
 
                     {showMenu && (
@@ -173,31 +277,25 @@ export default function Profile() {
                                             <Flag size={16} color="#ef4444" />
                                             <Text style={{ fontSize: 14, color: '#ef4444' }}>Report Profile</Text>
                                         </TouchableOpacity>
+                                        <TouchableOpacity
+                                            onPress={handleEditProfile}
+                                            style={{
+                                                flexDirection: 'row',
+                                                alignItems: 'center',
+                                                gap: 8,
+                                                paddingHorizontal: 12,
+                                                paddingVertical: 8,
+                                            }}
+                                        >
+                                            <Pencil size={16} color="#374151" />
+                                            <Text style={{ fontSize: 14, color: '#374151' }}>Edit Profile</Text>
+                                        </TouchableOpacity>
                                     </View>
                                 </TouchableWithoutFeedback>
                             </View>
                         </TouchableWithoutFeedback>
                     )}
                 </View>
-                <TouchableOpacity
-                    onPress={handleFollow}
-                    style={{
-                        paddingHorizontal: 16,
-                        paddingVertical: 8,
-                        borderRadius: 6,
-                        backgroundColor: PrimaryBlue,
-                        justifyContent: 'center',
-                        alignItems: 'center'
-                    }}
-                >
-                    <Text style={{
-                        fontSize: 14,
-                        fontWeight: '600',
-                        color: 'white'
-                    }}>
-                        Follow
-                    </Text>
-                </TouchableOpacity>
             </View>
 
             <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
@@ -206,15 +304,21 @@ export default function Profile() {
                     <View style={{ paddingTop: 16, paddingBottom: 8, alignItems: 'center' }}>
                         {/* Avatar */}
                         <TouchableOpacity onPress={() => setShowImageModal(true)}>
-                            <Image
-                                source={{ uri: 'https://randomuser.me/api/portraits/women/44.jpg' }}
+                            {/* <Image
+                                source={{ uri: profileData?.profile_picture || 'https://randomuser.me/api/portraits/women/44.jpg' }}
                                 style={{
                                     width: 56,
                                     height: 56,
                                     borderRadius: 28,
                                     marginBottom: 16
                                 }}
-                            />
+                            /> */}
+                            <Avatar size={56}>
+                                <AvatarImage src={profileData?.profile_picture} />
+                                <AvatarFallback>
+                                    {profileData?.username?.split(' ')[0][0].toUpperCase()}
+                                </AvatarFallback>
+                            </Avatar> 
                         </TouchableOpacity>
                         <Text style={{
                             fontSize: 18,
@@ -222,27 +326,46 @@ export default function Profile() {
                             color: '#111827',
                             marginBottom: 16
                         }}>
-                            My Name is Mya
+                            {profileData?.first_name && profileData?.last_name 
+                                ? `${profileData.first_name} ${profileData.last_name}` 
+                                : profileData?.username || 'User'
+                            }
                         </Text>
 
                         {/* Location and Link */}
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-
-                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                <Text style={{ fontSize: 16, color: '#6b7280' }}>📍</Text>
-                                <Text style={{ fontSize: 12, color: '#6b7280' }}>Atlanta, GA</Text>
-                            </View>
-                            <TouchableOpacity>
-                                <Text style={{ fontSize: 12, color: PrimaryBlue, textDecorationLine: 'underline' }}>
-                                    thisisaurl.com
-                                </Text>
-                            </TouchableOpacity>
-                            <Text style={{ fontSize: 12, color: '#6b7280' }}>Active since 2023</Text>
+                            {profileData?.location && (
+                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                    {/* <Text style={{ fontSize: 16, color: '#6b7280' }}>📍</Text> */}
+                                    <MapPin size={16} color="#6b7280" />
+                                    <Text style={{ fontSize: 12, color: '#6b7280' }}>{profileData.location}</Text>
+                                </View>
+                            )}
+                            {profileData?.username && (
+                                <TouchableOpacity>
+                                    <Text style={{ fontSize: 12, color: PrimaryBlue,}}>
+                                        {profileData.username}
+                                    </Text>
+                                </TouchableOpacity>
+                            )}
+                            <Text style={{ fontSize: 12, color: '#6b7280' }}>
+                                Active since {profileData?.date_joined ? new Date(profileData.date_joined).getFullYear() : '2023'}
+                            </Text>
                         </View>
                     </View>
 
                     {/* Profile Stats */}
-                    <ProfileStats />
+                    <ProfileStats 
+                        causes={profileData?.favorite_causes_count || 0}
+                        crwds={profileData?.joined_collectives_count || 0}
+                        followers={profileData?.followers_count || 0}
+                        following={profileData?.following_count || 0}
+                        profileId={profileData?.id?.toString() || ''}
+                        isLoadingCauses={false}
+                        isLoadingCrwds={false}
+                        isLoadingFollowers={false}
+                        isLoadingFollowing={false}
+                    />
 
                     {/* Recently Supported Section */}
                     <View style={{ marginTop: 24, marginBottom: 16 }}>
@@ -262,8 +385,17 @@ export default function Profile() {
 
                         {/* Organization Avatars */}
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                            {orgAvatars.map((org, index) => (
-                                <TouchableOpacity onPress={() => navigation.navigate('CauseScreen' as never)} key={index} style={{ alignItems: 'center' }}>
+                            {[
+                                { name: "ASPCA", image: require('../assets/images/redcross.png') },
+                                { name: "CRI", image: require('../assets/images/grocery.jpg') },
+                                { name: "CureSearch", image: require('../assets/images/redcross.png') },
+                                { name: "Paws", image: require('../assets/images/grocery.jpg') },
+                            ].map((org, index) => (
+                                <TouchableOpacity 
+                                    onPress={() => navigation.navigate('CauseScreen' as never)} 
+                                    key={index} 
+                                    style={{ alignItems: 'center' }}
+                                >
                                     <Image
                                         source={org.image}
                                         style={{
@@ -282,31 +414,14 @@ export default function Profile() {
                     </View>
 
                     {/* Profile Bio */}
-                    {/* <ProfileBio 
-                        imageUrl="https://randomuser.me/api/portraits/women/44.jpg"
-                        username="mynameismya"
-                        isOwnProfile={true}
-                    /> */}
-
-
-                    <Text style={{
-                        fontSize: 14,
-                        color: PrimaryGrey,
-                        marginVertical: 8,
-                        lineHeight: 20
-                    }}>
-                        This is a bio about mynameismya and how they like to help others and give back to their community. They also love ice cream.
-                    </Text>
+                    <ProfileBio bio={profileData?.bio || 'No bio available'} />
 
                     {/* Recent Activity */}
                     <View style={{ paddingVertical: 16 }}>
-                        {/* <Text style={{fontSize: 18, fontWeight: '600', color: '#111827'}}>
-                            Recent Activity
-                        </Text> */}
                         <PopularPosts
-                            posts={profilePosts}
+                            posts={userPosts}
                             title="Recent Activity"
-                            onLoadMore={handleLoadMore}
+                            onLoadMore={async () => {}}
                             hasMore={true}
                         />
                     </View>
@@ -353,7 +468,7 @@ export default function Profile() {
                                 
                                 <TouchableOpacity onPress={() => setShowImageModal(false)}>
                                     <Image
-                                        source={{ uri: 'https://randomuser.me/api/portraits/women/44.jpg' }}
+                                        source={{ uri: profileData?.profile_picture || 'https://randomuser.me/api/portraits/women/44.jpg' }}
                                         style={{
                                             width: 300,
                                             height: 300,

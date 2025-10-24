@@ -1,16 +1,23 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Modal, Share } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Modal, Share, ActivityIndicator } from 'react-native';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import MainHeaderNav from '../components/MainHeaderNav';
 import { LightGrey, PrimaryBlue, PrimaryGrey, SecondaryBlue, SecondaryGrey } from '../Constants/Colors';
 import { Bookmark, Heart, Plus } from 'lucide-react-native';
 import { TextInput } from 'react-native-gesture-handler';
-import { Organization, RECENTS, SUGGESTED } from '../Constants/organizations';
+// import { Organization, RECENTS, SUGGESTED } from '../Constants/organizations';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { createCollective, getCausesBySearch } from '../services/api/crwd';
+import { getFavoriteCauses } from '../services/api/social';
+import { useToast } from '../contexts/ToastContext';
+import { useAuthStore } from '../store/store';
 
 export default function CreateCRWD() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
+  const { showToast } = useToast();
+  const { user: currentUser } = useAuthStore();
   const [step, setStep] = useState(1);
   const [name, setName] = useState('');
   const [desc, setDesc] = useState('');
@@ -20,7 +27,50 @@ export default function CreateCRWD() {
   const [showDescTooltip, setShowDescTooltip] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [createdCollective, setCreatedCollective] = useState<any>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchTrigger, setSearchTrigger] = useState(0);
   const confettiRef = useRef<ConfettiCannon>(null);
+
+  // Get causes with search and category filtering
+  const { data: causesData, isLoading: isCausesLoading } = useQuery({
+    queryKey: ['causes', searchTrigger],
+    queryFn: () => {
+      return getCausesBySearch(searchQuery, '', 1);
+    },
+    enabled: true,
+  });
+
+  // Get favorite causes
+  const { data: favoriteCauses, isLoading: isLoadingFavoriteCauses } = useQuery({
+    queryKey: ['favoriteCauses'],
+    queryFn: () => getFavoriteCauses(),
+    enabled: true,
+  });
+
+
+  console.log('favoriteCauses', favoriteCauses);
+  console.log('causesData', causesData);
+
+  // Create collective mutation
+  const createCollectiveMutation = useMutation({
+    mutationFn: createCollective,
+    onSuccess: (response) => {
+      console.log('Create collective successful:', response);
+      setCreatedCollective(response);
+      setStep(2);
+      setShowSuccess(true);
+      confettiRef.current?.start();
+      setTimeout(() => {
+        setShowSuccess(false);
+      }, 4000);
+    },
+    onError: (error: any) => {
+      console.error('Create collective error:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to create collective';
+      showToast(errorMessage, 'error' as any);
+    },
+  });
 
   const toggleOrganization = (orgId: string) => {
     if (selectedOrganizations.includes(orgId)) {
@@ -30,11 +80,21 @@ export default function CreateCRWD() {
     }
   };
 
-  const toggleBookmark = (orgId: string) => {
-    if (bookmarkedOrgs.includes(orgId)) {
-      setBookmarkedOrgs(bookmarkedOrgs.filter(id => id !== orgId));
-    } else {
-      setBookmarkedOrgs([...bookmarkedOrgs, orgId]);
+  // const toggleBookmark = (orgId: string) => {
+  //   if (bookmarkedOrgs.includes(orgId)) {
+  //     setBookmarkedOrgs(bookmarkedOrgs.filter(id => id !== orgId));
+  //   } else {
+  //     setBookmarkedOrgs([...bookmarkedOrgs, orgId]);
+  //   }
+  // };
+
+  const handleSearchChange = (text: string) => {
+    setSearchQuery(text);
+  };
+
+  const handleSearchSubmit = () => {
+    if (searchQuery.trim().length > 0) {
+      setSearchTrigger(prev => prev + 1);
     }
   };
 
@@ -56,46 +116,85 @@ export default function CreateCRWD() {
       return;
     }
 
-    // Proceed if no errors
-    setStep(2);
-    setShowSuccess(true);
-    
-    // Fire confetti after modal appears
-    setTimeout(() => {
-      confettiRef.current?.start();
-    }, 300);
+    // Create collective via API
+    createCollectiveMutation.mutate({
+      name: name.trim(),
+      description: desc.trim(),
+      cause_ids: selectedOrganizations, // Updated to match API expectation
+    });
   };
 
-  const renderOrganizationCard = (org: Organization) => {
-    const isSelected = selectedOrganizations.includes(org.id);
-    const isBookmarked = bookmarkedOrgs.includes(org.id);
+  // const renderOrganizationCard = (org: any) => {
+  //   const isSelected = selectedOrganizations.includes(org.id);
+  //   const isBookmarked = bookmarkedOrgs.includes(org.id);
+
+  //   return (
+  //     <TouchableOpacity
+  //       key={org.id}
+  //       style={[styles.orgCard, isSelected && styles.selectedOrgCard]}
+  //       onPress={() => toggleOrganization(org.id)}
+  //     >
+  //       <View style={styles.orgHeader}>
+  //         <Image source={{ uri: org.imageUrl }} style={styles.orgImage} />
+  //         <View style={styles.orgInfo}>
+  //           <Text style={styles.orgName}>{org.name}</Text>
+  //           <Text style={styles.orgDesc}>{org.shortDesc}</Text>
+  //         </View>
+  //         <View style={styles.orgActions}>
+  //           <TouchableOpacity
+  //             onPress={(e) => {
+  //               e.stopPropagation();
+  //               toggleBookmark(org.id);
+  //             }}
+  //             style={[styles.actionButton, isBookmarked && styles.bookmarkedButton]}
+  //           >
+  //             <Heart
+  //               size={16}
+  //               color={isBookmarked ? 'red' : PrimaryGrey}
+  //             />
+  //           </TouchableOpacity>
+  //           <View style={[styles.checkbox, isSelected && styles.checkedBox]}>
+  //             {isSelected && <Text style={styles.checkmark}>✓</Text>}
+  //           </View>
+  //         </View>
+  //       </View>
+  //     </TouchableOpacity>
+  //   );
+  // };
+
+  const renderApiCauseCard = (cause: any, isFavorite: boolean = false) => {
+    const causeData = isFavorite ? cause.cause : cause;
+    const isSelected = selectedOrganizations.includes(causeData.id);
+    const isBookmarked = bookmarkedOrgs.includes(causeData.id);
 
     return (
       <TouchableOpacity
-        key={org.id}
+        key={causeData.id}
         style={[styles.orgCard, isSelected && styles.selectedOrgCard]}
-        onPress={() => toggleOrganization(org.id)}
+        onPress={() => toggleOrganization(causeData.id)}
       >
         <View style={styles.orgHeader}>
-          <Image source={{ uri: org.imageUrl }} style={styles.orgImage} />
+          <Image 
+            source={{ uri: causeData.image || 'https://via.placeholder.com/40' }} 
+            style={styles.orgImage} 
+          />
           <View style={styles.orgInfo}>
-            <Text style={styles.orgName}>{org.name}</Text>
-            <Text style={styles.orgDesc}>{org.shortDesc}</Text>
+            <Text style={styles.orgName}>{causeData.name}</Text>
+            <Text style={styles.orgDesc}>{causeData.mission || causeData.description || 'Building communities'}</Text>
           </View>
           <View style={styles.orgActions}>
-            <TouchableOpacity
+            {/* <TouchableOpacity
               onPress={(e) => {
                 e.stopPropagation();
-                toggleBookmark(org.id);
+                toggleBookmark(causeData.id);
               }}
               style={[styles.actionButton, isBookmarked && styles.bookmarkedButton]}
             >
               <Heart
                 size={16}
                 color={isBookmarked ? 'red' : PrimaryGrey}
-                fill={isBookmarked ? 'red' : 'none'}
               />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
             <View style={[styles.checkbox, isSelected && styles.checkedBox]}>
               {isSelected && <Text style={styles.checkmark}>✓</Text>}
             </View>
@@ -117,6 +216,16 @@ export default function CreateCRWD() {
             resizeMode="contain"
           />
           <Text style={styles.successTitle}>You've started a CRWD!</Text>
+          {createdCollective && (
+            <View style={{ marginBottom: 20, alignItems: 'center' }}>
+              <Text style={{ fontSize: 16, fontWeight: '600', color: PrimaryBlue, marginBottom: 5 }}>
+                {createdCollective.name}
+              </Text>
+              <Text style={{ fontSize: 14, color: PrimaryGrey, textAlign: 'center', paddingHorizontal: 20 }}>
+                {createdCollective.description}
+              </Text>
+            </View>
+          )}
           <View style={styles.successButtons}>
             <TouchableOpacity
               style={styles.inviteButton}
@@ -321,27 +430,75 @@ export default function CreateCRWD() {
 
         <Text style={{ color: PrimaryGrey, fontSize: 16 }}>Choose one or more causes for your CRWD</Text>
 
-        <Text style={styles.subsectionTitle}>Select from your causes (if any)</Text>
-        {RECENTS.map(renderOrganizationCard)}
+        <View style={styles.causesContainer}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Select from your causes (if any)</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('NonProfitInterests' as never)}>
+              <Plus size={16} color={PrimaryBlue} />
+            </TouchableOpacity>
+          </View>
 
-        <Text style={styles.subsectionTitle}>Suggested Causes</Text>
-        {SUGGESTED.map(renderOrganizationCard)}
+          {isLoadingFavoriteCauses ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="small" color={PrimaryBlue} />
+              <Text style={styles.loadingText}>Loading your causes...</Text>
+            </View>
+          ) : favoriteCauses?.results?.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyText}>No favorite causes found</Text>
+            </View>
+          ) : (
+            favoriteCauses?.data?.map((cause: any) => renderApiCauseCard(cause, true))
+          )}
+
+          <Text style={styles.sectionTitle}>Suggested Causes</Text>
+          
+          {/* Search Bar */}
+          <View style={styles.searchContainer}>
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search causes or nonprofits (press Enter to search)"
+              placeholderTextColor={SecondaryGrey}
+              value={searchQuery}
+              onChangeText={handleSearchChange}
+              onSubmitEditing={handleSearchSubmit}
+            />
+          </View>
+
+          {isCausesLoading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="small" color={PrimaryBlue} />
+            </View>
+          ) : causesData?.results?.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyText}>No causes found</Text>
+            </View>
+          ) : (
+            causesData?.results?.map((cause: any) => renderApiCauseCard(cause, false))
+          )}
+        </View>
       </ScrollView>
 
       <TouchableOpacity
         onPress={handleCreateCRWD}
-        // disabled={selectedOrganizations.length === 0 || name === '' || desc === ''}
+        disabled={createCollectiveMutation.isPending}
         style={[
           styles.donateButton,
-          // (selectedOrganizations.length === 0 || name === '' || desc === '') && styles.disabledButton
+          createCollectiveMutation.isPending && styles.disabledButton
         ]}
       >
-        <Text style={[
-          styles.donateButtonText,
-          // (selectedOrganizations.length === 0 || name === '' || desc === '') && styles.disabledButtonText
-        ]}>
-          Create CRWD
-        </Text>
+        {createCollectiveMutation.isPending ? (
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+            <ActivityIndicator size="small" color="white" />
+            <Text style={[styles.donateButtonText, { marginLeft: 8 }]}>
+              Creating...
+            </Text>
+          </View>
+        ) : (
+          <Text style={styles.donateButtonText}>
+            Create CRWD
+          </Text>
+        )}
       </TouchableOpacity>
     </SafeAreaView>
   );
@@ -400,7 +557,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   orgName: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
     color: '#1F2937',
     marginBottom: 4,
@@ -549,5 +706,55 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  // API integration styles
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 20,
+  },
+  loadingText: {
+    marginLeft: 8,
+    color: PrimaryGrey,
+    fontSize: 14,
+  },
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  emptyText: {
+    color: PrimaryGrey,
+    fontSize: 14,
+  },
+  causesContainer: {
+    backgroundColor: '#f9fafb',
+    borderRadius: 8,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  sectionTitle: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: PrimaryBlue,
+    marginBottom: 8,
+  },
+  searchContainer: {
+    marginBottom: 12,
+  },
+  searchInput: {
+    backgroundColor: '#f3f4f6',
+    borderWidth: 0,
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 14,
+    color: '#111827',
   },
 });

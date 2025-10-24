@@ -1,42 +1,86 @@
 import React, { useState } from 'react';
-import { View, Text, Image, TouchableOpacity } from 'react-native';
+import { View, Text, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { PrimaryGrey } from '../../Constants/Colors';
 import PopularPosts from '../PopularPosts';
+import { MessageSquare } from 'lucide-react-native';
+import { useNavigation } from '@react-navigation/native';
 
 interface GroupCRWDUpdatesProps {
   showEmpty?: boolean;
   joined?: boolean;
+  collectiveData?: any;
+  posts?: any[];
+  isLoading?: boolean;
 }
 
 // Sample data generator for infinite posts
-const generateMorePosts = (startId: number, count: number) => {
-  return Array.from({ length: count }, (_, index) => ({
-      id: String(startId + index),
-      avatarUrl: `https://randomuser.me/api/portraits/${Math.random() > 0.5 ? 'men' : 'women'}/${Math.floor(Math.random() * 70)}.jpg`,
-      username: `user${startId + index}`,
-      time: `${Math.floor(Math.random() * 7)}d`,
-      org: ["youth4change", "cleanwaternow", "treeplanters", "literacyforall"][Math.floor(Math.random() * 4)],
-      text: [
-          "Making a difference in our community one step at a time! 🌟",
-          "Another successful volunteer event completed! Thank you to all participants! 🙏",
-          "Working together for a better tomorrow. Join us in our mission! 💪",
-          "Every small action counts. Let's create positive change together! ✨"
-      ][Math.floor(Math.random() * 4)],
-      imageUrl: Math.random() > 0.5 ? `https://picsum.photos/600/400?random=${startId + index}` : undefined,
-      likes: Math.floor(Math.random() * 100),
-      comments: Math.floor(Math.random() * 20),
-      shares: Math.floor(Math.random() * 10),
-  }));
-};
+// const generateMorePosts = (startId: number, count: number) => {
+//   return Array.from({ length: count }, (_, index) => ({
+//       id: String(startId + index),
+//       avatarUrl: `https://randomuser.me/api/portraits/${Math.random() > 0.5 ? 'men' : 'women'}/${Math.floor(Math.random() * 70)}.jpg`,
+//       username: `user${startId + index}`,
+//       time: `${Math.floor(Math.random() * 7)}d`,
+//       org: ["youth4change", "cleanwaternow", "treeplanters", "literacyforall"][Math.floor(Math.random() * 4)],
+//       text: [
+//           "Making a difference in our community one step at a time! 🌟",
+//           "Another successful volunteer event completed! Thank you to all participants! 🙏",
+//           "Working together for a better tomorrow. Join us in our mission! 💪",
+//           "Every small action counts. Let's create positive change together! ✨"
+//       ][Math.floor(Math.random() * 4)],
+//       imageUrl: Math.random() > 0.5 ? `https://picsum.photos/600/400?random=${startId + index}` : undefined,
+//       likes: Math.floor(Math.random() * 100),
+//       comments: Math.floor(Math.random() * 20),
+//       shares: Math.floor(Math.random() * 10),
+//   }));
+// };
 
 const GroupCRWDUpdates: React.FC<GroupCRWDUpdatesProps> = ({
   showEmpty = false,
-  joined = false
+  joined = false,
+  collectiveData,
+  posts = [],
+  isLoading = false,
 }) => {
-  // Show empty state if showEmpty is true
-  if (showEmpty) {
-    return (
-      <View style={{ paddingHorizontal: 16, paddingTop: 8, paddingBottom: 8 }}>
+  const navigation = useNavigation<any>();
+  // Transform API posts to match PopularPosts format
+  const transformedPosts = posts.map((post: any) => ({
+    id: post.id,
+    userId: post.user?.id,
+    avatarUrl: post.user?.profile_picture || 'https://randomuser.me/api/portraits/men/1.jpg',
+    username: post.user?.username || post.user?.full_name || 'Unknown User',
+    time: new Date(post.created_at).toLocaleDateString(),
+    org: post.collective?.name || 'Unknown Collective',
+    orgUrl: post.collective?.id,
+    text: post.content || '',
+    imageUrl: post.media || undefined,
+    likes: post.likes_count || 0,
+    comments: post.comments_count || 0,
+    shares: 0, // API doesn't provide shares count
+    isLiked: post.is_liked || false,
+  }));
+
+  // Show empty state if showEmpty is true or if posts array is empty
+  const shouldShowEmpty = showEmpty || transformedPosts.length === 0;
+
+  return (
+    <View style={{ paddingHorizontal: 16, paddingTop: 8, paddingBottom: 8 }}>
+      {isLoading ? (
+        <View style={{ 
+          flexDirection: 'row', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          paddingVertical: 32 
+        }}>
+          <ActivityIndicator size="small" color="#6b7280" />
+          <Text style={{ 
+            marginLeft: 8, 
+            fontSize: 14, 
+            color: '#6b7280' 
+          }}>
+            Loading posts...
+          </Text>
+        </View>
+      ) : shouldShowEmpty ? (
         <View style={{
           backgroundColor: 'white',
           borderRadius: 8,
@@ -45,7 +89,8 @@ const GroupCRWDUpdates: React.FC<GroupCRWDUpdatesProps> = ({
           padding: 24,
           alignItems: 'center',
         }}>
-          <Text style={{ fontSize: 48, color: '#9ca3af' }}>💬</Text>
+          {/* <Text style={{ fontSize: 48, color: '#9ca3af' }}>💬</Text> */}
+          <MessageSquare size={48} color="#9ca3af" />
           <Text style={{ 
             fontSize: 18, 
             fontWeight: '600', 
@@ -65,7 +110,9 @@ const GroupCRWDUpdates: React.FC<GroupCRWDUpdatesProps> = ({
           }}>
             Start the conversation by sharing an update with your group. Your post will help keep everyone engaged and informed.
           </Text>
-          <TouchableOpacity style={{
+          <TouchableOpacity
+          onPress={() => navigation.navigate('Post', { collectiveId: collectiveData?.id })}
+          style={{
             backgroundColor: '#3b82f6',
             paddingHorizontal: 16,
             paddingVertical: 8,
@@ -76,18 +123,17 @@ const GroupCRWDUpdates: React.FC<GroupCRWDUpdatesProps> = ({
             </Text>
           </TouchableOpacity>
         </View>
-      </View>
-    );
-  }
-
-  const [posts, setPosts] = useState(() => generateMorePosts(1, 4));
-
-  
-
-  return (
-    <View style={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 }}>
-      <PopularPosts posts={posts} hasMore={false} title="Conversations" postButton={joined} subheading/>  
-      <View style={{ maxWidth: 600 }}>
+      ) : (
+        <View style={{ paddingTop: 8 }}>
+          <PopularPosts 
+            posts={transformedPosts} 
+            hasMore={false} 
+            title="Conversations" 
+            postButton={joined} 
+            subheading
+            collectiveId={collectiveData?.id}
+          />  
+          <View style={{ maxWidth: 600 }}>
         {/* Member Action Post */}
         <View style={{
           backgroundColor: 'white',
@@ -190,7 +236,9 @@ const GroupCRWDUpdates: React.FC<GroupCRWDUpdatesProps> = ({
             </TouchableOpacity>
           </View>
         </View>
-      </View>
+          </View>
+        </View>
+      )}
     </View>
   );
 };

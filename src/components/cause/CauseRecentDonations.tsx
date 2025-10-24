@@ -96,8 +96,8 @@ const CauseRecentDonations: React.FC<CauseRecentDonationsProps> = ({
             paddingVertical: 32 
           }}>
             <View style={{ 
-              backgroundColor: '#f3f4f6', 
-              borderRadius: 24, 
+              // backgroundColor: '#f3f4f6', 
+              // borderRadius: 24, 
               padding: 12, 
               marginBottom: 16 
             }}>

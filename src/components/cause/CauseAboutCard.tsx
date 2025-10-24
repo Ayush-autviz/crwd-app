@@ -1,33 +1,39 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity } from 'react-native';
-import { MapPin } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { PrimaryBlue, PrimaryGrey } from '../../Constants/Colors';
+import { categories } from '../../Constants/categories';
+import { MapPin } from 'lucide-react-native';
 
-const CauseAboutCard: React.FC = () => {
+interface CauseAboutCardProps {
+  causeData?: any;
+}
+
+const CauseAboutCard: React.FC<CauseAboutCardProps> = ({ causeData }) => {
   const navigation = useNavigation();
 
-  const handleSearchAnimalWelfare = () => {
+  const handleSearchCategory = () => {
     navigation.navigate('Search' as never);
   };
 
-  const fullDescription = `This is a bio about Non Profit and how they give back to their community so that users can learn about how their money is supporting others. Here's more information about our non-profit. This is a long description so that you can learn about all the details of our organization. We love what we do and we hope you do too. Please reach out if you have any questions.`;
+  // Find the category based on causeData.category
+  const category = categories.find((cat) => cat.id === causeData?.category);
 
   return (
     <View style={{ 
       backgroundColor: 'white', 
-      padding: 20, 
-      marginHorizontal: 12, 
+      paddingHorizontal: 20, 
+      // marginHorizontal: 12, 
       marginBottom: 8 
     }}>
       {/* Header */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 12, paddingHorizontal: 12 }}>
         <Image 
-          source={{ uri: 'https://randomuser.me/api/portraits/men/32.jpg' }} 
+          source={{ uri: causeData?.logo }} 
           style={{ width: 48, height: 48, borderRadius: 12 }} 
         />
-        <Text style={{ fontSize: 16, fontWeight: '600', color: '#111827' }}>
-          Helping humanity
+        <Text style={{ fontSize: 16, fontWeight: '600', color: '#111827', }}>
+          {causeData?.name}
         </Text>
       </View>
 
@@ -38,12 +44,13 @@ const CauseAboutCard: React.FC = () => {
         lineHeight: 24, 
         marginBottom: 16 
       }}>
-        {fullDescription}
+        {causeData?.mission}
       </Text>
 
       {/* Details Section */}
       <View style={{ flexDirection: 'row', gap: 16 }}>
         <View style={{ alignItems: 'center', justifyContent: 'flex-start', paddingTop: 4 }}>
+          {/* <Text style={{ fontSize: 20, color: PrimaryGrey }}>📍</Text> */}
           <MapPin size={20} color={PrimaryGrey} />
         </View>
         
@@ -54,7 +61,10 @@ const CauseAboutCard: React.FC = () => {
               Address
             </Text>
             <Text style={{ fontSize: 14, fontWeight: '600', color: '#374151' }}>
-              123 Main Street. USA 10010
+              {causeData?.street && causeData?.city && causeData?.state 
+                ? `${causeData.street}, ${causeData.city}, ${causeData.state}`
+                : 'Not Available'
+              }
             </Text>
           </View>
 
@@ -63,26 +73,26 @@ const CauseAboutCard: React.FC = () => {
             <Text style={{ fontSize: 14, fontWeight: '600', color: PrimaryGrey, marginBottom: 4 }}>
               MAIN FOCUS
             </Text>
-            <TouchableOpacity onPress={handleSearchAnimalWelfare}>
+            <TouchableOpacity onPress={handleSearchCategory}>
               <Text style={{ 
                 fontSize: 14, 
                 color: PrimaryBlue, 
                 textDecorationLine: 'underline' 
               }}>
-                Animal Welfare
+                {category?.name || 'Not Available'}
               </Text>
             </TouchableOpacity>
           </View>
 
           {/* Established */}
-          <View>
+          {/* <View>
             <Text style={{ fontSize: 14, fontWeight: '600', color: PrimaryGrey, marginBottom: 4 }}>
               ESTABLISHED
             </Text>
             <Text style={{ fontSize: 14, fontWeight: '600', color: '#374151' }}>
               2012
             </Text>
-          </View>
+          </View> */}
 
           {/* Tax ID */}
           <View>
@@ -90,14 +100,14 @@ const CauseAboutCard: React.FC = () => {
               TAX ID
             </Text>
             <Text style={{ fontSize: 14, fontWeight: '600', color: '#374151' }}>
-              10125-3129
+              {causeData?.tax_id_number || 'Not Available'}
             </Text>
           </View>
 
           {/* Legal Notice */}
-          <Text style={{ fontSize: 12, color: '#9ca3af', marginTop: 4 }}>
+          {/* <Text style={{ fontSize: 12, color: '#9ca3af', marginTop: 4 }}>
             Helping Humanity is a 501(c)(3) public charity, EIN 13-1788491.
-          </Text>
+          </Text> */}
         </View>
       </View>
     </View>

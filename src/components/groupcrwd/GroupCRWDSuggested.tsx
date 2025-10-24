@@ -131,7 +131,7 @@ const GroupCRWDSuggested: React.FC = () => {
           style={{ 
             flexDirection: 'row', 
             alignItems: 'center',
-            paddingVertical: 8
+            // paddingVertical: 8
           }}
         >
           <Text style={{ 

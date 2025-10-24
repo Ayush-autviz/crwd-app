@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { 
   View, 
   Text, 
@@ -9,42 +9,100 @@ import {
   ScrollView, 
   KeyboardAvoidingView, 
   Platform,
-  Alert
+  Alert,
+  ActivityIndicator
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { ArrowLeft, Edit2, Check, X, Camera, MapPin, ChevronLeft } from 'lucide-react-native'
 import { useNavigation } from '@react-navigation/native'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { PrimaryGrey, PrimaryBlue, LightGrey } from '../Constants/Colors'
 import MainHeaderNav from '../components/MainHeaderNav'
+import { getUserProfileById } from '../services/api/social'
+import { updateProfile } from '../services/api/auth'
+import { useAuthStore } from '../store/store'
+import { useToast } from '../contexts/ToastContext'
 
 export default function ProfileEdit() {
   const navigation = useNavigation()
+  const { user } = useAuthStore()
+  const { showToast } = useToast()
+  const queryClient = useQueryClient()
   
   const [editingField, setEditingField] = useState<string | null>(null)
   const [formData, setFormData] = useState({
-    name: "My Name is Mya",
-    username: "myamakes_moves",
-    location: "Atlanta, GA",
-    bio: "This is a bio about Mya and how she likes to help others and give back to her community. She also loves ice cream.",
-    avatarUrl: "https://randomuser.me/api/portraits/women/44.jpg"
+    first_name: "",
+    last_name: "",
+    username: "",
+    location: "",
+    bio: "",
+    profile_picture: "https://randomuser.me/api/portraits/women/44.jpg"
   })
   const [tempData, setTempData] = useState({
-    name: "My Name is Mya",
-    username: "myamakes_moves", 
-    location: "Atlanta, GA",
-    bio: "This is a bio about Mya and how she likes to help others and give back to her community. She also loves ice cream."
+    first_name: "",
+    last_name: "",
+    username: "",
+    location: "",
+    bio: ""
   })
+
+  // Fetch current profile data
+  const { data: profileData, isLoading: isLoadingProfile, error: profileError } = useQuery({
+    queryKey: ['userProfile', user?.id],
+    queryFn: () => getUserProfileById(user?.id?.toString() || ''),
+    enabled: !!user?.id,
+  })
+
+  // Update profile mutation
+  const updateProfileMutation = useMutation({
+    mutationFn: updateProfile,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['userProfile', user?.id] })
+      queryClient.invalidateQueries({ queryKey: ['profile'] })
+      showToast('Profile updated successfully!', 3000)
+    },
+    onError: (error: any) => {
+      showToast('Failed to update profile. Please try again.', 3000)
+      console.error('Profile update error:', error)
+    }
+  })
+
+  // Initialize form data when profile data is loaded
+  useEffect(() => {
+    if (profileData) {
+      const fullName = profileData.first_name && profileData.last_name 
+        ? `${profileData.first_name} ${profileData.last_name}` 
+        : profileData.username || ''
+      
+      setFormData({
+        first_name: profileData.first_name || '',
+        last_name: profileData.last_name || '',
+        username: profileData.username || '',
+        location: profileData.location || '',
+        bio: profileData.bio || '',
+        profile_picture: profileData.profile_picture || 'https://randomuser.me/api/portraits/women/44.jpg'
+      })
+      
+      setTempData({
+        first_name: profileData.first_name || '',
+        last_name: profileData.last_name || '',
+        username: profileData.username || '',
+        location: profileData.location || '',
+        bio: profileData.bio || ''
+      })
+    }
+  }, [profileData])
 
   const handleEdit = (field: string) => {
     setEditingField(field)
     setTempData(prev => ({ ...prev, [field]: formData[field as keyof typeof formData] }))
   }
 
-  const handleSave = (field: string) => {
+  const handleSave = async (field: string) => {
     const value = tempData[field as keyof typeof tempData]
 
     // Basic validation
-    if (field === 'name' && !value.trim()) {
+    if ((field === 'first_name' || field === 'last_name') && !value.trim()) {
       Alert.alert('Error', 'Name cannot be empty')
       return
     }
@@ -54,15 +112,28 @@ export default function ProfileEdit() {
       return
     }
 
+    // Update local state immediately for better UX
     setFormData(prev => ({ ...prev, [field]: value }))
     setEditingField(null)
-    Alert.alert('Success', 'Profile updated successfully!')
+
+    // Prepare update data
+    const updateData: any = {}
+    updateData[field] = value
+
+    // Call API to update profile
+    try {
+      await updateProfileMutation.mutateAsync(updateData)
+    } catch (error) {
+      // Revert local state if API call fails
+      setFormData(prev => ({ ...prev, [field]: formData[field as keyof typeof formData] }))
+    }
   }
 
   const handleCancel = () => {
     setEditingField(null)
     setTempData({
-      name: formData.name,
+      first_name: formData.first_name,
+      last_name: formData.last_name,
       username: formData.username,
       location: formData.location,
       bio: formData.bio
@@ -79,6 +150,7 @@ export default function ProfileEdit() {
 
   const renderField = (field: string, label: string, value: string, isTextarea = false) => {
     const isCurrentlyEditing = editingField === field
+    const isSaving = updateProfileMutation.isPending
 
     return (
       <View style={[styles.fieldContainer, isTextarea && styles.textareaContainer]}>
@@ -108,14 +180,20 @@ export default function ProfileEdit() {
               )}
               <View style={styles.editingButtons}>
                 <TouchableOpacity
-                  style={[styles.editButton, styles.saveButton]}
+                  style={[styles.editButton, styles.saveButton, isSaving && styles.disabledButton]}
                   onPress={() => handleSave(field)}
+                  disabled={isSaving}
                 >
-                  <Check size={16} color="white" />
+                  {isSaving ? (
+                    <ActivityIndicator size={16} color="white" />
+                  ) : (
+                    <Check size={16} color="white" />
+                  )}
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.editButton, styles.cancelButton]}
                   onPress={handleCancel}
+                  disabled={isSaving}
                 >
                   <X size={16} color="white" />
                 </TouchableOpacity>
@@ -129,14 +207,55 @@ export default function ProfileEdit() {
               <TouchableOpacity
                 style={styles.editIconButton}
                 onPress={() => handleEdit(field)}
+                disabled={isSaving}
               >
-                <Edit2 size={16} color={PrimaryGrey} />
+                <Edit2 size={16} color={isSaving ? '#9ca3af' : PrimaryGrey} />
               </TouchableOpacity>
             </View>
           )}
         </View>
       </View>
     )
+  }
+
+  // Show loading state
+  if (isLoadingProfile) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <MainHeaderNav show={true} menu={false} title={'Edit Profile'}/>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color={PrimaryBlue} />
+          <Text style={{ marginTop: 16, fontSize: 16, color: '#6b7280' }}>
+            Loading profile...
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Show error state
+  if (profileError) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <MainHeaderNav show={true} menu={false} title={'Edit Profile'}/>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <Text style={{ fontSize: 16, color: '#ef4444', textAlign: 'center', marginBottom: 16 }}>
+            Failed to load profile
+          </Text>
+          <TouchableOpacity 
+            onPress={() => navigation.goBack()}
+            style={{ 
+              paddingHorizontal: 16, 
+              paddingVertical: 8, 
+              backgroundColor: '#374151', 
+              borderRadius: 6 
+            }}
+          >
+            <Text style={{ color: 'white' }}>Go Back</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
   }
 
   return (
@@ -148,14 +267,11 @@ export default function ProfileEdit() {
         style={styles.keyboardView}
       >
         <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-          {/* Header */}
-
-
           {/* Profile Picture Section */}
           <View style={styles.avatarSection}>
             <View style={styles.avatarContainer}>
               <Image 
-                source={{ uri: formData.avatarUrl }} 
+                source={{ uri: formData.profile_picture }} 
                 style={styles.avatar}
               />
               <TouchableOpacity
@@ -172,19 +288,12 @@ export default function ProfileEdit() {
 
           {/* Editable Fields */}
           <View style={styles.fieldsContainer}>
-            {renderField('name', 'Name', formData.name)}
+            {renderField('first_name', 'First Name', formData.first_name)}
+            {renderField('last_name', 'Last Name', formData.last_name)}
             {renderField('username', 'Username', formData.username)}
             {renderField('location', 'Location', formData.location)}
             {renderField('bio', 'Bio', formData.bio, true)}
           </View>
-
-          {/* URL Section */}
-          {/* <View style={styles.urlSection}>
-            <View style={styles.urlContainer}>
-              <MapPin size={16} color={PrimaryGrey} />
-              <Text style={styles.urlText}>thisisaurl.com</Text>
-            </View>
-          </View> */}
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -322,6 +431,9 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     backgroundColor: '#ef4444',
+  },
+  disabledButton: {
+    opacity: 0.6,
   },
   displayContainer: {
     flexDirection: 'row',

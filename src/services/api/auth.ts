@@ -15,7 +15,7 @@ export const emailVerification = async (data: any   ) => {
     return response.data;
 };
 
-export const resendEmailVerification = async (data: any) => {
+export const resendEmailVerificationCode = async (data: any) => {
     const response = await axiosClient.post('/auth/cognito/resend-confirmation/', data);
     return response.data;
 };
@@ -25,8 +25,8 @@ export const googleLogin = async (data: any) => {
     return response.data;
 };
 
-export const googleCallback = async (data: any) => {
-    const response = await axiosClient.get('/auth/google/callback/', data);
+export const googleCallback = async (code: any) => {
+    const response = await axiosClient.get(`/auth/google/callback/?code=${code}`);
     return response.data;
 };
 
@@ -71,6 +71,6 @@ export const getProfile = async () => {
 };
 
 export const updateProfile = async (data: any) => {
-    const response = await axiosClient.put('/auth/me/update/', data);
+    const response = await axiosClient.patch('/auth/me/update/', data);
     return response.data;
 };

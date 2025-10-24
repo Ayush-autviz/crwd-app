@@ -1,21 +1,27 @@
-import { View, Text, TouchableOpacity, TextInput, Image, ScrollView, Platform, Modal, FlatList } from 'react-native'
+import { View, Text, TouchableOpacity, TextInput, Image, ScrollView, Platform, Modal, FlatList, ActivityIndicator } from 'react-native'
 import React, { useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import MainHeaderNav from '../components/MainHeaderNav'
 import { PrimaryGrey, PrimaryBlue, LightGrey } from '../Constants/Colors'
 import { Link, Image as ImageIcon, Calendar, X, ChevronDown } from 'lucide-react-native'
 import * as ImagePicker from 'react-native-image-picker'
-import { useNavigation } from '@react-navigation/native'
-
-// Mock data for CRWDs
-const CRWDS = [
-  { id: "1", name: "Feed the Hungry", avatar: "/mclaren.jpg", subtitle: "Food Insecurity" },
-  { id: "2", name: "Animal Rescue", avatar: "/animal.jpg", subtitle: "Animal Welfare" },
-  { id: "3", name: "Green Earth", avatar: "/earth.jpg", subtitle: "Environment" },
-];
+import { useNavigation, useRoute } from '@react-navigation/native'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { createPost } from '../services/api/social'
+import { getCollectives } from '../services/api/crwd'
+import { useToast } from '../contexts/ToastContext'
+import { useAuthStore } from '../store/store'
 
 export default function Post() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
+  const route = useRoute<any>();
+  const queryClient = useQueryClient();
+  const { showToast } = useToast();
+  const { user: currentUser } = useAuthStore();
+
+  // Get collective ID from route params
+  const collectiveId = route.params?.collectiveId;
+  console.log('Collective ID from params:', collectiveId);
   const [postType, setPostType] = useState<'link' | 'image' | 'event' | null>(null)
   const [form, setForm] = useState({
     content: '',
@@ -28,22 +34,55 @@ export default function Post() {
   })
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [urlError, setUrlError] = useState<string | null>(null)
-  const [selectedCRWD, setSelectedCRWD] = useState<typeof CRWDS[0] | null>(null)
+  const [selectedCRWD, setSelectedCRWD] = useState<any>(null)
   const [showCRWDDropdown, setShowCRWDDropdown] = useState(false)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
+
+  // Fetch collectives for CRWD selection
+  const { data: collectivesData, isLoading: isLoadingCollectives } = useQuery({
+    queryKey: ['collectives'],
+    queryFn: () => getCollectives(),
+  });
+
+  // If collectiveId is provided via params, find and set the collective
+  React.useEffect(() => {
+    if (collectiveId && collectivesData?.results) {
+      const foundCollective = collectivesData.results.find((collective: any) => collective.id.toString() === collectiveId.toString());
+      if (foundCollective) {
+        console.log('Found collective from params:', foundCollective);
+        setSelectedCRWD(foundCollective);
+      }
+    }
+  }, [collectiveId, collectivesData]);
+
+  // Create post mutation
+  const createPostMutation = useMutation({
+    mutationFn: createPost,
+    onSuccess: (response) => {
+      console.log('Post created successfully:', response);
+      showToast('Post created successfully!', 3000);
+      setShowSuccessModal(true);
+      // Invalidate posts queries to refresh the feed
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
+    },
+    onError: (error: any) => {
+      console.error('Error creating post:', error);
+      showToast('Failed to create post. Please try again.', 3000);
+    },
+  });
 
   const handlePostTypeSelect = (type: 'link' | 'image' | 'event') => {
     setPostType(type)
     // Reset form fields
-    setForm({
-      content: '',
-      url: '',
-      title: '',
-      day: '',
-      time: '',
-      place: '',
-      caption: ''
-    })
+    // setForm({
+    //   content: '',
+    //   url: '',
+    //   title: '',
+    //   day: '',
+    //   time: '',
+    //   place: '',
+    //   caption: ''
+    // })
     setSelectedImage(null)
     setUrlError(null)
 
@@ -54,7 +93,7 @@ export default function Post() {
   }
 
   const pickImage = () => {
-    const options = {
+    const options: ImagePicker.ImageLibraryOptions = {
       mediaType: 'photo',
       includeBase64: false,
       maxHeight: 2000,
@@ -111,19 +150,46 @@ export default function Post() {
     }
   }
 
-  const handleCRWDSelect = (crwd: typeof CRWDS[0]) => {
+  const handleCRWDSelect = (crwd: any) => {
+    console.log('CRWD selected:', crwd);
+    console.log('CRWD ID:', crwd.id);
     setSelectedCRWD(crwd);
     setShowCRWDDropdown(false);
-    // Show success modal after CRWD selection
-    // setShowSuccessModal(true);
+  };
+
+  // Handle form submission
+  const handleSubmitPost = () => {
+    if (!canSubmitPost() || createPostMutation.isPending) return;
+
+    console.log('Submitting post with collective ID:', selectedCRWD.id);
+    console.log('Post content:', form.content);
+    console.log('Post type:', postType);
+    console.log('Selected image:', selectedImage);
+
+    const formData = new FormData();
+    formData.append('collective_id', selectedCRWD.id.toString());
+    formData.append('content', form.content);
+
+    // Add media file if it's an image post
+    if (postType === 'image' && selectedImage) {
+      formData.append('media_file', {
+        uri: selectedImage,
+        type: 'image/jpeg',
+        name: 'image.jpg',
+      } as any);
+    }
+
+    console.log('FormData being sent:', formData);
+    createPostMutation.mutate(formData);
   };
 
   const handleGoToHome = () => {
     setShowSuccessModal(false);
-    navigation.navigate('DrawerNav' as never, { 
-      screen: 'MainTabs',
-      params: { screen: 'Home' }
-    } as never);
+    // navigation.navigate('DrawerNav', { 
+    //   screen: 'MainTabs',
+    //   params: { screen: 'Home' }
+    // });
+    navigation.goBack()
   };
 
   const renderCRWDDropdown = () => (
@@ -158,8 +224,8 @@ export default function Post() {
           </View>
 
           <FlatList
-            data={CRWDS}
-            keyExtractor={(item) => item.id}
+            data={collectivesData?.results || []}
+            keyExtractor={(item) => item.id.toString()}
             renderItem={({ item }) => (
               <TouchableOpacity
                 style={{
@@ -186,7 +252,7 @@ export default function Post() {
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={{ fontSize: 16, fontWeight: '500' }}>{item.name}</Text>
-                  <Text style={{ fontSize: 14, color: PrimaryGrey }}>{item.subtitle}</Text>
+                  <Text style={{ fontSize: 14, color: PrimaryGrey }}>{item.description}</Text>
                 </View>
               </TouchableOpacity>
             )}
@@ -196,6 +262,58 @@ export default function Post() {
     </Modal>
   )
 
+  // Check if user is logged in
+  if (!currentUser?.id) {
+    return (
+      <SafeAreaView style={{backgroundColor: 'white', flex: 1}}>
+        <MainHeaderNav show title={'Create a Post'} menu={false}/>
+        <View style={{ 
+          flex: 1, 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          paddingHorizontal: 32 
+        }}>
+          <Text style={{ fontSize: 48, marginBottom: 16 }}>🔒</Text>
+          <Text style={{ 
+            fontSize: 20, 
+            fontWeight: '600', 
+            color: '#111827',
+            marginBottom: 8,
+            textAlign: 'center'
+          }}>
+            Sign in to create posts
+          </Text>
+          <Text style={{ 
+            fontSize: 14, 
+            color: '#6b7280',
+            textAlign: 'center',
+            lineHeight: 20,
+            marginBottom: 24
+          }}>
+            You need to be signed in to create and share posts with your community.
+          </Text>
+          <TouchableOpacity
+            style={{
+              backgroundColor: PrimaryBlue,
+              paddingHorizontal: 24,
+              paddingVertical: 12,
+              borderRadius: 8,
+            }}
+            onPress={() => navigation.navigate('Login')}
+          >
+            <Text style={{
+              color: 'white',
+              fontSize: 16,
+              fontWeight: '500'
+            }}>
+              Sign In
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={{backgroundColor: 'white', flex: 1}}>
       <MainHeaderNav show title={'Create a Post'} menu={false}/>
@@ -204,7 +322,7 @@ export default function Post() {
           <Text style={{fontSize: 16, fontWeight: 'bold', marginBottom: 10}}>Post to a CRWD Collective</Text>
           
           {/* CRWD Selection */}
-          <TouchableOpacity
+          {/* <TouchableOpacity
             style={{
               flexDirection: 'row',
               alignItems: 'center',
@@ -243,7 +361,7 @@ export default function Post() {
               )}
             </View>
             <ChevronDown size={20} color={PrimaryGrey} />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
           {/* Main Text Input */}
           <TextInput
@@ -383,22 +501,33 @@ export default function Post() {
             paddingVertical: 16,
             borderRadius: 8,
             alignItems: 'center',
-            opacity: canSubmitPost() ? 1 : 0.6
+            opacity: canSubmitPost() ? 1 : 0.6,
+            flexDirection: 'row',
+            justifyContent: 'center',
           }}
-          disabled={!canSubmitPost()}
-          onPress={() => {
-            // TODO: Implement post submission logic
-            console.log('Post submitted:', { postType, form, selectedImage, selectedCRWD });
-            setShowSuccessModal(true);
-          }}
+          disabled={!canSubmitPost() || createPostMutation.isPending}
+          onPress={handleSubmitPost}
         >
-          <Text style={{
-            color: canSubmitPost() ? 'white' : '#9CA3AF',
-            fontSize: 16,
-            fontWeight: '600'
-          }}>
-            Post
-          </Text>
+          {createPostMutation.isPending ? (
+            <>
+              <ActivityIndicator size="small" color="white" style={{ marginRight: 8 }} />
+              <Text style={{
+                color: 'white',
+                fontSize: 16,
+                fontWeight: '600'
+              }}>
+                Creating...
+              </Text>
+            </>
+          ) : (
+            <Text style={{
+              color: canSubmitPost() ? 'white' : '#9CA3AF',
+              fontSize: 16,
+              fontWeight: '600'
+            }}>
+              Post
+            </Text>
+          )}
         </TouchableOpacity>
       </View>
 
@@ -456,7 +585,7 @@ export default function Post() {
                 fontSize: 16,
                 fontWeight: '500'
               }}>
-                Go to Home
+                Go Back
               </Text>
             </TouchableOpacity>
           </View>

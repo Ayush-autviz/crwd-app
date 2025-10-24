@@ -1,17 +1,32 @@
-import React, { useRef } from 'react';
-import { View, ScrollView, Text, TouchableOpacity, Share, Alert } from 'react-native';
+import React, { useRef, useState, useEffect } from 'react';
+import { View, ScrollView, Text, TouchableOpacity, Share, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { useQuery } from '@tanstack/react-query';
+import { getCauseById } from '../services/api/crwd';
 import { PrimaryBlue, SecondaryBlue, SecondaryGrey } from '../Constants/Colors';
 import MainHeaderNav from '../components/MainHeaderNav';
 import CauseProfileCard from '../components/cause/CauseProfileCard';
 import CauseRecentDonations from '../components/cause/CauseRecentDonations';
 import CauseAboutCard from '../components/cause/CauseAboutCard';
 import GroupCRWDBottomBar from '../components/groupcrwd/GroupCRWDBottomBar';
+import { useToast } from '../contexts/ToastContext';
 
 export default function CauseScreen() {
   const aboutCardRef = useRef<ScrollView>(null);
   const navigation = useNavigation();
+  const route = useRoute();
+  const { showToast } = useToast();
+  
+  // Get cause ID from route params or use default
+  const causeId = (route.params as any)?.causeId || '';
+  
+  // Fetch cause data using React Query
+  const { data: causeData, isLoading: isLoadingCause, error: causeError } = useQuery({
+    queryKey: ['cause', causeId],
+    queryFn: () => getCauseById(causeId),
+    enabled: !!causeId,
+  });
 
   const scrollToAboutCard = () => {
     // Scroll to about section (approximate position)
@@ -21,8 +36,8 @@ export default function CauseScreen() {
   const handleShare = async () => {
     try {
       const result = await Share.share({
-        message: 'check out this Nonprofit',
-        title: 'Helping Humanity - CRWD',
+        message: `Check out this Nonprofit: ${causeData?.name || 'Cause'}`,
+        title: `${causeData?.name || 'Helping Humanity'} - CRWD`,
       });
     } catch (error) {
       Alert.alert('Error', 'Failed to share cause');
@@ -30,11 +45,37 @@ export default function CauseScreen() {
   };
 
   const handleDonate = () => {
-    navigation.navigate('DrawerNav' as never, { 
-      screen: 'MainTabs',
-      params: { screen: 'Donation' }
-    } as never);
+    navigation.navigate('Donation' as never);
   };
+
+  // Show loading state
+  if (isLoadingCause) {
+    return (
+      <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }}>
+        <MainHeaderNav show={true} menu={false} title={'Nonprofit'}/>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color={PrimaryBlue} />
+          <Text style={{ marginTop: 16, fontSize: 16, color: '#6b7280' }}>
+            Loading cause details...
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Show error state
+  if (causeError) {
+    return (
+      <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }}>
+        <MainHeaderNav show={true} menu={false} title={'Nonprofit'}/>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <Text style={{ fontSize: 16, color: '#ef4444' }}>
+            Failed to load cause details
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }}>
@@ -94,11 +135,14 @@ export default function CauseScreen() {
         style={{ flex: 1 }} 
         showsVerticalScrollIndicator={false}
       >
-        <View style={{ paddingBottom: 120 }}>
-          <CauseProfileCard onLearnMoreClick={scrollToAboutCard} />
+        <View style={{ paddingBottom: 30 }}>
+          <CauseProfileCard 
+            onLearnMoreClick={scrollToAboutCard} 
+            causeData={causeData}
+          />
           <CauseRecentDonations showEmpty={true} />
           <View style={{ paddingTop: 24 }}>
-            <CauseAboutCard />
+            <CauseAboutCard causeData={causeData} />
           </View>
         </View>
       </ScrollView>

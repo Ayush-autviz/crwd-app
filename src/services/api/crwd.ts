@@ -6,6 +6,17 @@ export const getCauses = async () => {
     return response.data;
 };
 
+// Causes API endpoints
+export const getCausesBySearch = async (search?: string, category?: string,page?: number) => {
+    const response = await axiosClient.get(`/crwd/causes/?search=${search}&category=${category}&page=${page}`);
+    return response.data;
+};
+
+export const getCausesByLocation = async (latitude: number, longitude: number) => {
+    const response = await axiosClient.get(`/crwd/causes/?lat=${latitude}&lng=${longitude}`);
+    return response.data;
+};
+
 export const createCause = async (data: any) => {
     const response = await axiosClient.post('/crwd/causes/', data);
     return response.data;
@@ -86,6 +97,11 @@ export const deleteCollectiveCause = async (id: string, causePk: string) => {
 // Collective Actions API endpoints
 export const joinCollective = async (id: string) => {
     const response = await axiosClient.post(`/crwd/collectives/${id}/join/`);
+    return response.data;
+};
+
+export const getJoinCollective = async () => {
+    const response = await axiosClient.get(`/crwd/joined-collectives/`);
     return response.data;
 };
 

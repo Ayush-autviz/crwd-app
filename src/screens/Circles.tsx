@@ -1,10 +1,13 @@
 import React, { useMemo, useState } from 'react'
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, Image } from 'react-native'
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, Image, ActivityIndicator, ScrollView } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
-import { PrimaryBlue, PrimaryGreen, SecondaryBlue, SecondaryGreen } from '../Constants/Colors'
+import { PrimaryBlue, PrimaryGreen, SecondaryBlue, SecondaryGreen, PrimaryGrey } from '../Constants/Colors'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import MainHeaderNav from '../components/MainHeaderNav'
-import { Plus, Search, Users } from 'lucide-react-native'
+import { Plus, Search, Users, Heart } from 'lucide-react-native'
+import { useQuery } from '@tanstack/react-query'
+import { getCollectives, getJoinCollective } from '../services/api/crwd'
+import { getFavoriteCollectives } from '../services/api/social'
 
 type TabKey = 'my-crwds' | 'discover'
 
@@ -18,117 +21,156 @@ type DiscoverCircle = {
 }
 
 const Circles = () => {
-  const navigation = useNavigation()
+  const navigation = useNavigation<any>()
   const [activeTab, setActiveTab] = useState<TabKey>('my-crwds')
 
-  const discoverCircles: DiscoverCircle[] = useMemo(
-    () => [
-      {
-        id: 1,
-        name: 'The Red Cross',
-        description: 'An health organization that helps people in need',
-        image: require('../assets/images/redcross.png'),
-        type: 'Collective',
-        members: 1250,
-      },
-      {
-        id: 2,
-        name: 'St. Judes',
-        description: "The leading children's health organization",
-        image: require('../assets/images/grocery.jpg'),
-        type: 'Collective',
-        members: 890,
-      },
-      {
-        id: 4,
-        name: "Women's Healthcare of At...",
-        description: "We are Atlanta's #1 healthcare organization",
-        image: require('../assets/images/redcross.png'),
-        type: 'Collective',
-        members: 456,
-      },
-      {
-        id: 5,
-        name: 'St. Judes',
-        description: "The leading children's health organization",
-        image: require('../assets/images/grocery.jpg'),
-        type: 'Collective',
-        members: 890,
-      },
-      {
-        id: 3,
-        name: "Women's Healthcare of At...",
-        description: "We are Atlanta's #1 healthcare organization",
-        image: require('../assets/images/redcross.png'),
-        type: 'Collective',
-        members: 456,
-      },
-    ],
-    []
-  )
+  // Fetch collectives data using React Query
+  const { data: collectiveData, isLoading: isLoadingCollectives } = useQuery({
+    queryKey: ['circles'],
+    queryFn: () => getCollectives(),
+    enabled: true,
+  });
 
-  const renderDiscoverItem = ({ item }: { item: DiscoverCircle }) => {
-    const isCircle = item.type === 'Collective'
+  // Fetch joined collectives
+  const { data: joinCollectiveData, isLoading: isLoadingJoinCollective } = useQuery({
+    queryKey: ['join-collective'],
+    queryFn: () => getJoinCollective(),
+    enabled: true,
+  });
+
+  // Fetch favorite collectives
+  const { data: favoriteCollectives, isLoading: isLoadingFavoriteCollectives } = useQuery({
+    queryKey: ['favorite-collectives'],
+    queryFn: () => getFavoriteCollectives(),
+    enabled: true,
+  });
+
+
+
+  console.log(joinCollectiveData, 'joinCollectiveData');
+  console.log(favoriteCollectives, 'favoriteCollectives');
+
+  // Calculate total collectives count
+  const totalCollectivesCount = (joinCollectiveData?.data?.length || 0) + (favoriteCollectives?.data?.length || 0);
+
+  const renderJoinedCollectiveItem = ({ item }: { item: any }) => (
+    <TouchableOpacity
+      onPress={() => navigation.navigate('GroupCRWD', { crwdId: item.collective?.id })}
+      activeOpacity={0.9}
+      style={styles.card}
+    >
+      <View style={styles.cardLeft}>
+        <Image 
+          source={item?.collective?.created_by?.profile_picture ? 
+            { uri: item.collective.created_by.profile_picture } : 
+            require('../assets/images/redcross.png')
+          } 
+          style={styles.avatar} 
+        />
+        <View style={styles.cardTextWrapper}>
+          <View style={styles.badgeWrapper}>
+            <View style={[styles.badge, { backgroundColor: SecondaryGreen }]}>
+              <Text style={[styles.badgeText, { color: PrimaryGreen }]}>
+                Collective
+              </Text>
+            </View>
+          </View>
+          <Text style={styles.cardTitle}>
+            {item?.collective?.name}
+          </Text>
+          <Text style={styles.cardDescription}>
+            {item?.collective?.description}
+          </Text>
+        </View>
+      </View>
+      <TouchableOpacity
+        onPress={() => navigation.navigate('GroupCRWD', { crwdId: item.collective?.id })}
+        style={[styles.actionButton, { backgroundColor: PrimaryGreen }]}
+        activeOpacity={0.8}
+      >
+        <Text style={styles.actionButtonText}>Learn More</Text>
+      </TouchableOpacity>
+    </TouchableOpacity>
+  );
+
+  const renderFavoriteCollectiveItem = ({ item }: { item: any }) => (
+    <TouchableOpacity
+      onPress={() => navigation.navigate('GroupCRWD', { crwdId: item.collective?.id })}
+      activeOpacity={0.9}
+      style={styles.card}
+    >
+      <View style={styles.cardLeft}>
+        <Image 
+          source={item?.collective?.created_by?.profile_picture ? 
+            { uri: item.collective.created_by.profile_picture } : 
+            require('../assets/images/redcross.png')
+          } 
+          style={styles.avatar} 
+        />
+        <View style={styles.cardTextWrapper}>
+          <View style={styles.badgeWrapper}>
+            <View style={[styles.badge, { backgroundColor: SecondaryGreen }]}>
+              <Text style={[styles.badgeText, { color: PrimaryGreen }]}>
+                Collective
+              </Text>
+            </View>
+          </View>
+          <Text style={styles.cardTitle}>
+            {item?.collective?.name}
+          </Text>
+          <Text style={styles.cardDescription}>
+            {item?.collective?.description}
+          </Text>
+        </View>
+      </View>
+      <TouchableOpacity
+        onPress={() => navigation.navigate('GroupCRWD', { crwdId: item.collective?.id })}
+        style={[styles.actionButton, { backgroundColor: PrimaryGreen }]}
+        activeOpacity={0.8}
+      >
+        <Text style={styles.actionButtonText}>Learn More</Text>
+      </TouchableOpacity>
+    </TouchableOpacity>
+  );
+
+  const renderDiscoverItem = ({ item }: { item: any }) => {
     return (
       <TouchableOpacity
-        onPress={() => (isCircle ? navigation.navigate('GroupCRWD' as never) : navigation.navigate('CauseScreen' as never))}
+        onPress={() => navigation.navigate('GroupCRWD', { crwdId: item.id })}
         activeOpacity={0.9}
         style={styles.card}
       >
         <View style={styles.cardLeft}>
-          <Image source={item.image} style={styles.avatar} />
+          <Image 
+            source={item.created_by?.profile_picture ? 
+              { uri: item.created_by.profile_picture } : 
+              require('../assets/images/redcross.png')
+            } 
+            style={styles.avatar} 
+          />
           <View style={styles.cardTextWrapper}>
             <View style={styles.badgeWrapper}>
-              <View
-                style={[
-                  styles.badge,
-                  { backgroundColor: isCircle ? SecondaryGreen : SecondaryBlue },
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.badgeText,
-                    { color: isCircle ? PrimaryGreen : PrimaryBlue },
-                  ]}
-                >
-                  {item.type}
+              <View style={[styles.badge, { backgroundColor: SecondaryGreen }]}>
+                <Text style={[styles.badgeText, { color: PrimaryGreen }]}>
+                  Collective
                 </Text>
               </View>
             </View>
-            <Text style={styles.cardTitle} >
+            <Text style={styles.cardTitle}>
               {item.name}
             </Text>
-            <Text style={styles.cardDescription} >
+            <Text style={styles.cardDescription}>
               {item.description}
             </Text>
           </View>
         </View>
-
-        <View style={{ alignItems: 'center' }}>
-          {!isCircle && (
-            <>
-              <TouchableOpacity
-                onPress={() => navigation.navigate('Donation' as never)}
-                style={[styles.actionButton, { backgroundColor: PrimaryBlue }]}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.actionButtonText}>Donate Now</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => navigation.navigate('CauseScreen' as never)}>
-                <Text style={{ color: PrimaryBlue }}>Visit Profile</Text>
-              </TouchableOpacity>
-            </>
-          )}
-          {isCircle && (
-            <TouchableOpacity
-              onPress={() => navigation.navigate('GroupCRWD' as never)}
-              style={[styles.actionButton, { backgroundColor: PrimaryGreen }]}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.actionButtonText}>Learn More</Text>
-            </TouchableOpacity>
-          )}
-        </View>
+        <TouchableOpacity
+          onPress={() => navigation.navigate('GroupCRWD', { crwdId: item.id })}
+          style={[styles.actionButton, { backgroundColor: PrimaryGreen }]}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.actionButtonText}>Learn More</Text>
+        </TouchableOpacity>
       </TouchableOpacity>
     )
   }
@@ -143,7 +185,7 @@ const Circles = () => {
         </Text>
         <TouchableOpacity
           style={styles.createButton}
-          onPress={() => navigation.navigate('DrawerNav' as never, { screen: 'CreateCRWD'})}
+          onPress={() => navigation.navigate('DrawerNav', { screen: 'CreateCRWD'})}
           activeOpacity={0.8}
         >
             <Plus color='#ffffff' size={18}  />
@@ -158,7 +200,9 @@ const Circles = () => {
           activeOpacity={0.7}
         >
             <Users size={18} color={activeTab === 'my-crwds' ? '#000' : '#6B7280'}/>
-          <Text style={[styles.tabText, activeTab === 'my-crwds' && styles.tabTextActive]}>My Collectives (0)</Text>
+          <Text style={[styles.tabText, activeTab === 'my-crwds' && styles.tabTextActive]}>
+            My Collectives ({totalCollectivesCount})
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tabButton, activeTab === 'discover' && styles.tabButtonActive]}
@@ -171,21 +215,88 @@ const Circles = () => {
       </View>
 
       {activeTab === 'my-crwds' ? (
-        <View style={styles.placeholderWrapper}>
-          <Text style={styles.placeholderTitle}>You're not in a Collective yet.</Text>
-          <Text style={styles.placeholderDescription}>
-            Collectives are communities built around causes. Joinn one to instantly add its nonprofits to your Donation Box or start your own.
-          </Text>
-        </View>
+        <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+          <View style={styles.contentContainer}>
+            {/* Loading State */}
+            {(isLoadingJoinCollective || isLoadingFavoriteCollectives) ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color={PrimaryGreen} />
+                <Text style={styles.loadingText}>Loading collectives...</Text>
+              </View>
+            ) : (
+              <>
+                {/* Joined Collectives Section */}
+                <View style={styles.sectionContainer}>
+                  <View style={styles.sectionHeader}>
+                    <Users size={20} color={PrimaryGreen} />
+                    <Text style={styles.sectionTitle}>
+                      Joined ({joinCollectiveData?.data?.length || 0})
+                    </Text>
+                  </View>
+                  {joinCollectiveData?.data?.length > 0 ? (
+                    <View style={styles.listContainer}>
+                      {joinCollectiveData.data.map((item: any, index: number) => (
+                        <View key={String(item.id)}>
+                          {renderJoinedCollectiveItem({ item })}
+                          {index < joinCollectiveData.data.length - 1 && <View style={styles.separator} />}
+                        </View>
+                      ))}
+                    </View>
+                  ) : (
+                    <View style={styles.emptyState}>
+                      <Users size={48} color={PrimaryGrey} />
+                      <Text style={styles.emptyStateText}>No joined collectives yet</Text>
+                    </View>
+                  )}
+                </View>
+
+                {/* Favorite Collectives Section */}
+                <View style={styles.sectionContainer}>
+                  <View style={styles.sectionHeader}>
+                    <Heart size={20} color={PrimaryGreen} />
+                    <Text style={styles.sectionTitle}>
+                      Favorites ({favoriteCollectives?.data?.length || 0})
+                    </Text>
+                  </View>
+                  {favoriteCollectives?.data?.length > 0 ? (
+                    <View style={styles.listContainer}>
+                      {favoriteCollectives.data.map((item: any, index: number) => (
+                        <View key={String(item.id)}>
+                          {renderFavoriteCollectiveItem({ item })}
+                          {index < favoriteCollectives.data.length - 1 && <View style={styles.separator} />}
+                        </View>
+                      ))}
+                    </View>
+                  ) : (
+                    <View style={styles.emptyState}>
+                      <Heart size={48} color={PrimaryGrey} />
+                      <Text style={styles.emptyStateText}>No favorite collectives yet</Text>
+                    </View>
+                  )}
+                </View>
+              </>
+            )}
+          </View>
+        </ScrollView>
       ) : (
-        <FlatList
-          data={discoverCircles}
-          keyExtractor={(item) => String(item.id)}
-          renderItem={renderDiscoverItem}
-          contentContainerStyle={styles.listContent}
-          ItemSeparatorComponent={() => <View style={styles.separator} />}
-          showsVerticalScrollIndicator={false}
-        />
+        /* Discover Tab Content */
+        <View style={styles.contentContainer}>
+          {isLoadingCollectives ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={PrimaryGreen} />
+              <Text style={styles.loadingText}>Loading collectives...</Text>
+            </View>
+          ) : (
+            <FlatList
+              data={collectiveData?.results || []}
+              keyExtractor={(item) => String(item.id)}
+              renderItem={renderDiscoverItem}
+              contentContainerStyle={styles.listContent}
+              ItemSeparatorComponent={() => <View style={styles.separator} />}
+              showsVerticalScrollIndicator={false}
+            />
+          )}
+        </View>
       )}
     </SafeAreaView>
   )
@@ -258,7 +369,7 @@ const styles = StyleSheet.create({
     color: '#111827',
   },
   listContent: {
-    paddingHorizontal: 16,
+    // paddingHorizontal: 16,
     paddingTop: 4,
     paddingBottom: 32,
     gap: 10,
@@ -346,6 +457,55 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6B7280',
     textAlign: 'center',
+  },
+  contentContainer: {
+    flex: 1,
+    paddingHorizontal: 16,
+    marginBottom: 16,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  loadingText: {
+    marginTop: 10,
+    color: PrimaryGrey,
+    fontSize: 16,
+  },
+  sectionContainer: {
+    marginBottom: 24,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+marginTop: 16,
+    marginBottom: 16,
+    gap: 8,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#111827',
+  },
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 32,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 12,
+  },
+  emptyStateText: {
+    marginTop: 12,
+    color: PrimaryGrey,
+    fontSize: 16,
+    textAlign: 'center',
+  },
+  scrollContainer: {
+    flex: 1,
+  },
+  listContainer: {
+    // No specific height limit, let it grow naturally
   },
 })
 

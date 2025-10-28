@@ -10,6 +10,9 @@ import * as ImagePicker from 'react-native-image-picker'
 import { useMutation } from '@tanstack/react-query'
 import { emailRegistration, emailVerification, resendEmailVerificationCode } from '../../services/api/auth'
 import { useToast } from '../../contexts/ToastContext'
+import { Camera } from 'lucide-react-native'
+import { EyeOff } from 'lucide-react-native'
+import { Eye } from 'lucide-react-native'
 
 export default function ClaimProfile() {
     const navigation = useNavigation<any>()
@@ -20,7 +23,7 @@ export default function ClaimProfile() {
         lastName: "",
         email: "",
         password: "",
-        dateOfBirth: null as Date | null,
+        // dateOfBirth: null as Date | null,
         profileImage: null as string | null,
         termsAccepted: false,
     })
@@ -28,16 +31,44 @@ export default function ClaimProfile() {
     const [errors, setErrors] = useState<Record<string, string>>({})
     const [showOTPModal, setShowOTPModal] = useState(false)
     const [otp, setOtp] = useState("")
+    const [showPassword, setShowPassword] = useState(false)
+    const [passwordStrength, setPasswordStrength] = useState({
+        hasMinLength: false,
+        hasUppercase: false,
+        hasLowercase: false,
+        hasNumber: false,
+        hasSpecialChar: false,
+    })
     
     const [open, setOpen] = useState(false)
 
-    const formattedDate = formData.dateOfBirth
-        ? formData.dateOfBirth.toLocaleDateString('en-GB', {
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric',
-        })
-        : ''
+    // const formattedDate = formData.dateOfBirth
+    //     ? formData.dateOfBirth.toLocaleDateString('en-GB', {
+    //         day: 'numeric',
+    //         month: 'long',
+    //         year: 'numeric',
+    //     })
+    //     : ''
+
+    const handleInputChange = (field: string, value: string) => {
+        setFormData(prev => ({
+            ...prev,
+            [field]: value
+        }))
+
+        // Check password strength
+        if (field === 'password') {
+            setPasswordStrength({
+                hasMinLength: value.length >= 8,
+                hasUppercase: /[A-Z]/.test(value),
+                hasLowercase: /[a-z]/.test(value),
+                hasNumber: /\d/.test(value),
+                hasSpecialChar: /[!@#$%^&*(),.?":{}|<>]/.test(value),
+            })
+        }
+    }
+
+    const isPasswordStrong = Object.values(passwordStrength).every(Boolean)
 
     const handleImageUpload = () => {
         const options = {
@@ -87,13 +118,13 @@ export default function ClaimProfile() {
 
         if (!formData.password) {
             newErrors.password = 'Password is required'
-        } else if (formData.password.length < 8) {
-            newErrors.password = 'Password must be at least 8 characters'
+        } else if (!isPasswordStrong) {
+            newErrors.password = 'Password must meet all requirements'
         }
 
-        if (!formData.dateOfBirth) {
-            newErrors.dateOfBirth = 'Date of birth is required'
-        }
+        // if (!formData.dateOfBirth) {
+        //     newErrors.dateOfBirth = 'Date of birth is required'
+        // }
 
         if (!formData.termsAccepted) {
             newErrors.termsAccepted = 'You must accept the terms and conditions'
@@ -164,7 +195,7 @@ export default function ClaimProfile() {
         formDataToSend.append('last_name', formData.lastName.trim())
         formDataToSend.append('email', formData.email.trim())
         formDataToSend.append('password', formData.password)
-        formDataToSend.append('date_of_birth', formData.dateOfBirth ? formData.dateOfBirth.toISOString().split('T')[0] : '')
+        // formDataToSend.append('date_of_birth', formData.dateOfBirth ? formData.dateOfBirth.toISOString().split('T')[0] : '')
         
         // Add profile picture if available
         if (formData.profileImage) {
@@ -180,7 +211,7 @@ export default function ClaimProfile() {
             last_name: formData.lastName.trim(),
             email: formData.email.trim(),
             password: formData.password,
-            date_of_birth: formData.dateOfBirth ? formData.dateOfBirth.toISOString().split('T')[0] : '',
+            // date_of_birth: formData.dateOfBirth ? formData.dateOfBirth.toISOString().split('T')[0] : '',
             profile_picture_file: formData.profileImage ? 'present' : 'not present'
         })
         emailRegistrationMutation.mutate(formDataToSend)
@@ -208,7 +239,7 @@ export default function ClaimProfile() {
         <SafeAreaView style={{ flex: 1, paddingHorizontal: 20, backgroundColor: 'white' }}>
             <OnboardingHeader />
 
-            <DatePicker
+            {/* <DatePicker
                 modal
                 open={open}
                 date={formData.dateOfBirth || new Date()} // fallback date if none selected
@@ -223,7 +254,7 @@ export default function ClaimProfile() {
                     setOpen(false)
                 }}
                 theme='light'
-            />
+            /> */}
 
             {/* Step Indicator */}
             <View style={styles.stepIndicator}>
@@ -253,7 +284,8 @@ export default function ClaimProfile() {
                         </View>
                     ) : (
                         <TouchableOpacity style={styles.photoUploadButton} onPress={handleImageUpload}>
-                            <Text style={{ fontSize: 20, color: '#9ca3af' }}>📷</Text>
+                            {/* <Text style={{ fontSize: 20, color: '#9ca3af' }}>📷</Text> */}
+                            <Camera size={20} color="#9ca3af" />
                         </TouchableOpacity>
                     )}
                 </View>
@@ -303,28 +335,101 @@ export default function ClaimProfile() {
                 
 
                 <Text style={styles.label}>Password</Text>
-                <TextInput 
-                    placeholder="Enter your password" 
-                    style={[styles.input, errors.password && { borderColor: '#ef4444' }]} 
-                    placeholderTextColor="#9ca3af"
-                    value={formData.password}
-                    onChangeText={(text) => {
-                        setFormData(prev => ({ ...prev, password: text }))
-                        clearError('password')
-                    }}
-                    secureTextEntry
-                />
+                <View style={styles.passwordContainer}>
+                    <TextInput 
+                        placeholder="Enter your password" 
+                        style={[styles.passwordInput, errors.password && { borderColor: '#ef4444' }]} 
+                        placeholderTextColor="#9ca3af"
+                        value={formData.password}
+                        onChangeText={(text) => {
+                            handleInputChange('password', text)
+                            clearError('password')
+                        }}
+                        secureTextEntry={!showPassword}
+                    />
+                    <TouchableOpacity 
+                        style={styles.eyeButton}
+                        onPress={() => setShowPassword(!showPassword)}
+                    >
+                        <Text style={{ fontSize: 20 }}>
+                            {showPassword ? <Eye size={20} color="#9ca3af" /> : <EyeOff size={20} color="#9ca3af" />}
+                        </Text>
+                    </TouchableOpacity>
+                </View>
                 
-
-                <Text style={styles.label}>Date of Birth</Text>
-                <TouchableOpacity onPress={() => setOpen(true)}>
-                    {formattedDate ? (
-                        <Text style={styles.input}>{formattedDate}</Text>
-                    ) : (
-                        <Text style={[styles.input, { color: '#9ca3af' }, errors.dateOfBirth && { borderColor: '#ef4444' }]}>Select date</Text>
-                    )}
-                </TouchableOpacity>
-               
+                {/* Password Strength Indicator */}
+                {formData.password && (
+                    <View style={styles.passwordStrengthContainer}>
+                        <Text style={styles.passwordStrengthTitle}>Password must contain:</Text>
+                        <View style={styles.passwordStrengthList}>
+                            <View style={styles.passwordStrengthItem}>
+                                <Check 
+                                    size={12} 
+                                    color={passwordStrength.hasMinLength ? '#16a34a' : '#d1d5db'} 
+                                />
+                                <Text style={[
+                                    styles.passwordStrengthText,
+                                    { color: passwordStrength.hasMinLength ? '#16a34a' : '#9ca3af' }
+                                ]}>
+                                    At least 8 characters
+                                </Text>
+                            </View>
+                            <View style={styles.passwordStrengthItem}>
+                                <Check 
+                                    size={12} 
+                                    color={passwordStrength.hasUppercase ? '#16a34a' : '#d1d5db'} 
+                                />
+                                <Text style={[
+                                    styles.passwordStrengthText,
+                                    { color: passwordStrength.hasUppercase ? '#16a34a' : '#9ca3af' }
+                                ]}>
+                                    One uppercase letter
+                                </Text>
+                            </View>
+                            <View style={styles.passwordStrengthItem}>
+                                <Check 
+                                    size={12} 
+                                    color={passwordStrength.hasLowercase ? '#16a34a' : '#d1d5db'} 
+                                />
+                                <Text style={[
+                                    styles.passwordStrengthText,
+                                    { color: passwordStrength.hasLowercase ? '#16a34a' : '#9ca3af' }
+                                ]}>
+                                    One lowercase letter
+                                </Text>
+                            </View>
+                            <View style={styles.passwordStrengthItem}>
+                                <Check 
+                                    size={12} 
+                                    color={passwordStrength.hasNumber ? '#16a34a' : '#d1d5db'} 
+                                />
+                                <Text style={[
+                                    styles.passwordStrengthText,
+                                    { color: passwordStrength.hasNumber ? '#16a34a' : '#9ca3af' }
+                                ]}>
+                                    One number
+                                </Text>
+                            </View>
+                            <View style={styles.passwordStrengthItem}>
+                                <Check 
+                                    size={12} 
+                                    color={passwordStrength.hasSpecialChar ? '#16a34a' : '#d1d5db'} 
+                                />
+                                <Text style={[
+                                    styles.passwordStrengthText,
+                                    { color: passwordStrength.hasSpecialChar ? '#16a34a' : '#9ca3af' }
+                                ]}>
+                                    One special character
+                                </Text>
+                            </View>
+                        </View>
+                    </View>
+                )}
+                
+                {errors.password && (
+                    <Text style={styles.errorText}>{errors.password}</Text>
+                )}
+                
             </View>
 
             <View
@@ -384,6 +489,17 @@ export default function ClaimProfile() {
                     <Text style={{ color: 'white', textAlign: 'center', fontSize: 16, fontWeight: 'bold' }}>Continue</Text>
                 )}
             </TouchableOpacity>
+
+            {/* Sign In Button */}
+            <View style={styles.signInContainer}>
+                <Text style={styles.signInText}>Already have an account?</Text>
+                <TouchableOpacity 
+                    style={styles.signInButton}
+                    onPress={() => navigation.navigate('Login' as never)}
+                >
+                    <Text style={styles.signInButtonText}>Sign In</Text>
+                </TouchableOpacity>
+            </View>
 
             {/* OTP Modal */}
             {showOTPModal && (
@@ -512,6 +628,68 @@ const styles = StyleSheet.create({
         color: '#ef4444',
         marginBottom: 8,
         marginTop: -4,
+    },
+    passwordContainer: {
+        position: 'relative',
+        marginBottom: 8,
+    },
+    passwordInput: {
+        borderWidth: 1.5,
+        borderColor: '#e5e7eb',
+        borderRadius: 12,
+        padding: 16,
+        paddingRight: 50,
+        backgroundColor: '#f9fafb',
+        fontSize: 16,
+        color: '#111827',
+    },
+    eyeButton: {
+        position: 'absolute',
+        right: 16,
+        top: 16,
+        padding: 4,
+    },
+    passwordStrengthContainer: {
+        marginTop: 8,
+        marginBottom: 8,
+    },
+    passwordStrengthTitle: {
+        fontSize: 12,
+        color: '#6b7280',
+        marginBottom: 8,
+    },
+    passwordStrengthList: {
+        gap: 4,
+    },
+    passwordStrengthItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+    passwordStrengthText: {
+        fontSize: 12,
+    },
+    signInContainer: {
+        alignItems: 'center',
+        flexDirection: 'row',
+        justifyContent: 'center',
+        gap: 10,
+        marginTop: 10,
+        paddingHorizontal: 20,
+    },
+    signInText: {
+        fontSize: 12,
+        color: '#6b7280',
+    },
+    signInButton: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'white',
+    },
+    signInButtonText: {
+        fontSize: 12,
+        fontWeight: '500',
+        color: '#374151',
     },
     stepIndicator: {
         alignItems: 'center',

@@ -12,8 +12,11 @@ import { navigationGroups } from '../../Constants/navigationItems';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PrimaryGrey } from '../../Constants/Colors';
 import { Bell } from 'lucide-react-native';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/Avatar';
+import { useAuthStore } from '../../store/store';
 
 export default function CustomDrawerContent(props: DrawerContentComponentProps) {
+  const { user: currentUser } = useAuthStore();
   const { navigation } = props;
 
   const handleNavigation = (item: any) => {
@@ -29,12 +32,20 @@ export default function CustomDrawerContent(props: DrawerContentComponentProps) 
     <SafeAreaView style={styles.container}>
       {/* Profile Section */}
       <View style={styles.profileSection}>
-        <Image
+        {/* <Image
           source={{ uri: 'https://randomuser.me/api/portraits/women/44.jpg' }}
           style={styles.profileImage}
-        />
+        /> */}
+        {currentUser?.id ? (
+          <>
+        <Avatar>
+          <AvatarImage src={currentUser?.profile_picture} />
+          <AvatarFallback>
+            {currentUser?.username?.split(' ')[0][0].toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
         <View style={styles.profileInfo}>
-          <Text style={styles.profileName}>My Name is Mya</Text>
+          <Text style={styles.profileName}>My Name is {currentUser?.first_name}</Text>
           <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
             <Text style={styles.profileLink}>Go to your profile</Text>
           </TouchableOpacity>
@@ -62,6 +73,18 @@ export default function CustomDrawerContent(props: DrawerContentComponentProps) 
             <Text style={{ color: 'white', fontSize: 10, fontWeight: '700' }}>5</Text>
           </View>
         </TouchableOpacity>
+        </>
+        ):(
+          <>
+          <Avatar>
+            <AvatarFallback>U</AvatarFallback>
+          </Avatar>
+          <Text style={styles.profileName}>Guest</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Login' as never)}>
+            <Text style={styles.profileLink}>Login</Text>
+          </TouchableOpacity>
+          </>
+        )}
       </View>
 
       {/* Navigation Items */}
@@ -132,6 +155,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     padding: 16,
     width: '95%',
+    gap: 6,
     borderBottomWidth: 1,
     borderBottomColor: '#f3f4f6',
   },

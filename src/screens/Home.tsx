@@ -59,6 +59,7 @@ export default function Home() {
         id: String(post.id),
         avatarUrl: post.user?.profile_picture,
         username: post.user?.username || post.user?.full_name || 'Unknown User',
+        userId: post.user?.id,
         time: new Date(post.created_at).toLocaleDateString(),
         org: post.collective?.name || 'Unknown Collective',
         text: post.content || '',

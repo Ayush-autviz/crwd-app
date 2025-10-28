@@ -20,8 +20,8 @@ export const resendEmailVerificationCode = async (data: any) => {
     return response.data;
 };
 
-export const googleLogin = async (data: any) => {
-    const response = await axiosClient.get('/auth/google/login/', data);
+export const googleLogin = async () => {
+    const response = await axiosClient.get('/auth/google/login/?device=mobile');
     return response.data;
 };
 

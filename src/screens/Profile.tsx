@@ -9,11 +9,16 @@ import PopularPosts from '../components/PopularPosts'
 import ProfileInterests from '../components/ProfileInterests'
 import { PrimaryBlue, PrimaryGrey } from '../Constants/Colors'
 import { useNavigation, NavigationProp } from '@react-navigation/native'
-import { Share2, Flag, ChevronRight, Ellipsis, MapPin } from 'lucide-react-native'
-import { getPosts, getUserProfileById, getUserFollowers, getUserFollowing } from '../services/api/social'
+import { Share2, Flag, ChevronRight, Ellipsis } from 'lucide-react-native'
+import { getPosts, getUserProfileById, getUserFollowers, getUserFollowing, getFavoriteCauses } from '../services/api/social'
+import { getUserCollectives, getJoinCollective } from '../services/api/crwd'
 import { useAuthStore } from '../store/store'
 import { Pencil } from 'lucide-react-native'
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/Avatar'
+import { useMutation } from '@tanstack/react-query'
+import { logout } from '../services/api/auth'
+import { MapPin } from 'lucide-react-native'
+import { DoorOpenIcon } from 'lucide-react-native'
 
 type RootStackParamList = {
     ProfileEdit: undefined;
@@ -24,9 +29,41 @@ type RootStackParamList = {
 
 export default function Profile() {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-    const { user } = useAuthStore();
+    const { user, logout: logoutStore } = useAuthStore();
     const [showMenu, setShowMenu] = useState(false);
     const [showImageModal, setShowImageModal] = useState(false);
+
+    // Logout mutation
+    const logoutMutation = useMutation({
+        mutationFn: logout,
+        onSuccess: () => {
+            console.log('Logout successful');
+            // Clear auth store
+            logoutStore();
+            // Navigate to login screen
+            navigation.navigate('Login' as never);
+        },
+        onError: (error: any) => {
+            console.error('Logout error:', error);
+            const errorMessage = error?.response?.data?.message || error.message || 'Logout failed';
+            Alert.alert('Error', errorMessage);
+        },
+    });
+
+    const handleLogout = () => {
+        Alert.alert(
+            'Logout',
+            'Are you sure you want to logout?',
+            [
+                { text: 'Cancel', style: 'cancel' },
+                { 
+                    text: 'Logout', 
+                    style: 'destructive',
+                    onPress: () => logoutMutation.mutate()
+                }
+            ]
+        );
+    };
 
     // API integrations - matching Vite version
     const { data: profileData, isLoading: profileLoading, error: profileError, refetch: refetchProfile } = useQuery({
@@ -41,6 +78,35 @@ export default function Profile() {
         queryFn: () => getPosts(user?.id?.toString() || '', ''),
         enabled: !!user?.id,
     });
+
+    // Fetch followers data - matching Vite version
+    const followersQuery = useQuery({
+        queryKey: ['followers', user?.id],
+        queryFn: () => getUserFollowers(user?.id?.toString() || ''),
+        enabled: !!user?.id,
+    });
+
+    // Fetch following data - matching Vite version
+    const followingQuery = useQuery({
+        queryKey: ['following', user?.id],
+        queryFn: () => getUserFollowing(user?.id?.toString() || ''),
+        enabled: !!user?.id,
+    });
+
+    // Fetch favorite causes data - matching Vite version
+    const favoriteCausesQuery = useQuery({
+        queryKey: ['favoriteCauses', user?.id],
+        queryFn: () => getFavoriteCauses(),
+        enabled: !!user?.id,
+    });
+
+    // Fetch user collectives data - matching Vite version
+    const userCollectivesQuery = useQuery({
+        queryKey: ['joinCollective', user?.id],
+        queryFn: () => getJoinCollective(),
+        enabled: !!user?.id,
+    });
+    
 
 
     // Transform posts data to match PostDetail interface - matching Vite version
@@ -285,10 +351,36 @@ export default function Profile() {
                                                 gap: 8,
                                                 paddingHorizontal: 12,
                                                 paddingVertical: 8,
+                                                borderBottomWidth: 1,
+                                                borderBottomColor: '#f3f4f6',
                                             }}
                                         >
                                             <Pencil size={16} color="#374151" />
                                             <Text style={{ fontSize: 14, color: '#374151' }}>Edit Profile</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity
+                                            onPress={() => {
+                                                setShowMenu(false);
+                                                handleLogout();
+                                            }}
+                                            disabled={logoutMutation.isPending}
+                                            style={{
+                                                flexDirection: 'row',
+                                                alignItems: 'center',
+                                                gap: 8,
+                                                paddingHorizontal: 12,
+                                                paddingVertical: 8,
+                                                opacity: logoutMutation.isPending ? 0.5 : 1,
+                                            }}
+                                        >
+                                            {logoutMutation.isPending ? (
+                                                <ActivityIndicator size={16} color="#ef4444" />
+                                            ) : (
+                                                <DoorOpenIcon size={16} color="#ef4444" />
+                                            )}
+                                            <Text style={{ fontSize: 14, color: '#ef4444' }}>
+                                                {logoutMutation.isPending ? 'Logging out...' : 'Logout'}
+                                            </Text>
                                         </TouchableOpacity>
                                     </View>
                                 </TouchableWithoutFeedback>
@@ -356,15 +448,15 @@ export default function Profile() {
 
                     {/* Profile Stats */}
                     <ProfileStats 
-                        causes={profileData?.favorite_causes_count || 0}
-                        crwds={profileData?.joined_collectives_count || 0}
-                        followers={profileData?.followers_count || 0}
-                        following={profileData?.following_count || 0}
+                        causes={favoriteCausesQuery?.data?.count || profileData?.favorite_causes_count || 0}
+                        crwds={userCollectivesQuery?.data?.data?.length || profileData?.joined_collectives_count || 0}
+                        followers={followersQuery?.data?.count || profileData?.followers_count || 0}
+                        following={followingQuery?.data?.count || profileData?.following_count || 0}
                         profileId={profileData?.id?.toString() || ''}
-                        isLoadingCauses={false}
-                        isLoadingCrwds={false}
-                        isLoadingFollowers={false}
-                        isLoadingFollowing={false}
+                        isLoadingCauses={favoriteCausesQuery?.isLoading || profileLoading}
+                        isLoadingCrwds={userCollectivesQuery?.isLoading || profileLoading}
+                        isLoadingFollowers={followersQuery?.isLoading || false}
+                        isLoadingFollowing={followingQuery?.isLoading || false}
                     />
 
                     {/* Recently Supported Section */}

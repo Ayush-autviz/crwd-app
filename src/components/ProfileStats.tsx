@@ -1,9 +1,31 @@
-import { View, Text, TouchableOpacity } from 'react-native'
+import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native'
 import React from 'react'
-import { LightGrey, PrimaryGrey } from '../Constants/Colors'
+import { LightGrey, PrimaryGrey, PrimaryBlue } from '../Constants/Colors'
 import { useNavigation } from '@react-navigation/native'
 
-export default function ProfileStats() {
+interface ProfileStatsProps {
+    causes?: number;
+    crwds?: number;
+    followers?: number;
+    following?: number;
+    profileId?: string;
+    isLoadingCauses?: boolean;
+    isLoadingCrwds?: boolean;
+    isLoadingFollowers?: boolean;
+    isLoadingFollowing?: boolean;
+}
+
+export default function ProfileStats({ 
+    causes = 0, 
+    crwds = 0, 
+    followers = 0, 
+    following = 0,
+    profileId = '',
+    isLoadingCauses = false,
+    isLoadingCrwds = false,
+    isLoadingFollowers = false,
+    isLoadingFollowing = false
+}: ProfileStatsProps) {
     const navigation = useNavigation()
 
     const handleStatsPress = (tab: 'causes' | 'following' | 'followers' | 'crwds') => {
@@ -22,7 +44,13 @@ export default function ProfileStats() {
                 onPress={() => handleStatsPress('causes')}
                 style={{ flex: 1, alignItems: 'center', justifyContent: "center" }}
             >
-                <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#111827', textAlign: 'center' }}>10</Text>
+                {isLoadingCauses ? (
+                    <ActivityIndicator size="small" color={PrimaryBlue} />
+                ) : (
+                    <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#111827', textAlign: 'center' }}>
+                        {causes}
+                    </Text>
+                )}
                 <Text style={{ fontSize: 12, color: PrimaryGrey, textAlign: 'center' }}>Causes</Text>
             </TouchableOpacity>
             <View style={{ width: 1, backgroundColor: '#e5e7eb', marginHorizontal: 8 }} />
@@ -30,7 +58,13 @@ export default function ProfileStats() {
                 onPress={() => handleStatsPress('crwds')}
                 style={{ flex: 1, alignItems: 'center', justifyContent: "center" }}
             >
-                <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#111827', textAlign: "center" }}>3</Text>
+                {isLoadingCrwds ? (
+                    <ActivityIndicator size="small" color={PrimaryBlue} />
+                ) : (
+                    <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#111827', textAlign: "center" }}>
+                        {crwds}
+                    </Text>
+                )}
                 <Text style={{ fontSize: 12, color: PrimaryGrey, textAlign: "center" }}>CRWDs</Text>
             </TouchableOpacity>
             <View style={{ width: 1, backgroundColor: '#e5e7eb', marginHorizontal: 8 }} />
@@ -38,7 +72,13 @@ export default function ProfileStats() {
                 onPress={() => handleStatsPress('followers')}
                 style={{ flex: 1, alignItems: 'center', justifyContent: "center" }}
             >
-                <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#111827', textAlign: "center" }}>58</Text>
+                {isLoadingFollowers ? (
+                    <ActivityIndicator size="small" color={PrimaryBlue} />
+                ) : (
+                    <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#111827', textAlign: "center" }}>
+                        {followers}
+                    </Text>
+                )}
                 <Text style={{ fontSize: 12, color: PrimaryGrey, textAlign: "center" }}>Followers</Text>
             </TouchableOpacity>
             <View style={{ width: 1, backgroundColor: '#e5e7eb', marginHorizontal: 8 }} />
@@ -46,7 +86,13 @@ export default function ProfileStats() {
                 onPress={() => handleStatsPress('following')}
                 style={{ flex: 1, alignItems: 'center', justifyContent: "center" }}
             >
-                <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#111827', textAlign: "center" }}>8</Text>
+                {isLoadingFollowing ? (
+                    <ActivityIndicator size="small" color={PrimaryBlue} />
+                ) : (
+                    <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#111827', textAlign: "center" }}>
+                        {following}
+                    </Text>
+                )}
                 <Text style={{ fontSize: 12, color: PrimaryGrey, textAlign: "center" }}>Following</Text>
             </TouchableOpacity>
         </View>

@@ -1,10 +1,16 @@
-import { View, Text, TouchableOpacity, Image, ScrollView, TextInput, StyleSheet } from 'react-native'
+import { View, Text, TouchableOpacity, Image, ScrollView, TextInput, StyleSheet, ActivityIndicator } from 'react-native'
 import React, { useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import MainHeaderNav from '../components/MainHeaderNav'
 import { LightGrey, PrimaryBlue, PrimaryGrey } from '../Constants/Colors'
 import { Search } from 'lucide-react-native'
 import { useNavigation, useRoute } from '@react-navigation/native'
+import { useQuery } from '@tanstack/react-query'
+import { getUserFollowers, getUserFollowing, getFavoriteCauses } from '../services/api/social'
+import { getJoinCollective } from '../services/api/crwd'
+import { useAuthStore } from '../store/store'
+import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/Avatar'
+// import { MapPin } from 'lucide-react-native'
 
 export default function Statistics() {
     const route = useRoute()
@@ -14,168 +20,249 @@ export default function Statistics() {
     const [causesSearch, setCausesSearch] = useState('')
     const [crwdsSearch, setCrwdsSearch] = useState('')
     const navigation = useNavigation()
+    const { user } = useAuthStore()
 
-    const causes = [
-        { name: "Red Cross", avatar: "https://randomuser.me/api/portraits/men/32.jpg", impact: "Donated $500" },
-        { name: "Food for All", avatar: "https://randomuser.me/api/portraits/women/44.jpg", impact: "Volunteered 20h" },
-        { name: "Hope Foundation", avatar: "https://randomuser.me/api/portraits/men/65.jpg", impact: "Shared 10 posts" },
-    ]
+    // API calls for real data
+    const { data: followersData, isLoading: followersLoading, error: followersError } = useQuery({
+        queryKey: ['followers', user?.id],
+        queryFn: () => getUserFollowers(user?.id?.toString() || ''),
+        enabled: !!user?.id,
+    });
 
-    const crwds = [
-        { name: "Feed the Hungry", avatar: "https://randomuser.me/api/portraits/men/32.jpg", role: "Admin" },
-        { name: "Clean Water Project", avatar: "https://randomuser.me/api/portraits/women/28.jpg", role: "Member" },
-    ]
+    const { data: followingData, isLoading: followingLoading, error: followingError } = useQuery({
+        queryKey: ['following', user?.id],
+        queryFn: () => getUserFollowing(user?.id?.toString() || ''),
+        enabled: !!user?.id,
+    });
 
-    const following = [
-        { name: "Jane Doe", username: "janedoe", avatar: "https://randomuser.me/api/portraits/women/32.jpg", connected: true },
-        { name: "John Smith", username: "johnsmith", avatar: "https://randomuser.me/api/portraits/men/45.jpg", connected: false },
-        { name: "Alice Blue", username: "aliceblue", avatar: "https://randomuser.me/api/portraits/women/55.jpg", connected: false },
-    ]
+    const { data: causesData, isLoading: causesLoading, error: causesError } = useQuery({
+        queryKey: ['favoriteCauses', user?.id],
+        queryFn: () => getFavoriteCauses(),
+        enabled: !!user?.id,
+    });
 
-    const followers = [
-        { name: "Chris Red", username: "chrisred", avatar: "https://randomuser.me/api/portraits/men/22.jpg", connected: false },
-        { name: "Mia Green", username: "miagreen", avatar: "https://randomuser.me/api/portraits/women/23.jpg", connected: false },
-        { name: "Sam Yellow", username: "samyellow", avatar: "https://randomuser.me/api/portraits/men/24.jpg", connected: false },
-    ]
+    const { data: collectivesData, isLoading: collectivesLoading, error: collectivesError } = useQuery({
+        queryKey: ['joinCollective', user?.id],
+        queryFn: () => getJoinCollective(),
+        enabled: !!user?.id,
+    });
 
-    // Sample data for suggested causes (matching crwd-vite)
-    const suggestedCauses = [
-        {
-            name: "The Red Cross",
-            description: "An health organization that helps people in need",
-            image: require('../assets/images/redcross.png'),
-            type: "Nonprofit",
-        },
-        {
-            name: "St. Judes",
-            description: "The leading children's health organization",
-            image: require('../assets/images/redcross.png'),
-            type: "Nonprofit",
-        },
-        {
-            name: "Women's Healthcare of At...",
-            description: "We are Atlanta's #1 healthcare organization",
-            image: require('../assets/images/redcross.png'),
-            type: "Nonprofit",
-        },
-    ]
 
-    // Filter functions
-    const filteredCauses = causes.filter(
-        (cause) =>
-            cause.name.toLowerCase().includes(causesSearch.toLowerCase()) ||
-            cause.impact.toLowerCase().includes(causesSearch.toLowerCase())
-    )
+    // Use API data with fallbacks - handling nested structures
+    const causes = causesData?.results?.map((item: any) => {
+        const cause = item.cause || item; // Handle nested cause structure
+        return {
+            name: cause.name || 'Unknown Cause',
+            avatar: cause.image || cause.avatar || '',
+            impact: cause.mission || 'Supported',
+            id: cause.id,
+            description: cause.mission || '',
+            category: cause.category || '',
+            state: cause.state || '',
+            city: cause.city || '',
+        };
+    }) || []
 
-    const filteredCrwds = crwds.filter(
-        (crwd) =>
-            crwd.name.toLowerCase().includes(crwdsSearch.toLowerCase()) ||
-            crwd.role.toLowerCase().includes(crwdsSearch.toLowerCase())
-    )
+    const crwds = collectivesData?.data?.map((item: any) => {
+        const collective = item.collective || item; // Handle nested collective structure
+        return {
+            name: collective.name || 'Unknown Collective',
+            avatar: collective.created_by?.profile_picture || collective.avatar || collective.image || '',
+            role: item.role || 'Member',
+            id: collective.id,
+            description: collective.description || '',
+            memberCount: collective.member_count || 0,
+            createdBy: collective.created_by || null,
+        };
+    }) || []
 
-    const renderCausesTab = () => (
-        <View style={styles.causesContainer}>
-            {suggestedCauses.map((cause, index) => (
-                <View key={index} style={styles.causeItem}>
-                    <View style={styles.causeInfo}>
-                        <Image source={cause.image} style={styles.causeImage} />
-                        <View style={styles.causeDetails}>
-                            <View style={[
-                                styles.typeBadge,
-                                cause.type === 'Collective' ? styles.crwdBadge : styles.nonprofitBadge
-                            ]}>
-                                <Text style={[
-                                    styles.typeText,
-                                    cause.type === 'Collective' ? styles.crwdText : styles.nonprofitText
-                                ]}>
-                                    {cause.type}
-                                </Text>
-                            </View>
-                            <Text style={styles.causeName}>{cause.name}</Text>
-                            <Text style={styles.causeDescription}>{cause.description}</Text>
-                        </View>
-                    </View>
-                    {cause.type === 'Nonprofit' && (
-                        <View style={styles.causeActions}>
-                            <TouchableOpacity style={styles.donateButton} onPress={() => navigation.navigate('CauseScreen' as never)}>
-                                <Text style={styles.donateButtonText}>Donate Now</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={() => navigation.navigate('CauseScreen' as never)}>
-                                <Text style={styles.visitProfileText}>Visit Profile</Text>
-                            </TouchableOpacity>
-                        </View>
-                    )}
-                    {cause.type === 'Collective' && (
-                        <View style={styles.causeActions}>
-                            <TouchableOpacity  onPress={() => navigation.navigate('GroupCRWD' as never)} style={styles.joinButton}>
-                                <Text style={styles.joinButtonText}>Learn More</Text>
-                            </TouchableOpacity>
-                        </View>
-                    )}
+    const following = followingData?.following?.map((item: any) => {
+        const userData = item.followee || item.following || item.user || item
+        return {
+            name: userData.first_name && userData.last_name 
+                ? `${userData.first_name} ${userData.last_name}` 
+                : userData.first_name || userData.name || 'Unknown User',
+            username: userData.username || 'unknown',
+            avatar: userData.profile_picture || userData.avatar || '',
+            connected: userData.is_following || false,
+            id: userData.id,
+            is_following: userData.is_following || false,
+        }
+    }) || []
+
+    const followers = followersData?.followers?.map((item: any) => {
+        const userData = item.follower || item.user || item
+        return {
+            name: userData.first_name && userData.last_name 
+                ? `${userData.first_name} ${userData.last_name}` 
+                : userData.first_name || userData.name || 'Unknown User',
+            username: userData.username || 'unknown',
+            avatar: userData.profile_picture || userData.avatar || '',
+            connected: userData.is_following || false,
+            id: userData.id,
+            is_following: userData.is_following || false,
+        }
+    }) || []
+
+
+    const renderCausesTab = () => {
+        if (causesLoading) {
+            return (
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color={PrimaryBlue} />
+                    <Text style={styles.loadingText}>Loading causes...</Text>
                 </View>
-            ))}
-        </View>
-    )
+            )
+        }
 
-    const renderCRWDsTab = () => (
-        <View style={styles.crwdsContainer}>
-            {filteredCrwds.map((crwd, index) => (
-                <View key={index} style={styles.crwdItem}>
-                    <View style={styles.crwdInfo}>
-                        <Image source={{ uri: crwd.avatar }} style={styles.crwdAvatar} />
-                        <View>
-                            <Text style={styles.crwdName}>{crwd.name}</Text>
-                            <Text style={styles.crwdRole}>{crwd.role}</Text>
-                        </View>
-                    </View>
-                    <TouchableOpacity style={styles.viewButton}>
-                        <Text style={styles.viewButtonText}>View</Text>
-                    </TouchableOpacity>
-                </View>
-            ))}
-        </View>
-    )
-
-    const renderMembersTab = (members: typeof following, title: string) => (
-        <View style={styles.membersContainer}>
-            {/* Search Bar */}
-            <View style={styles.searchContainer}>
-                <View style={styles.searchBar}>
-                    <Search size={20} color={PrimaryGrey} />
-                    <TextInput
-                        style={styles.searchInput}
-                        placeholder="Search members..."
-                        placeholderTextColor={PrimaryGrey}
-                    />
-                </View>
-            </View>
-
-            {/* Members List */}
-            <ScrollView style={styles.membersList}>
-                {members.map((member, index) => (
-                    <View key={index} style={styles.memberItem}>
-                        <View style={styles.memberInfo}>
-                            <Image source={{ uri: member.avatar }} style={styles.memberAvatar} />
-                            <View>
-                                <Text style={styles.memberName}>{member.name}</Text>
-                                <Text style={styles.memberUsername}>@{member.username}</Text>
+        return (
+            <ScrollView style={styles.causesContainer}>
+                {causes.length > 0 ? causes.map((cause, index) => (
+                    <View key={cause.id || index} style={styles.causeItem}>
+                        <View style={styles.causeInfo}>
+                            <Avatar size={40}>
+                                <AvatarImage src={cause.avatar} />
+                                <AvatarFallback>
+                                    {cause.name.charAt(0).toUpperCase()}
+                                </AvatarFallback>
+                            </Avatar>
+                            <View style={styles.causeDetails}>
+                                <View style={[styles.typeBadge, styles.nonprofitBadge]}>
+                                    <Text style={[styles.typeText, styles.nonprofitText]}>Nonprofit</Text>
+                                </View>
+                                <Text style={styles.causeName}>{cause.name}</Text>
+                                <Text style={styles.causeDescription}>{cause.description}</Text>
+                           
                             </View>
                         </View>
-                        {!member.connected && (
-                            <TouchableOpacity style={styles.followButton}>
-                                <Text style={styles.followButtonText}>Follow</Text>
+                        <View style={styles.causeActions}>
+                            <TouchableOpacity 
+                                style={styles.donateButton} 
+                                onPress={() => navigation.navigate('CauseScreen' as never, { causeId: cause.id } as never)}
+                            >
+                                <Text style={styles.donateButtonText}>View Details</Text>
                             </TouchableOpacity>
-                        )}
-                        {member.connected && (
-                            <TouchableOpacity style={styles.followingButton}>
-                                <Text style={styles.followingButtonText}>Following</Text>
-                            </TouchableOpacity>
-                        )}
+                        </View>
                     </View>
-                ))}
+                )) : (
+                    <View style={styles.emptyState}>
+                        <Text style={styles.emptyStateText}>No causes found</Text>
+                    </View>
+                )}
             </ScrollView>
-        </View>
-    )
+        )
+    }
+
+    const renderCRWDsTab = () => {
+        if (collectivesLoading) {
+            return (
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color={PrimaryBlue} />
+                    <Text style={styles.loadingText}>Loading collectives...</Text>
+                </View>
+            )
+        }
+
+        return (
+            <ScrollView style={styles.causesContainer}>
+                {crwds.length > 0 ? crwds.map((crwd, index) => (
+                    <View key={crwd.id || index} style={styles.causeItem}>
+                        <View style={styles.causeInfo}>
+                            <Avatar size={40}>
+                                <AvatarImage src={crwd.avatar} />
+                                <AvatarFallback>
+                                    {crwd.name.charAt(0).toUpperCase()}
+                                </AvatarFallback>
+                            </Avatar>
+                            <View style={styles.causeDetails}>
+                                <View style={[styles.typeBadge, styles.crwdBadge]}>
+                                    <Text style={[styles.typeText, styles.crwdText]}>Collective</Text>
+                                </View>
+                                <Text style={styles.causeName}>{crwd.name}</Text>
+                                <Text style={styles.causeDescription}>{crwd.description}</Text>
+                                
+                            </View>
+                        </View>
+                        <View style={styles.causeActions}>
+                            <TouchableOpacity 
+                                style={styles.donateButton} 
+                                onPress={() => navigation.navigate('GroupCRWD' as never, { collectiveId: crwd.id } as never)}
+                            >
+                                <Text style={styles.donateButtonText}>View Details</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                )) : (
+                    <View style={styles.emptyState}>
+                        <Text style={styles.emptyStateText}>No collectives found</Text>
+                    </View>
+                )}
+            </ScrollView>
+        )
+    }
+
+    const renderMembersTab = (members: typeof following, title: string) => {
+        const isLoading = title === 'Following' ? followingLoading : followersLoading
+        
+        if (isLoading) {
+            return (
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color={PrimaryBlue} />
+                    <Text style={styles.loadingText}>Loading {title.toLowerCase()}...</Text>
+                </View>
+            )
+        }
+
+        return (
+            <View style={styles.membersContainer}>
+                {/* Search Bar */}
+                <View style={styles.searchContainer}>
+                    <View style={styles.searchBar}>
+                        <Search size={20} color={PrimaryGrey} />
+                        <TextInput
+                            style={styles.searchInput}
+                            placeholder={`Search ${title.toLowerCase()}...`}
+                            placeholderTextColor={PrimaryGrey}
+                        />
+                    </View>
+                </View>
+
+                {/* Members List */}
+                <ScrollView style={styles.membersList}>
+                    {members.length > 0 ? members.map((member, index) => (
+                        <View key={member.id || index} style={styles.memberItem}>
+                            <View style={styles.memberInfo}>
+                                <Avatar size={40}>
+                                    <AvatarImage src={member.avatar} />
+                                    <AvatarFallback>
+                                        {member.name.split(' ').map((word: string) => word[0]).join('').toUpperCase()}
+                                    </AvatarFallback>
+                                </Avatar>
+                                <View>
+                                    <Text style={styles.memberName}>{member.name}</Text>
+                                    <Text style={styles.memberUsername}>@{member.username}</Text>
+                                </View>
+                            </View>
+                            {!member.connected && (
+                                <TouchableOpacity style={styles.followButton}>
+                                    <Text style={styles.followButtonText}>Follow</Text>
+                                </TouchableOpacity>
+                            )}
+                            {member.connected && (
+                                <TouchableOpacity style={styles.followingButton}>
+                                    <Text style={styles.followingButtonText}>Following</Text>
+                                </TouchableOpacity>
+                            )}
+                        </View>
+                    )) : (
+                        <View style={styles.emptyState}>
+                            <Text style={styles.emptyStateText}>No {title.toLowerCase()} found</Text>
+                        </View>
+                    )}
+                </ScrollView>
+            </View>
+        )
+    }
 
     const tabs = [
         { label: "Causes", value: "causes" },
@@ -183,6 +270,7 @@ export default function Statistics() {
         { label: "Followers", value: "followers" },
         { label: "CRWDs", value: "crwds" },
     ]
+
 
     return (
         <SafeAreaView style={styles.container}>
@@ -293,6 +381,7 @@ const styles = StyleSheet.create({
     causeDetails: {
         flex: 1,
         minWidth: 0,
+        marginLeft: 6,
     },
     typeBadge: {
         paddingHorizontal: 12,
@@ -473,5 +562,37 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: 14,
         fontWeight: '500',
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingVertical: 40,
+    },
+    loadingText: {
+        marginTop: 10,
+        fontSize: 16,
+        color: PrimaryGrey,
+    },
+    emptyState: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingVertical: 40,
+    },
+    emptyStateText: {
+        fontSize: 16,
+        color: PrimaryGrey,
+        textAlign: 'center',
+    },
+    causeLocation: {
+        fontSize: 11,
+        color: PrimaryGrey,
+        marginTop: 2,
+    },
+    crwdMemberCount: {
+        fontSize: 11,
+        color: PrimaryGrey,
+        marginTop: 2,
     },
 }) 

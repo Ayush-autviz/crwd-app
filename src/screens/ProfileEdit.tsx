@@ -22,6 +22,7 @@ import { getUserProfileById } from '../services/api/social'
 import { updateProfile } from '../services/api/auth'
 import { useAuthStore } from '../store/store'
 import { useToast } from '../contexts/ToastContext'
+import * as ImagePicker from 'react-native-image-picker'
 
 export default function ProfileEdit() {
   const navigation = useNavigation()
@@ -36,8 +37,9 @@ export default function ProfileEdit() {
     username: "",
     location: "",
     bio: "",
-    profile_picture: "https://randomuser.me/api/portraits/women/44.jpg"
+    profile_picture_file: "https://randomuser.me/api/portraits/women/44.jpg"
   })
+  const [selectedImageUri, setSelectedImageUri] = useState<string | null>(null)
   const [tempData, setTempData] = useState({
     first_name: "",
     last_name: "",
@@ -80,7 +82,7 @@ export default function ProfileEdit() {
         username: profileData.username || '',
         location: profileData.location || '',
         bio: profileData.bio || '',
-        profile_picture: profileData.profile_picture || 'https://randomuser.me/api/portraits/women/44.jpg'
+        profile_picture_file: profileData.profile_picture || ''
       })
       
       setTempData({
@@ -141,11 +143,47 @@ export default function ProfileEdit() {
   }
 
   const handleImageChange = () => {
-    Alert.alert(
-      'Change Profile Picture',
-      'Image picker functionality will be implemented with proper image library setup.',
-      [{ text: 'OK' }]
-    )
+    const options = {
+      mediaType: 'photo' as const,
+      includeBase64: true,
+      maxHeight: 2000,
+      maxWidth: 2000,
+    }
+
+    ImagePicker.launchImageLibrary(options, (response) => {
+      if (response.didCancel) {
+        return
+      }
+      if (response.assets && response.assets[0]) {
+        const uri = response.assets[0].uri
+        if (uri) {
+          setSelectedImageUri(uri)
+          setFormData(prev => ({
+            ...prev,
+            profile_picture_file: uri
+          }))
+          // Update the profile with the new image
+          handleImageSave(uri)
+        }
+      }
+    })
+  }
+
+  const handleImageSave = async (imageUri: string) => {
+    const formDataToSend = new FormData()
+    
+    formDataToSend.append('profile_picture_file', {
+      uri: imageUri,
+      type: 'image/jpeg',
+      name: 'profile_picture.jpg',
+    } as any)
+
+    try {
+      await updateProfileMutation.mutateAsync(formDataToSend)
+      showToast('Profile picture updated successfully!', 3000)
+    } catch (error) {
+      showToast('Failed to update profile picture. Please try again.', 3000)
+    }
   }
 
   const renderField = (field: string, label: string, value: string, isTextarea = false) => {
@@ -271,7 +309,7 @@ export default function ProfileEdit() {
           <View style={styles.avatarSection}>
             <View style={styles.avatarContainer}>
               <Image 
-                source={{ uri: formData.profile_picture }} 
+                source={{ uri: formData.profile_picture_file }} 
                 style={styles.avatar}
               />
               <TouchableOpacity

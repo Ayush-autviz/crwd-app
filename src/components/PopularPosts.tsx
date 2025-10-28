@@ -37,8 +37,8 @@ interface PopularPostsProps {
 }
 
 type RootStackParamList = {
-    PostDetail: { post: Post };
-    UserProfile: { imageUrl: string; username: string };
+        PostDetail: { post: Post };
+        UserProfile: { userId: string };
 };
 
 export default function PopularPosts({
@@ -290,7 +290,7 @@ export default function PopularPosts({
                         style={styles.container}
                         onPress={() => handlePostPress(item)}
                     >
-                        <TouchableOpacity onPress={() => navigation.navigate('UserProfile', { imageUrl: item.avatarUrl, username: item.username })}>
+                        <TouchableOpacity onPress={() => navigation.navigate('UserProfile', { userId: item.userId })}>
                             {/* <Image source={{ uri: item.avatarUrl }} style={{ width: 40, height: 40, borderRadius: 20 }} /> */}
                             <Avatar size={40}>
                                 <AvatarImage src={item.avatarUrl} />
@@ -304,7 +304,7 @@ export default function PopularPosts({
                                 <View style={{ flexDirection: 'row', gap: 5, alignItems: 'center' }}>
                                     <Text style={{ fontSize: 14, fontWeight: '500' }}>{item.username}</Text>
                                     <Text style={{ fontSize: 14, color: PrimaryGrey }}>•</Text>
-                                    <Text style={{ fontSize: 12, color: PrimaryGrey }}>{item.time}ww</Text>
+                                    <Text style={{ fontSize: 12, color: PrimaryGrey }}>{item.time}</Text>
                                 </View>
                                 <TouchableOpacity onPress={(event) => handleEllipsisPress(event, item)}>
                                     <Ellipsis size={18} color={PrimaryGrey} />

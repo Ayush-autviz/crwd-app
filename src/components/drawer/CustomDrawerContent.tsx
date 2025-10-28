@@ -46,9 +46,9 @@ export default function CustomDrawerContent(props: DrawerContentComponentProps) 
         </Avatar>
         <View style={styles.profileInfo}>
           <Text style={styles.profileName}>My Name is {currentUser?.first_name}</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
+          {/* <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
             <Text style={styles.profileLink}>Go to your profile</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
         <TouchableOpacity
           onPress={() => navigation.navigate('Activity')}

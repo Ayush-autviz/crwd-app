@@ -15,9 +15,10 @@ import { useNavigation } from '@react-navigation/native';
 import { PrimaryBlue, PrimaryGrey } from '../../Constants/Colors';
 import { SvgXml } from 'react-native-svg';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { googleLogin, googleCallback } from '../../services/api/auth';
+import { googleLogin, googleCallback as googleCallbackApi } from '../../services/api/auth';
 import { useAuthStore } from '../../store/store';
 import { useToast } from '../../contexts/ToastContext';
+import InAppBrowser from 'react-native-inappbrowser-reborn';
 
 const images = [
   require('../../assets/ngo/aspca.jpg'),
@@ -48,47 +49,68 @@ export default function OnBoard() {
   const { setUser, setToken } = useAuthStore();
   const { showToast } = useToast();
 
-  // React Query hooks
-  const googleLoginQuery = useQuery({
-    queryKey: ['googleLogin'],
-    queryFn: googleLogin,
-    enabled: false, // Don't run automatically
-  });
+  // // React Query hooks
+  // const googleLoginQuery = useQuery({
+  //   queryKey: ['googleLogin'],
+  //   queryFn: googleLogin,
+  //   enabled: false, // Don't run automatically
+  // });
 
-  const [callbackCode, setCallbackCode] = useState<string | null>(null);
+  // const [callbackCode, setCallbackCode] = useState<string | null>(null);
 
-  const googleCallbackQuery = useQuery({
-    queryKey: ['googleCallback', callbackCode],
-    queryFn: () => googleCallback(callbackCode!),
-    enabled: !!callbackCode, // Only run when we have a code
-  });
+  // const googleCallbackQuery = useQuery({
+  //   queryKey: ['googleCallback', callbackCode],
+  //   queryFn: () => googleCallback(callbackCode!),
+  //   enabled: !!callbackCode, // Only run when we have a code
+  // });
 
-  // Handle Google callback success/error
-  useEffect(() => {
-    if (googleCallbackQuery.data && callbackCode) {
-      const data = googleCallbackQuery.data;
-      if (data && data.user && data.access_token) {
-        // Store user data and token
-        setUser(data.user);
-        setToken({
-          access_token: data.access_token,
-          refresh_token: data.refresh_token
-        });
+  // // Handle Google callback success/error
+  // useEffect(() => {
+  //   if (googleCallbackQuery.data && callbackCode) {
+  //     const data = googleCallbackQuery.data;
+  //     if (data && data.user && data.access_token) {
+  //       // Store user data and token
+  //       setUser(data.user);
+  //       setToken({
+  //         access_token: data.access_token,
+  //         refresh_token: data.refresh_token
+  //       });
         
-        // Navigate to main app
-        navigation.navigate('DrawerNav' as never);
-      } else {
-        Alert.alert('Error', 'Authentication failed');
-      }
-    }
-  }, [googleCallbackQuery.data, callbackCode, setUser, setToken, navigation]);
+  //       // Navigate to main app
+  //       navigation.navigate('DrawerNav' as never);
+  //     } else {
+  //       Alert.alert('Error', 'Authentication failed');
+  //     }
+  //   }
+  // }, [googleCallbackQuery.data, callbackCode, setUser, setToken, navigation]);
 
-  useEffect(() => {
-    if (googleCallbackQuery.error && callbackCode) {
-      console.error('Google callback failed:', googleCallbackQuery.error);
-      Alert.alert('Error', 'Authentication failed. Please try again.');
-    }
-  }, [googleCallbackQuery.error, callbackCode]);
+  // useEffect(() => {
+  //   if (googleCallbackQuery.error && callbackCode) {
+  //     console.error('Google callback failed:', googleCallbackQuery.error);
+  //     Alert.alert('Error', 'Authentication failed. Please try again.');
+  //   }
+  // }, [googleCallbackQuery.error, callbackCode]);
+
+  const googleCallbackMutation = useMutation({
+    mutationFn: googleCallbackApi,
+    onSuccess: (response) => {
+      console.log('Google callback successful:', response)
+      if (response.user) setUser(response.user);
+      if (response.access_token) {
+        setToken({
+          access_token: response.access_token,
+          refresh_token: response.refresh_token,
+        });
+      }
+      showToast('Google authentication successful!');
+      navigation.navigate('DrawerNav' as never);
+    },
+    onError: (error: any) => {
+      console.error('Google callback error:', error)
+      const errorMessage = error?.response?.data?.message || error.message || 'Google callback failed'
+      showToast(errorMessage)
+    },
+  })
 
   const IMAGE_SIZE = 80;
   const IMAGE_MARGIN = 15;
@@ -135,32 +157,77 @@ export default function OnBoard() {
                     />
                   </svg>`
 
-  const handleGoogleLogin = async () => {
-    setIsGoogleLoading(true);
-    try {
-      const result = await googleLoginQuery.refetch();
-      console.log('Google login response:', result);
+  // const handleGoogleLogin = async () => {
+  //   setIsGoogleLoading(true);
+  //   try {
+  //     const result = await googleLoginQuery.refetch();
+  //     console.log('Google login response:', result);
       
-      // Open the device browser with the Google login URL
-      if (result.data?.url) {
-        const supported = await Linking.canOpenURL(result.data.url);
-        if (supported) {
-          await Linking.openURL(result.data.url);
+  //     // Open the device browser with the Google login URL
+  //     if (result.data?.url) {
+  //       const supported = await Linking.canOpenURL(result.data.url);
+  //       if (supported) {
+  //         await Linking.openURL(result.data.url);
+  //       } else {
+  //         showToast('Unable to open browser');
+  //         setIsGoogleLoading(false);
+  //       }
+  //     } else {
+  //       showToast('Invalid response from server');
+  //       setIsGoogleLoading(false);
+  //     }
+  //   } catch (error: any) {
+  //     console.error('Google login error:', error);
+  //     const errorMessage = error?.response?.data?.message || error.message || 'Failed to initiate Google login';
+  //     showToast(errorMessage);
+  //     setIsGoogleLoading(false);
+  //   }
+  // };
+
+
+  const handleGoogleLogin = async () => {
+    console.log('=== Google Login Started ===');
+    setIsGoogleLoading(true)
+    
+      const result = await googleLogin();
+      
+      if (result && result.url) {
+        console.log('Got OAuth URL:', result.url);
+        
+        // Use InAppBrowser instead of Linking
+        if (await InAppBrowser.isAvailable()) {
+          const authResult = await InAppBrowser.openAuth(
+            result.url,
+            'crwd-app://googleCallback', // Your redirect URL
+            {
+              ephemeralWebSession: false,
+              showTitle: false,
+              enableUrlBarHiding: true,
+              enableDefaultShare: false,
+            }
+          )
+          
+          console.log('Auth result:', authResult);
+          
+          if (authResult.type === 'success' && authResult.url) {
+            // Handle the callback URL directly here
+            const codeMatch = authResult.url.match(/[?&]code=([^&]+)/);
+            const code = codeMatch ? decodeURIComponent(codeMatch[1]) : null;
+            
+            if (code) {
+              googleCallbackMutation.mutateAsync(code);
+              
+            
+          }
         } else {
-          showToast('Unable to open browser');
-          setIsGoogleLoading(false);
+          // Fallback to regular Linking
+          await Linking.openURL(result.url);
         }
-      } else {
-        showToast('Invalid response from server');
+        
         setIsGoogleLoading(false);
       }
-    } catch (error: any) {
-      console.error('Google login error:', error);
-      const errorMessage = error?.response?.data?.message || error.message || 'Failed to initiate Google login';
-      showToast(errorMessage);
-      setIsGoogleLoading(false);
-    }
-  };
+    } 
+  }
 
   const renderRow = (rowImages: any[], animatedValue: Animated.Value, verticalOffsetPattern: number[]) => (
     <View style={{ height: 140, overflow: 'hidden', marginHorizontal: -20 }}>

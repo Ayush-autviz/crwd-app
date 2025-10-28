@@ -26,7 +26,7 @@ export const googleLogin = async () => {
 };
 
 export const googleCallback = async (code: any) => {
-    const response = await axiosClient.get(`/auth/google/callback/?code=${code}`);
+    const response = await axiosClient.get(`/auth/google/callback/?device=mobile&code=${code}`);
     return response.data;
 };
 

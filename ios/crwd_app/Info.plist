@@ -64,5 +64,19 @@
       <string>Octicons.ttf</string>
     </array>
 
+    <!-- Deep Linking Configuration -->
+<key>CFBundleURLTypes</key>
+<array>
+  <dict>
+    <key>CFBundleURLName</key>
+    <string>crwd-app</string>
+    <key>CFBundleURLSchemes</key>
+    <array>
+      <string>crwd-app</string>
+    </array>
+  </dict>
+</array>
+
+
 </dict>
 </plist>

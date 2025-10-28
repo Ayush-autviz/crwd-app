@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { 
   View, 
   Text, 
@@ -10,18 +10,20 @@ import {
   KeyboardAvoidingView, 
   Platform,
   ActivityIndicator,
-  Alert
+  Alert,
+  Linking
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useNavigation } from '@react-navigation/native'
 import { PrimaryGrey, PrimaryBlue, LightGrey } from '../Constants/Colors'
 import { SvgXml } from 'react-native-svg'
 import { useMutation } from '@tanstack/react-query'
-import { login } from '../services/api/auth'
+import { login, googleLogin, googleCallback as googleCallbackApi } from '../services/api/auth'
 import { useAuthStore } from '../store/store'
 import { useToast } from '../contexts/ToastContext'
 import { Eye } from 'lucide-react-native'
 import { EyeOff } from 'lucide-react-native'
+import InAppBrowser from 'react-native-inappbrowser-reborn'
 
 const googleXml = `<svg className="w-4 h-4 mr-2" viewBox="0 0 24 24">
                     <path
@@ -56,6 +58,7 @@ export default function Login() {
     password: '',
   })
 
+
   // React Query hooks
   const loginMutation = useMutation({
     mutationFn: login,
@@ -83,6 +86,31 @@ export default function Login() {
     },
   })
 
+  const googleCallbackMutation = useMutation({
+    mutationFn: googleCallbackApi,
+    onSuccess: (response) => {
+      console.log('Google callback successful:', response)
+      if (response.user) setUser(response.user);
+      if (response.access_token) {
+        setToken({
+          access_token: response.access_token,
+          refresh_token: response.refresh_token,
+        });
+      }
+      showToast('Google authentication successful!');
+      navigation.navigate('DrawerNav' as never);
+    },
+    onError: (error: any) => {
+      console.error('Google callback error:', error)
+      const errorMessage = error?.response?.data?.message || error.message || 'Google callback failed'
+      showToast(errorMessage)
+    },
+  })
+
+  // const googleCallback = async (code: string) => {
+  //   const response = await googleCallbackMutation.mutateAsync(code)
+  //   return response
+  // }
 
 
   const handleInputChange = (name: string, value: string) => {
@@ -104,20 +132,79 @@ export default function Login() {
     })
   }
 
-  const handleGoogleLogin = async () => {
-    setIsGoogleLoading(true)
-    try {
-      // Simulate Google login
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      Alert.alert('Success', 'Google login successful!', [
-        { text: 'OK', onPress: () => navigation.navigate('DrawerNav' as never) }
-      ])
-    } catch (error) {
-      Alert.alert('Error', 'Google login failed')
-    } finally {
-      setIsGoogleLoading(false)
+  // const handleGoogleLogin = async () => {
+  //   console.log('=== Google Login Started ===');
+  //   setIsGoogleLoading(true)
+    
+  //   try {
+  //     // Call backend to get Google OAuth URL
+  //     console.log('Calling googleLogin API...');
+  //     const result = await googleLogin();
+  //     console.log('Backend response:', result);
+      
+  //     if (result && result.url) {
+  //       console.log('Got OAuth URL:', result.url);
+  //       console.log('Opening browser...');
+        
+  //       // Open the OAuth URL in browser - redirect will come back to crwd-app://googleCallback?code=...
+  //       await Linking.openURL(result.url);
+  //       console.log('Browser opened - waiting for deep link');
+  //     } else {
+  //       throw new Error('No URL received from backend');
+  //     }
+  //   } catch (error: any) {
+  //     console.error('Google login error:', error);
+  //     const errorMessage = error?.response?.data?.message || error.message || 'Google login failed';
+  //     showToast(errorMessage);
+  //     setIsGoogleLoading(false);
+  //   }
+  //   // Don't set loading to false here - deep link handler will do it
+  // }
+
+
+const handleGoogleLogin = async () => {
+  console.log('=== Google Login Started ===');
+  setIsGoogleLoading(true)
+  
+    const result = await googleLogin();
+    
+    if (result && result.url) {
+      console.log('Got OAuth URL:', result.url);
+      
+      // Use InAppBrowser instead of Linking
+      if (await InAppBrowser.isAvailable()) {
+        const authResult = await InAppBrowser.openAuth(
+          result.url,
+          'crwd-app://googleCallback', // Your redirect URL
+          {
+            ephemeralWebSession: false,
+            showTitle: false,
+            enableUrlBarHiding: true,
+            enableDefaultShare: false,
+          }
+        )
+        
+        console.log('Auth result:', authResult);
+        
+        if (authResult.type === 'success' && authResult.url) {
+          // Handle the callback URL directly here
+          const codeMatch = authResult.url.match(/[?&]code=([^&]+)/);
+          const code = codeMatch ? decodeURIComponent(codeMatch[1]) : null;
+          
+          if (code) {
+            googleCallbackMutation.mutateAsync(code);
+            
+          
+        }
+      } else {
+        // Fallback to regular Linking
+        await Linking.openURL(result.url);
+      }
+      
+      setIsGoogleLoading(false);
     }
-  }
+  } 
+}
 
   return (
     <SafeAreaView style={styles.container}>

@@ -8,11 +8,16 @@ import {
   Dimensions,
   Alert,
   ActivityIndicator,
+  Linking,
 } from 'react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { PrimaryBlue, PrimaryGrey } from '../../Constants/Colors';
 import { SvgXml } from 'react-native-svg';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { googleLogin, googleCallback } from '../../services/api/auth';
+import { useAuthStore } from '../../store/store';
+import { useToast } from '../../contexts/ToastContext';
 
 const images = [
   require('../../assets/ngo/aspca.jpg'),
@@ -26,7 +31,7 @@ const images = [
   require('../../assets/ngo/cureSearch.png'),
 ];
 
-function shuffleArray(array) {
+function shuffleArray(array: any[]) {
   const copy = [...array];
   for (let i = copy.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -40,6 +45,50 @@ export default function OnBoard() {
   const scrollXBottom = useRef(new Animated.Value(0)).current;
   const navigation = useNavigation();
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const { setUser, setToken } = useAuthStore();
+  const { showToast } = useToast();
+
+  // React Query hooks
+  const googleLoginQuery = useQuery({
+    queryKey: ['googleLogin'],
+    queryFn: googleLogin,
+    enabled: false, // Don't run automatically
+  });
+
+  const [callbackCode, setCallbackCode] = useState<string | null>(null);
+
+  const googleCallbackQuery = useQuery({
+    queryKey: ['googleCallback', callbackCode],
+    queryFn: () => googleCallback(callbackCode!),
+    enabled: !!callbackCode, // Only run when we have a code
+  });
+
+  // Handle Google callback success/error
+  useEffect(() => {
+    if (googleCallbackQuery.data && callbackCode) {
+      const data = googleCallbackQuery.data;
+      if (data && data.user && data.access_token) {
+        // Store user data and token
+        setUser(data.user);
+        setToken({
+          access_token: data.access_token,
+          refresh_token: data.refresh_token
+        });
+        
+        // Navigate to main app
+        navigation.navigate('DrawerNav' as never);
+      } else {
+        Alert.alert('Error', 'Authentication failed');
+      }
+    }
+  }, [googleCallbackQuery.data, callbackCode, setUser, setToken, navigation]);
+
+  useEffect(() => {
+    if (googleCallbackQuery.error && callbackCode) {
+      console.error('Google callback failed:', googleCallbackQuery.error);
+      Alert.alert('Error', 'Authentication failed. Please try again.');
+    }
+  }, [googleCallbackQuery.error, callbackCode]);
 
   const IMAGE_SIZE = 80;
   const IMAGE_MARGIN = 15;
@@ -50,7 +99,7 @@ export default function OnBoard() {
 
   const rowWidth = rowTop.length * ITEM_WIDTH;
 
-  const startLoop = (animatedValue, duration) => {
+  const startLoop = (animatedValue: Animated.Value, duration: number) => {
     animatedValue.setValue(0);
     Animated.loop(
       Animated.timing(animatedValue, {
@@ -89,19 +138,31 @@ export default function OnBoard() {
   const handleGoogleLogin = async () => {
     setIsGoogleLoading(true);
     try {
-      // Simulate Google login
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      Alert.alert('Success', 'Google login successful!', [
-        { text: 'OK', onPress: () => navigation.navigate('DrawerNav' as never) }
-      ]);
-    } catch (error) {
-      Alert.alert('Error', 'Google login failed');
-    } finally {
+      const result = await googleLoginQuery.refetch();
+      console.log('Google login response:', result);
+      
+      // Open the device browser with the Google login URL
+      if (result.data?.url) {
+        const supported = await Linking.canOpenURL(result.data.url);
+        if (supported) {
+          await Linking.openURL(result.data.url);
+        } else {
+          showToast('Unable to open browser');
+          setIsGoogleLoading(false);
+        }
+      } else {
+        showToast('Invalid response from server');
+        setIsGoogleLoading(false);
+      }
+    } catch (error: any) {
+      console.error('Google login error:', error);
+      const errorMessage = error?.response?.data?.message || error.message || 'Failed to initiate Google login';
+      showToast(errorMessage);
       setIsGoogleLoading(false);
     }
   };
 
-  const renderRow = (rowImages, animatedValue, verticalOffsetPattern) => (
+  const renderRow = (rowImages: any[], animatedValue: Animated.Value, verticalOffsetPattern: number[]) => (
     <View style={{ height: 140, overflow: 'hidden', marginHorizontal: -20 }}>
       <Animated.View
         style={{
@@ -110,7 +171,7 @@ export default function OnBoard() {
         }}
       >
         {/* first copy */}
-        {rowImages.map((img, index) => {
+        {rowImages.map((img: any, index: number) => {
           const verticalOffset =
             index % 2 === 0 ? verticalOffsetPattern[0] : verticalOffsetPattern[1];
           return (
@@ -134,7 +195,7 @@ export default function OnBoard() {
           );
         })}
         {/* second copy */}
-        {rowImages.map((img, index) => {
+        {rowImages.map((img: any, index: number) => {
           const verticalOffset =
             index % 2 === 0 ? verticalOffsetPattern[0] : verticalOffsetPattern[1];
           return (
@@ -366,8 +427,8 @@ export default function OnBoard() {
           </TouchableOpacity>
         </View>
       </View>
-
-      
     </View>
   );
 }
+
+  

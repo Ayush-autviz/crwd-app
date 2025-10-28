@@ -1,8 +1,8 @@
-import { View, Text, TextInput, FlatList, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native'
-import React, { useState } from 'react'
+import { View, Text, TextInput, FlatList, ScrollView, TouchableOpacity, ActivityIndicator, Alert, PermissionsAndroid, Platform } from 'react-native'
+import React, { useState, useEffect } from 'react'
 import MainHeaderNav from '../components/MainHeaderNav'
 import { LightGrey, PrimaryBlue, PrimaryGreen, PrimaryGrey, SecondaryBlue } from '../Constants/Colors'
-import { Search } from 'lucide-react-native'
+import { MapPin, Search } from 'lucide-react-native'
 import TopicList from '../components/TopicList'
 import SuggestedCrwd from '../components/SuggestedCrwd'
 import SuggestdCauses from '../components/SuggestdCauses'
@@ -18,11 +18,14 @@ import { getPosts } from '../services/api/social'
 import { getCauses, getCollectives, getCausesByLocation } from '../services/api/crwd'
 import { useAuthStore } from '../store/store'
 import { categories } from '../Constants/categories'
+import Geolocation, { GeoPosition } from 'react-native-geolocation-service'
 
 
 
 export default function Home() {
     const [isLoadingMore, setIsLoadingMore] = useState(false);
+    const [coords, setCoords] = useState<{ latitude: number; longitude: number } | null>(null);
+    const [locationPermissionGranted, setLocationPermissionGranted] = useState(false);
     const navigation = useNavigation();
     const { user: currentUser } = useAuthStore();
 
@@ -47,12 +50,63 @@ export default function Home() {
         enabled: true,
     });
 
+    const requestPermission = async (): Promise<boolean> => {
+        if (Platform.OS === 'ios') {
+          await Geolocation.requestAuthorization('whenInUse');
+          return true; // iOS handles permission automatically
+        }
+    
+        try {
+          const granted = await PermissionsAndroid.request(
+            PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+            {
+              title: 'Location Permission',
+              message: 'App needs access to your location.',
+              buttonNeutral: 'Ask Me Later',
+              buttonNegative: 'Cancel',
+              buttonPositive: 'OK',
+            },
+          );
+          return granted === PermissionsAndroid.RESULTS.GRANTED;
+        } catch (error) {
+          console.warn('Permission error:', error);
+          return false;
+        }
+      };
+    
+      const getCurrentLocation = async (): Promise<void> => {
+        const hasPermission = await requestPermission();
+        if (!hasPermission) {
+          Alert.alert('Permission Denied', 'Location permission is required.');
+          return;
+        }
+    
+        Geolocation.getCurrentPosition(
+          (position: GeoPosition) => {
+            setCoords(position.coords);
+          },
+          error => {
+            console.error('Error getting location:', error.message);
+            // Alert.alert('Error', 'Failed to get location: ' + error.message);
+          },
+        //   {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
+        );
+      };
+    
+
+
     // Fetch causes by location (if location is available)
     const { data: causesByLocationData, isLoading: isLoadingLocationCauses, error: locationCausesError } = useQuery({
-        queryKey: ['causesByLocation'],
-        queryFn: () => getCausesByLocation(0, 0), // You can implement location detection here
-        enabled: false, // Disable for now, enable when location is available
+        queryKey: ['causesByLocation', coords],
+        queryFn: () => {
+            console.log('🌐 Fetching causes by location:', coords?.latitude, coords?.longitude);
+            return getCausesByLocation(coords?.latitude || 0, coords?.longitude || 0);
+        },
+        enabled: !!coords,
     });
+
+    console.log('📍 Current coords:', coords);
+    console.log('🗳️ Causes by location:', causesByLocationData);
 
     // Transform API response to match Post interface
     const posts = postsData?.results?.map((post: any) => ({
@@ -116,43 +170,6 @@ export default function Home() {
         is_favorite: cause.is_favorite || false,
     })) || [];
 
-    // const categories = [
-    //     {
-    //       name: "Animals",
-    //       text: "#E36414", // Orange-Red
-    //       background: "#FFE1CC", // Softer warm orange tint
-    //     },
-    //     {
-    //       name: "Environment",
-    //       text: "#6A994E", // Olive Green
-    //       background: "#DFF0D6", // Fresh leafy green tint
-    //     },
-    //     {
-    //       name: "Food",
-    //       text: "#FF9F1C", // Carrot Orange
-    //       background: "#FFE6CC", // Light orange tint (not too pale)
-    //     },
-    //     {
-    //       name: "Education",
-    //       text: "#FFB84D", // Amber
-    //       background: "#FFEFD1", // Gentle amber tint
-    //     },
-    //     {
-    //       name: "Health",
-    //       text: "#D62828", // Crimson
-    //       background: "#FFD6D6", // Soft rosy red tint
-    //     },
-    //     {
-    //       name: "Rights",
-    //       text: "#780000", // Maroon
-    //       background: "#F2C7C7", // Muted pinkish tint
-    //     },
-    //     {
-    //       name: "Housing",
-    //       text: "#8D6E63", // Brown
-    //       background: "#EADFD9", // Warm earthy beige tint
-    //     },
-    //   ];
 
     const handleLoadMore = async () => {
         setIsLoadingMore(true);
@@ -267,10 +284,10 @@ export default function Home() {
                             {categories.map((category, index) => (
                                 <TouchableOpacity 
                                     key={index}
-                                    onPress={() => navigation.navigate('Search' as never, { 
+                                    onPress={() => (navigation as any).navigate('Search', { 
                                         categoryId: category.id, 
                                         categoryName: category.name 
-                                    } as never)} 
+                                    })} 
                                     style={{
                                         backgroundColor: category.background,
                                         paddingHorizontal: 16,
@@ -295,7 +312,7 @@ export default function Home() {
                     {/* Discover More Button */}
                     <View style={{ alignItems: 'flex-end', marginTop: 16 }}>
                         <TouchableOpacity 
-                            onPress={() => navigation.navigate('Search' as never, { discover: true } as never)}
+                            onPress={() => (navigation as any).navigate('Search', { discover: true })}
                             style={{ flexDirection: 'row', alignItems: 'center' }}
                         >
                             <Text style={{ 
@@ -394,7 +411,7 @@ export default function Home() {
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                         <Text style={{ fontSize: 18, fontWeight: '600', color: '#111827' }}>Nearby Causes</Text>
                         <TouchableOpacity 
-                            onPress={() => navigation.navigate('Search' as never)}
+                            onPress={() => (navigation as any).navigate('Search')}
                             style={{ flexDirection: 'row', alignItems: 'center' }}
                         >
                             <Text style={{ fontSize: 14, color: '#2563eb', fontWeight: '500', marginRight: 4 }}>
@@ -404,7 +421,51 @@ export default function Home() {
                         </TouchableOpacity>
                     </View>
 
-                    {isLoadingLocationCauses ? (
+                    {!coords ? (
+                        <View style={{ 
+                            padding: 24, 
+                            alignItems: 'center', 
+                            backgroundColor: '#f8f9fa',
+                            borderRadius: 12,
+                            borderWidth: 1,
+                            borderColor: '#e9ecef',
+                        }}>
+                            <View style={{ 
+                                width: 64, 
+                                height: 64, 
+                                backgroundColor: '#e3f2fd', 
+                                borderRadius: 32, 
+                                justifyContent: 'center', 
+                                alignItems: 'center',
+                                marginBottom: 16
+                            }}>
+                                {/* <Text style={{ fontSize: 32 }}>📍</Text> */}
+                                <MapPin size={32} color={PrimaryBlue} />
+                            </View>
+                            <Text style={{ 
+                                color: '#374151', 
+                                textAlign: 'center',
+                                fontSize: 14,
+                                lineHeight: 20,
+                                marginBottom: 16
+                            }}>
+                                Enable location services to see causes and organizations near you
+                            </Text>
+                            <TouchableOpacity 
+                                onPress={() => getCurrentLocation()}
+                                style={{
+                                    backgroundColor: PrimaryBlue,
+                                    paddingHorizontal: 24,
+                                    paddingVertical: 12,
+                                    borderRadius: 8,
+                                }}
+                            >
+                                <Text style={{ color: 'white', fontSize: 14, fontWeight: '600' }}>
+                                    Enable Location
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                    ) : isLoadingLocationCauses ? (
                         <View style={{ padding: 20, alignItems: 'center' }}>
                             <ActivityIndicator size="large" color={PrimaryBlue} />
                             <Text style={{ marginTop: 10, color: PrimaryGrey }}>Loading nearby causes...</Text>

@@ -21,8 +21,8 @@ export default function NearbyCauses({ causes = [], isLoading = false, error = n
     const nearbyCauses = causes.length > 0 ? causes.slice(0, 3) : [];
 
   return (
-    <View style={{marginVertical: 20}}>
-      <Text style={{fontSize: 18, fontWeight: 'bold'}}>Causes near you</Text>
+    <View style={{marginBottom: 20}}>
+      {/* <Text style={{fontSize: 18, fontWeight: 'bold'}}>Causes near you</Text> */}
       
       {isLoading ? (
         <View style={{ padding: 20, alignItems: 'center' }}>

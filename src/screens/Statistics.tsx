@@ -6,7 +6,7 @@ import { LightGrey, PrimaryBlue, PrimaryGrey } from '../Constants/Colors'
 import { Search } from 'lucide-react-native'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { useQuery } from '@tanstack/react-query'
-import { getUserFollowers, getUserFollowing, getFavoriteCauses } from '../services/api/social'
+import { getUserFollowers, getUserFollowing, getFavoriteCausesByUserId } from '../services/api/social'
 import { getJoinCollective } from '../services/api/crwd'
 import { useAuthStore } from '../store/store'
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/Avatar'
@@ -14,7 +14,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/Avatar'
 
 export default function Statistics() {
     const route = useRoute()
-    const routeParams = route.params as { screen?: 'causes' | 'following' | 'followers' | 'crwds' } | undefined
+    const routeParams = route.params as { screen?: 'causes' | 'following' | 'followers' | 'crwds'; userId?: string } | undefined
     const defaultTab = routeParams?.screen || 'causes'
     const [activeTab, setActiveTab] = useState<'causes' | 'following' | 'followers' | 'crwds'>(defaultTab)
     const [causesSearch, setCausesSearch] = useState('')
@@ -22,29 +22,32 @@ export default function Statistics() {
     const navigation = useNavigation()
     const { user } = useAuthStore()
 
+    // Use userId from route params if provided, otherwise use current user's id
+    const targetUserId = routeParams?.userId || user?.id?.toString() || ''
+
     // API calls for real data
     const { data: followersData, isLoading: followersLoading, error: followersError } = useQuery({
-        queryKey: ['followers', user?.id],
-        queryFn: () => getUserFollowers(user?.id?.toString() || ''),
-        enabled: !!user?.id,
+        queryKey: ['followers', targetUserId],
+        queryFn: () => getUserFollowers(targetUserId),
+        enabled: !!targetUserId,
     });
 
     const { data: followingData, isLoading: followingLoading, error: followingError } = useQuery({
-        queryKey: ['following', user?.id],
-        queryFn: () => getUserFollowing(user?.id?.toString() || ''),
-        enabled: !!user?.id,
+        queryKey: ['following', targetUserId],
+        queryFn: () => getUserFollowing(targetUserId),
+        enabled: !!targetUserId,
     });
 
     const { data: causesData, isLoading: causesLoading, error: causesError } = useQuery({
-        queryKey: ['favoriteCauses', user?.id],
-        queryFn: () => getFavoriteCauses(),
-        enabled: !!user?.id,
+        queryKey: ['favoriteCauses', targetUserId],
+        queryFn: () => getFavoriteCausesByUserId(targetUserId),
+        enabled: !!targetUserId,
     });
 
     const { data: collectivesData, isLoading: collectivesLoading, error: collectivesError } = useQuery({
-        queryKey: ['joinCollective', user?.id],
-        queryFn: () => getJoinCollective(),
-        enabled: !!user?.id,
+        queryKey: ['joinCollective', targetUserId],
+        queryFn: () => getJoinCollective(targetUserId),
+        enabled: !!targetUserId,
     });
 
 
@@ -117,7 +120,7 @@ export default function Statistics() {
 
         return (
             <ScrollView style={styles.causesContainer}>
-                {causes.length > 0 ? causes.map((cause, index) => (
+                {causes.length > 0 ? causes.map((cause: any, index: number) => (
                     <View key={cause.id || index} style={styles.causeItem}>
                         <View style={styles.causeInfo}>
                             <Avatar size={40}>
@@ -138,7 +141,7 @@ export default function Statistics() {
                         <View style={styles.causeActions}>
                             <TouchableOpacity 
                                 style={styles.donateButton} 
-                                onPress={() => navigation.navigate('CauseScreen' as never, { causeId: cause.id } as never)}
+                                onPress={() => (navigation as any).navigate('CauseScreen', { causeId: cause.id })}
                             >
                                 <Text style={styles.donateButtonText}>View Details</Text>
                             </TouchableOpacity>
@@ -165,7 +168,7 @@ export default function Statistics() {
 
         return (
             <ScrollView style={styles.causesContainer}>
-                {crwds.length > 0 ? crwds.map((crwd, index) => (
+                {crwds.length > 0 ? crwds.map((crwd: any, index: number) => (
                     <View key={crwd.id || index} style={styles.causeItem}>
                         <View style={styles.causeInfo}>
                             <Avatar size={40}>
@@ -186,7 +189,7 @@ export default function Statistics() {
                         <View style={styles.causeActions}>
                             <TouchableOpacity 
                                 style={styles.donateButton} 
-                                onPress={() => navigation.navigate('GroupCRWD' as never, { collectiveId: crwd.id } as never)}
+                                onPress={() => (navigation as any).navigate('GroupCRWD', { collectiveId: crwd.id })}
                             >
                                 <Text style={styles.donateButtonText}>View Details</Text>
                             </TouchableOpacity>
@@ -229,7 +232,7 @@ export default function Statistics() {
 
                 {/* Members List */}
                 <ScrollView style={styles.membersList}>
-                    {members.length > 0 ? members.map((member, index) => (
+                    {members.length > 0 ? members.map((member: any, index: number) => (
                         <View key={member.id || index} style={styles.memberItem}>
                             <View style={styles.memberInfo}>
                                 <Avatar size={40}>

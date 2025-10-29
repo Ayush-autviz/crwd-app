@@ -9,7 +9,7 @@ import PopularPosts from '../components/PopularPosts'
 import ProfileInterests from '../components/ProfileInterests'
 import { PrimaryBlue, PrimaryGrey } from '../Constants/Colors'
 import { useNavigation, NavigationProp } from '@react-navigation/native'
-import { Share2, Flag, ChevronRight, Ellipsis } from 'lucide-react-native'
+import { Share2, Flag, ChevronRight, Ellipsis, MessageCircle, MessageSquare } from 'lucide-react-native'
 import { getPosts, getUserProfileById, getUserFollowers, getUserFollowing, getFavoriteCauses } from '../services/api/social'
 import { getUserCollectives, getJoinCollective } from '../services/api/crwd'
 import { useAuthStore } from '../store/store'
@@ -29,9 +29,12 @@ type RootStackParamList = {
 
 export default function Profile() {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-    const { user, logout: logoutStore } = useAuthStore();
+    const { user, token, logout: logoutStore } = useAuthStore();
     const [showMenu, setShowMenu] = useState(false);
     const [showImageModal, setShowImageModal] = useState(false);
+
+    console.log('user', token);
+    
 
     // Logout mutation
     const logoutMutation = useMutation({
@@ -59,7 +62,10 @@ export default function Profile() {
                 { 
                     text: 'Logout', 
                     style: 'destructive',
-                    onPress: () => logoutMutation.mutate()
+                    onPress: () => {
+                        logoutStore();
+                        navigation.navigate('Login' as never);
+                    }
                 }
             ]
         );
@@ -103,7 +109,7 @@ export default function Profile() {
     // Fetch user collectives data - matching Vite version
     const userCollectivesQuery = useQuery({
         queryKey: ['joinCollective', user?.id],
-        queryFn: () => getJoinCollective(),
+        queryFn: () => getJoinCollective(user?.id),
         enabled: !!user?.id,
     });
     
@@ -465,14 +471,14 @@ export default function Profile() {
                             <Text style={{ fontSize: 18, fontWeight: '600', color: '#111827' }}>
                                 Recently Supported
                             </Text>
-                            <TouchableOpacity onPress={handleMoreInterests}>
+                            {/* <TouchableOpacity onPress={handleMoreInterests}>
                                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                                     <Text style={{ fontSize: 14, color: PrimaryBlue, textDecorationLine: 'underline' }}>
                                         More
                                     </Text>
                                     <ChevronRight size={16} color={PrimaryBlue} />
                                 </View>
-                            </TouchableOpacity>
+                            </TouchableOpacity> */}
                         </View>
 
                         {/* Organization Avatars */}
@@ -510,12 +516,49 @@ export default function Profile() {
 
                     {/* Recent Activity */}
                     <View style={{ paddingVertical: 16 }}>
-                        <PopularPosts
-                            posts={userPosts}
-                            title="Recent Activity"
-                            onLoadMore={async () => {}}
-                            hasMore={true}
-                        />
+                        {postsQuery.isLoading ? (
+                            <View style={{ padding: 20, alignItems: 'center' }}>
+                                <ActivityIndicator size="large" color={PrimaryBlue} />
+                                <Text style={{ marginTop: 10, color: PrimaryGrey }}>Loading posts...</Text>
+                            </View>
+                        ) : userPosts.length === 0 ? (
+                            <View style={{}}>
+                                <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 8 }}>Recent Activity</Text>
+                            
+                            <View style={{ 
+                                backgroundColor: 'white',
+                                borderRadius: 8,
+                                borderWidth: 1,
+                                borderColor: '#e5e7eb',
+                                padding: 24,
+                                alignItems: 'center',
+                                marginTop: 8
+                            }}>
+                                {/* <Text style={{ 
+                                    fontSize: 48, 
+                                    color: '#9ca3af',
+                                    marginBottom: 16
+                                }}>📝</Text> */}
+                                <MessageSquare size={48} color="#9ca3af" />
+                                <Text style={{ 
+                                    fontSize: 18, 
+                                    fontWeight: '600', 
+                                    color: '#111827',
+                                    marginBottom: 8,
+                                    textAlign: 'center'
+                                }}>
+                                    No posts yet
+                                </Text>
+                              </View>
+                            </View>
+                        ) : (
+                            <PopularPosts
+                                posts={userPosts}
+                                title="Recent Activity"
+                                onLoadMore={async () => {}}
+                                hasMore={false}
+                            />
+                        )}
                     </View>
                 </View>
             </ScrollView>

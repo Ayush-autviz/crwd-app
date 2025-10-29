@@ -177,6 +177,11 @@ export const getFavoriteCauses = async () => {
     return response.data;
 };
 
+export const getFavoriteCausesByUserId = async (userId: string) => {
+    const response = await axiosClient.get(`/social/users/favorite-causes/?user_id=${userId}`);
+    return response.data;
+};
+
 export const getFavoriteCollectives = async () => {
     const response = await axiosClient.get('/social/users/favorite-collectives/');
     return response.data;

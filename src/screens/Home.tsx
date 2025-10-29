@@ -105,9 +105,6 @@ export default function Home() {
         enabled: !!coords,
     });
 
-    console.log('📍 Current coords:', coords);
-    console.log('🗳️ Causes by location:', causesByLocationData);
-
     // Transform API response to match Post interface
     const posts = postsData?.results?.map((post: any) => ({
         id: String(post.id),
@@ -141,12 +138,12 @@ export default function Home() {
     })) || [];
 
     // Transform collectives data for components
-    const collectives = collectivesData?.results?.map((collective: any) => ({
+    const collectives = collectivesData?.results?.slice(0, 10).map((collective: any) => ({
         id: String(collective.id),
         name: collective.name || 'Unknown Collective',
         description: collective.description || 'No description available',
         members: `${collective.member_count || 0} Members`,
-        image: collective.image || require('../assets/images/grocery.jpg'),
+        image: collective.created_by?.profile_picture || require('../assets/images/grocery.jpg'),
         createdBy: collective.created_by?.first_name + ' ' + collective.created_by?.last_name || 'Unknown Creator',
         isJoined: collective.is_joined || false,
         memberCount: collective.member_count || 0,
@@ -514,9 +511,9 @@ export default function Home() {
                         </View>
                     ) : (
                         <PopularPosts
-                            posts={posts}
+                            posts={posts.slice(0, 10)}
                             onLoadMore={handleLoadMore}
-                            hasMore={true}
+                            hasMore={false}
                         />
                     )}
                 </View>

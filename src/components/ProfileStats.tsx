@@ -29,7 +29,7 @@ export default function ProfileStats({
     const navigation = useNavigation()
 
     const handleStatsPress = (tab: 'causes' | 'following' | 'followers' | 'crwds') => {
-        navigation.navigate('Statistics' as never, { screen: tab })
+        navigation.navigate('Statistics' as never, { screen: tab, userId: profileId || undefined })
     }
 
     return (

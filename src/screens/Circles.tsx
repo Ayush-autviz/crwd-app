@@ -8,6 +8,7 @@ import { Plus, Search, Users, Heart } from 'lucide-react-native'
 import { useQuery } from '@tanstack/react-query'
 import { getCollectives, getJoinCollective } from '../services/api/crwd'
 import { getFavoriteCollectives } from '../services/api/social'
+import { useAuthStore } from '../store/store'
 
 type TabKey = 'my-crwds' | 'discover'
 
@@ -23,7 +24,7 @@ type DiscoverCircle = {
 const Circles = () => {
   const navigation = useNavigation<any>()
   const [activeTab, setActiveTab] = useState<TabKey>('my-crwds')
-
+  const { user: currentUser } = useAuthStore();
   // Fetch collectives data using React Query
   const { data: collectiveData, isLoading: isLoadingCollectives } = useQuery({
     queryKey: ['circles'],
@@ -34,7 +35,7 @@ const Circles = () => {
   // Fetch joined collectives
   const { data: joinCollectiveData, isLoading: isLoadingJoinCollective } = useQuery({
     queryKey: ['join-collective'],
-    queryFn: () => getJoinCollective(),
+    queryFn: () => getJoinCollective(currentUser?.id),
     enabled: true,
   });
 

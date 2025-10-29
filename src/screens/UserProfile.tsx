@@ -217,7 +217,7 @@ export default function UserProfile() {
 
     return (
         <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }} edges={['top', 'left', 'right']}>
-            <MainHeaderNav title={'Profile'} show />
+            <MainHeaderNav title={'Profile'} show={true} menu={false} />
 
             {/* Top right buttons */}
             <View style={{ flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingTop: 24, paddingBottom: 8 }}>
@@ -369,6 +369,7 @@ export default function UserProfile() {
                         crwds={userProfile.joined_collectives_count || 0}
                         followers={userProfile.followers_count || 0}
                         following={userProfile.following_count || 0}
+                        profileId={targetUserId || ''}
                     />
 
                     {/* Recently Supported Section */}

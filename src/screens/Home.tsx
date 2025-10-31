@@ -19,7 +19,7 @@ import { getCauses, getCollectives, getCausesByLocation } from '../services/api/
 import { useAuthStore } from '../store/store'
 import { categories } from '../Constants/categories'
 import Geolocation, { GeoPosition } from 'react-native-geolocation-service'
-
+import messaging from '@react-native-firebase/messaging'
 
 
 export default function Home() {
@@ -28,6 +28,52 @@ export default function Home() {
     const [locationPermissionGranted, setLocationPermissionGranted] = useState(false);
     const navigation = useNavigation();
     const { user: currentUser } = useAuthStore();
+
+
+    const requestNotificationPermission = async () => {
+        if (Platform.OS === 'android') {
+          const granted = await PermissionsAndroid.request(
+            PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+          );
+          if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+            console.log('Notification permission granted');
+            return true;
+          } else {
+            console.log('Notification permission denied');
+            return false;
+          }
+        }
+        return true; // iOS doesn't need explicit permission request here
+      };
+
+      const getFcmTokenAndSendToBackend = async () => {
+        try {
+          // Request permission first
+          const hasPermission = await requestNotificationPermission();
+          if (!hasPermission) {
+            console.log('Cannot get FCM token: permission denied');
+            return;
+          }
+    
+          // Get FCM token from Firebase
+          await messaging().registerDeviceForRemoteMessages()
+          const token = await messaging().getToken();
+          console.log('🔥 FCM TOKEN in Home:', token);
+        //   setFcmToken(token);
+    
+        //   // Send token to backend
+        //   if (token) {
+        //     try {
+        //       const response = await updateFcmToken(token);
+        //       console.log('✅ FCM token sent to backend successfully:', response);
+        //     } catch (error) {
+        //       console.error('❌ Error sending FCM token to backend:', error);
+        //     }
+        //   }
+        } catch (error) {
+          console.error('❌ Error getting FCM token:', error);
+        }
+      };
 
     // Fetch posts from API
     const { data: postsData, isLoading: isLoadingPosts, error: postsError } = useQuery({
@@ -175,6 +221,10 @@ export default function Home() {
         setIsLoadingMore(false);
     };
 
+    useEffect(() => {
+        getFcmTokenAndSendToBackend();
+    }, []);
+
     return (
         <SafeAreaView style={{backgroundColor: 'white', flex: 1}} edges={['top', 'left', 'right']}>
             <HomeHeader />
@@ -243,30 +293,11 @@ export default function Home() {
 
                 {/* Suggested CRWDs Section */}
                 <View>
-                    {isLoadingCollectives ? (
-                        <View style={{ padding: 20, alignItems: 'center' }}>
-                            <ActivityIndicator size="large" color={PrimaryBlue} />
-                            <Text style={{ marginTop: 10, color: PrimaryGrey }}>Loading collectives...</Text>
-                        </View>
-                    ) : collectivesError ? (
-                        <View style={{ padding: 20, alignItems: 'center' }}>
-                            <Text style={{ color: 'red', textAlign: 'center' }}>
-                                Failed to load collectives. Please try again.
-                            </Text>
-                        </View>
-                    ) : collectives.length === 0 ? (
-                        <View style={{ padding: 20, alignItems: 'center' }}>
-                            <Text style={{ color: PrimaryGrey, textAlign: 'center' }}>
-                                No collectives found
-                            </Text>
-                        </View>
-                    ) : (
                         <SuggestedCrwd 
                             collectives={collectives}
                             isLoading={isLoadingCollectives}
                             error={collectivesError}
                         />
-                    )}
                 </View>
 
                 {/* Categories Section */}
@@ -327,32 +358,11 @@ export default function Home() {
 
                 {/* Suggested Causes Section */}
                 <View>
-                   
-
-                    {isLoadingCauses ? (
-                        <View style={{ padding: 20, alignItems: 'center' }}>
-                            <ActivityIndicator size="large" color={PrimaryBlue} />
-                            <Text style={{ marginTop: 10, color: PrimaryGrey }}>Loading causes...</Text>
-                        </View>
-                    ) : causesError ? (
-                        <View style={{ padding: 20, alignItems: 'center' }}>
-                            <Text style={{ color: 'red', textAlign: 'center' }}>
-                                Failed to load causes. Please try again.
-                            </Text>
-                        </View>
-                    ) : causes.length === 0 ? (
-                        <View style={{ padding: 20, alignItems: 'center' }}>
-                            <Text style={{ color: PrimaryGrey, textAlign: 'center' }}>
-                                No causes found
-                            </Text>
-                        </View>
-                    ) : (
                         <SuggestdCauses 
                             causes={causes}
                             isLoading={isLoadingCauses}
                             error={causesError}
                         />
-                    )}
                 </View>
 
                 {/* Why CRWDs Section */}
@@ -514,6 +524,8 @@ export default function Home() {
                             posts={posts.slice(0, 10)}
                             onLoadMore={handleLoadMore}
                             hasMore={false}
+                            isLoading={isLoadingPosts}
+                            error={postsError}
                         />
                     )}
                 </View>

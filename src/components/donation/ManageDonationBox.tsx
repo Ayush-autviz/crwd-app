@@ -171,10 +171,10 @@ export default function ManageDonationBox({
                 <Text style={styles.actionButtonText}>Edit amount</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.actionButton}>
+              {/* <TouchableOpacity style={styles.actionButton}>
                 <CreditCard size={22} color="#ffffff" />
                 <Text style={styles.actionButtonText}>Edit payment</Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
           </View>
         </View>
@@ -238,7 +238,7 @@ export default function ManageDonationBox({
         </View>
 
         {/* Payment Method Section */}
-        <View style={styles.paymentSection}>
+        {/* <View style={styles.paymentSection}>
           <Text style={styles.sectionTitle}>PAYMENT METHOD</Text>
           <View style={styles.paymentCard}>
             <View style={styles.paymentInfo}>
@@ -254,7 +254,7 @@ export default function ManageDonationBox({
               <Text style={styles.changeButtonText}>Change</Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </View> */}
 
         {/* Next Payment Section */}
         <View style={styles.nextPaymentSection}>
@@ -276,7 +276,7 @@ export default function ManageDonationBox({
         </Text>
 
         {/* Edit Causes Button */}
-        <View style={styles.editCausesSection}>
+        {/* <View style={styles.editCausesSection}>
           <TouchableOpacity 
             style={styles.editCausesButton}
             onPress={handleEditCauses}
@@ -285,7 +285,7 @@ export default function ManageDonationBox({
               {isEditMode ? "Close" : "Edit Causes"}
             </Text>
           </TouchableOpacity>
-        </View>
+        </View> */}
       </ScrollView>
 
       {/* Footer - Only show in edit mode */}
@@ -445,7 +445,7 @@ const styles = StyleSheet.create({
     color: '#1d4ed8',
   },
   causesSection: {
-    paddingHorizontal: 32,
+    paddingHorizontal: 20,
     marginTop: 16,
   },
   sectionTitle: {
@@ -536,7 +536,7 @@ const styles = StyleSheet.create({
     color: '#6b7280',
   },
   distributionSection: {
-    paddingHorizontal: 32,
+    paddingHorizontal: 20,
     paddingVertical: 16,
   },
   distributionText: {
@@ -546,7 +546,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   paymentSection: {
-    paddingHorizontal: 32,
+    paddingHorizontal: 20,
     paddingVertical: 16,
   },
   paymentCard: {
@@ -594,7 +594,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   nextPaymentSection: {
-    paddingHorizontal: 32,
+    paddingHorizontal: 20,
     paddingVertical: 16,
   },
   nextPaymentCard: {
@@ -636,8 +636,8 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#9ca3af',
     textAlign: 'center',
-    marginTop: 20,
-    paddingHorizontal: 32,
+    marginVertical: 20,
+    paddingHorizontal: 20,
   },
   footer: {
     flexDirection: 'row',

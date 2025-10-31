@@ -167,7 +167,15 @@ export default function GroupCRWD() {
             <TouchableOpacity style={styles.donateButton} onPress={() => {
               (navigation as any).navigate('DrawerNav', {
                 screen: 'Donation',
-                params: { initialTab: 'onetime' }
+                params: { 
+                  initialTab: 'onetime',
+                  preselectedItem: collectiveData ? {
+                    id: collectiveData.id.toString(),
+                    type: 'collective' as const,
+                    data: collectiveData
+                  } : undefined,
+                  activeTab: 'collectives'
+                }
               });
             }}>
               <Text style={styles.donateButtonText}>Donate</Text>

@@ -45,7 +45,18 @@ export default function CauseScreen() {
   };
 
   const handleDonate = () => {
-    navigation.navigate('Donation' as never);
+    (navigation as any).navigate('DrawerNav', {
+      screen: 'Donation',
+      params: {
+        initialTab: 'onetime',
+        preselectedItem: causeData ? {
+          id: causeData.id.toString(),
+          type: 'cause' as const,
+          data: causeData
+        } : undefined,
+        activeTab: 'nonprofits'
+      }
+    });
   };
 
   // Show loading state

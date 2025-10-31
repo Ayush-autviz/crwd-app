@@ -8,7 +8,7 @@ import {
   StyleSheet,
   Dimensions,
 } from 'react-native';
-import { ChevronLeft, Plus } from 'lucide-react-native';
+import { ChevronLeft, Plus, Trash2, HelpCircle, Settings, X } from 'lucide-react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import Slider from '@react-native-community/slider';
 import DonationStep2 from '../components/donation/DonationStep2';
@@ -18,6 +18,12 @@ import CheckoutScreen from '../components/donation/CheckoutScreen';
 import PaymentSection from '../components/donation/PaymentSection';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PrimaryBlue } from '../Constants/Colors';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getDonationBox, createDonationBox, removeCauseFromBox, removeCollectiveFromBox, activateDonationBoxMobile, confirmMobileActivation } from '../services/api/donation';
+import { getCausesBySearch, getJoinCollective } from '../services/api/crwd';
+import { useAuthStore } from '../store/store';
+import { Alert, ActivityIndicator, Modal } from 'react-native';
+import { useStripe } from '@stripe/stripe-react-native';
 
 
 const { width } = Dimensions.get('window');
@@ -32,6 +38,114 @@ export default function DonationScreen() {
   const [step, setStep] = useState(1);
   const [inputValue, setInputValue] = useState('7');
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCauseIds, setSelectedCauseIds] = useState<number[]>([]);
+  const [selectedCollectiveIds, setSelectedCollectiveIds] = useState<number[]>([]);
+  const [selectedCausesData, setSelectedCausesData] = useState<any[]>([]);
+  const [selectedCollectivesData, setSelectedCollectivesData] = useState<any[]>([]);
+  const [donationBox, setDonationBox] = useState<any>(null);
+  const { user: currentUser } = useAuthStore();
+  const queryClient = useQueryClient();
+  const { initPaymentSheet, presentPaymentSheet } = useStripe();
+
+  // Load current donation box
+  const donationBoxQuery = useQuery({
+    queryKey: ['donationBox'],
+    queryFn: getDonationBox,
+  });
+
+  // Decide step based on existing box
+  useEffect(() => {
+    if (donationBoxQuery.data && donationBoxQuery.data.id) {
+      setDonationBox(donationBoxQuery.data);
+      if(donationBoxQuery.data.is_active) {
+        setCheckout(true);
+      }
+      setStep(2);
+    } else {
+      setStep(1);
+    }
+  }, [donationBoxQuery.data]);
+
+  // Causes search (max 5 rendered)
+  const { data: causesData, isLoading: causesLoading } = useQuery({
+    queryKey: ['causes', searchQuery],
+    queryFn: () => getCausesBySearch(searchQuery, '', 1),
+  });
+
+  // Joined collectives
+  const { data: joinedCollectivesData, isLoading: collectivesLoading } = useQuery({
+    queryKey: ['joined-collectives', currentUser?.id],
+    queryFn: () => getJoinCollective(currentUser?.id?.toString() || ''),
+    enabled: !!currentUser?.id,
+  });
+
+  // Create donation box
+  const createBoxMutation = useMutation({
+    mutationFn: createDonationBox,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['donationBox'] });
+      setStep(2);
+    },
+    onError: (e: any) => Alert.alert('Error', e?.response?.data?.message || 'Failed to create box'),
+  });
+
+  // Remove cause/collective
+  const removeCauseMutation = useMutation({
+    mutationFn: (id: string) => removeCauseFromBox(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['donationBox'] }),
+  });
+  const removeCollectiveMutation = useMutation({
+    mutationFn: (id: string) => removeCollectiveFromBox(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['donationBox'] }),
+  });
+
+  const activateDonationBoxConfirm = useMutation({
+    mutationFn: confirmMobileActivation,
+    onSuccess: () => {
+      Alert.alert('Success', 'Donation box activated');
+      queryClient.invalidateQueries({ queryKey: ['donationBox'] });
+    },
+    onError: (e: any) => Alert.alert('Error', e?.response?.data?.message || 'Activation failed'),
+  });
+
+  // Activate donation box (Stripe PaymentSheet)
+  const activateMutation = useMutation({
+    mutationFn: activateDonationBoxMobile,
+    onSuccess: async (response: any) => {
+      const clientSecret = response?.client_secret;
+      if (!clientSecret) {
+        Alert.alert('Error', 'Missing client secret');
+        return;
+      }
+      const init = await initPaymentSheet({
+        paymentIntentClientSecret: clientSecret,
+        merchantDisplayName: 'CRWD',
+      });
+      if (init.error) {
+        Alert.alert('Error', init.error.message || 'Failed to initialize payment');
+        return;
+      }
+      const present = await presentPaymentSheet();
+      if (present.error && present.error.code !== 'Canceled') {
+        Alert.alert('Payment Failed', present.error.message || 'Unable to complete payment');
+        return;
+      }
+
+
+      console.log('present', present);
+      if(!present.error) {
+        activateDonationBoxConfirm.mutate({
+         payment_intent_id: response.payment_intent_id,
+        });
+      }
+    },
+    onError: (e: any) => {
+      console.log('error', e);
+      Alert.alert('Error', e?.response?.data?.message || 'Activation failed');
+      queryClient.invalidateQueries({ queryKey: ['donationBox'] });
+    },
+  });
 
   const handleSliderChange = (value: number) => {
     const roundedValue = Math.round(value);
@@ -45,6 +159,10 @@ export default function DonationScreen() {
     if (maybeParams?.initialTab === 'onetime') {
       setActiveTab('onetime');
     }
+    // Handle preselected item for one-time donations
+    if (maybeParams?.preselectedItem) {
+      // preselectedItem is already being passed to OneTimeDonation below
+    }
   }, [route]);
 
   if (checkout) {
@@ -53,6 +171,7 @@ export default function DonationScreen() {
         donationAmount={donationAmount}
         selectedOrganizations={selectedOrganizations}
         onBack={() => setCheckout(false)}
+        donationBox={donationBoxQuery.data || donationBox}
       />
     );
   }
@@ -129,6 +248,8 @@ export default function DonationScreen() {
               setCheckout={setCheckout}
               selectedOrganizations={selectedOrganizations}
               setSelectedOrganizations={setSelectedOrganizations}
+              preselectedItem={(route.params as any)?.preselectedItem}
+              activeTab={(route.params as any)?.activeTab}
             />
           ) : (
             <>
@@ -177,150 +298,146 @@ export default function DonationScreen() {
                     </View>
                   </View>
 
-                  {/* Choose Organizations Section */}
-                  <View style={styles.organizationsCard}>
-                    <Text style={styles.organizationsTitle}>
-                      Choose organizations to support
-                    </Text>
+                  {/* Selected Items Display */}
+                  {(selectedCauseIds.length > 0 || selectedCollectiveIds.length > 0) && (
+                    <View style={styles.selectedSection}>
+                      <Text style={styles.selectedTitle}>Your selection</Text>
+                      
+                      {selectedCauseIds.length > 0 && (
+                        <View style={styles.selectedCard}>
+                          <Text style={styles.selectedCardTitle}>Nonprofits</Text>
+                          {selectedCausesData.map((cause: any) => (
+                            <View key={cause.id} style={styles.selectedItemRow}>
+                              <View style={[styles.orgAvatar, { backgroundColor: '#dbeafe', marginRight: 12 }]}>
+                                <Text style={[styles.orgAvatarText, { color: '#2563eb' }]}>{cause.name?.charAt(0) || 'N'}</Text>
+                              </View>
+                              <View style={{ flex: 1 }}>
+                                <Text style={{ fontWeight: '600', color: '#111827' }}>{cause.name}</Text>
+                                {!!cause.mission && <Text style={{ color: '#6b7280' }} numberOfLines={1}>{cause.mission}</Text>}
+                              </View>
+                              <TouchableOpacity onPress={() => {
+                                setSelectedCauseIds(selectedCauseIds.filter(id => id !== cause.id));
+                                setSelectedCausesData(selectedCausesData.filter(c => c.id !== cause.id));
+                              }} style={{ padding: 8 }}>
+                                <Trash2 size={18} color="#ef4444" />
+                              </TouchableOpacity>
+                            </View>
+                          ))}
+                        </View>
+                      )}
 
-                    {/* Organization List */}
-                    <View style={styles.organizationsList}>
-                      {/* Hunger Initiative */}
-                      <TouchableOpacity
-                        style={[
-                          styles.organizationItem,
-                          selectedOrganizations.includes('Hunger Initiative') && styles.selectedOrganizationItem
-                        ]}
-                        onPress={() => {
-                          if (selectedOrganizations.includes('Hunger Initiative')) {
-                            setSelectedOrganizations(selectedOrganizations.filter(org => org !== 'Hunger Initiative'));
-                          } else {
-                            setSelectedOrganizations([...selectedOrganizations, 'Hunger Initiative']);
-                          }
-                        }}
-                      >
-                        <View style={[styles.orgAvatar, { backgroundColor: '#fed7aa' }]}>
-                          <Text style={[styles.orgAvatarText, { color: '#ea580c' }]}>H</Text>
+                      {selectedCollectiveIds.length > 0 && (
+                        <View style={styles.selectedCard}>
+                          <Text style={styles.selectedCardTitle}>Collectives</Text>
+                          {selectedCollectivesData.map((collective: any) => (
+                            <View key={collective.id} style={styles.selectedItemRow}>
+                              <View style={[styles.orgAvatar, { backgroundColor: '#dcfce7', marginRight: 12 }]}>
+                                <Text style={[styles.orgAvatarText, { color: '#16a34a' }]}>{collective.name?.charAt(0) || 'C'}</Text>
+                              </View>
+                              <View style={{ flex: 1 }}>
+                                <Text style={{ fontWeight: '600', color: '#111827' }}>{collective.name}</Text>
+                                {!!collective.description && <Text style={{ color: '#6b7280' }} numberOfLines={1}>{collective.description}</Text>}
+                              </View>
+                              <TouchableOpacity onPress={() => {
+                                setSelectedCollectiveIds(selectedCollectiveIds.filter(id => id !== collective.id));
+                                setSelectedCollectivesData(selectedCollectivesData.filter(c => c.id !== collective.id));
+                              }} style={{ padding: 8 }}>
+                                <Trash2 size={18} color="#ef4444" />
+                              </TouchableOpacity>
+                            </View>
+                          ))}
                         </View>
-                        <View style={styles.orgInfo}>
-                          <Text style={styles.orgName}>Hunger Initiative</Text>
-                          <Text style={styles.orgDescription}>
-                            Fighting hunger in local communities
-                          </Text>
-                        </View>
-                        <View style={[
-                          styles.checkbox,
-                          selectedOrganizations.includes('Hunger Initiative') && styles.checkedBox
-                        ]}>
-                          {selectedOrganizations.includes('Hunger Initiative') && (
-                            <Text style={styles.checkmark}>✓</Text>
-                          )}
-                        </View>
-                      </TouchableOpacity>
-
-                      {/* Clean Water Initiative */}
-                      <TouchableOpacity
-                        style={[
-                          styles.organizationItem,
-                          selectedOrganizations.includes('Clean Water Initiative') && styles.selectedOrganizationItem
-                        ]}
-                        onPress={() => {
-                          if (selectedOrganizations.includes('Clean Water Initiative')) {
-                            setSelectedOrganizations(selectedOrganizations.filter(org => org !== 'Clean Water Initiative'));
-                          } else {
-                            setSelectedOrganizations([...selectedOrganizations, 'Clean Water Initiative']);
-                          }
-                        }}
-                      >
-                        <View style={[styles.orgAvatar, { backgroundColor: '#dbeafe' }]}>
-                          <Text style={[styles.orgAvatarText, { color: '#2563eb' }]}>C</Text>
-                        </View>
-                        <View style={styles.orgInfo}>
-                          <Text style={styles.orgName}>Clean Water Initiative</Text>
-                          <Text style={styles.orgDescription}>
-                            Providing clean water access
-                          </Text>
-                        </View>
-                        <View style={[
-                          styles.checkbox,
-                          selectedOrganizations.includes('Clean Water Initiative') && styles.checkedBox
-                        ]}>
-                          {selectedOrganizations.includes('Clean Water Initiative') && (
-                            <Text style={styles.checkmark}>✓</Text>
-                          )}
-                      </View>
-                      </TouchableOpacity>
-
-                      {/* Education for All */}
-                      <TouchableOpacity
-                        style={[
-                          styles.organizationItem,
-                          selectedOrganizations.includes('Education for All') && styles.selectedOrganizationItem
-                        ]}
-                        onPress={() => {
-                          if (selectedOrganizations.includes('Education for All')) {
-                            setSelectedOrganizations(selectedOrganizations.filter(org => org !== 'Education for All'));
-                          } else {
-                            setSelectedOrganizations([...selectedOrganizations, 'Education for All']);
-                          }
-                        }}
-                      >
-                        <View style={[styles.orgAvatar, { backgroundColor: '#dcfce7' }]}>
-                          <Text style={[styles.orgAvatarText, { color: '#16a34a' }]}>E</Text>
-                        </View>
-                        <View style={styles.orgInfo}>
-                          <Text style={styles.orgName}>Education for All</Text>
-                          <Text style={styles.orgDescription}>
-                            Quality education access
-                      </Text>
+                      )}
                     </View>
-                        <View style={[
-                          styles.checkbox,
-                          selectedOrganizations.includes('Education for All') && styles.checkedBox
-                        ]}>
-                          {selectedOrganizations.includes('Education for All') && (
-                            <Text style={styles.checkmark}>✓</Text>
-                          )}
-                        </View>
-                      </TouchableOpacity>
+                  )}
 
-                      {/* Related Section */}
-                      <View style={styles.relatedSection}>
-                        <Text style={styles.relatedTitle}>Related</Text>
-                        
-                        {/* Animal Rescue Network */}
-                        <TouchableOpacity
-                          style={[
-                            styles.organizationItem,
-                            selectedOrganizations.includes('Animal Rescue Network') && styles.selectedOrganizationItem
-                          ]}
-                          onPress={() => {
-                            if (selectedOrganizations.includes('Animal Rescue Network')) {
-                              setSelectedOrganizations(selectedOrganizations.filter(org => org !== 'Animal Rescue Network'));
-                            } else {
-                              setSelectedOrganizations([...selectedOrganizations, 'Animal Rescue Network']);
-                            }
-                          }}
-                        >
-                          <View style={[styles.orgAvatar, { backgroundColor: '#e9d5ff' }]}>
-                            <Text style={[styles.orgAvatarText, { color: '#9333ea' }]}>A</Text>
-                          </View>
-                          <View style={styles.orgInfo}>
-                            <Text style={styles.orgName}>Animal Rescue Network</Text>
-                            <Text style={styles.orgDescription}>
-                              Rescuing and caring for animals
-                            </Text>
-                          </View>
-                          <View style={[
-                            styles.checkbox,
-                            selectedOrganizations.includes('Animal Rescue Network') && styles.checkedBox
-                          ]}>
-                            {selectedOrganizations.includes('Animal Rescue Network') && (
-                              <Text style={styles.checkmark}>✓</Text>
-                            )}
-                          </View>
-                        </TouchableOpacity>
-                      </View>
+                  {/* Choose Nonprofit to Support */}
+                  <View style={styles.organizationsCard}>
+                    <Text style={styles.organizationsTitle}>Choose nonprofit to support</Text>
+                    <TextInput
+                      placeholder="Search nonprofits..."
+                      placeholderTextColor="#9ca3af"
+                      value={searchQuery}
+                      onChangeText={setSearchQuery}
+                      style={{
+                        borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 8, paddingHorizontal: 12, height: 40, marginBottom: 12,
+                      }}
+                    />
+                    <View style={styles.organizationsList}>
+                      {causesLoading ? (
+                        <ActivityIndicator />
+                      ) : (
+                        (causesData?.results || []).slice(0, 5).map((cause: any) => {
+                          const isSelected = selectedCauseIds.includes(cause.id);
+                          return (
+                            <TouchableOpacity
+                              key={cause.id}
+                              style={[styles.organizationItem, isSelected && styles.selectedOrganizationItem]}
+                              onPress={() => {
+                                if (isSelected) {
+                                  setSelectedCauseIds(selectedCauseIds.filter(id => id !== cause.id));
+                                  setSelectedCausesData(selectedCausesData.filter(c => c.id !== cause.id));
+                                } else {
+                                  setSelectedCauseIds([...selectedCauseIds, cause.id]);
+                                  setSelectedCausesData([...selectedCausesData, cause]);
+                                }
+                              }}
+                            >
+                              <View style={[styles.orgAvatar, { backgroundColor: '#dbeafe' }]}>
+                                <Text style={[styles.orgAvatarText, { color: '#2563eb' }]}>{cause.name?.charAt(0) || 'N'}</Text>
+                              </View>
+                              <View style={styles.orgInfo}>
+                                <Text style={styles.orgName}>{cause.name}</Text>
+                                {!!cause.mission && <Text style={styles.orgDescription} numberOfLines={1}>{cause.mission}</Text>}
+                              </View>
+                              <View style={[styles.checkbox, isSelected && styles.checkedBox]}>
+                                {isSelected && <Text style={styles.checkmark}>✓</Text>}
+                              </View>
+                            </TouchableOpacity>
+                          );
+                        })
+                      )}
+                    </View>
+                  </View>
+
+                  {/* Choose Collective to Support */}
+                  <View style={styles.organizationsCard}>
+                    <Text style={styles.organizationsTitle}>Choose collective to support</Text>
+                    <View style={styles.organizationsList}>
+                      {collectivesLoading ? (
+                        <ActivityIndicator />
+                      ) : (
+                        (joinedCollectivesData?.data || []).map((item: any) => {
+                          const collective = item.collective;
+                          const isSelected = selectedCollectiveIds.includes(collective.id);
+                          return (
+                            <TouchableOpacity
+                              key={collective.id}
+                              style={[styles.organizationItem, isSelected && styles.selectedOrganizationItem]}
+                              onPress={() => {
+                                if (isSelected) {
+                                  setSelectedCollectiveIds(selectedCollectiveIds.filter(id => id !== collective.id));
+                                  setSelectedCollectivesData(selectedCollectivesData.filter(c => c.id !== collective.id));
+                                } else {
+                                  setSelectedCollectiveIds([...selectedCollectiveIds, collective.id]);
+                                  setSelectedCollectivesData([...selectedCollectivesData, collective]);
+                                }
+                              }}
+                            >
+                              <View style={[styles.orgAvatar, { backgroundColor: '#dcfce7' }]}>
+                                <Text style={[styles.orgAvatarText, { color: '#16a34a' }]}>{collective.name?.charAt(0).toUpperCase() || 'C'}</Text>
+                              </View>
+                              <View style={styles.orgInfo}>
+                                <Text style={styles.orgName}>{collective.name}</Text>
+                                {!!collective.description && <Text style={styles.orgDescription} numberOfLines={1}>{collective.description}</Text>}
+                              </View>
+                              <View style={[styles.checkbox, isSelected && styles.checkedBox]}>
+                                {isSelected && <Text style={styles.checkmark}>✓</Text>}
+                              </View>
+                            </TouchableOpacity>
+                          );
+                        })
+                      )}
                     </View>
                   </View>
                 </View>
@@ -331,15 +448,39 @@ export default function DonationScreen() {
               //     setStep={setStep}
               //   />
               ) : step === 2 ? (
-                <DonationStep3
-                  setCheckout={setCheckout}
-                  selectedOrganizations={selectedOrganizations}
-                  setSelectedOrganizations={setSelectedOrganizations}
-                  setStep={setStep}
-                  donationAmount={donationAmount}
-                  selectedPaymentMethod={selectedPaymentMethod}
-                  setSelectedPaymentMethod={setSelectedPaymentMethod}
-                />
+                <View style={{ padding: 16 }}>
+                  <View style={{ backgroundColor: '#fff', borderRadius: 12, padding: 16, borderWidth: 1, borderColor: '#e5e7eb', marginBottom: 16 }}>
+                    <Text style={{ fontSize: 18, fontWeight: '700', color: '#111827', marginBottom: 12 }}>Nonprofits</Text>
+                    {(donationBoxQuery.data?.manual_causes || []).map((cause: any) => (
+                      <View key={cause.id} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' }}>
+                        <View style={[styles.orgAvatar, { backgroundColor: '#dbeafe', marginRight: 12 }]}><Text style={[styles.orgAvatarText, { color: '#2563eb' }]}>{cause.name?.charAt(0).toUpperCase() || 'N'}</Text></View>
+                        <View style={{ flex: 1 }}>
+                          <Text style={{ fontWeight: '600', color: '#111827' }}>{cause.name}</Text>
+                          {!!cause.mission && <Text style={{ color: '#6b7280' }} numberOfLines={1}>{cause.mission}</Text>}
+                        </View>
+                        {/* <TouchableOpacity onPress={() => removeCauseMutation.mutate(String(cause.id))} style={{ padding: 8 }}>
+                          <Text style={{ color: '#ef4444' }}>🗑️</Text>
+                        </TouchableOpacity> */}
+                      </View>
+                    ))}
+                  </View>
+
+                  <View style={{ backgroundColor: '#fff', borderRadius: 12, padding: 16, borderWidth: 1, borderColor: '#e5e7eb' }}>
+                    <Text style={{ fontSize: 18, fontWeight: '700', color: '#111827', marginBottom: 12 }}>Collectives</Text>
+                    {(donationBoxQuery.data?.attributing_collectives || []).map((collective: any) => (
+                      <View key={collective.id} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' }}>
+                        <View style={[styles.orgAvatar, { backgroundColor: '#dcfce7', marginRight: 12 }]}><Text style={[styles.orgAvatarText, { color: '#16a34a' }]}>{collective.name?.charAt(0).toUpperCase() || 'C'}</Text></View>
+                        <View style={{ flex: 1 }}>
+                          <Text style={{ fontWeight: '600', color: '#111827' }}>{collective.name}</Text>
+                          {!!collective.description && <Text style={{ color: '#6b7280' }} numberOfLines={1}>{collective.description}</Text>}
+                        </View>
+                        {/* <TouchableOpacity onPress={() => removeCollectiveMutation.mutate(String(collective.id))} style={{ padding: 8 }}>
+                          <Text style={{ color: '#ef4444' }}>🗑️</Text>
+                        </TouchableOpacity> */}
+                      </View>
+                    ))}
+                  </View>
+                </View>
               ) : null}
             </>
           )}
@@ -355,27 +496,33 @@ export default function DonationScreen() {
               <View>
                 <Text style={styles.summaryAmount}>${donationAmount} per month</Text>
                 <Text style={styles.summaryCount}>
-                  {selectedOrganizations.length} organizations selected
+                  {selectedCauseIds.length} nonprofits, {selectedCollectiveIds.length} collectives
                 </Text>
               </View>
               <TouchableOpacity
-                onPress={() => setStep(2)}
+                onPress={() => {
+                  createBoxMutation.mutate({
+                    monthly_amount: donationAmount,
+                    cause_ids: selectedCauseIds,
+                    collective_ids: selectedCollectiveIds,
+                  });
+                }}
                 style={styles.nextButton}
               >
-                <Text style={styles.nextButtonText}>Next</Text>
+                <Text style={styles.nextButtonText}>{createBoxMutation.isPending ? 'Creating...' : 'Next'}</Text>
                 <Text style={styles.nextButtonIcon}>→</Text>
               </TouchableOpacity>
             </View>
           </View>
         )}
 
-{activeTab === 'setup' && step === 2 && (
+        {activeTab === 'setup' && step === 2 && (
           <View style={styles.footer}>     
           <TouchableOpacity
-            onPress={() => setCheckout(true)}
+            onPress={() => activateMutation.mutate({monthly_amount: donationAmount})}
             style={styles.confirmButton}
           >
-            <Text style={styles.confirmButtonText}>Confirm your donation</Text>
+            <Text style={styles.confirmButtonText}>{activateMutation.isPending ? 'Activating...' : 'Activate Donation Box'}</Text>
           </TouchableOpacity>
         </View>
           
@@ -631,6 +778,36 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#1f2937',
     marginBottom: 16,
+  },
+  selectedSection: {
+    marginBottom: 24,
+  },
+  selectedTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#111827',
+    marginBottom: 16,
+  },
+  selectedCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  selectedCardTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#111827',
+    marginBottom: 12,
+  },
+  selectedItemRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f3f4f6',
   },
   summaryBar: {
     backgroundColor: '#ffffff',

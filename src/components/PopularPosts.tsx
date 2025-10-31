@@ -34,6 +34,8 @@ interface PopularPostsProps {
     postButton?: boolean;
     subheading?: boolean;
     collectiveId?: string | number;
+    isLoading?: boolean;
+    error?: any;
 }
 
 type RootStackParamList = {
@@ -54,7 +56,9 @@ export default function PopularPosts({
         // Default implementation to make button visible
         await new Promise(resolve => setTimeout(resolve, 1000));
     },
-    hasMore = true
+    hasMore = true,
+    isLoading = false,
+    error = null
 }: PopularPostsProps) {
     const [showTooltip, setShowTooltip] = useState(false);
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -62,7 +66,6 @@ export default function PopularPosts({
     const [selectedPost, setSelectedPost] = useState<Post | null>(null);
     const [tooltipVisible, setTooltipVisible] = useState(false);
     const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
-    const [isLoading, setIsLoading] = useState(false);
     const [shareModalVisible, setShareModalVisible] = useState(false);
     const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
     const [postsLikesCount, setPostsLikesCount] = useState<Record<string, number>>({});
@@ -239,6 +242,23 @@ export default function PopularPosts({
 
             {subheading && <Text style={{fontSize: 12, fontStyle: 'italic', color: 'grey', marginBottom: 8}}>Members share updates, questions and articles here.</Text>}
 
+            {/* Loading State */}
+            {isLoading && (
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color={PrimaryBlue} />
+                    <Text style={styles.loadingText}>Loading posts...</Text>
+                </View>
+            )}
+
+            {/* Error State */}
+            {error && !isLoading && (
+                <View style={styles.errorContainer}>
+                    <Text style={styles.errorText}>
+                        {error?.message || 'Failed to load posts. Please try again.'}
+                    </Text>
+                </View>
+            )}
+
             {/* Tooltip */}
             {showTooltip && showTitle && (
                 <View style={{
@@ -283,6 +303,7 @@ export default function PopularPosts({
                     }} />
                 </View>
             )}
+            {!isLoading && !error && (
             <FlatList
                 data={posts}
                 renderItem={({ item }) => (
@@ -344,6 +365,7 @@ export default function PopularPosts({
                 )}
                 ListFooterComponent={renderFooter}
             />
+            )}
 
             <Modal
                 transparent={true}
@@ -458,5 +480,28 @@ const styles = StyleSheet.create({
         color: PrimaryBlue,
         fontSize: 14,
         fontWeight: '500',
+    },
+    loadingContainer: {
+        padding: 40,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    loadingText: {
+        marginTop: 12,
+        fontSize: 14,
+        color: PrimaryGrey,
+    },
+    errorContainer: {
+        padding: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#fef2f2',
+        borderRadius: 8,
+        marginVertical: 16,
+    },
+    errorText: {
+        fontSize: 14,
+        color: '#dc2626',
+        textAlign: 'center',
     }
 });

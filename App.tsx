@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import 'react-native-gesture-handler'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { NavigationContainer } from '@react-navigation/native'
@@ -49,9 +49,13 @@ import AddPhoto from './src/components/onboarding/AddPhoto'
 import NonProfitInterests from './src/components/onboarding/NonProfitInterests'
 import CompleteOnboard from './src/components/onboarding/CompleteOnboard'
 import {FontAwesome6} from '@react-native-vector-icons/fontawesome6'
-import { Image } from 'react-native'
+import { Image, Platform } from 'react-native'
+import { PermissionsAndroid } from 'react-native'
 import Circles from './src/screens/Circles'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { StripeProvider } from '@stripe/stripe-react-native'
+import { STRIPE_PUBLISHABLE_KEY } from './src/config/stripe'
+import messaging from '@react-native-firebase/messaging'
 
 export default function App() {
 
@@ -70,6 +74,37 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+
+async function requestPermission() {
+  if (Platform.OS === 'android') {
+    const granted = await PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+    );
+    if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+      console.log('Notification permission granted');
+    } else {
+      console.log('Notification permission denied');
+    }
+  }
+  else if (Platform.OS === 'ios') {
+    // Add iOS notification permission request
+    const authStatus = await messaging().requestPermission();
+    const enabled =
+      authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+      authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+
+    if (enabled) {
+      console.log('iOS notification permission granted');
+    } else {
+      console.log('iOS notification permission denied');
+    }
+  }
+}
+
+useEffect(() => {
+  requestPermission();
+}, []);
 
   function BottomTabs() {
     return (
@@ -181,11 +216,13 @@ const queryClient = new QueryClient({
 
   return (
     <NavigationContainer>
-      <QueryClientProvider client={queryClient}>
-      <ToastProvider>
-        <StackNavigator />
-      </ToastProvider>
-      </QueryClientProvider>
+      <StripeProvider publishableKey={STRIPE_PUBLISHABLE_KEY}>
+        <QueryClientProvider client={queryClient}>
+          <ToastProvider>
+            <StackNavigator />
+          </ToastProvider>
+        </QueryClientProvider>
+      </StripeProvider>
     </NavigationContainer>
   )
 

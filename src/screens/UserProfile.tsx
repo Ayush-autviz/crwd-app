@@ -394,7 +394,7 @@ export default function UserProfile() {
                     </View>
 
                     {/* Profile Bio */}
-                    <ProfileBio bio={userProfile.bio || "No bio available"} />
+                    <ProfileBio bio={userProfile.bio} />
                     
                     {/* Recent Activity */}
                     <View style={{ marginTop: 24 }}>

@@ -24,9 +24,8 @@ import { getCausesBySearch, getJoinCollective } from '../services/api/crwd';
 import { useAuthStore } from '../store/store';
 import { Alert, ActivityIndicator, Modal } from 'react-native';
 import { useStripe } from '@stripe/stripe-react-native';
+import MainHeaderNav from '../components/MainHeaderNav';
 
-
-const { width } = Dimensions.get('window');
 
 export default function DonationScreen() {
   const navigation = useNavigation();
@@ -90,15 +89,6 @@ export default function DonationScreen() {
     onError: (e: any) => Alert.alert('Error', e?.response?.data?.message || 'Failed to create box'),
   });
 
-  // Remove cause/collective
-  const removeCauseMutation = useMutation({
-    mutationFn: (id: string) => removeCauseFromBox(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['donationBox'] }),
-  });
-  const removeCollectiveMutation = useMutation({
-    mutationFn: (id: string) => removeCollectiveFromBox(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['donationBox'] }),
-  });
 
   const activateDonationBoxConfirm = useMutation({
     mutationFn: confirmMobileActivation,
@@ -133,7 +123,6 @@ export default function DonationScreen() {
       }
 
 
-      console.log('present', present);
       if(!present.error) {
         activateDonationBoxConfirm.mutate({
          payment_intent_id: response.payment_intent_id,
@@ -173,6 +162,17 @@ export default function DonationScreen() {
         onBack={() => setCheckout(false)}
         donationBox={donationBoxQuery.data || donationBox}
       />
+    );
+  }
+
+  if (donationBoxQuery.isLoading) {
+    return (
+      <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }} edges={['top', 'left', 'right']}>
+        <MainHeaderNav show={false} menu={false} title={'Donation Box'} />
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color={PrimaryBlue} />
+        </View>
+      </SafeAreaView>
     );
   }
 

@@ -8,27 +8,81 @@ import {
   Image,
   SafeAreaView,
   TextInput,
-  Alert,
+  Modal,
+  TouchableWithoutFeedback,
 } from 'react-native';
-import { ArrowLeft, Minus, Plus, CreditCard, DollarSign, Trash2, ChevronLeft } from 'lucide-react-native';
+import { Plus, Trash2, ChevronLeft, Search, X } from 'lucide-react-native';
 import { Organization } from '../../Constants/organizations';
 import { PrimaryBlue } from '../../Constants/Colors';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getCausesBySearch, getJoinCollective } from '../../services/api/crwd';
+import { updateDonationBox } from '../../services/api/donation';
+import { useAuthStore } from '../../store/store';
+import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
 
 interface ManageDonationBoxProps {
   amount: number;
   causes: Organization[];
   onBack: () => void;
+  onRemove?: (id: string) => void;
 }
 
 export default function ManageDonationBox({
   amount,
   causes,
   onBack,
+  onRemove,
 }: ManageDonationBoxProps) {
+  const queryClient = useQueryClient();
+  const { user: currentUser } = useAuthStore();
+  const [activeTab, setActiveTab] = useState<'nonprofits' | 'collectives'>('nonprofits');
   const [editableAmount, setEditableAmount] = useState(amount);
   const [isEditingAmount, setIsEditingAmount] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [temporarilyRemovedCauses, setTemporarilyRemovedCauses] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSearchResults, setShowSearchResults] = useState(false);
+  const [selectedCauses, setSelectedCauses] = useState<number[]>([]);
+  const [selectedCollectives, setSelectedCollectives] = useState<number[]>([]);
+  const [selectedCausesData, setSelectedCausesData] = useState<any[]>([]);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<{ 
+    id: number; 
+    name: string; 
+    type: 'cause' | 'collective'; 
+    isNewlySelected: boolean 
+  } | null>(null);
+
+  // Separate existing causes/collectives from new selections
+  // Note: Organization type doesn't have 'type' property, so we'll treat all as causes by default
+  // In a real implementation, you might need to extend the Organization interface
+  const existingCauses = causes.filter(c => !(c as any).type || (c as any).type === 'cause');
+  const existingCollectives = causes.filter(c => (c as any).type === 'collective');
+
+  // Fetch causes with search
+  const { data: causesData, isLoading: causesLoading } = useQuery({
+    queryKey: ['causes', searchQuery],
+    queryFn: () => getCausesBySearch(searchQuery, '', 1),
+    enabled: activeTab === 'nonprofits' && showSearchResults && searchQuery.length > 0,
+  });
+
+  // Fetch joined collectives
+  const { data: joinedCollectivesData, isLoading: joinedCollectivesLoading } = useQuery({
+    queryKey: ['joined-collectives-manage'],
+    queryFn: () => getJoinCollective(currentUser?.id || ''),
+    enabled: activeTab === 'collectives',
+  });
+
+  // Mutation to update donation box (all-in-one update)
+  const updateDonationBoxMutation = useMutation({
+    mutationFn: (data: any) => updateDonationBox(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['donationBox'] });
+    },
+    onError: (error: any) => {
+      console.error('Error updating donation box:', error);
+    },
+  });
 
   const incrementAmount = () => {
     setEditableAmount(prev => prev + 1);
@@ -49,46 +103,130 @@ export default function ManageDonationBox({
     }
   };
 
-  const handleRemove = (causeId: string) => {
-    // Temporarily remove the cause
-    setTemporarilyRemovedCauses(prev => [...prev, causeId]);
+  const handleRemove = (id: string) => {
+    setTemporarilyRemovedCauses(prev => [...prev, id]);
   };
 
-  const handleEditCauses = () => {
-    if (isEditMode) {
-      // "Close" clicked - restore temporarily removed causes
-      setTemporarilyRemovedCauses([]);
+  const handleDeselectCause = (causeId: number, isNewlySelected: boolean, causeName: string) => {
+    setItemToDelete({ id: causeId, name: causeName, type: 'cause', isNewlySelected });
+    setShowDeleteModal(true);
+  };
+
+  const handleDeselectCollective = (collectiveId: number, isNewlySelected: boolean, collectiveName: string) => {
+    setItemToDelete({ id: collectiveId, name: collectiveName, type: 'collective', isNewlySelected });
+    setShowDeleteModal(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!itemToDelete) return;
+
+    if (itemToDelete.type === 'cause') {
+      if (itemToDelete.isNewlySelected) {
+        setSelectedCauses(prev => prev.filter(id => id !== itemToDelete.id));
+        setSelectedCausesData(prev => prev.filter(c => c.id !== itemToDelete.id));
+      } else {
+        handleRemove(`cause-${itemToDelete.id}`);
+        if (onRemove) {
+          onRemove(`cause-${itemToDelete.id}`);
+        }
+      }
+    } else {
+      if (itemToDelete.isNewlySelected) {
+        setSelectedCollectives(prev => prev.filter(id => id !== itemToDelete.id));
+      } else {
+        handleRemove(`collective-${itemToDelete.id}`);
+        if (onRemove) {
+          onRemove(`collective-${itemToDelete.id}`);
+        }
+      }
     }
-    setIsEditMode(!isEditMode);
+
+    setShowDeleteModal(false);
+    setItemToDelete(null);
   };
 
-  const handleRemoveCause = (causeId: string) => {
-    Alert.alert(
-      'Remove Cause',
-      'Are you sure you want to remove this cause from your donation box?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Remove', style: 'destructive', onPress: () => {
-          handleRemove(causeId);
-        }},
-      ]
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      setShowSearchResults(true);
+    } else {
+      setShowSearchResults(false);
+    }
+  };
+
+  const handleToggleCause = (causeId: number) => {
+    if (selectedCauses.includes(causeId)) {
+      setSelectedCauses(prev => prev.filter(id => id !== causeId));
+      setSelectedCausesData(prev => prev.filter(c => c.id !== causeId));
+    } else {
+      const causeData = causesData?.results?.find((c: any) => c.id === causeId);
+      if (causeData) {
+        setSelectedCauses(prev => [...prev, causeId]);
+        setSelectedCausesData(prev => [...prev, causeData]);
+      }
+    }
+  };
+
+  const handleToggleCollective = (collectiveId: number) => {
+    setSelectedCollectives(prev => 
+      prev.includes(collectiveId) 
+        ? prev.filter(id => id !== collectiveId)
+        : [...prev, collectiveId]
     );
   };
 
-  const handleSave = () => {
-    // Permanently remove the causes
-    temporarilyRemovedCauses.forEach((id) => {
-      // Handle permanent removal logic here
-      console.log('Permanently removing cause:', id);
-    });
-    // Clear the temporarily removed causes
-    setTemporarilyRemovedCauses([]);
-    setIsEditMode(false);
-    Alert.alert(
-      'Changes Saved',
-      'Your donation box has been updated successfully.',
-      [{ text: 'OK' }]
-    );
+  const handleUpdateDonation = async () => {
+    try {
+      // Get existing cause IDs that are NOT removed
+      const remainingExistingCauseIds = existingCauses
+        .filter(c => !temporarilyRemovedCauses.includes(c.id))
+        .map(c => {
+          const id = c.id.replace('cause-', '');
+          return parseInt(id);
+        })
+        .filter(id => !isNaN(id));
+
+      // Get existing collective IDs that are NOT removed
+      const remainingExistingCollectiveIds = existingCollectives
+        .filter(c => !temporarilyRemovedCauses.includes(c.id))
+        .map(c => {
+          const id = c.id.replace('collective-', '');
+          return parseInt(id);
+        })
+        .filter(id => !isNaN(id));
+
+      // Combine existing (not removed) + newly selected causes/collectives
+      const allCauseIds = [...remainingExistingCauseIds, ...selectedCauses];
+      const allCollectiveIds = [...remainingExistingCollectiveIds, ...selectedCollectives];
+
+      // Prepare payload with amount and all causes/collectives
+      const payload: any = {
+        monthly_amount: editableAmount,
+      };
+
+      if (allCauseIds.length > 0) {
+        payload.cause_ids = allCauseIds;
+      }
+
+      if (allCollectiveIds.length > 0) {
+        payload.collective_ids = allCollectiveIds;
+      }
+
+      // Send single update call with all data
+      await updateDonationBoxMutation.mutateAsync(payload);
+
+      // Clear temporarily removed causes after successful update
+      setTemporarilyRemovedCauses([]);
+      setSelectedCauses([]);
+      setSelectedCollectives([]);
+      setSelectedCausesData([]);
+
+      // Refresh and go back
+      queryClient.invalidateQueries({ queryKey: ['donationBox'] });
+      onBack();
+    } catch (error) {
+      console.error('Error updating donation box:', error);
+      // You might want to show an error toast here
+    }
   };
 
   // Filter out temporarily removed causes for display
@@ -96,26 +234,90 @@ export default function ManageDonationBox({
     (cause) => !temporarilyRemovedCauses.includes(cause.id)
   );
 
-  const handleDeactivate = () => {
-    Alert.alert(
-      'Deactivate Donation Box',
-      'Are you sure you want to deactivate your donation box? This will stop all recurring donations.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Deactivate', style: 'destructive', onPress: () => {
-          console.log('Deactivating donation box');
-        }},
-      ]
-    );
+  // Get existing cause IDs to filter them out from search results
+  const existingCauseIds = existingCauses
+    .map(c => {
+      const id = c.id.replace('cause-', '');
+      return parseInt(id);
+    })
+    .filter(id => !isNaN(id));
+
+  const existingCollectiveIds = existingCollectives
+    .map(c => {
+      const id = c.id.replace('collective-', '');
+      return parseInt(id);
+    })
+    .filter(id => !isNaN(id));
+
+  const allSelectedCauseIds = [...existingCauseIds, ...selectedCauses];
+  const allSelectedCollectiveIds = [...existingCollectiveIds, ...selectedCollectives];
+
+  // Create combined selected causes list for display
+  const getSelectedCausesForDisplay = () => {
+    const existingList = existingCauses.filter(c => !temporarilyRemovedCauses.includes(c.id));
+    const newlySelectedCauses = selectedCausesData;
+    
+    return [...existingList.map(c => ({
+      id: c.id,
+      name: c.name,
+      imageUrl: c.imageUrl,
+      description: c.description,
+      isExisting: true,
+      isNewlySelected: false,
+    })), ...newlySelectedCauses.map((cause: any) => ({
+      id: `cause-${cause.id}`,
+      name: cause.name,
+      imageUrl: cause.logo || '',
+      description: cause.mission || cause.description || '',
+      isExisting: false,
+      isNewlySelected: true,
+      causeId: cause.id,
+    }))];
   };
+
+  // Create combined selected collectives list for display
+  const getSelectedCollectivesForDisplay = () => {
+    const existingList = existingCollectives.filter(c => !temporarilyRemovedCauses.includes(c.id));
+    const newlySelectedFromList = joinedCollectivesData?.data?.map((item: any) => item.collective).filter((collective: any) => 
+      selectedCollectives.includes(collective.id)
+    ) || [];
+    return [...existingList.map(c => ({
+      id: c.id,
+      name: c.name,
+      imageUrl: c.imageUrl,
+      description: c.description,
+      isExisting: true,
+      isNewlySelected: false,
+    })), ...newlySelectedFromList.map((collective: any) => ({
+      id: `collective-${collective.id}`,
+      name: collective.name,
+      imageUrl: collective.cover_image || '',
+      description: collective.description || '',
+      isExisting: false,
+      isNewlySelected: true,
+      collectiveId: collective.id,
+    }))];
+  };
+
+  // Get search results (max 5) for nonprofits, excluding all selected ones
+  const searchResults = showSearchResults && causesData?.results 
+    ? causesData.results
+        .filter((cause: any) => !allSelectedCauseIds.includes(cause.id))
+        .slice(0, 5)
+    : [];
+
+  // Get joined collectives, excluding all selected ones
+  const joinedCollectives = joinedCollectivesData?.data?.map((item: any) => item.collective) || [];
+  const availableCollectives = joinedCollectives.filter((collective: any) => 
+    !allSelectedCollectiveIds.includes(collective.id)
+  );
 
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          {/* <ArrowLeft color="#374151" /> */}
-          <ChevronLeft />
+          <ChevronLeft size={20} color="#374151" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Manage Donation Box</Text>
         <View style={styles.headerSpacer} />
@@ -134,7 +336,7 @@ export default function ManageDonationBox({
                 onPress={decrementAmount}
                 style={styles.amountButton}
               >
-                <Minus size={20} color="#ffffff" />
+                <Text style={styles.minusText}>−</Text>
               </TouchableOpacity>
 
               {isEditingAmount ? (
@@ -167,66 +369,252 @@ export default function ManageDonationBox({
                 style={styles.actionButton}
                 onPress={() => setIsEditingAmount(true)}
               >
-                <DollarSign size={22} color="#ffffff" />
+                <Text style={styles.dollarIcon}>$</Text>
                 <Text style={styles.actionButtonText}>Edit amount</Text>
               </TouchableOpacity>
-
-              {/* <TouchableOpacity style={styles.actionButton}>
-                <CreditCard size={22} color="#ffffff" />
-                <Text style={styles.actionButtonText}>Edit payment</Text>
-              </TouchableOpacity> */}
             </View>
           </View>
         </View>
 
-        {/* Causes List */}
-        <View style={styles.causesSection}>
-          <Text style={styles.sectionTitle}>CAUSES</Text>
-
-          <View style={styles.causesList}>
-            {visibleCauses.map((cause) => (
-              <View key={cause.id} style={styles.causeItem}>
-                <View style={styles.causeImageContainer}>
-                  {cause.imageUrl ? (
-                    <Image source={{ uri: cause.imageUrl }} style={styles.causeImage} />
-                  ) : (
-                    <View style={[styles.causePlaceholder, { backgroundColor: cause.color || '#e2e8f0' }]}>
-                      <Text style={styles.causePlaceholderText}>
-                        {cause.name.charAt(0)}
-                      </Text>
-                    </View>
-                  )}
-                </View>
-
-                <View style={styles.causeInfo}>
-                  <View style={styles.causeHeader}>
-                    <Text style={styles.causeName}>{cause.name}</Text>
-                    {/* <Text style={styles.causeUsername}>
-                      @{cause.name.replace(/\s+/g, '').toLowerCase()}
-                    </Text> */}
-                  </View>
-                  {cause.description && (
-                    <Text style={styles.causeDescription}>
-                      {cause.description}
-                    </Text>
-                  )}
-                </View>
-
-                {isEditMode && (
-                  <View style={styles.editActions}>
-                    <TouchableOpacity
-                      style={styles.removeButton}
-                      onPress={() => handleRemoveCause(cause.id)}
-                    >
-                      <Trash2 size={12} color="#6b7280" />
-                      <Text style={styles.removeText}>Remove</Text>
-                    </TouchableOpacity>
-                  </View>
-                )}
-              </View>
-            ))}
+        {/* Tabs Navigation */}
+        <View style={styles.tabsContainer}>
+          <View style={styles.tabs}>
+            <TouchableOpacity
+              style={[styles.tab, activeTab === 'nonprofits' && styles.tabActive]}
+              onPress={() => {
+                setActiveTab('nonprofits');
+                setShowSearchResults(false);
+                setSearchQuery('');
+              }}
+            >
+              <Text style={[styles.tabText, activeTab === 'nonprofits' && styles.tabTextActive]}>
+                Nonprofits
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.tab, activeTab === 'collectives' && styles.tabActive]}
+              onPress={() => {
+                setActiveTab('collectives');
+                setShowSearchResults(false);
+                setSearchQuery('');
+              }}
+            >
+              <Text style={[styles.tabText, activeTab === 'collectives' && styles.tabTextActive]}>
+                Collectives
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
+
+        {/* Content Area */}
+        {activeTab === 'nonprofits' ? (
+          <View style={styles.contentSection}>
+            {/* Selected Nonprofits */}
+            {(() => {
+              const selectedCausesForDisplay = getSelectedCausesForDisplay();
+              return selectedCausesForDisplay.length > 0 && (
+                <View style={styles.selectedSection}>
+                  <Text style={styles.sectionTitle}>SELECTED NONPROFITS</Text>
+                  <View style={styles.list}>
+                    {selectedCausesForDisplay.map((org) => {
+                      const causeId = org.isNewlySelected ? (org as any).causeId : parseInt(org.id.replace('cause-', ''));
+                      return (
+                        <View key={org.id} style={styles.causeItem}>
+                          <View style={styles.causeImageContainer}>
+                            {org.imageUrl ? (
+                              <Image source={{ uri: org.imageUrl }} style={styles.causeImage} />
+                            ) : (
+                              <View style={[styles.causePlaceholder, { backgroundColor: '#2563eb' }]}>
+                                <Text style={styles.causePlaceholderText}>
+                                  {org.name.charAt(0)}
+                                </Text>
+                              </View>
+                            )}
+                          </View>
+                          <View style={styles.causeInfo}>
+                            <Text style={styles.causeName}>{org.name}</Text>
+                            {org.description && (
+                              <Text style={styles.causeDescription} numberOfLines={2}>
+                                {org.description}
+                              </Text>
+                            )}
+                          </View>
+                          <TouchableOpacity
+                            style={styles.removeButton}
+                            onPress={() => handleDeselectCause(causeId, org.isNewlySelected, org.name)}
+                          >
+                            <Trash2 size={12} color="#6b7280" />
+                            <Text style={styles.removeText}>Remove</Text>
+                          </TouchableOpacity>
+                        </View>
+                      );
+                    })}
+                  </View>
+                </View>
+              );
+            })()}
+
+            {/* Search Section */}
+            <View style={styles.searchSection}>
+              <Text style={styles.sectionTitle}>ADD NONPROFITS</Text>
+              <View style={styles.searchContainer}>
+                <Search size={20} color="#9ca3af" style={styles.searchIcon} />
+                <TextInput
+                  style={styles.searchInput}
+                  placeholder="Search nonprofits..."
+                  placeholderTextColor="#9ca3af"
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  onSubmitEditing={handleSearch}
+                  returnKeyType="search"
+                />
+                {searchQuery ? (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setSearchQuery('');
+                      setShowSearchResults(false);
+                    }}
+                    style={styles.clearButton}
+                  >
+                    <X size={16} color="#9ca3af" />
+                  </TouchableOpacity>
+                ) : null}
+              </View>
+              {searchQuery ? (
+                <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
+                  <Text style={styles.searchButtonText}>Search</Text>
+                </TouchableOpacity>
+              ) : null}
+            </View>
+
+            {/* Search Results */}
+            {showSearchResults && (
+              <View style={styles.resultsSection}>
+                <Text style={styles.resultsTitle}>Search Results (Max 5)</Text>
+                {causesLoading ? (
+                  <Text style={styles.loadingText}>Loading...</Text>
+                ) : searchResults.length > 0 ? (
+                  <View style={styles.list}>
+                    {searchResults.map((cause: any) => {
+                      const isSelected = selectedCauses.includes(cause.id);
+                      return (
+                        <TouchableOpacity
+                          key={cause.id}
+                          style={styles.resultItem}
+                          onPress={() => handleToggleCause(cause.id)}
+                        >
+                          <Avatar size={48}>
+                            <AvatarImage src={cause.logo} />
+                            <AvatarFallback>{cause.name?.charAt(0) || 'C'}</AvatarFallback>
+                          </Avatar>
+                          <View style={styles.resultInfo}>
+                            <Text style={styles.resultName}>{cause.name}</Text>
+                            <Text style={styles.resultDescription} numberOfLines={1}>
+                              {cause.mission || cause.description}
+                            </Text>
+                          </View>
+                          <View style={[styles.checkbox, isSelected && styles.checkboxSelected]}>
+                            {isSelected && (
+                              <View style={styles.checkmark} />
+                            )}
+                          </View>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                ) : (
+                  <Text style={styles.loadingText}>No nonprofits found</Text>
+                )}
+              </View>
+            )}
+          </View>
+        ) : (
+          <View style={styles.contentSection}>
+            {/* Selected Collectives */}
+            {(() => {
+              const selectedCollectivesForDisplay = getSelectedCollectivesForDisplay();
+              return selectedCollectivesForDisplay.length > 0 && (
+                <View style={styles.selectedSection}>
+                  <Text style={styles.sectionTitle}>SELECTED COLLECTIVES</Text>
+                  <View style={styles.list}>
+                    {selectedCollectivesForDisplay.map((org) => {
+                      const collectiveId = org.isNewlySelected ? (org as any).collectiveId : parseInt(org.id.replace('collective-', ''));
+                      return (
+                        <View key={org.id} style={styles.causeItem}>
+                          <View style={styles.causeImageContainer}>
+                            {org.imageUrl ? (
+                              <Image source={{ uri: org.imageUrl }} style={styles.causeImage} />
+                            ) : (
+                              <View style={[styles.causePlaceholder, { backgroundColor: '#9333ea' }]}>
+                                <Text style={styles.causePlaceholderText}>
+                                  {org.name.charAt(0)}
+                                </Text>
+                              </View>
+                            )}
+                          </View>
+                          <View style={styles.causeInfo}>
+                            <Text style={styles.causeName}>{org.name}</Text>
+                            {org.description && (
+                              <Text style={styles.causeDescription} numberOfLines={2}>
+                                {org.description}
+                              </Text>
+                            )}
+                          </View>
+                          <TouchableOpacity
+                            style={styles.removeButton}
+                            onPress={() => handleDeselectCollective(collectiveId, org.isNewlySelected, org.name)}
+                          >
+                            <Trash2 size={12} color="#6b7280" />
+                            <Text style={styles.removeText}>Remove</Text>
+                          </TouchableOpacity>
+                        </View>
+                      );
+                    })}
+                  </View>
+                </View>
+              );
+            })()}
+
+            {/* Available Collectives */}
+            <View style={styles.collectivesSection}>
+              <Text style={styles.sectionTitle}>JOINED COLLECTIVES</Text>
+              {joinedCollectivesLoading ? (
+                <Text style={styles.loadingText}>Loading...</Text>
+              ) : availableCollectives.length > 0 ? (
+                <View style={styles.list}>
+                  {availableCollectives.map((collective: any) => {
+                    const isSelected = selectedCollectives.includes(collective.id);
+                    return (
+                      <TouchableOpacity
+                        key={collective.id}
+                        style={styles.resultItem}
+                        onPress={() => handleToggleCollective(collective.id)}
+                      >
+                        <Avatar size={48}>
+                          <AvatarImage src={collective.cover_image} />
+                          <AvatarFallback>{collective.name?.charAt(0) || 'C'}</AvatarFallback>
+                        </Avatar>
+                        <View style={styles.resultInfo}>
+                          <Text style={styles.resultName}>{collective.name}</Text>
+                          <Text style={styles.resultDescription} numberOfLines={1}>
+                            {collective.description || 'Community collective'}
+                          </Text>
+                        </View>
+                        <View style={[styles.checkbox, isSelected && styles.checkboxSelected]}>
+                          {isSelected && (
+                            <View style={styles.checkmark} />
+                          )}
+                        </View>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              ) : (
+                <Text style={styles.loadingText}>No collectives available</Text>
+              )}
+            </View>
+          </View>
+        )}
 
         {/* Distribution Details */}
         <View style={styles.distributionSection}>
@@ -237,24 +625,20 @@ export default function ManageDonationBox({
           </Text>
         </View>
 
-        {/* Payment Method Section */}
-        {/* <View style={styles.paymentSection}>
-          <Text style={styles.sectionTitle}>PAYMENT METHOD</Text>
-          <View style={styles.paymentCard}>
-            <View style={styles.paymentInfo}>
-              <View style={styles.paymentIcon}>
-                <CreditCard size={16} color="#6b7280" />
-              </View>
-              <View style={styles.paymentDetails}>
-                <Text style={styles.paymentNumber}>**** **** **** 4242</Text>
-                <Text style={styles.paymentExpiry}>12/25</Text>
-              </View>
-            </View>
-            <TouchableOpacity style={styles.changeButton}>
-              <Text style={styles.changeButtonText}>Change</Text>
-            </TouchableOpacity>
-          </View>
-        </View> */}
+        {/* Update Donation Button */}
+        <View style={styles.updateButtonContainer}>
+          <TouchableOpacity
+            style={[styles.updateButton, updateDonationBoxMutation.isPending && styles.updateButtonDisabled]}
+            onPress={handleUpdateDonation}
+            disabled={updateDonationBoxMutation.isPending}
+          >
+            <Text style={styles.updateButtonText}>
+              {updateDonationBoxMutation.isPending
+                ? 'Updating...'
+                : 'Update Donation'}
+            </Text>
+          </TouchableOpacity>
+        </View>
 
         {/* Next Payment Section */}
         <View style={styles.nextPaymentSection}>
@@ -274,39 +658,51 @@ export default function ManageDonationBox({
         <Text style={styles.allocationNote}>
           Allocations will automatically adjust for 100% distribution
         </Text>
-
-        {/* Edit Causes Button */}
-        {/* <View style={styles.editCausesSection}>
-          <TouchableOpacity 
-            style={styles.editCausesButton}
-            onPress={handleEditCauses}
-          >
-            <Text style={styles.editCausesButtonText}>
-              {isEditMode ? "Close" : "Edit Causes"}
-            </Text>
-          </TouchableOpacity>
-        </View> */}
       </ScrollView>
 
-      {/* Footer - Only show in edit mode */}
-      {isEditMode && (
-        <View style={styles.footer}>
-          {visibleCauses.length > 0 && (
-            <TouchableOpacity onPress={handleDeactivate}>
-              <Text style={styles.deactivateText}>Deactivate donation box</Text>
-            </TouchableOpacity>
-          )}
-          <TouchableOpacity 
-            style={[
-              styles.saveButton, 
-              visibleCauses.length === 0 && styles.saveButtonFull
-            ]} 
-            onPress={handleSave}
-          >
-            <Text style={styles.saveButtonText}>Save</Text>
-          </TouchableOpacity>
-        </View>
-      )}
+      {/* Delete Confirmation Modal */}
+      <Modal
+        visible={showDeleteModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => {
+          setShowDeleteModal(false);
+          setItemToDelete(null);
+        }}
+      >
+        <TouchableWithoutFeedback onPress={() => {
+          setShowDeleteModal(false);
+          setItemToDelete(null);
+        }}>
+          <View style={styles.modalOverlay}>
+            <TouchableWithoutFeedback onPress={() => {}}>
+              <View style={styles.modalContent}>
+                <Text style={styles.modalTitle}>Confirm Removal</Text>
+                <Text style={styles.modalDescription}>
+                  Are you sure you want to remove {itemToDelete?.name} from your donation box? This action cannot be undone.
+                </Text>
+                <View style={styles.modalActions}>
+                  <TouchableOpacity
+                    style={styles.modalCancelButton}
+                    onPress={() => {
+                      setShowDeleteModal(false);
+                      setItemToDelete(null);
+                    }}
+                  >
+                    <Text style={styles.modalCancelText}>Cancel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.modalRemoveButton}
+                    onPress={handleConfirmDelete}
+                  >
+                    <Text style={styles.modalRemoveText}>Remove</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -329,14 +725,12 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    // backgroundColor: '#f3f4f6',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 5
+    marginRight: 5,
   },
   headerTitle: {
     flex: 1,
-    // textAlign: 'center',
     fontSize: 20,
     fontWeight: 'bold',
     color: '#111827',
@@ -364,8 +758,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: 'rgba(255, 255, 255, 0.8)',
     textDecorationLine: 'underline',
-
-    
   },
   amountSection: {
     alignItems: 'center',
@@ -384,6 +776,18 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  minusText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#ffffff',
+    lineHeight: 24,
+  },
+  dollarIcon: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#ffffff',
+    marginBottom: 4,
   },
   amountText: {
     fontSize: 36,
@@ -425,28 +829,51 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     marginTop: 4,
   },
-  editCausesSection: {
-    paddingHorizontal: 32,
-    marginTop: 24,
-    marginBottom: 16,
+  tabsContainer: {
+    marginHorizontal: 16,
+    marginTop: 16,
   },
-  editCausesButton: {
-    backgroundColor: '#eff6ff',
+  tabs: {
+    flexDirection: 'row',
+    borderRadius: 12,
+    backgroundColor: '#ffffff',
     borderWidth: 1,
-    borderColor: '#bfdbfe',
-    borderRadius: 20,
-    paddingHorizontal: 24,
-    paddingVertical: 8,
-    alignSelf: 'flex-start',
+    borderColor: '#e5e7eb',
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
-  editCausesButtonText: {
+  tab: {
+    flex: 1,
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  tabActive: {
+    backgroundColor: '#2563eb',
+  },
+  tabText: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#1d4ed8',
+    fontWeight: '500',
+    color: '#6b7280',
   },
-  causesSection: {
+  tabTextActive: {
+    color: '#ffffff',
+  },
+  contentSection: {
     paddingHorizontal: 20,
     marginTop: 16,
+  },
+  selectedSection: {
+    marginBottom: 24,
+  },
+  searchSection: {
+    marginBottom: 24,
+  },
+  collectivesSection: {
+    marginBottom: 24,
   },
   sectionTitle: {
     fontSize: 16,
@@ -454,9 +881,52 @@ const styles = StyleSheet.create({
     color: '#374151',
     letterSpacing: 0.5,
     marginBottom: 16,
+    textTransform: 'uppercase',
   },
-  causesList: {
-    marginBottom: 16,
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    marginBottom: 12,
+    backgroundColor: '#ffffff',
+  },
+  searchIcon: {
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    color: '#111827',
+    paddingVertical: 12,
+  },
+  clearButton: {
+    padding: 4,
+  },
+  searchButton: {
+    backgroundColor: '#2563eb',
+    borderRadius: 8,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  searchButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  resultsSection: {
+    marginBottom: 24,
+  },
+  resultsTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 12,
+  },
+  list: {
+    gap: 12,
   },
   causeItem: {
     flexDirection: 'row',
@@ -466,12 +936,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#dbeafe',
-    marginBottom: 16,
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
     elevation: 1,
@@ -499,28 +965,15 @@ const styles = StyleSheet.create({
   causeInfo: {
     flex: 1,
   },
-  causeHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 4,
-    gap: 8,
-  },
   causeName: {
     fontSize: 16,
     fontWeight: '600',
     color: '#111827',
-  },
-  causeUsername: {
-    fontSize: 12,
-    color: '#6b7280',
+    marginBottom: 4,
   },
   causeDescription: {
     fontSize: 12,
     color: '#6b7280',
-    marginTop: 4,
-  },
-  editActions: {
-    justifyContent: 'flex-end',
   },
   removeButton: {
     flexDirection: 'row',
@@ -535,8 +988,58 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#6b7280',
   },
+  resultItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    borderRadius: 8,
+    backgroundColor: '#ffffff',
+  },
+  resultInfo: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  resultName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#111827',
+    marginBottom: 4,
+  },
+  resultDescription: {
+    fontSize: 14,
+    color: '#6b7280',
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#d1d5db',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkboxSelected: {
+    backgroundColor: '#2563eb',
+    borderColor: '#2563eb',
+  },
+  checkmark: {
+    width: 6,
+    height: 10,
+    borderBottomWidth: 2,
+    borderRightWidth: 2,
+    borderColor: '#ffffff',
+    transform: [{ rotate: '45deg' }],
+    marginTop: -2,
+  },
+  loadingText: {
+    textAlign: 'center',
+    color: '#6b7280',
+    paddingVertical: 16,
+  },
   distributionSection: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 32,
     paddingVertical: 16,
   },
   distributionText: {
@@ -545,56 +1048,26 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 20,
   },
-  paymentSection: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+  updateButtonContainer: {
+    paddingHorizontal: 32,
+    paddingBottom: 24,
   },
-  paymentCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  paymentInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  paymentIcon: {
-    width: 32,
-    height: 32,
-    backgroundColor: '#f3f4f6',
+  updateButton: {
+    backgroundColor: PrimaryBlue,
     borderRadius: 8,
+    paddingVertical: 16,
     alignItems: 'center',
-    justifyContent: 'center',
   },
-  paymentDetails: {
-    gap: 2,
+  updateButtonDisabled: {
+    opacity: 0.6,
   },
-  paymentNumber: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#111827',
-  },
-  paymentExpiry: {
-    fontSize: 12,
-    color: '#6b7280',
-  },
-  changeButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  changeButtonText: {
-    fontSize: 14,
-    color: '#2563eb',
-    fontWeight: '500',
+  updateButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ffffff',
   },
   nextPaymentSection: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 32,
     paddingVertical: 16,
   },
   nextPaymentCard: {
@@ -637,35 +1110,60 @@ const styles = StyleSheet.create({
     color: '#9ca3af',
     textAlign: 'center',
     marginVertical: 20,
-    paddingHorizontal: 20,
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 24,
-    borderTopWidth: 1,
-    borderTopColor: '#f3f4f6',
-  },
-  deactivateText: {
-    fontSize: 12,
-    color: '#9ca3af',
-  },
-  saveButton: {
-    backgroundColor: PrimaryBlue,
-    borderRadius: 20,
     paddingHorizontal: 32,
-    paddingVertical: 12,
-    alignItems: 'center',
   },
-  saveButtonFull: {
+  modalOverlay: {
     flex: 1,
-    marginLeft: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
   },
-  saveButtonText: {
-    fontSize: 16,
+  modalContent: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 24,
+    width: '100%',
+    maxWidth: 400,
+  },
+  modalTitle: {
+    fontSize: 18,
     fontWeight: '600',
+    color: '#111827',
+    marginBottom: 12,
+  },
+  modalDescription: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginBottom: 24,
+    lineHeight: 20,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    gap: 12,
+    justifyContent: 'flex-end',
+  },
+  modalCancelButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  modalCancelText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#374151',
+  },
+  modalRemoveButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    backgroundColor: '#dc2626',
+  },
+  modalRemoveText: {
+    fontSize: 14,
+    fontWeight: '500',
     color: '#ffffff',
   },
 });

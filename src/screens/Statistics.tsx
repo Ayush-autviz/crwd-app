@@ -125,7 +125,7 @@ export default function Statistics() {
                         <View style={styles.causeInfo}>
                             <Avatar size={40}>
                                 <AvatarImage src={cause.avatar} />
-                                <AvatarFallback>
+                                <AvatarFallback style={{ backgroundColor: '#dbeafe' }} textStyle={{ color: '#2563eb', fontWeight: '600' }}>
                                     {cause.name.charAt(0).toUpperCase()}
                                 </AvatarFallback>
                             </Avatar>
@@ -173,7 +173,7 @@ export default function Statistics() {
                         <View style={styles.causeInfo}>
                             <Avatar size={40}>
                                 <AvatarImage src={crwd.avatar} />
-                                <AvatarFallback>
+                                <AvatarFallback style={{ backgroundColor: '#dcfce7' }} textStyle={{ color: '#16a34a', fontWeight: '600' }}>
                                     {crwd.name.charAt(0).toUpperCase()}
                                 </AvatarFallback>
                             </Avatar>

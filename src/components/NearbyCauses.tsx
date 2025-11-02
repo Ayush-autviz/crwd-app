@@ -50,7 +50,7 @@ export default function NearbyCauses({ causes = [], isLoading = false, error = n
                 /> */}
                 <Avatar size={40}>
                     <AvatarImage src={item.image} />
-                    <AvatarFallback>
+                    <AvatarFallback style={{ backgroundColor: '#dbeafe' }} textStyle={{ color: '#2563eb', fontWeight: '600' }}>
                         {item.name.split(' ')[0][0].toUpperCase()}
                     </AvatarFallback>
                 </Avatar>

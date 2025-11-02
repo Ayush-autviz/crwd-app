@@ -166,7 +166,7 @@ export default function Profile() {
     if (!user?.id) {
         return (
             <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }} edges={['top', 'left', 'right']}>
-                <MainHeaderNav title={'Me'} show />
+                <MainHeaderNav title={'Me'} />
                 <View style={{ 
                     flex: 1, 
                     justifyContent: 'center', 
@@ -285,7 +285,7 @@ export default function Profile() {
 
     return (
         <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }} edges={['top', 'left', 'right']}>
-            <MainHeaderNav title={'Me'} show />
+            <MainHeaderNav title={'Me'}  />
 
             {/* Top right buttons */}
             <View style={{ flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingTop: 24, paddingBottom: 8 }}>

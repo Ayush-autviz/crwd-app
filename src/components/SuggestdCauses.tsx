@@ -56,7 +56,7 @@ export default function SuggestdCauses({ causes = [], isLoading = false, error =
                                     /> */}
                                     <Avatar size={40}>
                                         <AvatarImage src={item.image} />
-                                        <AvatarFallback>
+                                        <AvatarFallback style={{ backgroundColor: '#dbeafe' }} textStyle={{ color: '#2563eb', fontWeight: '600' }}>
                                             {item.name.split(' ')[0][0].toUpperCase()}
                                         </AvatarFallback>
                                     </Avatar>

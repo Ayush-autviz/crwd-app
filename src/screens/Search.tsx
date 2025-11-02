@@ -383,7 +383,7 @@ export default function SearchScreen() {
                                                 /> */}
                                                 <Avatar size={40}>
                                                     <AvatarImage src={cause.image} />
-                                                    <AvatarFallback>
+                                                    <AvatarFallback style={{ backgroundColor: '#dbeafe' }} textStyle={{ color: '#2563eb', fontWeight: '600' }}>
                                                         {cause.name.split(' ')[0][0].toUpperCase()}
                                                     </AvatarFallback>
                                                 </Avatar>

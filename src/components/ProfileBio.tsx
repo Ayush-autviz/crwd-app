@@ -6,7 +6,7 @@ interface ProfileBioProps {
   bio?: string;
 }
 
-export default function ProfileBio({ bio = "No bio available" }: ProfileBioProps) {
+export default function ProfileBio({ bio }: ProfileBioProps) {
   return (
     <View style={{ marginTop: 20 }}>
       <Text style={{ 

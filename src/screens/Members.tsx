@@ -256,7 +256,7 @@ export default function Members() {
             <View style={styles.metricLabel}>
               <Text style={styles.metricText}>Collective Donations</Text>
             </View>
-            <Text style={styles.metricValue}>$34</Text>
+            <Text style={styles.metricValue}>${collectiveData?.total_donated_amount || 0}</Text>
           </View>
           <TouchableOpacity onPress={() => setShowRecentDonations(true)}>
             <Text style={styles.seeRecentText}>See recent donations</Text>
@@ -266,14 +266,14 @@ export default function Members() {
         <View style={styles.metricItem}>
           <View style={styles.metricRow}>
             <Text style={styles.metricText}>Causes</Text>
-            <Text style={styles.metricValue}>3</Text>
+            <Text style={styles.metricValue}>{collectiveData?.causes?.length ?? 0}</Text>
           </View>
         </View>
 
         <View style={styles.metricItem}>
           <View style={styles.metricRow}>
             <Text style={styles.metricText}>Members</Text>
-            <Text style={styles.metricValue}>59</Text>
+            <Text style={styles.metricValue}>{collectiveData?.member_count ?? 0}</Text>
           </View>
         </View>
       </View>
@@ -296,17 +296,19 @@ export default function Members() {
             ]}
           >
             <View style={styles.tabContent}>
-              <View style={[
-                styles.tabCount,
-                activeTab === tab && styles.activeTabCount
-              ]}>
-                <Text style={[
-                  styles.tabCountText,
-                  activeTab === tab && styles.activeTabCountText
+              {tab !== 'Collective Donations' && (
+                <View style={[
+                  styles.tabCount,
+                  activeTab === tab && styles.activeTabCount
                 ]}>
-                  {tab === 'Causes' ? 1 : tab === 'Members' ? membersToUse?.length : 34}
-                </Text>
-              </View>
+                  <Text style={[
+                    styles.tabCountText,
+                    activeTab === tab && styles.activeTabCountText
+                  ]}>
+                    {tab === 'Causes' ? (collectiveData?.causes?.length ?? 0) : tab === 'Members' ? (collectiveData?.member_count ?? 0) : undefined}
+                  </Text>
+                </View>
+              )}
               <Text style={[
                 styles.tabText,
                 activeTab === tab && styles.activeTabText

@@ -16,6 +16,7 @@ import { LightGrey, PrimaryBlue, PrimaryGreen, PrimaryGrey, SecondaryGrey } from
 import { getCollectiveById, joinCollective, leaveCollective } from '../services/api/crwd';
 import { getPosts } from '../services/api/social';
 import { useToast } from '../contexts/ToastContext';
+import { useAuthStore } from '../store/store';
 
 const { width, height } = Dimensions.get('window');
 
@@ -24,6 +25,7 @@ export default function GroupCRWD() {
   const route = useRoute();
   const queryClient = useQueryClient();
   const { showToast } = useToast();
+  const { user: currentUser } = useAuthStore();
   
   // Get collective ID from route params
   const collectiveId = (route.params as any)?.collectiveId || "1";
@@ -185,22 +187,24 @@ export default function GroupCRWD() {
             {/* <Share2 size={20} color={PrimaryGrey} /> */}
             <Text style={styles.shareButtonText}>Share</Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.joinButton,
-              hasJoined && styles.joinedButton
-            ]}
-            onPress={handleJoin}
-          >
-            {hasJoined ? (
-              <>
-                <Check size={16} color="#6b7280" />
-                <Text style={styles.joinedButtonText}>Joined</Text>
-              </>
-            ) : (
-              <Text style={styles.joinButtonText}>Join This Collective</Text>
-            )}
-          </TouchableOpacity>
+          {(currentUser?.id && collectiveData?.created_by?.id !== currentUser?.id) && (
+            <TouchableOpacity
+              style={[
+                styles.joinButton,
+                hasJoined && styles.joinedButton
+              ]}
+              onPress={handleJoin}
+            >
+              {hasJoined ? (
+                <>
+                  <Check size={16} color="#6b7280" />
+                  <Text style={styles.joinedButtonText}>Joined</Text>
+                </>
+              ) : (
+                <Text style={styles.joinButtonText}>Join This Collective</Text>
+              )}
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 
@@ -216,6 +220,7 @@ export default function GroupCRWD() {
           collectiveData={collectiveData}
           posts={posts?.results || []}
           isLoading={isLoadingPosts}
+          recentActivities={collectiveData?.recent_activities || []}
         />
         <GroupCRWDSuggested />
 

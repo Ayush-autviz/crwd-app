@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, TouchableOpacity } from 'react-native';
+import { View, Text, Image, TouchableOpacity, ScrollView } from 'react-native';
 import { Bookmark, Heart } from 'lucide-react-native';
 import { PrimaryBlue, LightGrey, PrimaryGrey, SecondaryGreen, PrimaryGreen } from '../../Constants/Colors';
 import { useNavigation } from '@react-navigation/native';
@@ -8,6 +8,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { favoriteCollective, unfavoriteCollective } from '../../services/api/social';
 import { useToast } from '../../contexts/ToastContext';
 import { categories } from '../../Constants/categories';
+import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
 
 // const orgAvatars = [
 //   {
@@ -132,8 +133,10 @@ const GroupCRWDHeader: React.FC<GroupCRWDHeaderProps> = ({
     }
   };
 
-  const handleOrgPress = () => {
-    navigation.navigate('CauseScreen' as never);
+  const handleOrgPress = (causeId: string | number) => {
+    if (causeId) {
+      navigation.navigate('CauseScreen' as never, { causeId: causeId.toString() } as never);
+    }
   };
 
   const handleSeeAllPress = () => {
@@ -147,7 +150,7 @@ const GroupCRWDHeader: React.FC<GroupCRWDHeaderProps> = ({
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
           <View style={{ alignItems: 'center' }}>
             <Text style={{ fontSize: 24, fontWeight: '600', color: '#374151', marginTop: 8 }}>
-              {crwdData?.name || 'Feed the hungry'}
+              {crwdData?.name}
             </Text>
           </View>
         </View>
@@ -155,10 +158,16 @@ const GroupCRWDHeader: React.FC<GroupCRWDHeaderProps> = ({
 
       {/* Founder */}
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 16 }}>
-        <Image 
+        {/* <Image 
           source={{ uri: crwdData?.created_by?.profile_picture || 'https://randomuser.me/api/portraits/men/32.jpg' }} 
           style={{ width: 56, height: 56, borderRadius: 28 }} 
-        />
+        /> */}
+        <Avatar size={48}>
+          <AvatarImage src={crwdData?.created_by?.profile_picture} />
+          <AvatarFallback style={{ backgroundColor: '#dbeafe' }} textStyle={{ color: '#2563eb', fontWeight: '600' }}>
+            {crwdData?.created_by?.first_name?.charAt(0)?.toUpperCase() || 'N'}
+          </AvatarFallback>
+        </Avatar>
         <Text style={{ fontSize: 14, color: '#6b7280' }}>Founded by</Text>
         <Text style={{ fontSize: 14, fontWeight: '600', color: '#374151' }}>
           @{crwdData?.created_by?.username || 'ChadFofana1'}
@@ -175,8 +184,8 @@ const GroupCRWDHeader: React.FC<GroupCRWDHeaderProps> = ({
           }}>
           <Heart 
             size={20} 
-            color={isLiked ? 'red' : PrimaryGrey} 
-            fill={isLiked ? 'red' : 'none'} 
+            color={isLiked ? 'red' : PrimaryGrey}
+            fill={isLiked ? 'red' : 'none'}
           />
         </TouchableOpacity>
       </View>
@@ -256,7 +265,7 @@ const GroupCRWDHeader: React.FC<GroupCRWDHeaderProps> = ({
       {/* Recently Supported Nonprofits */}
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
       <Text style={{ fontSize: 16, fontWeight: '700', color: '#374151'}}>
-        Recently Supported Nonprofits
+        Recently Supported
       </Text>
       {/* <Text 
           style={{ color: PrimaryBlue, textDecorationLine: 'underline' }}
@@ -268,41 +277,54 @@ const GroupCRWDHeader: React.FC<GroupCRWDHeaderProps> = ({
       <Text style={{fontSize: 12, fontStyle: 'italic', color: 'grey', marginBottom: 12}}>Your donations here are split evenly across these nonprofits</Text>
 
       {/* Organization Avatars */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-        {crwdData?.causes?.length > 0 && crwdData.causes.slice(0, 4).map((cause: any, index: number) => (
-          <TouchableOpacity key={index} onPress={handleOrgPress} style={{ alignItems: 'center', marginRight: 20 }}>
-            <Image 
-              source={{ uri: cause.cause?.image || 'https://via.placeholder.com/48' }} 
-              style={{ 
-                width: 48, 
-                height: 48, 
-                borderRadius: 8,
-                marginBottom: 4
-              }} 
-            />
-            <Text style={{ fontSize: 12, fontWeight: '600', color: '#6b7280' }}>
-              {cause.cause?.name || 'Unknown'}
-            </Text>
-          </TouchableOpacity>
-        )) 
-        // : orgAvatars.map((org, index) => (
-        //   <TouchableOpacity key={index} onPress={handleOrgPress} style={{ alignItems: 'center', marginRight: 20 }}>
-        //     <Image 
-        //       source={org.image} 
-        //       style={{ 
-        //         width: 48, 
-        //         height: 48, 
-        //         borderRadius: 8,
-        //         marginBottom: 4
-        //       }} 
-        //     />
-        //     <Text style={{ fontSize: 12, fontWeight: '600', color: '#6b7280' }}>
-        //       {org.name}
-        //     </Text>
-        //   </TouchableOpacity>
-        // ))
-        }
-      </View>
+      <ScrollView 
+        horizontal 
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ paddingRight: 20 }}
+      >
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 20 }}>
+          {crwdData?.causes?.length > 0 && crwdData.causes.map((cause: any, index: number) => {
+            const causeName = cause.cause?.name || 'Unknown';
+            const maxLength = 15;
+            const displayName = causeName.length > maxLength 
+              ? causeName.substring(0, maxLength) + '...' 
+              : causeName;
+            
+            return (
+              <TouchableOpacity key={index} onPress={() => handleOrgPress(cause.cause?.id || cause.cause?.cause_id)} style={{ alignItems: 'center', width: 70 }}>
+                <View style={{ marginBottom: 4 }}>
+                  <Avatar size={48}>
+                    <AvatarImage src={cause.cause?.image || cause.cause?.logo} />
+                    <AvatarFallback style={{ backgroundColor: '#dbeafe' }} textStyle={{ color: '#2563eb', fontWeight: '600' }}>
+                      {cause.cause?.name?.charAt(0)?.toUpperCase() || 'N'}
+                    </AvatarFallback>
+                  </Avatar>
+                </View>
+                <Text style={{ fontSize: 12, fontWeight: '600', color: '#6b7280', textAlign: 'center' }} numberOfLines={2} ellipsizeMode="tail">
+                  {displayName}
+                </Text>
+              </TouchableOpacity>
+            );
+          }) 
+          // : orgAvatars.map((org, index) => (
+          //   <TouchableOpacity key={index} onPress={handleOrgPress} style={{ alignItems: 'center', marginRight: 20 }}>
+          //     <Image 
+          //       source={org.image} 
+          //       style={{ 
+          //         width: 48, 
+          //         height: 48, 
+          //         borderRadius: 8,
+          //         marginBottom: 4
+          //       }} 
+          //     />
+          //     <Text style={{ fontSize: 12, fontWeight: '600', color: '#6b7280' }}>
+          //       {org.name}
+          //     </Text>
+          //   </TouchableOpacity>
+          // ))
+          }
+        </View>
+      </ScrollView>
 
       <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 16, gap: 10 }}>
         {/* <Link size={16} /> */}

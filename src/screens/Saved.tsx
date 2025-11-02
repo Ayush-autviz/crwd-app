@@ -126,9 +126,9 @@ export default function Saved() {
 
   const handleItemPress = (item: SavedData) => {
     if (item.type === 'collective') {
-      navigation.navigate('GroupCRWD' as never, { crwdId: item.collectiveId || item.id } as never);
+      (navigation as any).navigate('GroupCRWD', { collectiveId: (item.collectiveId || item.id)?.toString() });
     } else {
-      navigation.navigate('Cause' as never, { causeId: item.causeId || item.id } as never);
+      (navigation as any).navigate('CauseScreen', { causeId: (item.causeId || item.id)?.toString() });
     }
   };
 

@@ -48,7 +48,7 @@ const Circles = () => {
 
   const renderJoinedCollectiveItem = ({ item }: { item: any }) => (
     <TouchableOpacity
-      onPress={() => navigation.navigate('GroupCRWD', { crwdId: item.collective?.id })}
+      onPress={() => navigation.navigate('GroupCRWD', { collectiveId: item.collective?.id?.toString() })}
       activeOpacity={0.9}
       style={styles.card}
     >
@@ -76,7 +76,7 @@ const Circles = () => {
         </View>
       </View>
       <TouchableOpacity
-        onPress={() => navigation.navigate('GroupCRWD', { crwdId: item.collective?.id })}
+        onPress={() => navigation.navigate('GroupCRWD', { collectiveId: item.collective?.id?.toString() })}
         style={[styles.actionButton, { backgroundColor: PrimaryGreen }]}
         activeOpacity={0.8}
       >
@@ -88,7 +88,7 @@ const Circles = () => {
   const renderDiscoverItem = ({ item }: { item: any }) => {
     return (
       <TouchableOpacity
-        onPress={() => navigation.navigate('GroupCRWD', { crwdId: item.id })}
+        onPress={() => navigation.navigate('GroupCRWD', { collectiveId: item.id?.toString() })}
         activeOpacity={0.9}
         style={styles.card}
       >
@@ -116,7 +116,7 @@ const Circles = () => {
           </View>
         </View>
         <TouchableOpacity
-          onPress={() => navigation.navigate('GroupCRWD', { crwdId: item.id })}
+          onPress={() => navigation.navigate('GroupCRWD', { collectiveId: item.id?.toString() })}
           style={[styles.actionButton, { backgroundColor: PrimaryGreen }]}
           activeOpacity={0.8}
         >

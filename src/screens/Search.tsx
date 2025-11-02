@@ -12,8 +12,7 @@ import { getDiscoverMode, resetDiscoverMode } from '../utils/discoverMode'
 import { useQuery } from '@tanstack/react-query'
 import { getCausesBySearch } from '../services/api/crwd'
 import { categories } from '../Constants/categories'
-import { History } from 'lucide-react-native'
-import { TrendingUp } from 'lucide-react-native'
+// Icons replaced with emoji for compatibility
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/Avatar'
 
 
@@ -61,16 +60,24 @@ export default function SearchScreen() {
         } else if (!params?.discover) {
             console.log('Setting discover to false - no discover mode set');
             setDiscover(false)
+            
+            // If no category or search params, trigger initial search for "All" category
+            if (!params?.categoryId && !params?.categoryName && selectedCategory === "All") {
+                console.log('Triggering initial search for All category');
+                setSearchTrigger(prev => prev + 1);
+            }
         }
-    }, [route.params]))
+    }, [route.params, selectedCategory]))
 
     // Get causes with search and category filtering
     const { data: causesData, isLoading: isCausesLoading, error } = useQuery({
-        queryKey: ['causes', selectedCategory, searchTrigger, currentPage],
+        queryKey: ['causes', selectedCategory, searchQuery, searchTrigger, currentPage],
         queryFn: () => {
             return getCausesBySearch(searchQuery, selectedCategory === "All" || selectedCategory === "" ? '' : selectedCategory, currentPage);
         },
-        enabled: (!discover && searchQuery.trim().length > 0) || (!discover && selectedCategory !== "All" && selectedCategory !== ""),
+        enabled: !discover, // Always enabled when not in discover mode to fetch causes
+        refetchOnMount: true,
+        refetchOnWindowFocus: false,
     });
 
 
@@ -91,12 +98,32 @@ export default function SearchScreen() {
         setAllCauses([]);
     }, [searchTrigger, selectedCategory]);
 
+    // Ensure data is fetched when screen comes into focus with no params
+    useEffect(() => {
+        // When search trigger changes, ensure query is triggered
+        if (searchTrigger > 0 && !discover) {
+            // Query will automatically run due to enabled: !discover
+        }
+    }, [searchTrigger, discover]);
+
     // Trigger search when category changes (only in non-discover mode)
     useEffect(() => {
-        if (!discover && selectedCategory !== "All" && selectedCategory !== "") {
+        if (!discover) {
+            // Clear search query when "All" is selected
+            if (selectedCategory === "All" || selectedCategory === "") {
+                setSearchQuery("");
+            }
             setSearchTrigger(prev => prev + 1);
         }
     }, [selectedCategory, discover]);
+
+    // Trigger initial search on mount if no category or search query is set
+    useEffect(() => {
+        if (!discover && !categoryId && !categoryName && searchQuery === "" && (selectedCategory === "All" || selectedCategory === "")) {
+            // Auto-trigger search on page load to show all causes
+            setSearchTrigger(prev => prev + 1);
+        }
+    }, [discover]);
 
     // Show search results when typing, show default content when empty
     const showSearchResults = search.trim().length > 0 || searchQuery.trim().length > 0
@@ -224,7 +251,12 @@ export default function SearchScreen() {
                                             borderWidth: 1,
                                             borderColor: '#E5E7EB',
                                         }}
-                                        onPress={() => setSelectedCategory(selectedCategory === category.id ? "All" : category.id)}
+                                        onPress={() => {
+                                            const newCategory = selectedCategory === category.id ? "All" : category.id;
+                                            setSelectedCategory(newCategory);
+                                            setSearchQuery("");
+                                            setSearchTrigger(prev => prev + 1);
+                                        }}
                                     >
                                         <Text style={{ 
                                             fontSize: 14, 
@@ -290,7 +322,11 @@ export default function SearchScreen() {
                                     borderWidth: 1,
                                     borderColor: '#E5E7EB',
                                 }}
-                                onPress={() => setSelectedCategory("All")}
+                                onPress={() => {
+                                    setSelectedCategory("All");
+                                    setSearchQuery("");
+                                    setSearchTrigger(prev => prev + 1);
+                                }}
                             >
                                 <Text style={{ 
                                     fontSize: 14, 
@@ -299,7 +335,7 @@ export default function SearchScreen() {
                                 }}>
                                     All
                                 </Text>
-                            </TouchableOpacity> */}
+                            </TouchableOpacity>
 
                             {/* Category Buttons */}
                             {categories.map((category, index) => (
@@ -313,7 +349,11 @@ export default function SearchScreen() {
                                         borderWidth: 1,
                                         borderColor: '#E5E7EB',
                                     }}
-                                    onPress={() => setSelectedCategory(category.id)}
+                                    onPress={() => {
+                                        setSelectedCategory(category.id);
+                                        setSearchQuery("");
+                                        setSearchTrigger(prev => prev + 1);
+                                    }}
                                 >
                                     <Text style={{ 
                                         fontSize: 14, 
@@ -328,8 +368,8 @@ export default function SearchScreen() {
                     </ScrollView>
                 </View>
                 
-                {/* Search Results - Show when typing */}
-                {causesData?.results?.length > 0 && (
+                {/* Search Results - Show when data exists or loading */}
+                {(causesData?.results?.length > 0 || isCausesLoading || allCauses.length > 0) && (
                     <>
                         {/* Results Header */}
                         <View style={{ marginBottom: 16 }}>
@@ -359,7 +399,7 @@ export default function SearchScreen() {
                                 {allCauses.map((cause: any, index: number) => (
                                     <TouchableOpacity 
                                         key={cause.id || index}
-                                        onPress={() => navigation.navigate('CauseScreen' as never, { causeId: cause.id } as never)}
+                                        onPress={() => (navigation as any).navigate('CauseScreen', { causeId: cause.id })}
                                         style={{
                                             flexDirection: 'row',
                                             alignItems: 'center',
@@ -447,8 +487,8 @@ export default function SearchScreen() {
                     </>
                 )}
 
-                {/* Default Content - Show when not searching */}
-                {(!causesData || causesData?.results?.length === 0) && (
+                {/* Default Content - Show when not searching and not loading */}
+                {(!causesData || causesData?.results?.length === 0) && !isCausesLoading && allCauses.length === 0 && (
                     <>
 
                     <View style={{ padding: 20, alignItems: 'center' }}>
@@ -461,8 +501,7 @@ export default function SearchScreen() {
                 {recentSearches.length > 0 && (
                     <View style={{ marginTop: 10 }}>
                         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }}>
-                            {/* <Text style={{ fontSize: 20, marginRight: 8 }}>🕒</Text> */}
-                            <History size={20} color={PrimaryGrey} style={{ marginRight: 8 }} />
+                            <Text style={{ fontSize: 16, marginRight: 8 }}>🕒</Text>
                             <Text style={{ fontSize: 16, fontWeight: '600', color: PrimaryGrey }}>Recent Searches</Text>
                         </View>
                         <View style={{ 
@@ -496,7 +535,7 @@ export default function SearchScreen() {
                                             // marginRight: 12 
                                         }}>
                                             {/* <Text style={{ fontSize: 16 }}>🕒</Text> */}
-                                            <History size={20} color={PrimaryGrey} style={{ marginRight: 8 }} />
+                                            <Text style={{ fontSize: 16, marginRight: 8 }}>🕒</Text>
                                         </View>
                                         <Text style={{ fontSize: 14, fontWeight: '500', flex: 1 }}>{searchTerm}</Text>
                                     </View>
@@ -519,8 +558,7 @@ export default function SearchScreen() {
                 {popularSearches.length > 0 && (
                     <View style={{ marginTop: 20 }}>
                         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }}>
-                            {/* <Text style={{ fontSize: 20, marginRight: 8 }}>🔥</Text> */}
-                            <TrendingUp size={20} color={PrimaryGrey} style={{ marginRight: 8 }} />
+                            <Text style={{ fontSize: 16, marginRight: 8 }}>🔥</Text>
                             <Text style={{ fontSize: 16, fontWeight: '600', color: PrimaryGrey }}>Popular Searches</Text>
                         </View>
                         <View style={{ 
@@ -554,7 +592,7 @@ export default function SearchScreen() {
                                             // marginRight: 12 
                                         }}>
                                             {/* <Text style={{ fontSize: 16 }}>🔥</Text> */}
-                                            <TrendingUp size={20} color={PrimaryGrey} style={{ marginRight: 8 }} />
+                                            <Text style={{ fontSize: 16, marginRight: 8 }}>🔥</Text>
                                         </View>
                                         <Text style={{ fontSize: 14, fontWeight: '500', flex: 1 }}>{searchTerm}</Text>
                                     </View>
@@ -627,6 +665,8 @@ export default function SearchScreen() {
                                         }}
                                         onPress={() => {
                                             setSelectedCategory("All");
+                                            setSearchQuery("");
+                                            setSearchTrigger(prev => prev + 1);
                                             setShowCategorySelector(false);
                                         }}
                                     >
@@ -651,6 +691,8 @@ export default function SearchScreen() {
                                             }}
                                             onPress={() => {
                                                 setSelectedCategory(category.id);
+                                                setSearchQuery("");
+                                                setSearchTrigger(prev => prev + 1);
                                                 setShowCategorySelector(false);
                                             }}
                                         >

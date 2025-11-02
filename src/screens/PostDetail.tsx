@@ -3,12 +3,12 @@ import React, { useState, useEffect } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import MainHeaderNav from '../components/MainHeaderNav'
 import { PrimaryGrey, PrimaryBlue, LightGrey } from '../Constants/Colors'
-import { Heart, MessageCircle, ChevronRight, Trash2 } from 'lucide-react-native'
+import { Heart, MessageCircle, ChevronRight, Trash2, Ellipsis } from 'lucide-react-native'
 import { useNavigation, useRoute, useFocusEffect, NavigationProp } from '@react-navigation/native'
 import { useToast } from '../contexts/ToastContext'
 import { formatDistanceToNow } from 'date-fns'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getPostById, getPostComments, createPostComment, getCommentReplies, likePost, unlikePost, likeComment, unlikeComment } from '../services/api/social'
+import { getPostById, getPostComments, createPostComment, getCommentReplies, likePost, unlikePost, likeComment, unlikeComment, deleteComment } from '../services/api/social'
 import { useAuthStore } from '../store/store'
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/Avatar'
 
@@ -23,6 +23,7 @@ interface CommentData {
   repliesCount?: number;
   parentComment?: number;
   isLiked?: boolean;
+  userId?: string | number; // User ID to check if comment belongs to current user
 }
 
 interface Post {
@@ -112,6 +113,7 @@ export default function PostDetail() {
       repliesCount: comment.replies_count || 0,
       parentComment: comment.parent_comment,
       isLiked: comment.is_liked || false,
+      userId: comment.user?.id?.toString(),
     }));
   }, [commentsData]);
 
@@ -148,6 +150,20 @@ export default function PostDetail() {
     },
     onError: () => {
       showToast('Failed to add reply. Please try again.', 3000);
+    },
+  });
+
+  // Delete comment mutation
+  const deleteCommentMutation = useMutation({
+    mutationFn: deleteComment,
+    onSuccess: () => {
+      showToast('Comment deleted successfully!', 2000);
+      queryClient.invalidateQueries({ queryKey: ['postComments', postId] });
+      // Also invalidate the post query to update comment count
+      queryClient.invalidateQueries({ queryKey: ['post', postId] });
+    },
+    onError: () => {
+      showToast('Failed to delete comment. Please try again.', 2000);
     },
   });
 
@@ -227,6 +243,7 @@ export default function PostDetail() {
     onLike, 
     onToggleReplies,
     onFetchReplies,
+    onDelete,
     isExpanded = false,
     isLoadingReplies = false,
     level = 0 
@@ -236,12 +253,17 @@ export default function PostDetail() {
     onLike: (commentId: number) => void;
     onToggleReplies?: (commentId: number) => void;
     onFetchReplies?: (commentId: number) => void;
+    onDelete?: (commentId: number) => void;
     isExpanded?: boolean;
     isLoadingReplies?: boolean;
     level?: number;
   }) => {
     const [isReplying, setIsReplying] = useState(false);
     const [replyContent, setReplyContent] = useState('');
+    const [showMenu, setShowMenu] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    
+    const isOwnComment = currentUser?.id && comment.userId && (currentUser.id.toString() === comment.userId.toString());
 
     const handleReply = () => {
       if (replyContent.trim()) {
@@ -276,7 +298,54 @@ export default function PostDetail() {
           </Avatar>
           <View style={{ flex: 1 }}>
             <View style={{ backgroundColor: LightGrey, padding: 12, borderRadius: 12 }}>
-              <Text style={{ fontWeight: '500', fontSize: 14, marginBottom: 4 }}>@{comment.username}</Text>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
+                <Text style={{ fontWeight: '500', fontSize: 14 }}>@{comment.username}</Text>
+                {isOwnComment && (
+                  <View style={{ position: 'relative' }}>
+                    <TouchableOpacity
+                      onPress={() => setShowMenu(!showMenu)}
+                      style={{ padding: 4 }}
+                    >
+                      <Ellipsis size={16} color={PrimaryGrey} />
+                    </TouchableOpacity>
+                    {showMenu && (
+                      <View style={{
+                        position: 'absolute',
+                        right: 0,
+                        top: 24,
+                        backgroundColor: 'white',
+                        borderRadius: 8,
+                        borderWidth: 1,
+                        borderColor: '#e5e7eb',
+                        shadowColor: '#000',
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: 0.1,
+                        shadowRadius: 4,
+                        elevation: 5,
+                        zIndex: 10,
+                        minWidth: 120
+                      }}>
+                        <TouchableOpacity
+                          onPress={() => {
+                            setShowMenu(false);
+                            setShowDeleteConfirm(true);
+                          }}
+                          style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            gap: 8,
+                            paddingHorizontal: 12,
+                            paddingVertical: 10
+                          }}
+                        >
+                          <Trash2 size={16} color="#ef4444" />
+                          <Text style={{ fontSize: 14, color: '#ef4444', fontWeight: '500' }}>Delete</Text>
+                        </TouchableOpacity>
+                      </View>
+                    )}
+                  </View>
+                )}
+              </View>
               <Text style={{ fontSize: 14 }}>{comment.content}</Text>
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, marginTop: 8 }}>
@@ -357,6 +426,7 @@ export default function PostDetail() {
                     onLike={onLike}
                     onToggleReplies={onToggleReplies}
                     onFetchReplies={onFetchReplies}
+                    onDelete={onDelete}
                     isExpanded={false}
                     isLoadingReplies={false}
                     level={level + 1}
@@ -366,6 +436,90 @@ export default function PostDetail() {
             )}
           </View>
         </View>
+
+        {/* Delete Confirmation Dialog */}
+        <Modal
+          visible={showDeleteConfirm}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setShowDeleteConfirm(false)}
+        >
+          <TouchableWithoutFeedback onPress={() => setShowDeleteConfirm(false)}>
+            <View style={{
+              flex: 1,
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              justifyContent: 'center',
+              alignItems: 'center',
+              padding: 20
+            }}>
+              <TouchableWithoutFeedback onPress={() => {}}>
+                <View style={{
+                  backgroundColor: 'white',
+                  borderRadius: 12,
+                  padding: 20,
+                  width: '100%',
+                  maxWidth: 400
+                }}>
+                  <Text style={{
+                    fontSize: 18,
+                    fontWeight: '600',
+                    color: '#111827',
+                    marginBottom: 8
+                  }}>
+                    Delete Comment
+                  </Text>
+                  <Text style={{
+                    fontSize: 14,
+                    color: '#6b7280',
+                    marginBottom: 20
+                  }}>
+                    Are you sure you want to delete this comment? This action cannot be undone.
+                  </Text>
+                  <View style={{
+                    flexDirection: 'row',
+                    justifyContent: 'flex-end',
+                    gap: 12
+                  }}>
+                    <TouchableOpacity
+                      onPress={() => setShowDeleteConfirm(false)}
+                      disabled={false}
+                      style={{
+                        paddingHorizontal: 16,
+                        paddingVertical: 8,
+                        borderRadius: 6,
+                        borderWidth: 1,
+                        borderColor: '#e5e7eb'
+                      }}
+                    >
+                      <Text style={{ color: '#111827', fontSize: 14, fontWeight: '500' }}>
+                        Cancel
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => {
+                        if (onDelete) {
+                          onDelete(comment.id);
+                        }
+                        setShowDeleteConfirm(false);
+                        setShowMenu(false);
+                      }}
+                      style={{
+                        paddingHorizontal: 16,
+                        paddingVertical: 8,
+                        borderRadius: 6,
+                        backgroundColor: '#ef4444'
+                      }}
+                    >
+                      <Text style={{ color: 'white', fontSize: 14, fontWeight: '500' }}>
+                        Delete
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </TouchableWithoutFeedback>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
       </View>
     );
   };
@@ -374,6 +528,26 @@ export default function PostDetail() {
     if (content.trim()) {
       createReplyMutation.mutate({ commentId, data: { content: content.trim() } });
     }
+  };
+
+  const handleDeleteComment = (commentId: number) => {
+    deleteCommentMutation.mutate(commentId.toString());
+    // Remove comment from local state
+    setComments(prev => {
+      // First, try to remove it as a main comment
+      const filteredComments = prev.filter(c => c.id !== commentId);
+      
+      // If not found, it might be a reply - remove from parent comment's replies
+      if (filteredComments.length === prev.length) {
+        return prev.map(comment => ({
+          ...comment,
+          replies: comment.replies.filter(reply => reply.id !== commentId),
+          repliesCount: comment.replies.filter(reply => reply.id !== commentId).length,
+        }));
+      }
+      
+      return filteredComments;
+    });
   };
 
   const fetchReplies = async (commentId: number) => {
@@ -391,6 +565,7 @@ export default function PostDetail() {
         repliesCount: 0,
         parentComment: commentId,
         isLiked: reply.is_liked || false,
+        userId: reply.user?.id?.toString(),
       })) || [];
 
       setComments(prev => prev.map(comment => 
@@ -648,6 +823,7 @@ export default function PostDetail() {
                     onLike={handleCommentLike}
                     onToggleReplies={toggleReplies}
                     onFetchReplies={fetchReplies}
+                    onDelete={handleDeleteComment}
                     isExpanded={expandedComments.has(comment.id)}
                     isLoadingReplies={loadingReplies.has(comment.id)}
                   />

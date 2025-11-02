@@ -1,16 +1,18 @@
 import { View, Text, FlatList, Image, Dimensions, TouchableOpacity, StyleSheet, Modal, Pressable, ActivityIndicator, Alert, Share, TouchableWithoutFeedback } from 'react-native'
 import React, { useState, useEffect } from 'react'
 import { LightGrey, PrimaryBlue, PrimaryGrey, SecondaryGrey } from '../Constants/Colors'
-import { Ellipsis, Heart, MessageCircle, Flag, Trash2, Share2 } from 'lucide-react-native'
-import { useNavigation, NavigationProp } from '@react-navigation/native'
+import { Ellipsis, Heart, MessageCircle, Trash2, Share2 } from 'lucide-react-native'
+import { useNavigation, NavigationProp, CommonActions } from '@react-navigation/native'
 import SocialShare from './SocialShare'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { likePost, unlikePost } from '../services/api/social'
+import { likePost, unlikePost, deletePost } from '../services/api/social'
 import { useToast } from '../contexts/ToastContext'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/Avatar'
+import { useAuthStore } from '../store/store'
 
 interface Post {
     id: string;
+    userId?: string;
     username: string;
     avatarUrl: string;
     time: string;
@@ -41,6 +43,7 @@ interface PopularPostsProps {
 type RootStackParamList = {
         PostDetail: { post: Post };
         UserProfile: { userId: string };
+        Profile: undefined;
 };
 
 export default function PopularPosts({
@@ -67,11 +70,13 @@ export default function PopularPosts({
     const [tooltipVisible, setTooltipVisible] = useState(false);
     const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
     const [shareModalVisible, setShareModalVisible] = useState(false);
+    const [deleteConfirmVisible, setDeleteConfirmVisible] = useState(false);
     const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
     const [postsLikesCount, setPostsLikesCount] = useState<Record<string, number>>({});
 
     const queryClient = useQueryClient();
     const { showToast } = useToast();
+    const { user } = useAuthStore();
 
     console.log(posts, 'posts from API');
 
@@ -120,6 +125,23 @@ export default function PopularPosts({
         onError: (error) => {
             console.error('Error unliking post:', error);
             showToast('Failed to unlike post', 2000);
+        },
+    });
+
+    // Delete post mutation
+    const deletePostMutation = useMutation({
+        mutationFn: deletePost,
+        onSuccess: () => {
+            showToast('Post deleted successfully!', 2000);
+            setDeleteConfirmVisible(false);
+            setTooltipVisible(false);
+            setSelectedPost(null);
+            queryClient.invalidateQueries({ queryKey: ['posts'] });
+        },
+        onError: (error) => {
+            console.error('Error deleting post:', error);
+            showToast('Failed to delete post', 2000);
+            setDeleteConfirmVisible(false);
         },
     });
 
@@ -311,7 +333,38 @@ export default function PopularPosts({
                         style={styles.container}
                         onPress={() => handlePostPress(item)}
                     >
-                        <TouchableOpacity onPress={() => navigation.navigate('UserProfile', { userId: item.userId })}>
+                        <TouchableOpacity onPress={() => {
+                            // If it's the current user's own profile, navigate to Profile tab
+                            // Otherwise navigate to UserProfile page
+                            if (user?.id && item.userId && user.id.toString() === item.userId.toString()) {
+                                // Profile is in Tab Navigator (MainTabs) within DrawerNav
+                                // Use reset to properly navigate to the Me tab
+                                navigation.dispatch(
+                                    CommonActions.reset({
+                                        index: 0,
+                                        routes: [
+                                            {
+                                                name: 'DrawerNav',
+                                                state: {
+                                                    routes: [
+                                                        {
+                                                            name: 'MainTabs',
+                                                            state: {
+                                                                routes: [{ name: 'Me' }],
+                                                                index: 0,
+                                                            },
+                                                        },
+                                                    ],
+                                                    index: 0,
+                                                },
+                                            },
+                                        ],
+                                    })
+                                );
+                            } else {
+                                navigation.navigate('UserProfile', { userId: item.userId || '' });
+                            }
+                        }}>
                             {/* <Image source={{ uri: item.avatarUrl }} style={{ width: 40, height: 40, borderRadius: 20 }} /> */}
                             <Avatar size={40}>
                                 <AvatarImage src={item.avatarUrl} />
@@ -383,12 +436,12 @@ export default function PopularPosts({
                                     top: tooltipPosition.y - 20,
                                 }
                             ]}>
-                                {showDelete && (
+                                {selectedPost && user?.id && selectedPost.userId && selectedPost.userId === user.id.toString() && (
                                 <TouchableOpacity 
                                     style={styles.tooltipItem}
                                     onPress={() => {
-                                        // Handle delete post
-                                        setTooltipVisible(false)
+                                        setTooltipVisible(false);
+                                        setDeleteConfirmVisible(true);
                                     }}
                                 >
                                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -406,18 +459,6 @@ export default function PopularPosts({
                                         <Text style={styles.tooltipText}>Share Post</Text>
                                     </View>
                                 </TouchableOpacity>
-                                <TouchableOpacity 
-                                    style={styles.tooltipItem}
-                                    onPress={() => {
-                                        // Handle report post
-                                        setTooltipVisible(false)
-                                    }}
-                                >
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                                        <Flag size={16} color={PrimaryGrey} />
-                                        <Text style={styles.tooltipText}>Report Post</Text>
-                                    </View>
-                                </TouchableOpacity>
                             </View>
                         </TouchableWithoutFeedback>
                     </View>
@@ -431,6 +472,100 @@ export default function PopularPosts({
                 message={selectedPost?.text || ''}
                 url={selectedPost?.imageUrl}
             />
+
+            {/* Delete Confirmation Dialog */}
+            <Modal
+                visible={deleteConfirmVisible}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setDeleteConfirmVisible(false)}
+            >
+                <TouchableWithoutFeedback onPress={() => setDeleteConfirmVisible(false)}>
+                    <View style={{
+                        flex: 1,
+                        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        padding: 20
+                    }}>
+                        <TouchableWithoutFeedback onPress={() => {}}>
+                            <View style={{
+                                backgroundColor: 'white',
+                                borderRadius: 12,
+                                padding: 20,
+                                width: '100%',
+                                maxWidth: 400
+                            }}>
+                                <Text style={{
+                                    fontSize: 18,
+                                    fontWeight: '600',
+                                    color: '#111827',
+                                    marginBottom: 8
+                                }}>
+                                    Delete Post
+                                </Text>
+                                <Text style={{
+                                    fontSize: 14,
+                                    color: '#6b7280',
+                                    marginBottom: 20
+                                }}>
+                                    Are you sure you want to delete this post? This action cannot be undone.
+                                </Text>
+                                <View style={{
+                                    flexDirection: 'row',
+                                    justifyContent: 'flex-end',
+                                    gap: 12
+                                }}>
+                                    <TouchableOpacity
+                                        onPress={() => setDeleteConfirmVisible(false)}
+                                        disabled={deletePostMutation.isPending}
+                                        style={{
+                                            paddingHorizontal: 16,
+                                            paddingVertical: 8,
+                                            borderRadius: 6,
+                                            borderWidth: 1,
+                                            borderColor: '#e5e7eb',
+                                            opacity: deletePostMutation.isPending ? 0.5 : 1
+                                        }}
+                                    >
+                                        <Text style={{ color: '#111827', fontSize: 14, fontWeight: '500' }}>
+                                            Cancel
+                                        </Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        onPress={() => {
+                                            if (selectedPost) {
+                                                deletePostMutation.mutate(selectedPost.id);
+                                            }
+                                        }}
+                                        disabled={deletePostMutation.isPending}
+                                        style={{
+                                            paddingHorizontal: 16,
+                                            paddingVertical: 8,
+                                            borderRadius: 6,
+                                            backgroundColor: '#ef4444',
+                                            opacity: deletePostMutation.isPending ? 0.5 : 1
+                                        }}
+                                    >
+                                        {deletePostMutation.isPending ? (
+                                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                                                <ActivityIndicator size="small" color="white" />
+                                                <Text style={{ color: 'white', fontSize: 14, fontWeight: '500' }}>
+                                                    Deleting...
+                                                </Text>
+                                            </View>
+                                        ) : (
+                                            <Text style={{ color: 'white', fontSize: 14, fontWeight: '500' }}>
+                                                Delete
+                                            </Text>
+                                        )}
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        </TouchableWithoutFeedback>
+                    </View>
+                </TouchableWithoutFeedback>
+            </Modal>
         </View>
     )
 }

@@ -1,7 +1,7 @@
-import { View, Text, ScrollView, TouchableOpacity, Share, Alert, Image, Modal, TouchableWithoutFeedback, ActivityIndicator } from 'react-native'
+import { View, Text, ScrollView, TouchableOpacity, Share, Alert, Image, Modal, TouchableWithoutFeedback, ActivityIndicator, RefreshControl } from 'react-native'
 import React, { useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import MainHeaderNav from '../components/MainHeaderNav'
 import ProfileBio from '../components/ProfileBio'
 import ProfileStats from '../components/ProfileStats'
@@ -30,8 +30,10 @@ type RootStackParamList = {
 export default function Profile() {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const { user, token, logout: logoutStore } = useAuthStore();
+    const queryClient = useQueryClient();
     const [showMenu, setShowMenu] = useState(false);
     const [showImageModal, setShowImageModal] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
 
     console.log('user', token);
     
@@ -118,7 +120,7 @@ export default function Profile() {
     // Transform posts data to match PostDetail interface - matching Vite version
     const userPosts = postsQuery?.data?.results?.map((post: any) => ({
         id: post.id,
-        userId: post.user?.id,
+        userId: post.user?.id?.toString(),
         avatarUrl: post.user?.profile_picture,
         username: post.user?.username || post.user?.full_name || 'Unknown User',
         time: new Date(post.created_at).toLocaleDateString(),
@@ -160,6 +162,26 @@ export default function Profile() {
 
     const handleMoreInterests = () => {
         navigation.navigate('Interests' as never);
+    };
+
+    // Pull to refresh handler
+    const onRefresh = async () => {
+        setRefreshing(true);
+        try {
+            // Refetch all queries
+            await Promise.all([
+                refetchProfile(),
+                postsQuery.refetch(),
+                followersQuery.refetch(),
+                followingQuery.refetch(),
+                favoriteCausesQuery.refetch(),
+                userCollectivesQuery.refetch(),
+            ]);
+        } catch (error) {
+            console.error('Error refreshing profile:', error);
+        } finally {
+            setRefreshing(false);
+        }
     };
 
     // Show login prompt if user is not logged in - matching Vite version
@@ -336,7 +358,7 @@ export default function Profile() {
                                             <Share2 size={16} color="#374151" />
                                             <Text style={{ fontSize: 14, color: '#374151' }}>Share Profile</Text>
                                         </TouchableOpacity>
-                                        <TouchableOpacity
+                                        {/* <TouchableOpacity
                                             onPress={handleReportProfile}
                                             style={{
                                                 flexDirection: 'row',
@@ -348,22 +370,7 @@ export default function Profile() {
                                         >
                                             <Flag size={16} color="#ef4444" />
                                             <Text style={{ fontSize: 14, color: '#ef4444' }}>Report Profile</Text>
-                                        </TouchableOpacity>
-                                        <TouchableOpacity
-                                            onPress={handleEditProfile}
-                                            style={{
-                                                flexDirection: 'row',
-                                                alignItems: 'center',
-                                                gap: 8,
-                                                paddingHorizontal: 12,
-                                                paddingVertical: 8,
-                                                borderBottomWidth: 1,
-                                                borderBottomColor: '#f3f4f6',
-                                            }}
-                                        >
-                                            <Pencil size={16} color="#374151" />
-                                            <Text style={{ fontSize: 14, color: '#374151' }}>Edit Profile</Text>
-                                        </TouchableOpacity>
+                                        </TouchableOpacity> */}
                                         <TouchableOpacity
                                             onPress={() => {
                                                 setShowMenu(false);
@@ -394,9 +401,34 @@ export default function Profile() {
                         </TouchableWithoutFeedback>
                     )}
                 </View>
+                {/* Edit button - outside menu like crwd-vite */}
+                <TouchableOpacity
+                    onPress={handleEditProfile}
+                    style={{
+                        borderWidth: 1,
+                        borderColor: '#e5e7eb',
+                        borderRadius: 6,
+                        paddingHorizontal: 16,
+                        paddingVertical: 8,
+                        backgroundColor: 'white',
+                    }}
+                >
+                    <Text style={{ fontSize: 14, color: '#111827', fontWeight: '500' }}>Edit</Text>
+                </TouchableOpacity>
             </View>
 
-            <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+            <ScrollView 
+                style={{ flex: 1 }} 
+                showsVerticalScrollIndicator={false}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={onRefresh}
+                        tintColor={PrimaryBlue}
+                        colors={[PrimaryBlue]}
+                    />
+                }
+            >
                 <View style={{ paddingHorizontal: 20 }}>
                     {/* Profile Header */}
                     <View style={{ paddingTop: 16, paddingBottom: 8, alignItems: 'center' }}>
@@ -466,6 +498,7 @@ export default function Profile() {
                     />
 
                     {/* Recently Supported Section */}
+                    {profileData?.recently_supported_causes && profileData.recently_supported_causes.length > 0 && (
                     <View style={{ marginTop: 24, marginBottom: 16 }}>
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                             <Text style={{ fontSize: 18, fontWeight: '600', color: '#111827' }}>
@@ -481,38 +514,59 @@ export default function Profile() {
                             </TouchableOpacity> */}
                         </View>
 
-                        {/* Organization Avatars */}
-                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                            {[
-                                { name: "ASPCA", image: require('../assets/images/redcross.png') },
-                                { name: "CRI", image: require('../assets/images/grocery.jpg') },
-                                { name: "CureSearch", image: require('../assets/images/redcross.png') },
-                                { name: "Paws", image: require('../assets/images/grocery.jpg') },
-                            ].map((org, index) => (
+                            {/* Organization Avatars - Horizontal Scrollable */}
+                            <ScrollView 
+                                horizontal 
+                                showsHorizontalScrollIndicator={false}
+                                contentContainerStyle={{ 
+                                    paddingLeft: 20,
+                                    paddingRight: 20,
+                                    gap: 16,
+                                    alignItems: 'center'
+                                }}
+                                style={{ 
+                                    marginHorizontal: -20,
+                                    flexGrow: 0 
+                                }}
+                            >
+                                {profileData.recently_supported_causes.map((cause: any, i: number) => (
                                 <TouchableOpacity 
+                                        key={cause.id || i} 
                                     onPress={() => navigation.navigate('CauseScreen' as never)} 
-                                    key={index} 
-                                    style={{ alignItems: 'center' }}
-                                >
-                                    <Image
-                                        source={org.image}
                                         style={{
-                                            width: 56,
-                                            height: 56,
-                                            borderRadius: 8,
-                                            marginBottom: 4
+                                            alignItems: 'center', 
+                                            width: 80,
+                                            flexShrink: 0
                                         }}
-                                    />
-                                    <Text style={{ fontSize: 12, fontWeight: '600', color: '#6b7280' }}>
-                                        {org.name}
+                                    >
+                                        <Avatar size={56}>
+                                            <AvatarImage src={cause.logo} />
+                                            <AvatarFallback style={{ backgroundColor: '#dbeafe' }} textStyle={{ color: '#2563eb', fontWeight: '600' }}>
+                                                {cause.name?.charAt(0)?.toUpperCase() || 'N'}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                        <Text 
+                                            numberOfLines={2}
+                                            ellipsizeMode="tail"
+                                            style={{ 
+                                                fontSize: 12, 
+                                                fontWeight: '600', 
+                                                color: '#6b7280', 
+                                                marginTop: 4, 
+                                                textAlign: 'center',
+                                                width: 80,
+                                            }}
+                                        >
+                                            {cause.name}
                                     </Text>
                                 </TouchableOpacity>
                             ))}
+                            </ScrollView>
                         </View>
-                    </View>
+                    )}
 
                     {/* Profile Bio */}
-                    <ProfileBio bio={profileData?.bio || 'No bio available'} />
+                    {profileData?.bio && <ProfileBio bio={profileData.bio} />}
 
                     {/* Recent Activity */}
                     <View style={{ paddingVertical: 16 }}>
@@ -522,24 +576,19 @@ export default function Profile() {
                                 <Text style={{ marginTop: 10, color: PrimaryGrey }}>Loading posts...</Text>
                             </View>
                         ) : userPosts.length === 0 ? (
-                            <View style={{}}>
-                                <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 8 }}>Recent Activity</Text>
-                            
+                            <View>
+                                <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 16 }}>Recent Activity</Text>
                             <View style={{ 
                                 backgroundColor: 'white',
                                 borderRadius: 8,
                                 borderWidth: 1,
                                 borderColor: '#e5e7eb',
-                                padding: 24,
+                                    padding: 48,
                                 alignItems: 'center',
-                                marginTop: 8
                             }}>
-                                {/* <Text style={{ 
-                                    fontSize: 48, 
-                                    color: '#9ca3af',
-                                    marginBottom: 16
-                                }}>📝</Text> */}
-                                <MessageSquare size={48} color="#9ca3af" />
+                                    <View style={{ marginBottom: 16 }}>
+                                        <MessageSquare size={48} color="#d1d5db" />
+                                    </View>
                                 <Text style={{ 
                                     fontSize: 18, 
                                     fontWeight: '600', 
@@ -549,6 +598,14 @@ export default function Profile() {
                                 }}>
                                     No posts yet
                                 </Text>
+                                    <Text style={{ 
+                                        fontSize: 14, 
+                                        color: '#6b7280',
+                                        textAlign: 'center',
+                                        maxWidth: 300
+                                    }}>
+                                        This user hasn't shared any posts yet. Check back later to see their activity.
+                                    </Text>
                               </View>
                             </View>
                         ) : (

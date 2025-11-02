@@ -12,7 +12,7 @@ import { useRoute, useNavigation } from '@react-navigation/native'
 import { getUserProfileById, followUserById, unfollowUserById, getPosts } from '../services/api/social'
 import { useAuthStore } from '../store/store'
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/Avatar'
-import { Flag, Share2 } from 'lucide-react-native'
+import { Flag, Share2, MessageSquare } from 'lucide-react-native'
 import { MapPin } from 'lucide-react-native'
 
 // Organization avatars matching Vite version
@@ -373,31 +373,117 @@ export default function UserProfile() {
                     />
 
                     {/* Recently Supported Section */}
+                    {userProfile?.recently_supported_causes && userProfile.recently_supported_causes.length > 0 && (
                     <View style={{ marginTop: 24, marginBottom: 16 }}>
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                            <Text style={{ fontSize: 18, fontWeight: '600', color: '#111827' }}>Recently Supported</Text>
-                            <TouchableOpacity onPress={() => navigation.navigate('Interests' as never)}>
-                                <Text style={{ fontSize: 14, color: PrimaryBlue, textDecorationLine: 'underline' }}>More →</Text>
-                            </TouchableOpacity>
+                                <Text style={{ fontSize: 18, fontWeight: '600', color: '#111827' }}>
+                                    Recently Supported
+                                </Text>
+                                {/* <TouchableOpacity onPress={() => navigation.navigate('Interests' as never)}>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                                        <Text style={{ fontSize: 14, color: PrimaryBlue, textDecorationLine: 'underline' }}>
+                                            More
+                                        </Text>
+                                        <ChevronRight size={16} color={PrimaryBlue} />
+                                    </View>
+                                </TouchableOpacity> */}
                         </View>
                         
-                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                            {orgAvatars.map((org, index) => (
-                                <View key={index} style={{ alignItems: 'center', flex: 1 }}>
-                                    <Image source={org.image} style={{ width: 56, height: 56, borderRadius: 8 }} />
-                                    <Text style={{ fontSize: 12, fontWeight: '600', color: PrimaryGrey, marginTop: 4, textAlign: 'center' }}>
-                                        {org.name}
+                            {/* Organization Avatars - Horizontal Scrollable */}
+                            <ScrollView 
+                                horizontal 
+                                showsHorizontalScrollIndicator={false}
+                                contentContainerStyle={{ 
+                                    paddingLeft: 20,
+                                    paddingRight: 20,
+                                    gap: 16,
+                                    alignItems: 'center'
+                                }}
+                                style={{ 
+                                    marginHorizontal: -20,
+                                    flexGrow: 0 
+                                }}
+                            >
+                                {userProfile.recently_supported_causes.map((cause: any, i: number) => (
+                                    <TouchableOpacity 
+                                        key={cause.id || i} 
+                                        onPress={() => navigation.navigate('CauseScreen' as never)}
+                                        style={{ 
+                                            alignItems: 'center', 
+                                            width: 80,
+                                            flexShrink: 0
+                                        }}
+                                    >
+                                        <Avatar size={56}>
+                                            <AvatarImage src={cause.logo} />
+                                            <AvatarFallback style={{ backgroundColor: '#dbeafe' }} textStyle={{ color: '#2563eb', fontWeight: '600' }}>
+                                                {cause.name?.charAt(0)?.toUpperCase() || 'N'}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                        <Text 
+                                            numberOfLines={2}
+                                            ellipsizeMode="tail"
+                                            style={{ 
+                                                fontSize: 12, 
+                                                fontWeight: '600', 
+                                                color: '#6b7280', 
+                                                marginTop: 4, 
+                                                textAlign: 'center',
+                                                width: 80,
+                                            }}
+                                        >
+                                            {cause.name}
                                     </Text>
-                                </View>
+                                    </TouchableOpacity>
                             ))}
+                            </ScrollView>
                         </View>
-                    </View>
+                    )}
 
                     {/* Profile Bio */}
-                    <ProfileBio bio={userProfile.bio} />
+                    {userProfile?.bio && <ProfileBio bio={userProfile.bio} />}
                     
                     {/* Recent Activity */}
-                    <View style={{ marginTop: 24 }}>
+                    <View style={{ paddingVertical: 16 }}>
+                        {postsQuery.isLoading ? (
+                            <View style={{ padding: 20, alignItems: 'center' }}>
+                                <ActivityIndicator size="large" color={PrimaryBlue} />
+                                <Text style={{ marginTop: 10, color: PrimaryGrey }}>Loading posts...</Text>
+                            </View>
+                        ) : userPosts.length === 0 ? (
+                            <View>
+                                <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 16 }}>Recent Activity</Text>
+                                <View style={{ 
+                                    backgroundColor: 'white',
+                                    borderRadius: 8,
+                                    borderWidth: 1,
+                                    borderColor: '#e5e7eb',
+                                    padding: 48,
+                                    alignItems: 'center',
+                                }}>
+                                    <View style={{ marginBottom: 16 }}>
+                                        <MessageSquare size={48} color="#d1d5db" />
+                                    </View>
+                                    <Text style={{ 
+                                        fontSize: 18, 
+                                        fontWeight: '600', 
+                                        color: '#111827',
+                                        marginBottom: 8,
+                                        textAlign: 'center'
+                                    }}>
+                                        No posts yet
+                                    </Text>
+                                    <Text style={{ 
+                                        fontSize: 14, 
+                                        color: '#6b7280',
+                                        textAlign: 'center',
+                                        maxWidth: 300
+                                    }}>
+                                        This user hasn't shared any posts yet. Check back later to see their activity.
+                                    </Text>
+                                </View>
+                            </View>
+                        ) : (
                         <PopularPosts 
                             posts={userPosts} 
                             showTitle={true}
@@ -405,6 +491,7 @@ export default function UserProfile() {
                             onLoadMore={async () => {}}
                             hasMore={false}
                         />
+                        )}
                     </View>
                 </View>
             </ScrollView>

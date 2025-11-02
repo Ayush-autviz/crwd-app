@@ -3,16 +3,18 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Modal, Sha
 import ConfettiCannon from 'react-native-confetti-cannon';
 import MainHeaderNav from '../components/MainHeaderNav';
 import { LightGrey, PrimaryBlue, PrimaryGrey, SecondaryBlue, SecondaryGrey } from '../Constants/Colors';
-import { Bookmark, Heart, Plus } from 'lucide-react-native';
-import { TextInput } from 'react-native-gesture-handler';
+import { Bookmark, Heart, Plus, Search, X, Check } from 'lucide-react-native';
+import { TextInput } from 'react-native';
 // import { Organization, RECENTS, SUGGESTED } from '../Constants/organizations';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { createCollective, getCausesBySearch } from '../services/api/crwd';
 import { getFavoriteCauses } from '../services/api/social';
 import { useToast } from '../contexts/ToastContext';
 import { useAuthStore } from '../store/store';
+import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/Avatar';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function CreateCRWD() {
   const navigation = useNavigation<any>();
@@ -21,8 +23,8 @@ export default function CreateCRWD() {
   const [step, setStep] = useState(1);
   const [name, setName] = useState('');
   const [desc, setDesc] = useState('');
-  const [selectedOrganizations, setSelectedOrganizations] = useState<string[]>([]);
-  const [bookmarkedOrgs, setBookmarkedOrgs] = useState<string[]>([]);
+  const [selectedCauses, setSelectedCauses] = useState<string[]>([]);
+  const [selectedCausesData, setSelectedCausesData] = useState<any[]>([]);
   const [showNameTooltip, setShowNameTooltip] = useState(false);
   const [showDescTooltip, setShowDescTooltip] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -31,6 +33,64 @@ export default function CreateCRWD() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchTrigger, setSearchTrigger] = useState(0);
   const confettiRef = useRef<ConfettiCannon>(null);
+
+  // Load saved form data from AsyncStorage on mount
+  React.useEffect(() => {
+    const loadSavedData = async () => {
+      try {
+        const savedName = await AsyncStorage.getItem('createCrwd_name');
+        const savedDesc = await AsyncStorage.getItem('createCrwd_desc');
+        if (savedName) setName(savedName);
+        if (savedDesc) setDesc(savedDesc);
+      } catch (error) {
+        console.error('Error loading saved data:', error);
+      }
+    };
+    loadSavedData();
+  }, []);
+
+  // Save form data to AsyncStorage whenever it changes
+  React.useEffect(() => {
+    const saveData = async () => {
+      try {
+        if (name) {
+          await AsyncStorage.setItem('createCrwd_name', name);
+        } else {
+          await AsyncStorage.removeItem('createCrwd_name');
+        }
+      } catch (error) {
+        console.error('Error saving name:', error);
+      }
+    };
+    saveData();
+  }, [name]);
+
+  React.useEffect(() => {
+    const saveData = async () => {
+      try {
+        if (desc) {
+          await AsyncStorage.setItem('createCrwd_desc', desc);
+        } else {
+          await AsyncStorage.removeItem('createCrwd_desc');
+        }
+      } catch (error) {
+        console.error('Error saving desc:', error);
+      }
+    };
+    saveData();
+  }, [desc]);
+
+  // Reset to step 1 when screen comes back into focus after navigating away
+  useFocusEffect(
+    React.useCallback(() => {
+      // Reset form when screen comes back into focus if we were on step 2
+      // This ensures that when user navigates back, they see a fresh form
+      return () => {
+        // Cleanup function - reset when screen loses focus
+        // But we'll reset immediately when buttons are clicked instead
+      };
+    }, [])
+  );
 
   // Get causes with search and category filtering
   const { data: causesData, isLoading: isCausesLoading } = useQuery({
@@ -55,8 +115,15 @@ export default function CreateCRWD() {
   // Create collective mutation
   const createCollectiveMutation = useMutation({
     mutationFn: createCollective,
-    onSuccess: (response) => {
+    onSuccess: async (response) => {
       console.log('Create collective successful:', response);
+      // Clear saved form data on successful creation
+      try {
+        await AsyncStorage.removeItem('createCrwd_name');
+        await AsyncStorage.removeItem('createCrwd_desc');
+      } catch (error) {
+        console.error('Error clearing saved data:', error);
+      }
       setCreatedCollective(response);
       setStep(2);
       setShowSuccess(true);
@@ -68,16 +135,44 @@ export default function CreateCRWD() {
     onError: (error: any) => {
       console.error('Create collective error:', error);
       const errorMessage = error.response?.data?.message || error.message || 'Failed to create collective';
-      showToast(errorMessage, 'error' as any);
+      setToast(errorMessage);
+      setTimeout(() => setToast(null), 4000);
     },
   });
 
-  const toggleOrganization = (orgId: string) => {
-    if (selectedOrganizations.includes(orgId)) {
-      setSelectedOrganizations(selectedOrganizations.filter(id => id !== orgId));
+  const handleCauseToggle = (cause: any, isFavorite: boolean = false) => {
+    const causeId = isFavorite ? cause.cause?.id : cause.id;
+    const causeData = isFavorite 
+      ? { ...cause.cause, id: cause.cause.id, image: cause.image, logo: cause.image } 
+      : { ...cause, id: cause.id, image: cause.image || cause.logo, logo: cause.logo || cause.image };
+    
+    setSelectedCauses((prev) => {
+      const isSelected = prev.includes(causeId);
+      const newSelection = isSelected
+        ? prev.filter((id) => id !== causeId)
+        : [...prev, causeId];
+      
+      // Update cause data array
+      setSelectedCausesData((prevData) => {
+        if (isSelected) {
+          return prevData.filter((c) => c.id !== causeId);
     } else {
-      setSelectedOrganizations([...selectedOrganizations, orgId]);
-    }
+          // Check if cause already exists to avoid duplicates
+          const exists = prevData.some((c) => c.id === causeId);
+          if (!exists) {
+            return [...prevData, causeData];
+          }
+          return prevData;
+        }
+      });
+      
+      return newSelection;
+    });
+  };
+
+  const handleRemoveSelectedCause = (causeId: string) => {
+    setSelectedCauses((prev) => prev.filter((id) => id !== causeId));
+    setSelectedCausesData((prevData) => prevData.filter((c) => c.id !== causeId));
   };
 
   // const toggleBookmark = (orgId: string) => {
@@ -90,12 +185,12 @@ export default function CreateCRWD() {
 
   const handleSearchChange = (text: string) => {
     setSearchQuery(text);
+    // Don't trigger API call on every keystroke
   };
 
   const handleSearchSubmit = () => {
-    if (searchQuery.trim().length > 0) {
+    // Trigger API call with search query
       setSearchTrigger(prev => prev + 1);
-    }
   };
 
   const handleCreateCRWD = () => {
@@ -110,7 +205,7 @@ export default function CreateCRWD() {
       setTimeout(() => setToast(null), 4000);
       return;
     }
-    if (selectedOrganizations.length === 0) {
+    if (selectedCauses.length === 0) {
       setToast('Please select at least one cause');
       setTimeout(() => setToast(null), 4000);
       return;
@@ -120,89 +215,10 @@ export default function CreateCRWD() {
     createCollectiveMutation.mutate({
       name: name.trim(),
       description: desc.trim(),
-      cause_ids: selectedOrganizations, // Updated to match API expectation
+      cause_ids: selectedCauses,
     });
   };
 
-  // const renderOrganizationCard = (org: any) => {
-  //   const isSelected = selectedOrganizations.includes(org.id);
-  //   const isBookmarked = bookmarkedOrgs.includes(org.id);
-
-  //   return (
-  //     <TouchableOpacity
-  //       key={org.id}
-  //       style={[styles.orgCard, isSelected && styles.selectedOrgCard]}
-  //       onPress={() => toggleOrganization(org.id)}
-  //     >
-  //       <View style={styles.orgHeader}>
-  //         <Image source={{ uri: org.imageUrl }} style={styles.orgImage} />
-  //         <View style={styles.orgInfo}>
-  //           <Text style={styles.orgName}>{org.name}</Text>
-  //           <Text style={styles.orgDesc}>{org.shortDesc}</Text>
-  //         </View>
-  //         <View style={styles.orgActions}>
-  //           <TouchableOpacity
-  //             onPress={(e) => {
-  //               e.stopPropagation();
-  //               toggleBookmark(org.id);
-  //             }}
-  //             style={[styles.actionButton, isBookmarked && styles.bookmarkedButton]}
-  //           >
-  //             <Heart
-  //               size={16}
-  //               color={isBookmarked ? 'red' : PrimaryGrey}
-  //             />
-  //           </TouchableOpacity>
-  //           <View style={[styles.checkbox, isSelected && styles.checkedBox]}>
-  //             {isSelected && <Text style={styles.checkmark}>✓</Text>}
-  //           </View>
-  //         </View>
-  //       </View>
-  //     </TouchableOpacity>
-  //   );
-  // };
-
-  const renderApiCauseCard = (cause: any, isFavorite: boolean = false) => {
-    const causeData = isFavorite ? cause.cause : cause;
-    const isSelected = selectedOrganizations.includes(causeData.id);
-    const isBookmarked = bookmarkedOrgs.includes(causeData.id);
-
-    return (
-      <TouchableOpacity
-        key={causeData.id}
-        style={[styles.orgCard, isSelected && styles.selectedOrgCard]}
-        onPress={() => toggleOrganization(causeData.id)}
-      >
-        <View style={styles.orgHeader}>
-          <Image 
-            source={{ uri: causeData.image || 'https://via.placeholder.com/40' }} 
-            style={styles.orgImage} 
-          />
-          <View style={styles.orgInfo}>
-            <Text style={styles.orgName}>{causeData.name}</Text>
-            <Text style={styles.orgDesc}>{causeData.mission || causeData.description || 'Building communities'}</Text>
-          </View>
-          <View style={styles.orgActions}>
-            {/* <TouchableOpacity
-              onPress={(e) => {
-                e.stopPropagation();
-                toggleBookmark(causeData.id);
-              }}
-              style={[styles.actionButton, isBookmarked && styles.bookmarkedButton]}
-            >
-              <Heart
-                size={16}
-                color={isBookmarked ? 'red' : PrimaryGrey}
-              />
-            </TouchableOpacity> */}
-            <View style={[styles.checkbox, isSelected && styles.checkedBox]}>
-              {isSelected && <Text style={styles.checkmark}>✓</Text>}
-            </View>
-          </View>
-        </View>
-      </TouchableOpacity>
-    );
-  };
 
   if (step === 2) {
     return (
@@ -229,11 +245,22 @@ export default function CreateCRWD() {
           <View style={styles.successButtons}>
             <TouchableOpacity
               style={styles.inviteButton}
-              onPress={() => {
-                Share.share({
+              onPress={async () => {
+                try {
+                  await Share.share({
                   message: `Join me in my new CRWD "${name}"! We're working together to make a difference. Download the CRWD app to get involved!`,
                   title: `Join my CRWD: ${name}`,
                 });
+                } catch (error) {
+                  console.error('Error sharing:', error);
+                }
+                // Reset form and go back to step 1 after sharing
+                setStep(1);
+                setName('');
+                setDesc('');
+                setSelectedCauses([]);
+                setSelectedCausesData([]);
+                setCreatedCollective(null);
               }}
             >
               <Text style={styles.inviteButtonText}>Invite Friends</Text>
@@ -241,11 +268,19 @@ export default function CreateCRWD() {
             <TouchableOpacity
               style={styles.viewButton}
               onPress={() => {
-                setShowSuccess(false);
-                navigation.navigate('GroupCRWD' as never);
+                if (createdCollective?.id) {
+                  // Reset form before navigating
+                  setStep(1);
+                  setName('');
+                  setDesc('');
+                  setSelectedCauses([]);
+                  setSelectedCausesData([]);
+                  setCreatedCollective(null);
+                  navigation.navigate('GroupCRWD' as never, { collectiveId: createdCollective.id.toString() } as never);
+                }
               }}
             >
-              <Text style={styles.viewButtonText}>View CRWD</Text>
+              <Text style={styles.viewButtonText}>View Collective</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -430,6 +465,36 @@ export default function CreateCRWD() {
 
         <Text style={{ color: PrimaryGrey, fontSize: 16 }}>Choose one or more causes for your CRWD</Text>
 
+        {/* Selected Causes Section */}
+        {selectedCausesData.length > 0 && (
+          <View style={styles.selectedCausesContainer}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <Text style={{ fontSize: 14, fontWeight: '600', color: '#1e40af' }}>
+                Selected Causes ({selectedCausesData.length})
+              </Text>
+            </View>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+              {selectedCausesData.map((cause) => (
+                <View key={cause.id} style={styles.selectedCauseTag}>
+                  <Avatar size={24}>
+                    <AvatarImage src={cause.image || cause.logo} />
+                    <AvatarFallback style={{ backgroundColor: '#dbeafe' }} textStyle={{ color: '#2563eb', fontWeight: '600' }}>
+                      {cause.name?.charAt(0)?.toUpperCase() || 'C'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <Text style={{ fontSize: 12, fontWeight: '500', color: '#111827', marginLeft: 4 }}>{cause.name}</Text>
+                  <TouchableOpacity
+                    onPress={() => handleRemoveSelectedCause(cause.id)}
+                    style={{ marginLeft: 4 }}
+                  >
+                    <X size={14} color="#9ca3af" />
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+
         <View style={styles.causesContainer}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Select from your causes (if any)</Text>
@@ -448,13 +513,41 @@ export default function CreateCRWD() {
               <Text style={styles.emptyText}>No favorite causes found</Text>
             </View>
           ) : (
-            favoriteCauses?.data?.map((cause: any) => renderApiCauseCard(cause, true))
+            favoriteCauses?.results?.map((cause: any) => {
+              const isSelected = selectedCauses.includes(cause.cause?.id);
+              return (
+                <TouchableOpacity
+                  key={cause.cause.id}
+                  style={[styles.orgCard, isSelected && styles.selectedOrgCard]}
+                  onPress={() => handleCauseToggle(cause, true)}
+                >
+                  <View style={styles.orgHeader}>
+                    <Avatar size={40}>
+                      <AvatarImage src={cause.image} />
+                      <AvatarFallback style={{ backgroundColor: '#dbeafe' }} textStyle={{ color: '#2563eb', fontWeight: '600' }}>
+                        {cause.cause.name?.charAt(0)?.toUpperCase() || 'C'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <View style={styles.orgInfo}>
+                      <Text style={styles.orgName}>{cause.cause.name}</Text>
+                      <Text style={styles.orgDesc}>{cause.cause.mission || 'Building communities'}</Text>
+                    </View>
+                    <View style={styles.orgActions}>
+                      <View style={[styles.checkbox, isSelected && styles.checkedBox]}>
+                        {isSelected && <Check size={16} color="#ffffff" />}
+                      </View>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              );
+            })
           )}
 
           <Text style={styles.sectionTitle}>Suggested Causes</Text>
           
           {/* Search Bar */}
           <View style={styles.searchContainer}>
+            <Search size={16} color="#9ca3af" style={{ position: 'absolute', left: 12, top: 12, zIndex: 1 }} />
             <TextInput
               style={styles.searchInput}
               placeholder="Search causes or nonprofits (press Enter to search)"
@@ -469,13 +562,59 @@ export default function CreateCRWD() {
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="small" color={PrimaryBlue} />
             </View>
-          ) : causesData?.results?.length === 0 ? (
+          ) : (() => {
+            // Filter out favorite causes from search results
+            const favoriteCauseIds = new Set(
+              (favoriteCauses?.results || [])
+                .map((fav: any) => {
+                  const id = fav.cause?.id;
+                  return id ? String(id) : null;
+                })
+                .filter((id: any) => id !== null)
+            );
+            
+            const filteredCauses = (causesData?.results || []).filter((cause: any) => {
+              const causeId = cause?.id ? String(cause.id) : null;
+              return causeId && !favoriteCauseIds.has(causeId);
+            });
+
+            if (filteredCauses.length === 0) {
+              return (
             <View style={styles.emptyState}>
               <Text style={styles.emptyText}>No causes found</Text>
             </View>
-          ) : (
-            causesData?.results?.map((cause: any) => renderApiCauseCard(cause, false))
-          )}
+              );
+            }
+
+            return filteredCauses.slice(0, 10).map((cause: any) => {
+              const isSelected = selectedCauses.includes(cause.id);
+              return (
+                <TouchableOpacity
+                  key={cause.id}
+                  style={[styles.orgCard, isSelected && styles.selectedOrgCard]}
+                  onPress={() => handleCauseToggle(cause, false)}
+                >
+                  <View style={styles.orgHeader}>
+                    <Avatar size={40}>
+                      <AvatarImage src={cause.image || cause.logo} />
+                      <AvatarFallback style={{ backgroundColor: '#dbeafe' }} textStyle={{ color: '#2563eb', fontWeight: '600' }}>
+                        {cause.name?.charAt(0)?.toUpperCase() || 'C'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <View style={styles.orgInfo}>
+                      <Text style={styles.orgName}>{cause.name}</Text>
+                      <Text style={styles.orgDesc}>{cause.mission || cause.description || `Building ${cause.name.toLowerCase()} communities`}</Text>
+                    </View>
+                    <View style={styles.orgActions}>
+                      <View style={[styles.checkbox, isSelected && styles.checkedBox]}>
+                        {isSelected && <Check size={16} color="#ffffff" />}
+                      </View>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              );
+            });
+          })()}
         </View>
       </ScrollView>
 
@@ -523,105 +662,23 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: PrimaryGrey,
   },
-  subsectionTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#6b7280',
-    marginTop: 20,
-    marginBottom: 12,
-    letterSpacing: 0.5,
-  },
-  orgCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 2,
-    borderColor: '#f3f4f6',
-  },
-  selectedOrgCard: {
-    borderColor: '#2563eb',
+  selectedCausesContainer: {
     backgroundColor: '#eff6ff',
-  },
-  orgHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  orgImage: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    marginRight: 12,
-  },
-  orgInfo: {
-    flex: 1,
-  },
-  orgName: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1F2937',
-    marginBottom: 4,
-  },
-  orgDesc: {
-    fontSize: 14,
-    color: '#6b7280',
-  },
-  orgActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  actionButton: {
-    width: 24,
-    height: 24,
-    borderRadius: 16,
-    backgroundColor: '#f3f4f6',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  bookmarkedButton: {
-    // backgroundColor: 'red',
-  },
-  checkbox: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: '#d1d5db',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  checkedBox: {
-    backgroundColor: '#2563eb',
-    borderColor: '#2563eb',
-  },
-  checkmark: {
-    color: '#ffffff',
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  donateButton: {
-    backgroundColor: '#2563eb',
-    paddingVertical: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginHorizontal: 20,
-    marginBottom: 10
-  },
-  donateButtonText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#ffffff',
-  },
-  disabledButton: {
-    backgroundColor: SecondaryGrey,
     borderWidth: 1,
-    borderColor: '#d1d5db',
-    opacity: 1,
+    borderColor: '#bfdbfe',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 12,
   },
-  disabledButtonText: {
-    color: '#9ca3af',
-    fontWeight: '500',
+  selectedCauseTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    borderWidth: 1,
+    borderColor: '#93c5fd',
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
   },
   successContainer: {
     flex: 1,
@@ -753,8 +810,78 @@ const styles = StyleSheet.create({
     backgroundColor: '#f3f4f6',
     borderWidth: 0,
     borderRadius: 8,
-    padding: 12,
+    paddingLeft: 40,
+    paddingRight: 12,
+    paddingVertical: 12,
     fontSize: 14,
     color: '#111827',
+  },
+  orgCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 2,
+    borderColor: '#f3f4f6',
+  },
+  selectedOrgCard: {
+    borderColor: '#2563eb',
+    backgroundColor: '#eff6ff',
+  },
+  orgHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  orgInfo: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  orgName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1F2937',
+    marginBottom: 4,
+  },
+  orgDesc: {
+    fontSize: 14,
+    color: '#6b7280',
+  },
+  orgActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#d1d5db',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'white',
+  },
+  checkedBox: {
+    backgroundColor: '#2563eb',
+    borderColor: '#2563eb',
+  },
+  donateButton: {
+    backgroundColor: '#2563eb',
+    paddingVertical: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginHorizontal: 20,
+    marginBottom: 10
+  },
+  donateButtonText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#ffffff',
+  },
+  disabledButton: {
+    backgroundColor: SecondaryGrey,
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    opacity: 0.5,
   },
 });

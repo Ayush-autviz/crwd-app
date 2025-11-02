@@ -9,130 +9,152 @@ import {
   ScrollView,
   Dimensions,
   TextInput,
+  ActivityIndicator,
 } from 'react-native';
 import { Check, ChevronLeft, Search, Loader2 } from 'lucide-react-native';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withSpring,
-  runOnJS,
-} from 'react-native-reanimated';
 import { PrimaryBlue, PrimaryGrey } from '../../Constants/Colors';
 import OnboardingHeader from './OnboardingHeader';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getCausesBySearch } from '../../services/api/crwd';
+import { bulkAddCauseFavorites, getFavoriteCauses } from '../../services/api/social';
+import { useAuthStore } from '../../store/store';
+import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
+import { categories } from '../../Constants/categories';
+import { useToast } from '../../contexts/ToastContext';
 
 const { width } = Dimensions.get('window');
-const cardWidth = (width - 60) / 2; // Account for padding and gap
-
-const interestsData = [
-  {
-    id: 1,
-    name: 'Shriners Children',
-    image: 'https://upload.wikimedia.org/wikipedia/en/thumb/9/9d/Shriners_Hospitals_for_Children_Logo.svg/500px-Shriners_Hospitals_for_Children_Logo.svg.png',
-    color: '#3B82F6',
-  },
-  {
-    id: 2,
-    name: 'Change',
-    image: 'https://images.squarespace-cdn.com/content/v1/5fd7e20940f9b820fac1e013/d442cb1f-e175-4b8d-bc81-44102583a6a5/thumbnail-05.png',
-    color: '#EF4444',
-  },
-  {
-    id: 3,
-    name: 'The Water Trust',
-    image: 'https://media.licdn.com/dms/image/v2/C4E0BAQEHqcfGhnH29g/company-logo_200_200/company-logo_200_200/0/1630573980553/the_water_trust_logo?e=2147483647&v=beta&t=fjyZGioRcUDheVZH_f8dxxSvR7840DFgAp6XrGwo8hw',
-    color: '#10B981',
-  },
-  {
-    id: 4,
-    name: 'WWF',
-    image: 'https://i0.wp.com/acrossthegreen.com/wp-content/uploads/2021/03/75E8B176-DAFE-4956-ABC5-9F221ACB2094.png?fit=1020%2C680&ssl=1',
-    color: '#F59E0B',
-  },
-  {
-    id: 5,
-    name: 'Wounded Warrior Project',
-    image: 'https://flooringresources.com/sites/default/files/styles/square_large/public/2022-01/1320-pps-wounded-warrior-classic.jpg?itok=4asRq76x',
-    color: '#8B5CF6',
-  },
-  {
-    id: 6,
-    name: 'Girls Who Code',
-    image: 'https://media.licdn.com/dms/image/v2/C4D0BAQEHUTYYyPFEhQ/company-logo_200_200/company-logo_200_200/0/1630509785189/girlswhocode_logo?e=2147483647&v=beta&t=eqyanOv949sDS3M_EnIq_wabT-1mN3uHQXVyB_FCTBI',
-    color: '#F97316',
-  },
-];
-
-// Create unique IDs for each interest by duplicating the data with different IDs
-const nonProfitInterests = [
-  ...interestsData.map((item, index) => ({ ...item, id: item.id + (index * 1000) })),
-  ...interestsData.map((item, index) => ({ ...item, id: item.id + (index * 1000) + 100 })),
-  ...interestsData.map((item, index) => ({ ...item, id: item.id + (index * 1000) + 200 })),
-  ...interestsData.map((item, index) => ({ ...item, id: item.id + (index * 1000) + 300 })),
-  ...interestsData.map((item, index) => ({ ...item, id: item.id + (index * 1000) + 400 })),
-  ...interestsData.map((item, index) => ({ ...item, id: item.id + (index * 1000) + 500 }))
-];
-
-const categories = [
-  {
-    name: "All",
-    text: "#000000",
-    background: "#f5f5f5",
-  },
-  {
-    name: "Health",
-    text: "#D62828",
-    background: "#FFE5E5",
-  },
-  {
-    name: "Education",
-    text: "#FFB84D",
-    background: "#FFF3E0",
-  },
-  {
-    name: "Environment",
-    text: "#6A994E",
-    background: "#E8F4E4",
-  },
-  {
-    name: "Arts",
-    text: "#FF6B6B",
-    background: "#FFECEC",
-  },
-  {
-    name: "Animals",
-    text: "#E36414",
-    background: "#FFE9DC",
-  },
-  {
-    name: "Poverty", // mapped to Relief
-    text: "#F94144",
-    background: "#FFE3E3",
-  },
-  {
-    name: "Veterans", // mapped to Society
-    text: "#577590",
-    background: "#EAF0F5",
-  },
-  {
-    name: "Children", // mapped to Youth
-    text: "#4CC9F0",
-    background: "#E0F7FF",
-  },
-];
+// Calculate card width for 2 columns with proper spacing
+// contentWrapper has 16px padding on each side = 32px
+// whiteCard has 16px padding on each side = 32px
+// Total padding = 64px
+// Gap between cards = 12px
+// Card width = (screen width - total padding - gap) / 2
+const cardWidth = ((width - 64) - 12) / 2; // Screen width minus all padding (64px) minus gap (12px) divided by 2
 
 export default function NonProfitInterests() {
   const [selectedInterests, setSelectedInterests] = useState<number[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const navigation = useNavigation<any>()   
-  const continueButtonScale = useSharedValue(1);
+  const [searchTrigger, setSearchTrigger] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [allCauses, setAllCauses] = useState<any[]>([]);
+  const navigation = useNavigation<any>();
+  const { user: currentUser } = useAuthStore();
+  const queryClient = useQueryClient();
+  const { showToast } = useToast();
 
-  const continueButtonAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: continueButtonScale.value }],
-  }));
+  // Get favorite causes to exclude from results
+  const { data: favoriteCauses } = useQuery({
+    queryKey: ['favoriteCauses'],
+    queryFn: () => getFavoriteCauses(),
+    enabled: true,
+  });
+
+  // Get causes with search and category filtering
+  const { data: causesData, isLoading: isCausesLoading } = useQuery({
+    queryKey: ['causes', selectedCategory, searchTrigger, currentPage, searchQuery],
+    queryFn: () => {
+      return getCausesBySearch(searchQuery, selectedCategory, currentPage);
+    },
+    enabled: true,
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
+  });
+
+  // Bulk add favorites mutation
+  const bulkAddCauseFavoritesMutation = useMutation({
+    mutationFn: (causeIds: string[]) => bulkAddCauseFavorites(causeIds),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['favoriteCauses'] });
+      showToast('Causes added to favorites', 2000);
+      // Navigate back if came from CreateCRWD, or to CreateCRWD if from onboarding
+      navigation.goBack();
+    },
+    onError: () => {
+      showToast('Failed to add causes to favorites', 2000);
+    },
+  });
+
+  // Handle API response and accumulate results, filtering out favorite causes
+  React.useEffect(() => {
+    if (causesData?.results && Array.isArray(causesData.results)) {
+      // Get favorite cause IDs to exclude from results
+      // Only filter if favoriteCauses is loaded, otherwise show all results
+      let favoriteCauseIds = new Set<string>();
+      
+      if (favoriteCauses?.results && Array.isArray(favoriteCauses.results)) {
+        favoriteCauseIds = new Set(
+          favoriteCauses.results
+            .map((fav: any) => {
+              const id = fav.cause?.id;
+              // Convert to string for consistent comparison
+              return id ? String(id) : null;
+            })
+            .filter((id: any) => id !== null) as string[]
+        );
+      }
+
+      // Filter out favorite causes from search results
+      // If favoriteCauses is not loaded yet, don't filter (show all results)
+      const filteredCauses = causesData.results.filter((cause: any) => {
+        const causeId = cause?.id ? String(cause.id) : null;
+        if (!causeId) return false;
+        // Only exclude if favoriteCauses is loaded and this cause is in favorites
+        // If favoriteCauses is not loaded yet, show all causes
+        if (!favoriteCauses || !favoriteCauses.results) {
+          return true; // Show all if favorites not loaded yet
+        }
+        return !favoriteCauseIds.has(causeId);
+      });
+
+      if (currentPage === 1) {
+        // Reset causes for new search/category
+        setAllCauses(filteredCauses);
+      } else {
+        // Append new results for load more
+        setAllCauses(prev => [...prev, ...filteredCauses]);
+      }
+    } else if (causesData && (!causesData.results || !Array.isArray(causesData.results))) {
+      // If API returns but no results or invalid format, set empty
+      setAllCauses([]);
+    }
+  }, [causesData, currentPage, favoriteCauses]);
+
+  // Reset page when search or category changes
+  React.useEffect(() => {
+    setCurrentPage(1);
+    // Don't clear allCauses immediately - wait for new data to load
+    // The causes will be reset when new data comes in via causesData
+  }, [searchTrigger]);
+
+  // Ensure causes load on initial mount
+  React.useEffect(() => {
+    // Always trigger initial load on mount
+    setSearchTrigger(prev => prev + 1);
+  }, []);
+
+  // Trigger API call when category changes
+  React.useEffect(() => {
+    // Reset selections and trigger search when category changes
+    setSelectedInterests([]);
+    setSearchTrigger(prev => prev + 1);
+  }, [selectedCategory]);
+
+  // Refetch causes when screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      // Refetch favorite causes first to ensure we have latest favorites
+      queryClient.invalidateQueries({ queryKey: ['favoriteCauses'] });
+      // Then refetch causes
+      queryClient.invalidateQueries({ queryKey: ['causes'] });
+      // Also trigger search to ensure fresh data
+      setSearchTrigger(prev => prev + 1);
+      // Reset state when screen comes into focus
+      setCurrentPage(1);
+    }, [queryClient])
+  );
 
   const handleInterestSelect = (interestId: number) => {
     setSelectedInterests(prev => {
@@ -144,45 +166,30 @@ export default function NonProfitInterests() {
     });
   };
 
+  const handleSearchChange = (text: string) => {
+    setSearchQuery(text);
+    // Don't trigger API call on every keystroke
+  };
+
+  const handleSearchSubmit = () => {
+    // Trigger API call with search query
+    setSelectedInterests([]);
+    setSearchTrigger(prev => prev + 1);
+  };
+
+  const handleLoadMore = () => {
+    setCurrentPage(prev => prev + 1);
+  };
+
   const handleContinue = () => {
     if (selectedInterests.length === 0) {
       return;
     }
-
-    setIsLoading(true);
-
-    // Show loader for 2 seconds then navigate
-    setTimeout(() => {
-      setIsLoading(false);
-      navigation.navigate('CompleteOnboard' as never);
-    }, 2000);
+    bulkAddCauseFavoritesMutation.mutate(selectedInterests.map(id => id.toString()));
   };
 
-  const handleBack = () => {
-    // Navigate back
-    console.log('Navigate back');
-  };
-
-  const InterestCard = ({ interest }: { interest: typeof nonProfitInterests[0] }) => {
+  const InterestCard = ({ interest }: { interest: { id: number, image?: string, logo?: string, name: string } }) => {
     const isSelected = selectedInterests.includes(interest.id);
-    const overlayOpacity = useSharedValue(isSelected ? 1 : 0);
-    const checkScale = useSharedValue(isSelected ? 1 : 0);
-
-    React.useEffect(() => {
-      overlayOpacity.value = withTiming(isSelected ? 1 : 0, { duration: 200 });
-      checkScale.value = withSpring(isSelected ? 1 : 0, {
-        damping: 15,
-        stiffness: 200,
-      });
-    }, [isSelected]);
-
-    const overlayAnimatedStyle = useAnimatedStyle(() => ({
-      opacity: overlayOpacity.value,
-    }));
-
-    const checkAnimatedStyle = useAnimatedStyle(() => ({
-      transform: [{ scale: checkScale.value }],
-    }));
 
     return (
       <TouchableOpacity
@@ -193,16 +200,25 @@ export default function NonProfitInterests() {
         onPress={() => handleInterestSelect(interest.id)}
         activeOpacity={0.8}
       >
-        <Image source={{ uri: interest.image }} style={styles.interestImage} />
+        <View style={styles.avatarContainer}>
+          <Avatar size={80}>
+            <AvatarImage src={interest.image || interest.logo} />
+            <AvatarFallback style={{ backgroundColor: '#dbeafe' }} textStyle={{ color: '#2563eb', fontWeight: '600' }}>
+              {interest.name?.charAt(0)?.toUpperCase() || 'C'}
+            </AvatarFallback>
+          </Avatar>
+        </View>
         <View style={styles.interestContent}>
-          <Text style={styles.interestName}>{interest.name}</Text>
+          <Text style={styles.interestName} numberOfLines={2} ellipsizeMode="tail">
+            {interest.name}
+          </Text>
         </View>
         
         {/* Selection Overlay */}
         {isSelected && (
           <View style={styles.selectionOverlay}>
             <View style={styles.checkContainer}>
-              <Check size={18} color="white" />
+              <Check size={16} color="white" />
             </View>
           </View>
         )}
@@ -210,38 +226,64 @@ export default function NonProfitInterests() {
     );
   };
 
+  // Show sign-in message if user not logged in
+  if (!currentUser?.id) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.signInContainer}>
+          <View style={styles.signInIcon}>
+            <Text style={{ fontSize: 40 }}>👤</Text>
+          </View>
+          <Text style={styles.signInTitle}>Sign in to find causes that fit you</Text>
+          <Text style={styles.signInDescription}>
+            Sign in to view your profile, manage your causes, and connect with your community.
+          </Text>
+          <TouchableOpacity
+            style={styles.signInButton}
+            onPress={() => navigation.navigate('Login' as never)}
+          >
+            <Text style={styles.signInButtonText}>Sign In to Continue</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
-        <View style={{paddingHorizontal: 20, backgroundColor: 'white'}}>
-      <OnboardingHeader />
+      <View style={styles.contentWrapper}>
+        <OnboardingHeader />
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Step Indicator */}
-        <View style={styles.stepIndicator}>
-          <View style={styles.stepBar}>
-            <View style={[styles.stepDot, styles.stepDotInactive]} />
-            <View style={[styles.stepDot, styles.stepDotInactive]} />
-            <View style={[styles.stepDot, styles.stepDotActive]} />
-          </View>
-        </View>
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          {/* White Card Container */}
+          <View style={styles.whiteCard}>
+            {/* Step Indicator */}
+            <View style={styles.stepIndicator}>
+              <View style={styles.stepBar}>
+                <View style={[styles.stepDot, styles.stepDotInactive]} />
+                <View style={[styles.stepDot, styles.stepDotInactive]} />
+                <View style={[styles.stepDot, styles.stepDotActive]} />
+              </View>
+            </View>
 
-        {/* Heading */}
-        <View style={styles.headingContainer}>
-          <Text style={styles.title}>Find causes that fit you</Text>     
-          <Text style={styles.subtitle}>
-            Choose at least 1 to start. You can add more anytime.
-          </Text>
-        </View>
+            {/* Heading */}
+            <View style={styles.headingContainer}>
+              <Text style={styles.title}>Find causes that fit you</Text>     
+              <Text style={styles.subtitle}>
+                Choose at least 1 to start. You can add more anytime.
+              </Text>
+            </View>
 
         {/* Search Bar */}
         <View style={styles.searchContainer}>
           <Search size={16} color="#9ca3af" style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
-            placeholder="Search causes or nonprofits"
+            placeholder="Search causes or nonprofits (press Enter to search)"
             placeholderTextColor="#9ca3af"
             value={searchQuery}
-            onChangeText={setSearchQuery}
+            onChangeText={handleSearchChange}
+            onSubmitEditing={handleSearchSubmit}
           />
         </View>
 
@@ -253,21 +295,26 @@ export default function NonProfitInterests() {
         >
           {categories.map((category) => (
             <TouchableOpacity
-              key={category.name}
+              key={category.id || category.name}
               style={[
                 styles.categoryButton,
                 {
-                  backgroundColor: selectedCategory === category.name 
+                  backgroundColor: selectedCategory === category.id 
                     ? category.text 
                     : category.background,
                 }
               ]}
-              onPress={() => setSelectedCategory(selectedCategory === category.name ? '' : category.name)}
+              onPress={() => {
+                setSelectedInterests([]);
+                const newCategory = selectedCategory === category.id ? '' : category.id;
+                setSelectedCategory(newCategory);
+                // Search trigger will be handled by useEffect on selectedCategory change
+              }}
             >
               <Text style={[
                 styles.categoryButtonText,
                 {
-                  color: selectedCategory === category.name 
+                  color: selectedCategory === category.id 
                     ? "white" 
                     : category.text
                 }
@@ -279,47 +326,72 @@ export default function NonProfitInterests() {
         </ScrollView>
 
         {/* Interests Grid */}
-        <View style={styles.interestsGrid}>
-          {nonProfitInterests.map((interest,index) => (
-            <InterestCard key={index} interest={interest} />
-          ))}
-        </View>
-
-        {/* Selection Summary */}
-        {selectedInterests.length > 0 && (
-          <View style={styles.selectionSummary}>
-            <Text style={styles.selectionSummaryText}>
-              You've chosen {selectedInterests.length} cause{selectedInterests.length !== 1 ? 's' : ''}.
-            </Text>
+        {isCausesLoading && allCauses.length === 0 ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="small" color={PrimaryBlue} />
+            <Text style={styles.loadingText}>Loading...</Text>
+          </View>
+        ) : allCauses.length > 0 ? (
+          <>
+            <View style={styles.interestsGrid}>
+              {allCauses.map((interest: any, index: number) => (
+                <View key={interest.id || index} style={{ width: cardWidth, marginBottom: 12 }}>
+                  <InterestCard interest={interest} />
+                </View>
+              ))}
+            </View>
+            {/* Load More Button */}
+            {causesData?.next && (
+              <View style={styles.loadMoreContainer}>
+                <TouchableOpacity onPress={handleLoadMore} style={styles.loadMoreButton}>
+                  <Text style={styles.loadMoreText}>Load More</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </>
+        ) : (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>No causes found</Text>
           </View>
         )}
-      </ScrollView>
 
-      <View style={styles.footer}> 
-        <TouchableOpacity 
-          style={[
-            styles.continueButton, 
-            selectedInterests.length === 0 && styles.continueButtonDisabled
-          ]} 
-          onPress={handleContinue}
-          disabled={selectedInterests.length === 0 || isLoading}
-          activeOpacity={1}
-        >
-          {isLoading ? (
-            <View style={styles.loadingContainer}>
-              <Loader2 size={16} color="white" style={styles.spinner} />
-              <Text style={styles.continueButtonText}>Loading...</Text>
+            {/* Selection Summary */}
+            {selectedInterests.length > 0 && (
+              <View style={styles.selectionSummary}>
+                <Text style={styles.selectionSummaryText}>
+                  You've chosen {selectedInterests.length} cause{selectedInterests.length !== 1 ? 's' : ''}.
+                </Text>
+              </View>
+            )}
+
+            {/* Continue Button */}
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity 
+                style={[
+                  styles.continueButton, 
+                  selectedInterests.length === 0 && styles.continueButtonDisabled
+                ]} 
+                onPress={handleContinue}
+                disabled={selectedInterests.length === 0 || bulkAddCauseFavoritesMutation.isPending}
+                activeOpacity={1}
+              >
+                {bulkAddCauseFavoritesMutation.isPending ? (
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="small" color="white" />
+                    <Text style={styles.continueButtonText}>Loading...</Text>
+                  </View>
+                ) : (
+                  <Text style={[
+                    styles.continueButtonText,
+                    selectedInterests.length === 0 && styles.continueButtonTextDisabled
+                  ]}>
+                    Continue
+                  </Text>
+                )}
+              </TouchableOpacity>
             </View>
-          ) : (
-            <Text style={[
-              styles.continueButtonText,
-              selectedInterests.length === 0 && styles.continueButtonTextDisabled
-            ]}>
-              Continue
-            </Text>
-          )}
-        </TouchableOpacity>
-      </View>
+          </View>
+        </ScrollView>
       </View>
     </SafeAreaView>
   );
@@ -328,12 +400,74 @@ export default function NonProfitInterests() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 20,
-    backgroundColor: 'white',
+    backgroundColor: '#f9fafb',
+  },
+  contentWrapper: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingTop: 8,
   },
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: 50,
+    paddingBottom: 20,
+  },
+  whiteCard: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 16,
+    marginVertical: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  signInContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  signInIcon: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#dbeafe',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 24,
+  },
+  signInTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#111827',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  signInDescription: {
+    fontSize: 16,
+    color: '#6b7280',
+    textAlign: 'center',
+    marginBottom: 32,
+    lineHeight: 24,
+  },
+  signInButton: {
+    backgroundColor: '#2563eb',
+    paddingHorizontal: 32,
+    paddingVertical: 12,
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  signInButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
   },
   header: {
     flexDirection: 'row',
@@ -421,14 +555,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    gap: 16,
     marginBottom: 20,
+    width: '100%',
   },
   interestCard: {
-    padding: 10,
-    width: cardWidth,
+    padding: 8,
+    width: '100%',
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    borderRadius: 12,
     overflow: 'hidden',
     borderWidth: 2,
     borderColor: '#e5e7eb',
@@ -437,27 +571,37 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 4,
-    marginBottom: 16,
+    flex: 1,
+    justifyContent: 'space-between',
+    minHeight: 140,
   },
   interestCardSelected: {
     borderColor: PrimaryBlue,
     shadowOpacity: 0.2,
     elevation: 8,
   },
-  interestImage: {
-    width: '80%',
-    height: 90,
-    alignSelf: 'center',
-    resizeMode: 'contain',
+  avatarContainer: {
+    width: '100%',
+    height: 80,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+    flexShrink: 0,
   },
   interestContent: {
-    padding: 16,
+    paddingTop: 8,
+    paddingBottom: 8,
+    paddingHorizontal: 4,
+    flex: 1,
+    justifyContent: 'center',
+    minHeight: 40,
   },
   interestName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1F2937',
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#374151',
     textAlign: 'center',
+    lineHeight: 16,
   },
   selectionOverlay: {
     position: 'absolute',
@@ -475,7 +619,8 @@ const styles = StyleSheet.create({
   },
   selectionSummary: {
     alignItems: 'center',
-    marginBottom: 20,
+    marginTop: 16,
+    marginBottom: 16,
     minHeight: 24,
   },
   selectionSummaryText: {
@@ -483,42 +628,58 @@ const styles = StyleSheet.create({
     color: '#6b7280',
   },
   buttonContainer: {
-    paddingBottom: 40,
+    marginTop: 8,
   },
   continueButton: {
-    backgroundColor: PrimaryBlue, 
-    padding: 15, 
-    borderRadius: 12, 
+    backgroundColor: '#111827', 
+    paddingVertical: 10, 
+    borderRadius: 8, 
     alignItems: 'center',
+    width: '100%',
   },
   continueButtonDisabled: {
     backgroundColor: '#d1d5db',
   },
   continueButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 14,
+    fontWeight: '500',
     textAlign: 'center',
   },
   continueButtonTextDisabled: {
     color: '#9ca3af',
-    fontWeight: '600',
+    fontWeight: '500',
   },
   loadingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
   },
-  spinner: {
-    marginRight: 8,
+  loadingText: {
+    marginLeft: 8,
+    color: PrimaryGrey,
+    fontSize: 14,
   },
-  footer: {
-    position: 'absolute',
-    bottom: 20,
-    left: 0,
-    right: 0,
-    backgroundColor: 'white',
-    padding: 20,
-    borderTopWidth: 1,
-    borderTopColor: '#e5e7eb',
+  emptyContainer: {
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  emptyText: {
+    fontSize: 14,
+    color: PrimaryGrey,
+  },
+  loadMoreContainer: {
+    alignItems: 'center',
+    marginVertical: 20,
+  },
+  loadMoreButton: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+  },
+  loadMoreText: {
+    color: PrimaryBlue,
+    fontSize: 14,
+    fontWeight: '500',
   },
 });

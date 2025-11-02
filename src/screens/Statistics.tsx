@@ -5,11 +5,12 @@ import MainHeaderNav from '../components/MainHeaderNav'
 import { LightGrey, PrimaryBlue, PrimaryGrey } from '../Constants/Colors'
 import { Search } from 'lucide-react-native'
 import { useNavigation, useRoute } from '@react-navigation/native'
-import { useQuery } from '@tanstack/react-query'
-import { getUserFollowers, getUserFollowing, getFavoriteCausesByUserId } from '../services/api/social'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { getUserFollowers, getUserFollowing, getFavoriteCausesByUserId, followUser, unfollowUser } from '../services/api/social'
 import { getJoinCollective } from '../services/api/crwd'
 import { useAuthStore } from '../store/store'
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/Avatar'
+import { useToast } from '../contexts/ToastContext'
 // import { MapPin } from 'lucide-react-native'
 
 export default function Statistics() {
@@ -21,9 +22,71 @@ export default function Statistics() {
     const [crwdsSearch, setCrwdsSearch] = useState('')
     const navigation = useNavigation()
     const { user } = useAuthStore()
+    const queryClient = useQueryClient()
+    const { showToast } = useToast()
 
     // Use userId from route params if provided, otherwise use current user's id
     const targetUserId = routeParams?.userId || user?.id?.toString() || ''
+
+    // Follow user mutation
+    const followUserMutation = useMutation({
+        mutationFn: followUser,
+        onSuccess: () => {
+            // Invalidate all follower/following queries
+            queryClient.invalidateQueries({ queryKey: ['followers'] })
+            queryClient.invalidateQueries({ queryKey: ['following'] })
+            // Invalidate current user's profile to update following count
+            queryClient.invalidateQueries({ queryKey: ['userProfile', user?.id] })
+            // Invalidate target user's profile if viewing someone else's stats
+            if (targetUserId && targetUserId !== user?.id?.toString()) {
+                queryClient.invalidateQueries({ queryKey: ['userProfile', targetUserId] })
+            }
+            showToast('Followed')
+        },
+        onError: (error) => {
+            console.error('Error following user:', error)
+            showToast('Error following user')
+        },
+    })
+
+    // Unfollow user mutation
+    const unfollowUserMutation = useMutation({
+        mutationFn: unfollowUser,
+        onSuccess: () => {
+            // Invalidate all follower/following queries
+            queryClient.invalidateQueries({ queryKey: ['followers'] })
+            queryClient.invalidateQueries({ queryKey: ['following'] })
+            // Invalidate current user's profile to update following count
+            queryClient.invalidateQueries({ queryKey: ['userProfile', user?.id] })
+            // Invalidate target user's profile if viewing someone else's stats
+            if (targetUserId && targetUserId !== user?.id?.toString()) {
+                queryClient.invalidateQueries({ queryKey: ['userProfile', targetUserId] })
+            }
+            showToast('Unfollowed')
+        },
+        onError: (error) => {
+            console.error('Error unfollowing user:', error)
+            showToast('Error unfollowing user')
+        },
+    })
+
+    const handleFollowToggle = (userId: string, isFollowing: boolean) => {
+        if (isFollowing) {
+            unfollowUserMutation.mutate(userId, {
+                onSuccess: () => {
+                    // Also invalidate the followed user's profile (their followers count changes)
+                    queryClient.invalidateQueries({ queryKey: ['userProfile', userId] })
+                }
+            })
+        } else {
+            followUserMutation.mutate(userId, {
+                onSuccess: () => {
+                    // Also invalidate the followed user's profile (their followers count changes)
+                    queryClient.invalidateQueries({ queryKey: ['userProfile', userId] })
+                }
+            })
+        }
+    }
 
     // API calls for real data
     const { data: followersData, isLoading: followersLoading, error: followersError } = useQuery({
@@ -49,6 +112,10 @@ export default function Statistics() {
         queryFn: () => getJoinCollective(targetUserId),
         enabled: !!targetUserId,
     });
+
+    console.log(followersData, 'followersData');
+    console.log(followingData, 'followingData');
+    
 
 
     // Use API data with fallbacks - handling nested structures
@@ -206,6 +273,8 @@ export default function Statistics() {
 
     const renderMembersTab = (members: typeof following, title: string) => {
         const isLoading = title === 'Following' ? followingLoading : followersLoading
+        // In the Following tab, all users are already being followed, so always show "Following"
+        const isFollowingTab = title === 'Following'
         
         if (isLoading) {
             return (
@@ -232,7 +301,11 @@ export default function Statistics() {
 
                 {/* Members List */}
                 <ScrollView style={styles.membersList}>
-                    {members.length > 0 ? members.map((member: any, index: number) => (
+                    {members.length > 0 ? members.map((member: any, index: number) => {
+                        // In Following tab, user is always following, otherwise use member.is_following
+                        const isFollowing = isFollowingTab ? true : (member.is_following || false)
+                        
+                        return (
                         <View key={member.id || index} style={styles.memberItem}>
                             <View style={styles.memberInfo}>
                                 <Avatar size={40}>
@@ -246,18 +319,20 @@ export default function Statistics() {
                                     <Text style={styles.memberUsername}>@{member.username}</Text>
                                 </View>
                             </View>
-                            {!member.connected && (
-                                <TouchableOpacity style={styles.followButton}>
-                                    <Text style={styles.followButtonText}>Follow</Text>
-                                </TouchableOpacity>
-                            )}
-                            {member.connected && (
-                                <TouchableOpacity style={styles.followingButton}>
-                                    <Text style={styles.followingButtonText}>Following</Text>
+                                {member.id !== user?.id && (
+                                    <TouchableOpacity 
+                                        style={isFollowing ? styles.followingButton : styles.followButton}
+                                        onPress={() => handleFollowToggle(member.id.toString(), isFollowing)}
+                                        disabled={followUserMutation.isPending || unfollowUserMutation.isPending}
+                                    >
+                                        <Text style={isFollowing ? styles.followingButtonText : styles.followButtonText}>
+                                            {isFollowing ? 'Following' : 'Follow'}
+                                        </Text>
                                 </TouchableOpacity>
                             )}
                         </View>
-                    )) : (
+                        )
+                    }) : (
                         <View style={styles.emptyState}>
                             <Text style={styles.emptyStateText}>No {title.toLowerCase()} found</Text>
                         </View>

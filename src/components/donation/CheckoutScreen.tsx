@@ -11,11 +11,14 @@ import {
   Dimensions,
   TouchableWithoutFeedback,
 } from 'react-native';
-import { ChevronLeft, Check, HelpCircle, Settings } from 'lucide-react-native';
+import { ChevronLeft, Check } from 'lucide-react-native';
 import { CROWDS, RECENTS, SUGGESTED, Organization } from '../../Constants/organizations';
 import ManageDonationBox from './ManageDonationBox';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import { useNavigation } from '@react-navigation/native';
+import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
+import { HelpCircle } from 'lucide-react-native';
+import { Settings } from 'lucide-react-native';
 
 const { width, height } = Dimensions.get('window');
 
@@ -62,17 +65,17 @@ export default function CheckoutScreen({
   }, [donationBox, manualCauses, attributingCollectives, hasApiData]);
 
   // Show congratulations modal when component mounts
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowCongratulationsModal(true);
-      // Fire confetti after modal appears
-      setTimeout(() => {
-        confettiRef.current?.start();
-      }, 300);
-    }, 500);
+  // useEffect(() => {
+  //   const timer = setTimeout(() => {
+  //     setShowCongratulationsModal(true);
+  //     // Fire confetti after modal appears
+  //     setTimeout(() => {
+  //       confettiRef.current?.start();
+  //     }, 300);
+  //   }, 500);
 
-    return () => clearTimeout(timer);
-  }, []);
+  //   return () => clearTimeout(timer);
+  // }, []);
 
   const handleCloseCongratulationsModal = () => {
     setShowCongratulationsModal(false);
@@ -194,18 +197,13 @@ export default function CheckoutScreen({
             <View style={styles.causesList}>
               {manualCauses.map((cause: any, index: number) => (
                 <View key={`cause-${cause.id}-${index}`} style={styles.causeItem}>
-                  <View style={styles.causeImageContainer}>
-                    {cause.logo ? (
-                      <Image source={{ uri: cause.logo }} style={styles.causeImage} resizeMode="cover" />
-                    ) : (
-                      <View style={[styles.causeAvatar, { backgroundColor: '#3b82f6' }]}>
-                        <Text style={styles.causeAvatarText}>
-                          {cause.name?.charAt(0).toUpperCase() || 'C'}
-                        </Text>
-                      </View>
-                    )}
-                  </View>
-                  <View style={styles.causeInfo}>
+                  <Avatar size={48}>
+                    <AvatarImage src={cause.logo} />
+                    <AvatarFallback style={{ backgroundColor: '#dbeafe' }} textStyle={{ color: '#2563eb', fontWeight: '600' }}>
+                      {cause.name?.charAt(0).toUpperCase() || 'C'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <View style={[styles.causeInfo, { marginLeft: 12 }]}>
                     <View style={styles.causeInfoRow}>
                       <View style={styles.causeInfoContent}>
                         <Text style={styles.causeName}>{cause.name}</Text>
@@ -231,18 +229,13 @@ export default function CheckoutScreen({
             <View style={styles.causesList}>
               {attributingCollectives.map((collective: any, index: number) => (
                 <View key={`collective-${collective.id}-${index}`} style={styles.causeItem}>
-                  <View style={styles.causeImageContainer}>
-                    {collective.cover_image ? (
-                      <Image source={{ uri: collective.cover_image }} style={styles.causeImage} resizeMode="cover" />
-                    ) : (
-                      <View style={[styles.causeAvatar, { backgroundColor: '#9333ea' }]}>
-                        <Text style={styles.causeAvatarText}>
-                          {collective.name?.charAt(0).toUpperCase() || 'C'}
-                        </Text>
-                      </View>
-                    )}
-                  </View>
-                  <View style={styles.causeInfo}>
+                  <Avatar size={48}>
+                    <AvatarImage src={collective.cover_image} />
+                    <AvatarFallback style={{ backgroundColor: '#dcfce7' }} textStyle={{ color: '#16a34a', fontWeight: '600' }}>
+                      {collective.name?.charAt(0).toUpperCase() || 'C'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <View style={[styles.causeInfo, { marginLeft: 12 }]}>
                     <View style={styles.causeInfoRow}>
                       <View style={styles.causeInfoContent}>
                         <Text style={styles.causeName}>{collective.name}</Text>
@@ -264,17 +257,18 @@ export default function CheckoutScreen({
           <View style={styles.causesSection}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>CAUSES</Text>
-              <HelpCircle size={16} color="#6b7280" style={{ marginLeft: 8 }} />
+              <Text style={[styles.helpIconGray, { marginLeft: 8 }]}>?</Text>
             </View>
             <View style={styles.causesList}>
               {selectedOrganizationsList.map((orgName: string, index: number) => (
                 <View key={`${orgName}-${index}`} style={styles.causeItem}>
-                  <View style={[styles.causeAvatar, { backgroundColor: '#9333ea' }]}>
-                    <Text style={styles.causeAvatarText}>
-                      {orgName.charAt(0)}
-                    </Text>
-                  </View>
-                  <View style={styles.causeInfo}>
+                  <Avatar size={48}>
+                    <AvatarImage src="" />
+                    <AvatarFallback style={{ backgroundColor: '#dbeafe' }} textStyle={{ color: '#2563eb', fontWeight: '600' }}>
+                      {orgName.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <View style={[styles.causeInfo, { marginLeft: 12 }]}>
                     <View style={styles.causeInfoRow}>
                       <View style={styles.causeInfoContent}>
                         <Text style={styles.causeName}>{orgName}</Text>

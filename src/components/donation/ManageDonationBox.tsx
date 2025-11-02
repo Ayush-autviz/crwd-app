@@ -16,7 +16,7 @@ import { Organization } from '../../Constants/organizations';
 import { PrimaryBlue } from '../../Constants/Colors';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getCausesBySearch, getJoinCollective } from '../../services/api/crwd';
-import { updateDonationBox } from '../../services/api/donation';
+import { updateDonationBox, cancelDonationBox } from '../../services/api/donation';
 import { useAuthStore } from '../../store/store';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
 
@@ -25,6 +25,7 @@ interface ManageDonationBoxProps {
   causes: Organization[];
   onBack: () => void;
   onRemove?: (id: string) => void;
+  donationBox?: any;
 }
 
 export default function ManageDonationBox({
@@ -32,11 +33,12 @@ export default function ManageDonationBox({
   causes,
   onBack,
   onRemove,
+  donationBox,
 }: ManageDonationBoxProps) {
   const queryClient = useQueryClient();
   const { user: currentUser } = useAuthStore();
   const [activeTab, setActiveTab] = useState<'nonprofits' | 'collectives'>('nonprofits');
-  const [editableAmount, setEditableAmount] = useState(amount);
+  const [editableAmount, setEditableAmount] = useState(Math.round(amount));
   const [isEditingAmount, setIsEditingAmount] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [temporarilyRemovedCauses, setTemporarilyRemovedCauses] = useState<string[]>([]);
@@ -52,6 +54,10 @@ export default function ManageDonationBox({
     type: 'cause' | 'collective'; 
     isNewlySelected: boolean 
   } | null>(null);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  
+  // Get isActive from donationBox prop
+  const isActive = donationBox?.is_active ?? true;
 
   // Separate existing causes/collectives from new selections
   // Note: Organization type doesn't have 'type' property, so we'll treat all as causes by default
@@ -59,11 +65,11 @@ export default function ManageDonationBox({
   const existingCauses = causes.filter(c => !(c as any).type || (c as any).type === 'cause');
   const existingCollectives = causes.filter(c => (c as any).type === 'collective');
 
-  // Fetch causes with search
+  // Fetch causes - show 5 by default, or search results if searching
   const { data: causesData, isLoading: causesLoading } = useQuery({
-    queryKey: ['causes', searchQuery],
-    queryFn: () => getCausesBySearch(searchQuery, '', 1),
-    enabled: activeTab === 'nonprofits' && showSearchResults && searchQuery.length > 0,
+    queryKey: ['causes-manage', searchQuery, currentUser?.id],
+    queryFn: () => getCausesBySearch(searchQuery || '', '', 1),
+    enabled: activeTab === 'nonprofits',
   });
 
   // Fetch joined collectives
@@ -78,19 +84,33 @@ export default function ManageDonationBox({
     mutationFn: (data: any) => updateDonationBox(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['donationBox'] });
+      onBack();
     },
     onError: (error: any) => {
       console.error('Error updating donation box:', error);
     },
   });
 
+  // Mutation to cancel/deactivate donation box
+  const cancelDonationBoxMutation = useMutation({
+    mutationFn: () => cancelDonationBox(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['donationBox'] });
+      setShowCancelModal(false);
+      onBack();
+    },
+    onError: (error: any) => {
+      console.error('Error canceling donation box:', error);
+    },
+  });
+
   const incrementAmount = () => {
-    setEditableAmount(prev => prev + 1);
+    setEditableAmount(prev => Math.round(prev) + 1);
   };
 
   const decrementAmount = () => {
     if (editableAmount > 1) {
-      setEditableAmount(prev => prev - 1);
+      setEditableAmount(prev => Math.max(1, Math.round(prev) - 1));
     }
   };
 
@@ -99,7 +119,8 @@ export default function ManageDonationBox({
     if (numericValue === '') {
       setEditableAmount(0);
     } else {
-      setEditableAmount(parseInt(numericValue));
+      const parsed = parseInt(numericValue, 10);
+      setEditableAmount(isNaN(parsed) ? 0 : parsed);
     }
   };
 
@@ -200,7 +221,7 @@ export default function ManageDonationBox({
 
       // Prepare payload with amount and all causes/collectives
       const payload: any = {
-        monthly_amount: editableAmount,
+        monthly_amount: Math.round(editableAmount),
       };
 
       if (allCauseIds.length > 0) {
@@ -299,8 +320,8 @@ export default function ManageDonationBox({
     }))];
   };
 
-  // Get search results (max 5) for nonprofits, excluding all selected ones
-  const searchResults = showSearchResults && causesData?.results 
+  // Get causes to display - show first 5 by default, or search results if searching
+  const displayCauses = causesData?.results 
     ? causesData.results
         .filter((cause: any) => !allSelectedCauseIds.includes(cause.id))
         .slice(0, 5)
@@ -341,16 +362,19 @@ export default function ManageDonationBox({
 
               {isEditingAmount ? (
                 <TextInput
-                  value={editableAmount.toString()}
+                  value={Math.round(editableAmount).toString()}
                   onChangeText={handleAmountChange}
-                  onBlur={() => setIsEditingAmount(false)}
+                  onBlur={() => {
+                    setIsEditingAmount(false);
+                    setEditableAmount(prev => Math.round(prev));
+                  }}
                   autoFocus
                   style={styles.amountInput}
                   keyboardType="numeric"
                 />
               ) : (
                 <TouchableOpacity onPress={() => setIsEditingAmount(true)}>
-                  <Text style={styles.amountText}>${editableAmount}</Text>
+                  <Text style={styles.amountText}>${Math.round(editableAmount)}</Text>
                 </TouchableOpacity>
               )}
 
@@ -420,18 +444,13 @@ export default function ManageDonationBox({
                       const causeId = org.isNewlySelected ? (org as any).causeId : parseInt(org.id.replace('cause-', ''));
                       return (
                         <View key={org.id} style={styles.causeItem}>
-                          <View style={styles.causeImageContainer}>
-                            {org.imageUrl ? (
-                              <Image source={{ uri: org.imageUrl }} style={styles.causeImage} />
-                            ) : (
-                              <View style={[styles.causePlaceholder, { backgroundColor: '#2563eb' }]}>
-                                <Text style={styles.causePlaceholderText}>
-                                  {org.name.charAt(0)}
-                                </Text>
-                              </View>
-                            )}
-                          </View>
-                          <View style={styles.causeInfo}>
+                          <Avatar size={48}>
+                            <AvatarImage src={org.imageUrl} />
+                            <AvatarFallback style={{ backgroundColor: '#dbeafe' }} textStyle={{ color: '#2563eb', fontWeight: '600' }}>
+                              {org.name.charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <View style={[styles.causeInfo, { marginLeft: 12 }]}>
                             <Text style={styles.causeName}>{org.name}</Text>
                             {org.description && (
                               <Text style={styles.causeDescription} numberOfLines={2}>
@@ -464,7 +483,14 @@ export default function ManageDonationBox({
                   placeholder="Search nonprofits..."
                   placeholderTextColor="#9ca3af"
                   value={searchQuery}
-                  onChangeText={setSearchQuery}
+                  onChangeText={(text) => {
+                    setSearchQuery(text);
+                    if (text.trim()) {
+                      setShowSearchResults(true);
+                    } else {
+                      setShowSearchResults(false);
+                    }
+                  }}
                   onSubmitEditing={handleSearch}
                   returnKeyType="search"
                 />
@@ -480,53 +506,52 @@ export default function ManageDonationBox({
                   </TouchableOpacity>
                 ) : null}
               </View>
-              {searchQuery ? (
-                <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
-                  <Text style={styles.searchButtonText}>Search</Text>
-                </TouchableOpacity>
-              ) : null}
+              {/* Search button hidden - user can press enter in input */}
             </View>
 
-            {/* Search Results */}
-            {showSearchResults && (
-              <View style={styles.resultsSection}>
-                <Text style={styles.resultsTitle}>Search Results (Max 5)</Text>
-                {causesLoading ? (
-                  <Text style={styles.loadingText}>Loading...</Text>
-                ) : searchResults.length > 0 ? (
-                  <View style={styles.list}>
-                    {searchResults.map((cause: any) => {
-                      const isSelected = selectedCauses.includes(cause.id);
-                      return (
-                        <TouchableOpacity
-                          key={cause.id}
-                          style={styles.resultItem}
-                          onPress={() => handleToggleCause(cause.id)}
-                        >
-                          <Avatar size={48}>
-                            <AvatarImage src={cause.logo} />
-                            <AvatarFallback>{cause.name?.charAt(0) || 'C'}</AvatarFallback>
-                          </Avatar>
-                          <View style={styles.resultInfo}>
-                            <Text style={styles.resultName}>{cause.name}</Text>
-                            <Text style={styles.resultDescription} numberOfLines={1}>
-                              {cause.mission || cause.description}
-                            </Text>
-                          </View>
-                          <View style={[styles.checkbox, isSelected && styles.checkboxSelected]}>
-                            {isSelected && (
-                              <View style={styles.checkmark} />
-                            )}
-                          </View>
-                        </TouchableOpacity>
-                      );
-                    })}
-                  </View>
-                ) : (
-                  <Text style={styles.loadingText}>No nonprofits found</Text>
-                )}
-              </View>
-            )}
+            {/* Causes List - Show 5 by default or search results */}
+            <View style={styles.resultsSection}>
+              {!searchQuery && <Text style={styles.resultsTitle}>Available Nonprofits (Max 5)</Text>}
+              {searchQuery && showSearchResults && <Text style={styles.resultsTitle}>Search Results (Max 5)</Text>}
+              {causesLoading ? (
+                <Text style={styles.loadingText}>Loading...</Text>
+              ) : displayCauses.length > 0 ? (
+                <View style={styles.list}>
+                  {displayCauses.map((cause: any) => {
+                    const isSelected = selectedCauses.includes(cause.id);
+                    return (
+                      <TouchableOpacity
+                        key={cause.id}
+                        style={styles.resultItem}
+                        onPress={() => handleToggleCause(cause.id)}
+                      >
+                        <Avatar size={48}>
+                          <AvatarImage src={cause.logo} />
+                          <AvatarFallback style={{ backgroundColor: '#dbeafe' }} textStyle={{ color: '#2563eb', fontWeight: '600' }}>
+                            {cause.name?.charAt(0).toUpperCase() || 'C'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <View style={styles.resultInfo}>
+                          <Text style={styles.resultName}>{cause.name}</Text>
+                          <Text style={styles.resultDescription} numberOfLines={1}>
+                            {cause.mission || cause.description}
+                          </Text>
+                        </View>
+                        <View style={[styles.checkbox, isSelected && styles.checkboxSelected]}>
+                          {isSelected && (
+                            <View style={styles.checkmark} />
+                          )}
+                        </View>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              ) : (
+                <Text style={styles.loadingText}>
+                  {searchQuery ? 'No nonprofits found' : 'No nonprofits available'}
+                </Text>
+              )}
+            </View>
           </View>
         ) : (
           <View style={styles.contentSection}>
@@ -541,18 +566,13 @@ export default function ManageDonationBox({
                       const collectiveId = org.isNewlySelected ? (org as any).collectiveId : parseInt(org.id.replace('collective-', ''));
                       return (
                         <View key={org.id} style={styles.causeItem}>
-                          <View style={styles.causeImageContainer}>
-                            {org.imageUrl ? (
-                              <Image source={{ uri: org.imageUrl }} style={styles.causeImage} />
-                            ) : (
-                              <View style={[styles.causePlaceholder, { backgroundColor: '#9333ea' }]}>
-                                <Text style={styles.causePlaceholderText}>
-                                  {org.name.charAt(0)}
-                                </Text>
-                              </View>
-                            )}
-                          </View>
-                          <View style={styles.causeInfo}>
+                          <Avatar size={48}>
+                            <AvatarImage src={org.imageUrl} />
+                            <AvatarFallback style={{ backgroundColor: '#dcfce7' }} textStyle={{ color: '#16a34a', fontWeight: '600' }}>
+                              {org.name.charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <View style={[styles.causeInfo, { marginLeft: 12 }]}>
                             <Text style={styles.causeName}>{org.name}</Text>
                             {org.description && (
                               <Text style={styles.causeDescription} numberOfLines={2}>
@@ -592,7 +612,9 @@ export default function ManageDonationBox({
                       >
                         <Avatar size={48}>
                           <AvatarImage src={collective.cover_image} />
-                          <AvatarFallback>{collective.name?.charAt(0) || 'C'}</AvatarFallback>
+                          <AvatarFallback style={{ backgroundColor: '#dcfce7' }} textStyle={{ color: '#16a34a', fontWeight: '600' }}>
+                            {collective.name?.charAt(0).toUpperCase() || 'C'}
+                          </AvatarFallback>
                         </Avatar>
                         <View style={styles.resultInfo}>
                           <Text style={styles.resultName}>{collective.name}</Text>
@@ -619,7 +641,7 @@ export default function ManageDonationBox({
         {/* Distribution Details */}
         <View style={styles.distributionSection}>
           <Text style={styles.distributionText}>
-            Your ${editableAmount} becomes ${(editableAmount * 0.9).toFixed(2)}{" "}
+            Your ${Math.round(editableAmount)} becomes ${(Math.round(editableAmount) * 0.9).toFixed(2)}{" "}
             after fees, split evenly across causes. Your donation will be evenly
             distributed across all {visibleCauses.length} organizations.
           </Text>
@@ -638,6 +660,21 @@ export default function ManageDonationBox({
                 : 'Update Donation'}
             </Text>
           </TouchableOpacity>
+          
+          {/* Deactivate Subscription Button - Only show if subscription is active */}
+          {isActive && (
+            <TouchableOpacity
+              style={[styles.deactivateButton, cancelDonationBoxMutation.isPending && styles.deactivateButtonDisabled]}
+              onPress={() => setShowCancelModal(true)}
+              disabled={cancelDonationBoxMutation.isPending}
+            >
+              <Text style={styles.deactivateButtonText}>
+                {cancelDonationBoxMutation.isPending
+                  ? 'Deactivating...'
+                  : 'Deactivate Subscription'}
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* Next Payment Section */}
@@ -649,7 +686,7 @@ export default function ManageDonationBox({
               <Text style={styles.nextPaymentDate}>December 26, 2024</Text>
             </View>
             <View style={styles.nextPaymentAmount}>
-              <Text style={styles.nextPaymentValue}>${editableAmount}</Text>
+              <Text style={styles.nextPaymentValue}>${Math.round(editableAmount)}</Text>
               <Text style={styles.nextPaymentFrequency}>Monthly</Text>
             </View>
           </View>
@@ -696,6 +733,51 @@ export default function ManageDonationBox({
                     onPress={handleConfirmDelete}
                   >
                     <Text style={styles.modalRemoveText}>Remove</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
+
+      {/* Cancel/Deactivate Confirmation Modal */}
+      <Modal
+        visible={showCancelModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => {
+          setShowCancelModal(false);
+        }}
+      >
+        <TouchableWithoutFeedback onPress={() => {
+          setShowCancelModal(false);
+        }}>
+          <View style={styles.modalOverlay}>
+            <TouchableWithoutFeedback onPress={() => {}}>
+              <View style={styles.modalContent}>
+                <Text style={styles.modalTitle}>Deactivate Subscription</Text>
+                <Text style={styles.modalDescription}>
+                  Are you sure you want to deactivate your donation box subscription? This will cancel all future monthly donations. You can reactivate it at any time.
+                </Text>
+                <View style={styles.modalActions}>
+                  <TouchableOpacity
+                    style={styles.modalCancelButton}
+                    onPress={() => {
+                      setShowCancelModal(false);
+                    }}
+                    disabled={cancelDonationBoxMutation.isPending}
+                  >
+                    <Text style={styles.modalCancelText}>Cancel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.modalRemoveButton, { backgroundColor: '#dc2626' }]}
+                    onPress={() => cancelDonationBoxMutation.mutate()}
+                    disabled={cancelDonationBoxMutation.isPending}
+                  >
+                    <Text style={styles.modalRemoveText}>
+                      {cancelDonationBoxMutation.isPending ? 'Deactivating...' : 'Deactivate Subscription'}
+                    </Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -1057,6 +1139,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingVertical: 16,
     alignItems: 'center',
+    marginBottom: 16,
   },
   updateButtonDisabled: {
     opacity: 0.6,
@@ -1065,6 +1148,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#ffffff',
+  },
+  deactivateButton: {
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#fca5a5',
+    borderRadius: 8,
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  deactivateButtonDisabled: {
+    opacity: 0.5,
+  },
+  deactivateButtonText: {
+    color: '#dc2626',
+    fontSize: 16,
+    fontWeight: '600',
   },
   nextPaymentSection: {
     paddingHorizontal: 32,

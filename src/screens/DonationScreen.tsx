@@ -8,7 +8,7 @@ import {
   StyleSheet,
   Dimensions,
 } from 'react-native';
-import { ChevronLeft, Plus, Trash2, HelpCircle, Settings, X } from 'lucide-react-native';
+import { ChevronLeft, Plus, Trash2, X } from 'lucide-react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import Slider from '@react-native-community/slider';
 import DonationStep2 from '../components/donation/DonationStep2';
@@ -16,6 +16,7 @@ import DonationStep3 from '../components/donation/DonationStep3';
 import OneTimeDonation from '../components/donation/OneTimeDonation';
 import CheckoutScreen from '../components/donation/CheckoutScreen';
 import PaymentSection from '../components/donation/PaymentSection';
+import ManageDonationBox from '../components/donation/ManageDonationBox';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PrimaryBlue } from '../Constants/Colors';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -32,6 +33,7 @@ export default function DonationScreen() {
   const route = useRoute();
   const [activeTab, setActiveTab] = useState<'setup' | 'onetime'>('setup');
   const [checkout, setCheckout] = useState(false);
+  const [showManageDonationBox, setShowManageDonationBox] = useState(false);
   const [selectedOrganizations, setSelectedOrganizations] = useState<string[]>([]);
   const [donationAmount, setDonationAmount] = useState(7);
   const [step, setStep] = useState(1);
@@ -53,18 +55,24 @@ export default function DonationScreen() {
     queryFn: getDonationBox,
   });
 
-  // Decide step based on existing box
+  // Decide step based on existing box - only when setup tab is active
   useEffect(() => {
+    if (activeTab === 'setup') {
     if (donationBoxQuery.data && donationBoxQuery.data.id) {
       setDonationBox(donationBoxQuery.data);
       if(donationBoxQuery.data.is_active) {
         setCheckout(true);
+      } else {
+        // If donation box exists but is not active, show step 2 (not checkout)
+        setCheckout(false);
       }
       setStep(2);
     } else {
+      setCheckout(false);
       setStep(1);
     }
-  }, [donationBoxQuery.data]);
+    }
+  }, [donationBoxQuery.data, activeTab]);
 
   // Causes search (max 5 rendered)
   const { data: causesData, isLoading: causesLoading } = useQuery({
@@ -165,6 +173,49 @@ export default function DonationScreen() {
     );
   }
 
+  if (showManageDonationBox) {
+    const donationBoxData = donationBoxQuery.data || donationBox;
+    // Convert API data to format expected by ManageDonationBox
+    const causesAsObjects = [
+      ...(donationBoxData?.manual_causes || []).map((cause: any) => ({
+        id: `cause-${cause.id}`,
+        name: cause.name,
+        imageUrl: cause.logo || '',
+        color: '#4F46E5',
+        description: cause.mission || cause.description || '',
+        type: 'cause' as const,
+      })),
+      ...(donationBoxData?.attributing_collectives || []).map((collective: any) => ({
+        id: `collective-${collective.id}`,
+        name: collective.name,
+        imageUrl: collective.cover_image || '',
+        color: '#9333EA',
+        description: collective.description || '',
+        type: 'collective' as const,
+      })),
+    ];
+
+    return (
+      <ManageDonationBox
+        amount={donationBoxData?.monthly_amount || donationAmount}
+        causes={causesAsObjects}
+        onBack={async () => {
+          setShowManageDonationBox(false);
+          // Invalidate and refetch to get updated donation box data
+          await queryClient.invalidateQueries({ queryKey: ['donationBox'] });
+          const result = await donationBoxQuery.refetch();
+          
+          // If donation box was deactivated, update checkout state
+          if (result.data && !result.data.is_active) {
+            setCheckout(false);
+            setStep(2);
+          }
+        }}
+        donationBox={donationBoxData}
+      />
+    );
+  }
+
   if (donationBoxQuery.isLoading) {
     return (
       <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }} edges={['top', 'left', 'right']}>
@@ -181,7 +232,7 @@ export default function DonationScreen() {
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       {/* Header */}
       <View style={styles.header}>
-        {step > 1 && activeTab !== 'onetime' ? (
+        {/* {step > 1 && activeTab !== 'onetime' ? (
           <TouchableOpacity
             onPress={() => setStep(s => s - 1)}
             style={styles.headerButton}
@@ -193,10 +244,10 @@ export default function DonationScreen() {
             onPress={() => navigation.goBack()}
             style={styles.headerButton}
           >
-            {/* <Text style={styles.closeIcon}>×</Text> */}
+            
             <ChevronLeft color='#374151' />
           </TouchableOpacity>
-        )} 
+        )}  */}
 
         <Text style={styles.headerTitle}>Donation Box</Text>
         <View style={styles.headerSpacer} />
@@ -212,7 +263,7 @@ export default function DonationScreen() {
             ]}
             onPress={() => {
               setActiveTab('setup');
-              setStep(1);
+              // Don't reset step - let useEffect handle it based on donation box existence
             }}
           >
             <Text style={[
@@ -465,7 +516,7 @@ export default function DonationScreen() {
                     ))}
                   </View>
 
-                  <View style={{ backgroundColor: '#fff', borderRadius: 12, padding: 16, borderWidth: 1, borderColor: '#e5e7eb' }}>
+                  <View style={{ backgroundColor: '#fff', borderRadius: 12, padding: 16, borderWidth: 1, borderColor: '#e5e7eb', marginBottom: 16 }}>
                     <Text style={{ fontSize: 18, fontWeight: '700', color: '#111827', marginBottom: 12 }}>Collectives</Text>
                     {(donationBoxQuery.data?.attributing_collectives || []).map((collective: any) => (
                       <View key={collective.id} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' }}>
@@ -480,6 +531,16 @@ export default function DonationScreen() {
                       </View>
                     ))}
                   </View>
+
+                  {/* Manage Donation Box Button */}
+                  <TouchableOpacity
+                    onPress={() => {
+                      setShowManageDonationBox(true);
+                    }}
+                    style={styles.manageButton}
+                  >
+                    <Text style={styles.manageButtonText}>Manage Donation Box</Text>
+                  </TouchableOpacity>
                 </View>
               ) : null}
             </>
@@ -516,7 +577,7 @@ export default function DonationScreen() {
           </View>
         )}
 
-        {activeTab === 'setup' && step === 2 && (
+        {activeTab === 'setup' && step === 2 && !donationBoxQuery.data?.is_active && (
           <View style={styles.footer}>     
           <TouchableOpacity
             onPress={() => activateMutation.mutate({monthly_amount: donationAmount})}
@@ -525,7 +586,6 @@ export default function DonationScreen() {
             <Text style={styles.confirmButtonText}>{activateMutation.isPending ? 'Activating...' : 'Activate Donation Box'}</Text>
           </TouchableOpacity>
         </View>
-          
         )}
 
         {/* {activeTab === 'setup' && step === 3 && (
@@ -908,5 +968,20 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: '#ffffff',
+  },
+  manageButton: {
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#2563eb',
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  manageButtonText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#2563eb',
   },
 });

@@ -65,7 +65,7 @@ export default function ProfileStats({
                         {crwds}
                     </Text>
                 )}
-                <Text style={{ fontSize: 12, color: PrimaryGrey, textAlign: "center" }}>CRWDs</Text>
+                <Text style={{ fontSize: 12, color: PrimaryGrey, textAlign: "center" }}>Collectives</Text>
             </TouchableOpacity>
             <View style={{ width: 1, backgroundColor: '#e5e7eb', marginHorizontal: 8 }} />
             <TouchableOpacity 

@@ -26,7 +26,7 @@ import * as ImagePicker from 'react-native-image-picker'
 
 export default function ProfileEdit() {
   const navigation = useNavigation()
-  const { user } = useAuthStore()
+  const { user, setUser } = useAuthStore()
   const { showToast } = useToast()
   const queryClient = useQueryClient()
   
@@ -58,7 +58,11 @@ export default function ProfileEdit() {
   // Update profile mutation
   const updateProfileMutation = useMutation({
     mutationFn: updateProfile,
-    onSuccess: () => {
+    onSuccess: (response) => {
+      // Update user in auth store with new profile picture if available
+      if (response?.user?.profile_picture && user) {
+        setUser({ ...user, profile_picture: response.user.profile_picture })
+      }
       queryClient.invalidateQueries({ queryKey: ['userProfile', user?.id] })
       queryClient.invalidateQueries({ queryKey: ['profile'] })
       showToast('Profile updated successfully!', 3000)

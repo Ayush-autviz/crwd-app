@@ -346,7 +346,7 @@ export default function Statistics() {
         { label: "Causes", value: "causes" },
         { label: "Following", value: "following" },
         { label: "Followers", value: "followers" },
-        { label: "CRWDs", value: "crwds" },
+        { label: "Collectives", value: "crwds" },
     ]
 
 

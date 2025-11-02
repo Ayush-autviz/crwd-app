@@ -107,6 +107,10 @@ export default function UserProfile() {
     });
 
     const handleFollowClick = () => {
+        if (!currentUser?.id) {
+            navigation.navigate('SplashScreen' as never);
+            return;
+        }
         if (isFollowing) {
             unfollowMutation.mutate();
         } else {

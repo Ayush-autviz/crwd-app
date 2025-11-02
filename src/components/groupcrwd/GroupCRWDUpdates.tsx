@@ -15,26 +15,7 @@ interface GroupCRWDUpdatesProps {
   recentActivities?: any[];
 }
 
-// Sample data generator for infinite posts
-// const generateMorePosts = (startId: number, count: number) => {
-//   return Array.from({ length: count }, (_, index) => ({
-//       id: String(startId + index),
-//       avatarUrl: `https://randomuser.me/api/portraits/${Math.random() > 0.5 ? 'men' : 'women'}/${Math.floor(Math.random() * 70)}.jpg`,
-//       username: `user${startId + index}`,
-//       time: `${Math.floor(Math.random() * 7)}d`,
-//       org: ["youth4change", "cleanwaternow", "treeplanters", "literacyforall"][Math.floor(Math.random() * 4)],
-//       text: [
-//           "Making a difference in our community one step at a time! 🌟",
-//           "Another successful volunteer event completed! Thank you to all participants! 🙏",
-//           "Working together for a better tomorrow. Join us in our mission! 💪",
-//           "Every small action counts. Let's create positive change together! ✨"
-//       ][Math.floor(Math.random() * 4)],
-//       imageUrl: Math.random() > 0.5 ? `https://picsum.photos/600/400?random=${startId + index}` : undefined,
-//       likes: Math.floor(Math.random() * 100),
-//       comments: Math.floor(Math.random() * 20),
-//       shares: Math.floor(Math.random() * 10),
-//   }));
-// };
+
 
 const GroupCRWDUpdates: React.FC<GroupCRWDUpdatesProps> = ({
   showEmpty = false,
@@ -49,7 +30,7 @@ const GroupCRWDUpdates: React.FC<GroupCRWDUpdatesProps> = ({
   const transformedPosts = posts.map((post: any) => ({
     id: post.id,
     userId: post.user?.id,
-    avatarUrl: post.user?.profile_picture || 'https://randomuser.me/api/portraits/men/1.jpg',
+    avatarUrl: post.user?.profile_picture,
     username: post.user?.username || post.user?.full_name || 'Unknown User',
     time: new Date(post.created_at).toLocaleDateString(),
     org: post.collective?.name || 'Unknown Collective',

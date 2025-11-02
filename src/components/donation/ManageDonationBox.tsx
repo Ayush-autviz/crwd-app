@@ -447,7 +447,7 @@ export default function ManageDonationBox({
                           <Avatar size={48}>
                             <AvatarImage src={org.imageUrl} />
                             <AvatarFallback style={{ backgroundColor: '#dbeafe' }} textStyle={{ color: '#2563eb', fontWeight: '600' }}>
-                              {org.name.charAt(0)}
+                                  {org.name.charAt(0).toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
                           <View style={[styles.causeInfo, { marginLeft: 12 }]}>
@@ -462,8 +462,8 @@ export default function ManageDonationBox({
                             style={styles.removeButton}
                             onPress={() => handleDeselectCause(causeId, org.isNewlySelected, org.name)}
                           >
-                            <Trash2 size={12} color="#6b7280" />
-                            <Text style={styles.removeText}>Remove</Text>
+                            <Trash2 size={16} color="#ef4444" />
+                            {/* <Text style={styles.removeText}>Remove</Text> */}
                           </TouchableOpacity>
                         </View>
                       );
@@ -510,48 +510,48 @@ export default function ManageDonationBox({
             </View>
 
             {/* Causes List - Show 5 by default or search results */}
-            <View style={styles.resultsSection}>
+              <View style={styles.resultsSection}>
               {!searchQuery && <Text style={styles.resultsTitle}>Available Nonprofits (Max 5)</Text>}
               {searchQuery && showSearchResults && <Text style={styles.resultsTitle}>Search Results (Max 5)</Text>}
-              {causesLoading ? (
-                <Text style={styles.loadingText}>Loading...</Text>
+                {causesLoading ? (
+                  <Text style={styles.loadingText}>Loading...</Text>
               ) : displayCauses.length > 0 ? (
-                <View style={styles.list}>
+                  <View style={styles.list}>
                   {displayCauses.map((cause: any) => {
-                    const isSelected = selectedCauses.includes(cause.id);
-                    return (
-                      <TouchableOpacity
-                        key={cause.id}
-                        style={styles.resultItem}
-                        onPress={() => handleToggleCause(cause.id)}
-                      >
-                        <Avatar size={48}>
-                          <AvatarImage src={cause.logo} />
+                      const isSelected = selectedCauses.includes(cause.id);
+                      return (
+                        <TouchableOpacity
+                          key={cause.id}
+                          style={styles.resultItem}
+                          onPress={() => handleToggleCause(cause.id)}
+                        >
+                          <Avatar size={48}>
+                            <AvatarImage src={cause.logo} />
                           <AvatarFallback style={{ backgroundColor: '#dbeafe' }} textStyle={{ color: '#2563eb', fontWeight: '600' }}>
                             {cause.name?.charAt(0).toUpperCase() || 'C'}
                           </AvatarFallback>
-                        </Avatar>
-                        <View style={styles.resultInfo}>
-                          <Text style={styles.resultName}>{cause.name}</Text>
-                          <Text style={styles.resultDescription} numberOfLines={1}>
-                            {cause.mission || cause.description}
-                          </Text>
-                        </View>
-                        <View style={[styles.checkbox, isSelected && styles.checkboxSelected]}>
-                          {isSelected && (
-                            <View style={styles.checkmark} />
-                          )}
-                        </View>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
-              ) : (
+                          </Avatar>
+                          <View style={styles.resultInfo}>
+                            <Text style={styles.resultName}>{cause.name}</Text>
+                            <Text style={styles.resultDescription} numberOfLines={1}>
+                              {cause.mission || cause.description}
+                            </Text>
+                          </View>
+                          <View style={[styles.checkbox, isSelected && styles.checkboxSelected]}>
+                            {isSelected && (
+                              <View style={styles.checkmark} />
+                            )}
+                          </View>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                ) : (
                 <Text style={styles.loadingText}>
                   {searchQuery ? 'No nonprofits found' : 'No nonprofits available'}
                 </Text>
-              )}
-            </View>
+                )}
+              </View>
           </View>
         ) : (
           <View style={styles.contentSection}>
@@ -584,8 +584,8 @@ export default function ManageDonationBox({
                             style={styles.removeButton}
                             onPress={() => handleDeselectCollective(collectiveId, org.isNewlySelected, org.name)}
                           >
-                            <Trash2 size={12} color="#6b7280" />
-                            <Text style={styles.removeText}>Remove</Text>
+                            <Trash2 size={16} color="#ef4444" />
+                            {/* <Text style={styles.removeText}>Remove</Text> */}
                           </TouchableOpacity>
                         </View>
                       );
@@ -1060,11 +1060,11 @@ const styles = StyleSheet.create({
   removeButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    backgroundColor: '#f3f4f6',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
+    // gap: 4,
+    // backgroundColor: '#f3f4f6',
+    // paddingHorizontal: 8,
+    // paddingVertical: 4,
+    // borderRadius: 6,
   },
   removeText: {
     fontSize: 12,

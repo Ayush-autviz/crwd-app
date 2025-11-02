@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, Image, Modal, TouchableOpacity, Pressable, TouchableWithoutFeedback, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Image, Modal, TouchableOpacity, Pressable, TouchableWithoutFeedback, ActivityIndicator, RefreshControl } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigation } from '@react-navigation/native';
 import MainHeaderNav from '../components/MainHeaderNav';
@@ -10,6 +10,7 @@ import FilledBookmark from '../components/FilledBookmark';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getFavoriteCauses, getFavoriteCollectives, unfavoriteCause, unfavoriteCollective } from '../services/api/social';
 import { useAuthStore } from '../store/store';
+import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/Avatar';
 
 interface SavedData {
   id: string;
@@ -34,16 +35,17 @@ export default function Saved() {
   const [selectedItem, setSelectedItem] = useState<SavedData | null>(null);
   const [nonprofits, setNonprofits] = useState<SavedData[]>([]);
   const [collectives, setCollectives] = useState<SavedData[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
 
   // Fetch favorite causes
-  const { data: favoriteCauses, isLoading: isLoadingCauses, error: causesError } = useQuery({
+  const { data: favoriteCauses, isLoading: isLoadingCauses, error: causesError, refetch: refetchCauses } = useQuery({
     queryKey: ['favoriteCauses'],
     queryFn: () => getFavoriteCauses(),
     enabled: !!user?.id,
   });
 
   // Fetch favorite collectives
-  const { data: favoriteCollectives, isLoading: isLoadingCollectives, error: collectivesError } = useQuery({
+  const { data: favoriteCollectives, isLoading: isLoadingCollectives, error: collectivesError, refetch: refetchCollectives } = useQuery({
     queryKey: ['favoriteCollectives'],
     queryFn: () => getFavoriteCollectives(),
     enabled: !!user?.id,
@@ -80,7 +82,7 @@ export default function Saved() {
     if (favoriteCauses?.results) {
       const mappedCauses = favoriteCauses.results.map((item: any) => ({
         id: item.id?.toString() || '',
-        avatar: item.cause?.profile_picture || 'https://randomuser.me/api/portraits/women/44.jpg',
+        avatar: item.cause?.profile_picture ,
         title: item.cause?.name || 'Unknown Cause',
         subtitle: item.cause?.mission || 'No description available',
         type: 'nonprofit' as const,
@@ -95,7 +97,7 @@ export default function Saved() {
     if (favoriteCollectives?.results) {
       const mappedCollectives = favoriteCollectives.results.map((item: any) => ({
         id: item.id?.toString() || '',
-        avatar: item.collective?.created_by?.profile_picture || 'https://randomuser.me/api/portraits/women/44.jpg',
+        avatar: item.collective?.created_by?.profile_picture ,
         title: item.collective?.name || 'Unknown Collective',
         subtitle: item.collective?.description || 'No description available',
         type: 'collective' as const,
@@ -131,6 +133,20 @@ export default function Saved() {
   };
 
   const currentItems = activeTab === 'nonprofits' ? nonprofits : collectives;
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([
+        refetchCauses(),
+        refetchCollectives(),
+      ]);
+    } catch (error) {
+      console.error('Error refreshing saved items:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   const renderEmptyState = () => (
     <View style={styles.emptyState}>
@@ -226,13 +242,34 @@ export default function Saved() {
         data={currentItems}
         ListEmptyComponent={renderEmptyState}
         contentContainerStyle={{ flexGrow: 1}}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={PrimaryBlue}
+            colors={[PrimaryBlue]}
+          />
+        }
         renderItem={({ item }) => (
           <TouchableOpacity 
             style={styles.itemContainer}
             onPress={() => handleItemPress(item)}
           >
             <View style={styles.itemContent}>
-              <Image source={{ uri: item.avatar }} style={styles.itemImage} />
+              <Avatar size={40}>
+                <AvatarImage src={item.avatar} />
+                <AvatarFallback 
+                  style={{ 
+                    backgroundColor: item.type === 'collective' ? '#dcfce7' : '#dbeafe' 
+                  }} 
+                  textStyle={{ 
+                    color: item.type === 'collective' ? '#16a34a' : '#2563eb', 
+                    fontWeight: '600' 
+                  }}
+                >
+                  {item.title?.charAt(0).toUpperCase() || 'N'}
+                </AvatarFallback>
+              </Avatar>
               <View style={styles.itemTextContainer}>
                 <Text style={styles.itemName}>{item.title}</Text>
                 <Text style={styles.itemDescription}>{item.subtitle}</Text>

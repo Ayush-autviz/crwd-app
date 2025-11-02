@@ -248,7 +248,20 @@ export default function Home() {
                         The easiest way to <Text style={{ color: PrimaryGreen, fontStyle: 'italic' }}>give</Text> to everything you care about, at once.
                     </Text>
                     <TouchableOpacity 
-                        onPress={() => navigation.navigate('SplashScreen' as never)} 
+                        onPress={() => {
+                            if (currentUser?.id) {
+                                // Navigate to "My Giving" tab (DonationScreen) in the bottom tabs
+                                (navigation as any).navigate('DrawerNav', {
+                                    screen: 'MainTabs',
+                                    params: {
+                                        screen: 'My Giving'
+                                    }
+                                });
+                            } else {
+                                // Navigate to onboarding if not logged in
+                                navigation.navigate('SplashScreen' as never);
+                            }
+                        }}
                         style={{ 
                             backgroundColor: PrimaryBlue, 
                             paddingVertical: 12, 

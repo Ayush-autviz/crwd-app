@@ -614,9 +614,9 @@ export default function Activity() {
                     }}
                 >
                     {/* Red dot notification indicator - show only if there are unread notifications */}
-                    {hasUnreadNotifications && (
+                    {/* {hasUnreadNotifications && (
                         <View style={{ width: 8, height: 8, backgroundColor: '#EF4444', borderRadius: 4 }} />
-                    )}
+                    )} */}
                     <Text style={{
                         fontSize: 14,
                         fontWeight: '500',

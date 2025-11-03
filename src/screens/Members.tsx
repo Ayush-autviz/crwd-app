@@ -236,7 +236,7 @@ export default function Members() {
   const renderCollectiveDonationsTab = () => (
     <>
       {/* Search Bar */}
-      <View style={styles.searchContainer}>
+      {/* <View style={styles.searchContainer}>
         <View style={styles.searchBar}>
           <Search size={20} color={PrimaryGrey} />
           <TextInput
@@ -245,7 +245,7 @@ export default function Members() {
             placeholderTextColor={PrimaryGrey}
           />
         </View>
-      </View>
+      </View> */}
 
       {/* Impact Metrics */}
       <View style={styles.impactMetrics}>

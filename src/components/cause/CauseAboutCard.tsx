@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { PrimaryBlue, PrimaryGrey } from '../../Constants/Colors';
 import { categories } from '../../Constants/categories';
 import { MapPin } from 'lucide-react-native';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/Avatar';
 
 interface CauseAboutCardProps {
   causeData?: any;
@@ -27,11 +28,17 @@ const CauseAboutCard: React.FC<CauseAboutCardProps> = ({ causeData }) => {
       marginBottom: 8 
     }}>
       {/* Header */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 12, paddingHorizontal: 12 }}>
-        <Image 
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 12, }}>
+        {/* <Image 
           source={{ uri: causeData?.logo }} 
           style={{ width: 48, height: 48, borderRadius: 12 }} 
-        />
+        /> */}
+        <Avatar size={48}>
+          <AvatarImage src={causeData?.logo} />
+          <AvatarFallback style={{ backgroundColor: '#dbeafe' }} textStyle={{ color: '#2563eb', fontWeight: '600' }}>
+            {causeData?.name?.charAt(0).toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
         <Text style={{ fontSize: 16, fontWeight: '600', color: '#111827', }}>
           {causeData?.name}
         </Text>

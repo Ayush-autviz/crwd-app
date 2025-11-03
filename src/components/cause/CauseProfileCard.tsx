@@ -7,6 +7,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { favoriteCause, unfavoriteCause } from '../../services/api/social';
 import { useToast } from '../../contexts/ToastContext';
 import { categories } from '../../Constants/categories';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/Avatar';
 
 interface CauseProfileCardProps {
   onLearnMoreClick?: () => void;
@@ -70,16 +71,22 @@ const CauseProfileCard: React.FC<CauseProfileCardProps> = ({ onLearnMoreClick, c
     <View style={{ backgroundColor: 'white', paddingHorizontal: 12, paddingVertical: 16, marginHorizontal: 12, marginBottom: 8 }}>
       {/* Profile */}
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, marginBottom: 16 }}>
-        <Image 
+        {/* <Image 
           source={{ uri: causeData?.logo || 'https://randomuser.me/api/portraits/men/32.jpg' }} 
           style={{ width: 56, height: 56, borderRadius: 12 }} 
-        />
+        /> */}
+        <Avatar size={48}>
+          <AvatarImage src={causeData?.logo} />
+          <AvatarFallback style={{ backgroundColor: '#dbeafe' }} textStyle={{ color: '#2563eb', fontWeight: '600' }}>
+            {causeData?.name?.charAt(0).toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
         <View style={{ flex: 1 }}>
           <Text style={{ fontSize: 16, fontWeight: '600', color: '#111827', marginBottom: 4 }}>
             {causeData?.name || 'Helping Humanity'}
           </Text>
           <Text style={{ fontSize: 12, color: PrimaryGrey }}>
-            in {causeData?.collective_count || 6} CRWDS · 162 donations
+            in {causeData?.collective_count} Collectives · {causeData?.donation_count} donations
           </Text>
         </View>
         <TouchableOpacity 

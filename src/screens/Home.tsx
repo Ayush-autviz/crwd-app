@@ -185,7 +185,7 @@ export default function Home() {
     })) || [];
 
     // Transform collectives data for components
-    const collectives = collectivesData?.results?.slice(0, 10).map((collective: any) => ({
+    const collectives = collectivesData?.results?.map((collective: any) => ({
         id: String(collective.id),
         name: collective.name || 'Unknown Collective',
         description: collective.description || 'No description available',

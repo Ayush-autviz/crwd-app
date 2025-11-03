@@ -138,16 +138,17 @@ export default function Post() {
   const canSubmitPost = () => {
     if (!form.content.trim()) return false
 
-    switch (postType) {
-      case 'link':
-        return form.url.trim() && validateUrl(form.url) && !urlError
-      case 'image':
-        return selectedImage !== null
-      case 'event':
-        return form.title.trim()
-      default:
-        return false
-    }
+    return true
+    // switch (postType) {
+    //   case 'link':
+    //     return form.url.trim() && validateUrl(form.url) && !urlError
+    //   case 'image':
+    //     return selectedImage !== null
+    //   case 'event':
+    //     return form.title.trim()
+    //   default:
+    //     return false
+    // }
   }
 
   const handleCRWDSelect = (crwd: any) => {
@@ -177,6 +178,10 @@ export default function Post() {
         type: 'image/jpeg',
         name: 'image.jpg',
       } as any);
+    }
+
+    if (postType === 'link' && form.url.trim()) {
+      formData.append('media_url', form.url);
     }
 
     console.log('FormData being sent:', formData);
@@ -479,7 +484,7 @@ export default function Post() {
           </View>
           
           {/* Helper Text */}
-          <Text style={{
+          {/* <Text style={{
             fontSize: 12,
             color: PrimaryGrey,
             fontStyle: 'italic',
@@ -489,7 +494,7 @@ export default function Post() {
               'Add a link or image' : 
               'Select a post type to get started'
             }
-          </Text>
+          </Text> */}
 
           {/* Link Form Fields - Shows inline when link icon is clicked */}
           {postType === 'link' && (

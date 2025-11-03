@@ -159,6 +159,7 @@ export default function Home() {
         userId: post.user?.id,
         time: new Date(post.created_at).toLocaleDateString(),
         org: post.collective?.name || 'Unknown Collective',
+        orgUrl: post.collective?.id, // Collective ID for navigation
         text: post.content || '',
         imageUrl: post.media || undefined,
         likes: post.likes_count || 0,

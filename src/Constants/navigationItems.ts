@@ -126,7 +126,14 @@ export const navigationGroups: NavigationGroup[] = [
         icon: Archive,
         label: 'Donation box',
         route: 'Donation',
-        handleNavigation: (navigation) => navigation.navigate('Donation')
+        handleNavigation: (navigation) => {
+          (navigation as any).navigate('DrawerNav', {
+            screen: 'MainTabs',
+            params: {
+              screen: 'My Giving'
+            }
+          });
+        }
       }
     ]
   },

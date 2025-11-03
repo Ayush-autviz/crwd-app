@@ -47,10 +47,10 @@ export default function Settings() {
                         </View>
                     </View>
                     <View style={{ borderBottomWidth: 1, borderBottomColor: LightGrey, marginHorizontal: -20 }} />
-                    <TouchableOpacity onPress={() => navigation.navigate('PaymentMethods' as never)} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 10 }}>
+                    {/* <TouchableOpacity onPress={() => navigation.navigate('PaymentMethods' as never)} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 10 }}>
                         <CreditCard size={20} color={PrimaryGrey} />
                         <Text>Payment Methods</Text>
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
                     <View style={{ borderTopWidth: 1, borderTopColor: LightGrey, marginHorizontal: -20 }} />
                     <TouchableOpacity onPress={() => navigation.navigate('TransactionHistory' as never)} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 10 }}>
                         <Lock size={20} color={PrimaryGrey} />

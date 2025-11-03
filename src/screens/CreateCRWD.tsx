@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Modal, Sha
 import ConfettiCannon from 'react-native-confetti-cannon';
 import MainHeaderNav from '../components/MainHeaderNav';
 import { LightGrey, PrimaryBlue, PrimaryGrey, SecondaryBlue, SecondaryGrey } from '../Constants/Colors';
-import { Bookmark, Heart, Plus, Search, X, Check } from 'lucide-react-native';
+import { Bookmark, Heart, Plus, Search, X, Check, User } from 'lucide-react-native';
 import { TextInput } from 'react-native';
 // import { Organization, RECENTS, SUGGESTED } from '../Constants/organizations';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -219,11 +219,94 @@ export default function CreateCRWD() {
     });
   };
 
+  if (!currentUser?.id) {
+            return (
+            <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }} edges={['top', 'left', 'right']}>
+                <MainHeaderNav title={'Create a CRWD'} show={true} />
+                <View style={{ 
+                    flex: 1, 
+                    justifyContent: 'center', 
+                    alignItems: 'center', 
+                    paddingHorizontal: 32,
+                    backgroundColor: 'white'
+                }}>
+                    {/* Icon */}
+                    <View style={{
+                        width: 80,
+                        height: 80,
+                        backgroundColor: '#dbeafe',
+                        borderRadius: 40,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        marginBottom: 24
+                    }}>
+                        <User size={40} color={PrimaryBlue} />
+                    </View>
+                    
+                    {/* Title */}
+                    <Text style={{
+                        fontSize: 24,
+                        fontWeight: 'bold',
+                        color: '#111827',
+                        marginBottom: 12,
+                        textAlign: 'center'
+                    }}>
+                        Sign in to create a CRWD
+                    </Text>
+                    
+                    {/* Description */}
+                    <Text style={{
+                        fontSize: 16,
+                        color: '#6b7280',
+                        marginBottom: 32,
+                        textAlign: 'center',
+                        lineHeight: 24
+                    }}>
+                        Sign in to create a CRWD, manage your causes, and connect with your community.
+                    </Text>
+                    
+                    {/* CTA Button */}
+                    <TouchableOpacity
+                        onPress={() => navigation.navigate('Login' as never)}
+                        style={{
+                            backgroundColor: '#2563eb',
+                            paddingHorizontal: 32,
+                            paddingVertical: 12,
+                            borderRadius: 8,
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            gap: 8
+                        }}
+                    >
+                        <Text style={{ color: 'white', fontSize: 16, fontWeight: '500' }}>
+                            Sign In to Continue
+                        </Text>
+                    </TouchableOpacity>
+                    
+                    {/* Additional Info */}
+                    <TouchableOpacity
+                        onPress={() => navigation.navigate('ClaimProfile' as never)}
+                      >
+                    <Text style={{
+                        fontSize: 14,
+                        color: '#6b7280',
+                        marginTop: 24,
+                        textAlign: 'center'
+                    }}>
+                        Don't have an account? 
+                        <Text style={{ color: '#2563eb', fontWeight: '500' }}> Create one here</Text>
+                    </Text>
+                    </TouchableOpacity>
+                </View>
+            </SafeAreaView>
+        );
+  }
+
 
   if (step === 2) {
     return (
       <SafeAreaView style={styles.container}>
-        <MainHeaderNav menu={false} title={'Create a CRWD Collective'} show={true} />
+        <MainHeaderNav menu={false} title={'Create a CRWD'} show={true} />
         
         <View style={styles.successContainer}>
           <Image 

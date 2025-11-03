@@ -1,44 +1,76 @@
-import { View, Text, SafeAreaView, ScrollView, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native'
+import { View, Text, SafeAreaView, ScrollView, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Modal, Alert } from 'react-native'
 import React, { useState } from 'react'
 import MainHeaderNav from '../MainHeaderNav'
 import { LightGrey, PrimaryBlue, PrimaryGrey, SecondaryGrey } from '../../Constants/Colors'
 import { AlertCircle, ChevronDown, Info, MessageSquare } from 'lucide-react-native'
-// import { Picker } from '@react-native-picker/picker'
+import { useMutation } from '@tanstack/react-query'
+import { reportIssue } from '../../services/api/social'
+import { useToast } from '../../contexts/ToastContext'
+
+const issueTypes = [
+  { value: 'bug', label: 'Bug' },
+  { value: 'feature', label: 'Feature Request' },
+  { value: 'security', label: 'Security Issue' },
+  { value: 'other', label: 'Other' }
+]
 
 export default function ReportIssue() {
-  const [loading, setLoading] = useState(false)
+  const { showToast } = useToast()
   const [showPicker, setShowPicker] = useState(false)
   const [formData, setFormData] = useState({
     type: "",
     title: "",
     description: "",
     steps: "",
-    email: "",
+    // email: "",
   })
 
-  const handleSubmit = async () => {
-    setLoading(true)
-
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // Show success message (you can use a toast library or Alert)
-    //   alert("Your report has been submitted successfully. We'll review it shortly.")
-      
+  // Report issue mutation
+  const reportIssueMutation = useMutation({
+    mutationFn: (data: {
+      title: string;
+      description: string;
+      issue_type: string;
+      status: string;
+      reproduce_steps: string;
+    }) => reportIssue(data),
+    onSuccess: () => {
+      showToast("Your report has been submitted successfully. We'll review it shortly.", 3000)
       // Reset form
       setFormData({
         type: "",
         title: "",
         description: "",
         steps: "",
-        email: "",
+        // email: "",
       })
-    } catch (error) {
-    //   alert("Failed to submit report. Please try again.")
-    } finally {
-      setLoading(false)
+    },
+    onError: (error: any) => {
+      console.error('Error submitting report:', error)
+      const errorMessage = error.response?.data?.message || error.message || "Failed to submit report. Please try again."
+      showToast(errorMessage, 3000)
+    },
+  })
+
+  const handleSubmit = () => {
+    // Validate required fields
+    if (!formData.type || !formData.title || !formData.description) {
+      Alert.alert('Error', 'Please fill in all required fields (Type, Title, and Description).')
+      return
     }
+
+    // Prepare payload according to API requirements
+    const payload = {
+      title: formData.title,
+      description: formData.description,
+      issue_type: formData.type,
+      status: "pending",
+      reproduce_steps: formData.steps ,
+    }
+
+    console.log(payload, 'payload')
+
+    reportIssueMutation.mutate(payload)
   }
 
   const handleChange = (name: string, value: string) => {
@@ -54,7 +86,7 @@ export default function ReportIssue() {
       title: "",
       description: "",
       steps: "",
-      email: "",
+      // email: "",
     })
   }
 
@@ -79,35 +111,55 @@ export default function ReportIssue() {
               onPress={() => setShowPicker(true)}
             >
               <Text style={formData.type ? styles.selectText : styles.placeholderText}>
-                {formData.type ? formData.type : "Select issue type"}
+                {formData.type ? (issueTypes.find(t => t.value === formData.type)?.label || formData.type) : "Select issue type"}
               </Text>
               <ChevronDown size={20} color={PrimaryGrey} />
             </TouchableOpacity>
             
-            {showPicker && (
-              <View style={styles.pickerContainer}>
-                {/* <Picker
-                  selectedValue={formData.type}
-                  onValueChange={(itemValue) => {
-                    handleChange("type", itemValue)
-                    setShowPicker(false)
-                  }}
-                  style={styles.picker}
-                >
-                  <Picker.Item label="Select issue type" value="" />
-                  <Picker.Item label="Bug" value="Bug" />
-                  <Picker.Item label="Feature Request" value="Feature Request" />
-                  <Picker.Item label="Security Issue" value="Security Issue" />
-                  <Picker.Item label="Other" value="Other" />
-                </Picker> */}
-                <TouchableOpacity 
-                  style={styles.pickerDoneButton}
-                  onPress={() => setShowPicker(false)}
-                >
-                  <Text style={styles.pickerDoneText}>Done</Text>
-                </TouchableOpacity>
-              </View>
-            )}
+            <Modal
+              visible={showPicker}
+              transparent={true}
+              animationType="slide"
+              onRequestClose={() => setShowPicker(false)}
+            >
+              <TouchableOpacity 
+                style={styles.modalOverlay}
+                activeOpacity={1}
+                onPress={() => setShowPicker(false)}
+              >
+                <View style={styles.modalContent}>
+                  <View style={styles.modalHeader}>
+                    <Text style={styles.modalTitle}>Select Issue Type</Text>
+                    <TouchableOpacity onPress={() => setShowPicker(false)}>
+                      <Text style={styles.modalCloseText}>Done</Text>
+                    </TouchableOpacity>
+                  </View>
+                  {issueTypes.map((type) => (
+                    <TouchableOpacity
+                      key={type.value}
+                      style={[
+                        styles.modalOption,
+                        formData.type === type.value && styles.modalOptionSelected
+                      ]}
+                      onPress={() => {
+                        handleChange("type", type.value)
+                        setShowPicker(false)
+                      }}
+                    >
+                      <Text style={[
+                        styles.modalOptionText,
+                        formData.type === type.value && styles.modalOptionTextSelected
+                      ]}>
+                        {type.label}
+                      </Text>
+                      {formData.type === type.value && (
+                        <Text style={styles.checkmark}>✓</Text>
+                      )}
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </TouchableOpacity>
+            </Modal>
           </View>
           
           <View style={styles.formGroup}>
@@ -149,7 +201,7 @@ export default function ReportIssue() {
             />
           </View>
           
-          <View style={styles.formGroup}>
+          {/* <View style={styles.formGroup}>
             <Text style={styles.label}>Your Email</Text>
             <TextInput
               style={styles.input}
@@ -160,15 +212,18 @@ export default function ReportIssue() {
               keyboardType="email-address"
               autoCapitalize="none"
             />
-          </View>
+          </View> */}
           
           <View style={styles.buttonContainer}>
             <TouchableOpacity 
-              style={styles.submitButton}
+              style={[
+                styles.submitButton,
+                reportIssueMutation.isPending && styles.submitButtonDisabled
+              ]}
               onPress={handleSubmit}
-              disabled={loading}
+              disabled={reportIssueMutation.isPending}
             >
-              {loading ? (
+              {reportIssueMutation.isPending ? (
                 <ActivityIndicator color="white" size="small" />
               ) : (
                 <Text style={styles.submitButtonText}>Submit Report</Text>
@@ -323,6 +378,66 @@ const styles = StyleSheet.create({
     // color: PrimaryGrey,
     fontWeight: '500',
     fontSize: 14,
+  },
+  submitButtonDisabled: {
+    opacity: 0.6,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingTop: 20,
+    paddingBottom: 40,
+    maxHeight: '50%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: LightGrey,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#111827',
+  },
+  modalCloseText: {
+    fontSize: 16,
+    color: PrimaryBlue,
+    fontWeight: '500',
+  },
+  modalOption: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: LightGrey,
+  },
+  modalOptionSelected: {
+    backgroundColor: '#f0f9ff',
+  },
+  modalOptionText: {
+    fontSize: 16,
+    color: '#111827',
+  },
+  modalOptionTextSelected: {
+    color: PrimaryBlue,
+    fontWeight: '500',
+  },
+  checkmark: {
+    fontSize: 18,
+    color: PrimaryBlue,
+    fontWeight: '600',
   },
   tipsContainer: {
     backgroundColor: LightGrey,

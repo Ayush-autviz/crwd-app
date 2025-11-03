@@ -31,17 +31,17 @@ export default function CustomDrawerContent(props: DrawerContentComponentProps) 
   return (
     <SafeAreaView style={styles.container}>
       {/* Profile Section */}
-      <View style={styles.profileSection}>
+      {/* <View style={styles.profileSection}> */}
         {/* <Image
           source={{ uri: 'https://randomuser.me/api/portraits/women/44.jpg' }}
           style={styles.profileImage}
         /> */}
         {currentUser?.id ? (
-          <>
+                <View style={styles.profileSection}>
         <Avatar>
           <AvatarImage src={currentUser?.profile_picture} />
           <AvatarFallback>
-            {currentUser?.username?.split(' ')[0][0].toUpperCase()}
+            {currentUser?.first_name ? currentUser?.first_name?.charAt(0).toUpperCase() : 'U'}
           </AvatarFallback>
         </Avatar>
         <View style={styles.profileInfo}>
@@ -73,19 +73,21 @@ export default function CustomDrawerContent(props: DrawerContentComponentProps) 
             <Text style={{ color: 'white', fontSize: 10, fontWeight: '700' }}>5</Text>
           </View>
         </TouchableOpacity>
-        </>
+        </View>
         ):(
-          <>
+          <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, width: '95%', gap: 6}}>
           <Avatar>
             <AvatarFallback>U</AvatarFallback>
           </Avatar>
+          <View style={styles.profileInfo}>
           <Text style={styles.profileName}>Guest</Text>
           <TouchableOpacity onPress={() => navigation.navigate('Login' as never)}>
             <Text style={styles.profileLink}>Login</Text>
           </TouchableOpacity>
-          </>
+          </View>
+          </View>
         )}
-      </View>
+      {/* </View> */}
 
       {/* Navigation Items */}
       <ScrollView style={styles.menuContainer} showsVerticalScrollIndicator={false}>

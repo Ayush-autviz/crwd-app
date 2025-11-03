@@ -1,45 +1,214 @@
-import { View, Text, ScrollView, StyleSheet, Platform } from 'react-native'
-import React from 'react'
+import { View, Text, ScrollView, StyleSheet, Platform, ActivityIndicator, TouchableOpacity } from 'react-native'
+import React, { useMemo } from 'react'
 import MainHeaderNav from '../components/MainHeaderNav';
 import { PrimaryBlue, PrimaryGrey, SecondaryGrey } from '../Constants/Colors';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useQuery } from '@tanstack/react-query';
+import { getDonationHistory } from '../services/api/donation';
+
+interface Transaction {
+  date: string;
+  description: string;
+  amount: string;
+}
 
 export default function TransactionHistory() {
   const insets = useSafeAreaInsets()
 
-    const transactions = [
-        { date: 'May 7th', description: '1-time Donation to Habitat for Humanity', amount: '$5' },
-        { date: 'May 1st', description: 'Donation Box', amount: '$25' },
-        { date: 'April 1st', description: 'Donation Box', amount: '$25' },
-        { date: 'March 1st', description: 'Donation Box', amount: '$25' },
-      ];
+  // Fetch transaction history from API
+  const { data: donationHistoryData, isLoading, error, refetch } = useQuery({
+    queryKey: ['donationHistory'],
+    queryFn: getDonationHistory,
+  });
 
-  const total = transactions.reduce((sum, t) => {
-    const numeric = Number(t.amount.replace(/[^\d.]/g, ''))
-    return sum + (isNaN(numeric) ? 0 : numeric)
-  }, 0)
+  console.log(donationHistoryData, 'donationHistoryData');
+
+  // Format date helper function
+  const formatDate = (dateString: string): string => {
+    if (!dateString) return '';
+    
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return dateString; // Return original if invalid date
+      
+      // Format as "Month Day" (e.g., "May 7th", "April 1st")
+      const options: Intl.DateTimeFormatOptions = { 
+        month: 'long', 
+        day: 'numeric' 
+      };
+      const formatted = date.toLocaleDateString('en-US', options);
+      // Add ordinal suffix (1st, 2nd, 3rd, etc.)
+      const day = date.getDate();
+      const suffix = day % 10 === 1 && day % 100 !== 11 ? 'st' :
+                     day % 10 === 2 && day % 100 !== 12 ? 'nd' :
+                     day % 10 === 3 && day % 100 !== 13 ? 'rd' : 'th';
+      return formatted.replace(/\d+/, `${day}${suffix}`);
+    } catch {
+      return dateString;
+    }
+  };
+
+  // Create description from transaction data
+  const createDescription = (transaction: any): string => {
+    const { donation_type, cause_count, collective_count, causes, collectives } = transaction;
+    
+    if (donation_type === 'recurring') {
+      // For recurring donations, show the donation box summary with names
+      const parts: string[] = [];
+      
+      // Add nonprofits info
+      if (cause_count > 0) {
+        if (causes && causes.length > 0 && causes.length <= 2) {
+          // Show names if 1-2 nonprofits
+          const names = causes.map((c: any) => c.name).join(', ');
+          parts.push(names);
+        } else {
+          // Show count if more than 2
+          parts.push(`${cause_count} nonprofit${cause_count !== 1 ? 's' : ''}`);
+        }
+      }
+      
+      // Add collectives info
+      if (collective_count > 0) {
+        if (collectives && collectives.length > 0 && collectives.length <= 2) {
+          // Show names if 1-2 collectives
+          const names = collectives.map((c: any) => c.name).join(', ');
+          parts.push(names);
+        } else {
+          // Show count if more than 2
+          parts.push(`${collective_count} collective${collective_count !== 1 ? 's' : ''}`);
+        }
+      }
+      
+      if (parts.length > 0) {
+        return `Donation Box - ${parts.join(', ')}`;
+      } else {
+        return 'Donation Box';
+      }
+    } else {
+      // For one-time donations, list the causes/collectives
+      const items: string[] = [];
+      
+      if (causes && causes.length > 0) {
+        if (causes.length === 1) {
+          items.push(causes[0].name);
+        } else if (causes.length <= 3) {
+          // Show names if 2-3 causes
+          items.push(causes.map((c: any) => c.name).join(', '));
+        } else {
+          // Show count if more than 3
+          items.push(`${causes.length} nonprofits`);
+        }
+      }
+      
+      if (collectives && collectives.length > 0) {
+        if (collectives.length === 1) {
+          items.push(collectives[0].name);
+        } else if (collectives.length <= 3) {
+          // Show names if 2-3 collectives
+          items.push(collectives.map((c: any) => c.name).join(', '));
+        } else {
+          // Show count if more than 3
+          items.push(`${collectives.length} collectives`);
+        }
+      }
+      
+      if (items.length > 0) {
+        return `One-time Donation - ${items.join(', ')}`;
+      } else {
+        return 'One-time Donation';
+      }
+    }
+  };
+
+  // Transform API response to Transaction format
+  const transactions: Transaction[] = useMemo(() => {
+    if (!donationHistoryData) return [];
+
+    // Access the results array from the API response
+    const historyData = donationHistoryData?.results || [];
+
+    return historyData.map((transaction: any) => {
+      const formattedDate = formatDate(transaction.charged_at);
+      const description = createDescription(transaction);
+      const amount = `$${parseFloat(transaction.gross_amount || '0').toFixed(2)}`;
+      
+      return {
+        date: formattedDate,
+        description,
+        amount,
+      };
+    });
+  }, [donationHistoryData]);
+
+  const total = useMemo(() => {
+    return transactions.reduce((sum, t) => {
+      const numeric = Number(t.amount.replace(/[^\d.]/g, ''))
+      return sum + (isNaN(numeric) ? 0 : numeric)
+    }, 0)
+  }, [transactions])
 
   return (
     <SafeAreaView style={{backgroundColor: 'white', flex: 1}}>
         <MainHeaderNav show={true} menu={false} title={'Transaction History'}/>
         <ScrollView contentContainerStyle={{ paddingHorizontal: 20 , paddingTop: 20, paddingBottom: 72 + (insets?.bottom ?? 0) }}>
-        {transactions.map((transaction) => (
-            <View key={transaction.date} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 20, paddingHorizontal: 20 }}>
-                <View>
-                    <Text style={{ fontSize: 12, color: PrimaryGrey }}>{transaction.date}</Text>
-                    <Text style={{ fontSize: 14, }}>{transaction.description}</Text>
+        {isLoading ? (
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 48 }}>
+            <ActivityIndicator size="large" color={PrimaryBlue} />
+            <Text style={{ marginTop: 12, fontSize: 14, color: PrimaryGrey }}>Loading transactions...</Text>
+          </View>
+        ) : error ? (
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 48, paddingHorizontal: 16 }}>
+            <Text style={{ fontSize: 14, color: '#dc2626', textAlign: 'center', marginBottom: 16 }}>
+              Failed to load transaction history. Please try again.
+            </Text>
+            <TouchableOpacity 
+              onPress={() => refetch()}
+              style={{ paddingHorizontal: 16, paddingVertical: 8, borderRadius: 8 }}
+            >
+              <Text style={{ fontSize: 14, color: PrimaryBlue, textDecorationLine: 'underline' }}>
+                Retry
+              </Text>
+            </TouchableOpacity>
+          </View>
+        ) : transactions.length === 0 ? (
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 48, paddingHorizontal: 16 }}>
+            <Text style={{ fontSize: 14, color: PrimaryGrey }}>No transactions found.</Text>
+          </View>
+        ) : (
+          <>
+            {transactions.map((transaction, index) => (
+              <View 
+                key={`${transaction.date}-${index}`} 
+                style={{ 
+                  flexDirection: 'row', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center', 
+                  paddingVertical: 20, 
+                  // paddingHorizontal: 20,
+                  borderBottomWidth: index < transactions.length - 1 ? StyleSheet.hairlineWidth : 0,
+                  borderBottomColor: '#E5E7EB',
+                }}
+              >
+                <View style={{ flex: 1, marginRight: 16 }}>
+                  <Text style={{ fontSize: 12, color: PrimaryGrey, marginBottom: 4 }}>{transaction.date}</Text>
+                  <Text style={{ fontSize: 14 }}>{transaction.description}</Text>
                 </View>
-                <Text style={{ fontSize: 14 }}>{transaction.amount}</Text>
-            </View>
-    ))}
-    </ScrollView>
-    <View style={[
-      styles.footerContainer,
-      { paddingBottom: 12 + (insets?.bottom ?? 0) }
-    ]}>
-      <View style={{ width: 24 }} />
-      <Text style={styles.totalText}>Total given: ${total}</Text>
-    </View>
+                <Text style={{ fontSize: 14, fontWeight: '500' }}>{transaction.amount}</Text>
+              </View>
+            ))}
+          </>
+        )}
+        </ScrollView>
+        {!isLoading && !error && transactions.length > 0 && (
+          <View style={[
+            styles.footerContainer,
+            { paddingBottom: 12 + (insets?.bottom ?? 0) }
+          ]}>
+            <View style={{ width: 24 }} />
+            <Text style={styles.totalText}>Total given: ${total.toFixed(2)}</Text>
+          </View>
+        )}
     </SafeAreaView>
   )
 }

@@ -17,6 +17,7 @@ interface Post {
     avatarUrl: string;
     time: string;
     org: string;
+    orgUrl?: string | number; // Collective ID for navigation
     text: string;
     imageUrl?: string;
     likes: number;
@@ -44,6 +45,7 @@ type RootStackParamList = {
         PostDetail: { post: Post };
         UserProfile: { userId: string };
         Profile: undefined;
+        GroupCRWD: { collectiveId: string };
 };
 
 export default function PopularPosts({
@@ -184,13 +186,10 @@ export default function PopularPosts({
 
     const handleLoadMore = async () => {
         if (isLoading || !hasMore) return;
-        setIsLoading(true);
         try {
             await onLoadMore();
         } catch (error) {
             console.error('Error loading more posts:', error);
-        } finally {
-            setIsLoading(false);
         }
     };
 
@@ -384,7 +383,17 @@ export default function PopularPosts({
                                     <Ellipsis size={18} color={PrimaryGrey} />
                                 </TouchableOpacity>
                             </View>
-                            <Text style={{ fontSize: 12, color: PrimaryBlue }}>{item.org}</Text>
+                            <TouchableOpacity 
+                                onPress={(e) => {
+                                    e.stopPropagation(); // Prevent triggering parent TouchableOpacity
+                                    if (item.orgUrl) {
+                                        (navigation as any).navigate('GroupCRWD', { collectiveId: item.orgUrl.toString() });
+                                    }
+                                }}
+                                disabled={!item.orgUrl}
+                            >
+                                <Text style={{ fontSize: 12, color: PrimaryBlue }}>{item.org}</Text>
+                            </TouchableOpacity>
                             <Text ellipsizeMode='tail' style={{ fontSize: 14, fontWeight: '400', flexWrap: 'wrap', width: screenWidth - 120, marginTop: 5 }} numberOfLines={3}>{item.text}</Text>
                             { item.imageUrl && <Image source={{ uri: item.imageUrl }} style={{ width: screenWidth - 120, height: 150, borderRadius: 10, marginTop: 10 }} />}
                             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: screenWidth - 120, gap: 10, marginTop: 10 }}>

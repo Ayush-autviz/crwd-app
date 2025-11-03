@@ -204,3 +204,9 @@ export const unfollowUserById = async (followeeId: string) => {
     const response = await axiosClient.delete(`/social/users/${followeeId}/unfollow/`);
     return response.data;
 };
+
+// report issue API endpoints
+export const reportIssue = async (data: any) => {
+    const response = await axiosClient.post('/social/report-issue/', data);
+    return response.data;
+};

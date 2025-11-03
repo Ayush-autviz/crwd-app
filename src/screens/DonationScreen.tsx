@@ -8,7 +8,7 @@ import {
   StyleSheet,
   Dimensions,
 } from 'react-native';
-import { ChevronLeft, Plus, Trash2, X } from 'lucide-react-native';
+import { ChevronLeft, Plus, Trash2, User, X } from 'lucide-react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import Slider from '@react-native-community/slider';
 import DonationStep2 from '../components/donation/DonationStep2';
@@ -18,7 +18,7 @@ import CheckoutScreen from '../components/donation/CheckoutScreen';
 import PaymentSection from '../components/donation/PaymentSection';
 import ManageDonationBox from '../components/donation/ManageDonationBox';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { PrimaryBlue } from '../Constants/Colors';
+import { PrimaryBlue, PrimaryGrey } from '../Constants/Colors';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getDonationBox, createDonationBox, removeCauseFromBox, removeCollectiveFromBox, activateDonationBoxMobile, confirmMobileActivation } from '../services/api/donation';
 import { getCausesBySearch, getJoinCollective } from '../services/api/crwd';
@@ -161,6 +161,90 @@ export default function DonationScreen() {
       // preselectedItem is already being passed to OneTimeDonation below
     }
   }, [route]);
+
+  if (!currentUser?.id) {
+            return (
+            <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }} edges={['top', 'left', 'right']}>
+                <MainHeaderNav title={'Donation Box'} />
+                <View style={{ 
+                    flex: 1, 
+                    justifyContent: 'center', 
+                    alignItems: 'center', 
+                    paddingHorizontal: 32,
+                    backgroundColor: 'white'
+                }}>
+                    {/* Icon */}
+                    <View style={{
+                        width: 80,
+                        height: 80,
+                        backgroundColor: '#dbeafe',
+                        borderRadius: 40,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        marginBottom: 24
+                    }}>
+                        {/* <Text style={{ fontSize: 40, color: '#2563eb' }}>👤</Text> */}
+                        <User size={40} color={PrimaryBlue} />
+                    </View>
+                    
+                    {/* Title */}
+                    <Text style={{
+                        fontSize: 24,
+                        fontWeight: 'bold',
+                        color: '#111827',
+                        marginBottom: 12,
+                        textAlign: 'center'
+                    }}>
+                        Sign in to make a donation
+                    </Text>
+                    
+                    {/* Description */}
+                    <Text style={{
+                        fontSize: 16,
+                        color: '#6b7280',
+                        marginBottom: 32,
+                        textAlign: 'center',
+                        lineHeight: 24
+                    }}>
+                        Sign in to make a donation, manage your causes, and connect with your community.
+                    </Text>
+                    
+                    {/* CTA Button */}
+                    <TouchableOpacity
+                        onPress={() => navigation.navigate('Login' as never)}
+                        style={{
+                            backgroundColor: '#2563eb',
+                            paddingHorizontal: 32,
+                            paddingVertical: 12,
+                            borderRadius: 8,
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            gap: 8
+                        }}
+                    >
+                        <Text style={{ color: 'white', fontSize: 16, fontWeight: '500' }}>
+                            Sign In to Continue
+                        </Text>
+                    </TouchableOpacity>
+                    
+                    {/* Additional Info */}
+                    <TouchableOpacity
+                        onPress={() => navigation.navigate('ClaimProfile' as never)}
+                      >
+                    <Text style={{
+                        fontSize: 14,
+                        color: '#6b7280',
+                        marginTop: 24,
+                        textAlign: 'center'
+                    }}>
+                        Don't have an account? 
+                        <Text style={{ color: '#2563eb', fontWeight: '500' }}> Create one here</Text>
+                    </Text>
+</TouchableOpacity>
+                </View>
+            </SafeAreaView>
+        )
+  }
 
   if (checkout) {
     return (
@@ -500,47 +584,60 @@ export default function DonationScreen() {
               //   />
               ) : step === 2 ? (
                 <View style={{ padding: 16 }}>
-                  <View style={{ backgroundColor: '#fff', borderRadius: 12, padding: 16, borderWidth: 1, borderColor: '#e5e7eb', marginBottom: 16 }}>
-                    <Text style={{ fontSize: 18, fontWeight: '700', color: '#111827', marginBottom: 12 }}>Nonprofits</Text>
-                    {(donationBoxQuery.data?.manual_causes || []).map((cause: any) => (
-                      <View key={cause.id} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' }}>
-                        <View style={[styles.orgAvatar, { backgroundColor: '#dbeafe', marginRight: 12 }]}><Text style={[styles.orgAvatarText, { color: '#2563eb' }]}>{cause.name?.charAt(0).toUpperCase() || 'N'}</Text></View>
-                        <View style={{ flex: 1 }}>
-                          <Text style={{ fontWeight: '600', color: '#111827' }}>{cause.name}</Text>
-                          {!!cause.mission && <Text style={{ color: '#6b7280' }} numberOfLines={1}>{cause.mission}</Text>}
-                        </View>
-                        {/* <TouchableOpacity onPress={() => removeCauseMutation.mutate(String(cause.id))} style={{ padding: 8 }}>
-                          <Text style={{ color: '#ef4444' }}>🗑️</Text>
-                        </TouchableOpacity> */}
+                  {/* Show loading state if data is still being fetched */}
+                  {donationBoxQuery.isLoading ? (
+                    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 48 }}>
+                      <ActivityIndicator size="large" color={PrimaryBlue} />
+                    </View>
+                  ) : (
+                    <>
+                      <View style={{ backgroundColor: '#fff', borderRadius: 12, padding: 16, borderWidth: 1, borderColor: '#e5e7eb', marginBottom: 16 }}>
+                        <Text style={{ fontSize: 18, fontWeight: '700', color: '#111827', marginBottom: 12 }}>Nonprofits</Text>
+                        {(donationBoxQuery.data?.manual_causes || donationBox?.manual_causes || []).length > 0 ? (
+                          (donationBoxQuery.data?.manual_causes || donationBox?.manual_causes || []).map((cause: any) => (
+                            <View key={cause.id} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' }}>
+                              <View style={[styles.orgAvatar, { backgroundColor: '#dbeafe', marginRight: 12 }]}><Text style={[styles.orgAvatarText, { color: '#2563eb' }]}>{cause.name?.charAt(0).toUpperCase() || 'N'}</Text></View>
+                              <View style={{ flex: 1 }}>
+                                <Text style={{ fontWeight: '600', color: '#111827' }}>{cause.name}</Text>
+                                {!!cause.mission && <Text style={{ color: '#6b7280' }} numberOfLines={1}>{cause.mission}</Text>}
+                              </View>
+                            </View>
+                          ))
+                        ) : (
+                          <Text style={{ color: PrimaryGrey, paddingVertical: 12 }}>No nonprofits added yet</Text>
+                        )}
                       </View>
-                    ))}
-                  </View>
 
-                  <View style={{ backgroundColor: '#fff', borderRadius: 12, padding: 16, borderWidth: 1, borderColor: '#e5e7eb', marginBottom: 16 }}>
-                    <Text style={{ fontSize: 18, fontWeight: '700', color: '#111827', marginBottom: 12 }}>Collectives</Text>
-                    {(donationBoxQuery.data?.attributing_collectives || []).map((collective: any) => (
-                      <View key={collective.id} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' }}>
-                        <View style={[styles.orgAvatar, { backgroundColor: '#dcfce7', marginRight: 12 }]}><Text style={[styles.orgAvatarText, { color: '#16a34a' }]}>{collective.name?.charAt(0).toUpperCase() || 'C'}</Text></View>
-                        <View style={{ flex: 1 }}>
-                          <Text style={{ fontWeight: '600', color: '#111827' }}>{collective.name}</Text>
-                          {!!collective.description && <Text style={{ color: '#6b7280' }} numberOfLines={1}>{collective.description}</Text>}
-                        </View>
-                        {/* <TouchableOpacity onPress={() => removeCollectiveMutation.mutate(String(collective.id))} style={{ padding: 8 }}>
-                          <Text style={{ color: '#ef4444' }}>🗑️</Text>
-                        </TouchableOpacity> */}
+                      <View style={{ backgroundColor: '#fff', borderRadius: 12, padding: 16, borderWidth: 1, borderColor: '#e5e7eb', marginBottom: 16 }}>
+                        <Text style={{ fontSize: 18, fontWeight: '700', color: '#111827', marginBottom: 12 }}>Collectives</Text>
+                        {(donationBoxQuery.data?.attributing_collectives || donationBox?.attributing_collectives || []).length > 0 ? (
+                          (donationBoxQuery.data?.attributing_collectives || donationBox?.attributing_collectives || []).map((collective: any) => (
+                            <View key={collective.id} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' }}>
+                              <View style={[styles.orgAvatar, { backgroundColor: '#dcfce7', marginRight: 12 }]}><Text style={[styles.orgAvatarText, { color: '#16a34a' }]}>{collective.name?.charAt(0).toUpperCase() || 'C'}</Text></View>
+                              <View style={{ flex: 1 }}>
+                                <Text style={{ fontWeight: '600', color: '#111827' }}>{collective.name}</Text>
+                                {!!collective.description && <Text style={{ color: '#6b7280' }} numberOfLines={1}>{collective.description}</Text>}
+                              </View>
+                            </View>
+                          ))
+                        ) : (
+                          <Text style={{ color: PrimaryGrey, paddingVertical: 12 }}>No collectives added yet</Text>
+                        )}
                       </View>
-                    ))}
-                  </View>
 
-                  {/* Manage Donation Box Button */}
-                  <TouchableOpacity
-                    onPress={() => {
-                      setShowManageDonationBox(true);
-                    }}
-                    style={styles.manageButton}
-                  >
-                    <Text style={styles.manageButtonText}>Manage Donation Box</Text>
-                  </TouchableOpacity>
+                      {/* Manage Donation Box Button - Always show if donation box exists */}
+                      {(donationBoxQuery.data?.id || donationBox?.id) && (
+                        <TouchableOpacity
+                          onPress={() => {
+                            setShowManageDonationBox(true);
+                          }}
+                          style={styles.manageButton}
+                        >
+                          <Text style={styles.manageButtonText}>Manage Donation Box</Text>
+                        </TouchableOpacity>
+                      )}
+                    </>
+                  )}
                 </View>
               ) : null}
             </>

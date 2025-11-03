@@ -148,29 +148,33 @@ export default function Statistics() {
 
     const following = followingData?.following?.map((item: any) => {
         const userData = item.followee || item.following || item.user || item
+        // is_following is at the item level, not inside followee
+        const isFollowing = item.is_following ?? userData.is_following ?? false;
         return {
             name: userData.first_name && userData.last_name 
                 ? `${userData.first_name} ${userData.last_name}` 
                 : userData.first_name || userData.name || 'Unknown User',
             username: userData.username || 'unknown',
             avatar: userData.profile_picture || userData.avatar || '',
-            connected: userData.is_following || false,
+            connected: isFollowing,
             id: userData.id,
-            is_following: userData.is_following || false,
+            is_following: isFollowing,
         }
     }) || []
 
     const followers = followersData?.followers?.map((item: any) => {
         const userData = item.follower || item.user || item
+        // is_following is at the item level, not inside follower
+        const isFollowing = item.is_following ?? userData.is_following ?? false;
         return {
             name: userData.first_name && userData.last_name 
                 ? `${userData.first_name} ${userData.last_name}` 
                 : userData.first_name || userData.name || 'Unknown User',
             username: userData.username || 'unknown',
             avatar: userData.profile_picture || userData.avatar || '',
-            connected: userData.is_following || false,
+            connected: isFollowing,
             id: userData.id,
-            is_following: userData.is_following || false,
+            is_following: isFollowing,
         }
     }) || []
 

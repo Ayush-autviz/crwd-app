@@ -66,7 +66,7 @@ export default function Profile() {
                     style: 'destructive',
                     onPress: () => {
                         logoutStore();
-                        navigation.navigate('Login' as never);
+                        navigation.navigate('Home' as never);
                     }
                 }
             ]
@@ -186,82 +186,83 @@ export default function Profile() {
 
     // Show login prompt if user is not logged in - matching Vite version
     if (!user?.id) {
-        return (
-            <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }} edges={['top', 'left', 'right']}>
-                <MainHeaderNav title={'Me'} />
-                <View style={{ 
-                    flex: 1, 
-                    justifyContent: 'center', 
-                    alignItems: 'center', 
-                    paddingHorizontal: 32,
-                    backgroundColor: 'white'
-                }}>
-                    {/* Icon */}
-                    <View style={{
-                        width: 80,
-                        height: 80,
-                        backgroundColor: '#dbeafe',
-                        borderRadius: 40,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        marginBottom: 24
-                    }}>
-                        <Text style={{ fontSize: 40, color: '#2563eb' }}>👤</Text>
-                    </View>
+        // return (
+        //     <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }} edges={['top', 'left', 'right']}>
+        //         <MainHeaderNav title={'Me'} />
+        //         <View style={{ 
+        //             flex: 1, 
+        //             justifyContent: 'center', 
+        //             alignItems: 'center', 
+        //             paddingHorizontal: 32,
+        //             backgroundColor: 'white'
+        //         }}>
+        //             {/* Icon */}
+        //             <View style={{
+        //                 width: 80,
+        //                 height: 80,
+        //                 backgroundColor: '#dbeafe',
+        //                 borderRadius: 40,
+        //                 justifyContent: 'center',
+        //                 alignItems: 'center',
+        //                 marginBottom: 24
+        //             }}>
+        //                 <Text style={{ fontSize: 40, color: '#2563eb' }}>👤</Text>
+        //             </View>
                     
-                    {/* Title */}
-                    <Text style={{
-                        fontSize: 24,
-                        fontWeight: 'bold',
-                        color: '#111827',
-                        marginBottom: 12,
-                        textAlign: 'center'
-                    }}>
-                        Sign in to view your profile
-                    </Text>
+        //             {/* Title */}
+        //             <Text style={{
+        //                 fontSize: 24,
+        //                 fontWeight: 'bold',
+        //                 color: '#111827',
+        //                 marginBottom: 12,
+        //                 textAlign: 'center'
+        //             }}>
+        //                 Sign in to view your profile
+        //             </Text>
                     
-                    {/* Description */}
-                    <Text style={{
-                        fontSize: 16,
-                        color: '#6b7280',
-                        marginBottom: 32,
-                        textAlign: 'center',
-                        lineHeight: 24
-                    }}>
-                        Sign in to view your profile, manage your causes, and connect with your community.
-                    </Text>
+        //             {/* Description */}
+        //             <Text style={{
+        //                 fontSize: 16,
+        //                 color: '#6b7280',
+        //                 marginBottom: 32,
+        //                 textAlign: 'center',
+        //                 lineHeight: 24
+        //             }}>
+        //                 Sign in to view your profile, manage your causes, and connect with your community.
+        //             </Text>
                     
-                    {/* CTA Button */}
-                    <TouchableOpacity
-                        onPress={() => navigation.navigate('Login' as never)}
-                        style={{
-                            backgroundColor: '#2563eb',
-                            paddingHorizontal: 32,
-                            paddingVertical: 12,
-                            borderRadius: 8,
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            gap: 8
-                        }}
-                    >
-                        <Text style={{ color: 'white', fontSize: 16, fontWeight: '500' }}>
-                            Sign In to Continue
-                        </Text>
-                    </TouchableOpacity>
+        //             {/* CTA Button */}
+        //             <TouchableOpacity
+        //                 onPress={() => navigation.navigate('Login' as never)}
+        //                 style={{
+        //                     backgroundColor: '#2563eb',
+        //                     paddingHorizontal: 32,
+        //                     paddingVertical: 12,
+        //                     borderRadius: 8,
+        //                     flexDirection: 'row',
+        //                     alignItems: 'center',
+        //                     gap: 8
+        //                 }}
+        //             >
+        //                 <Text style={{ color: 'white', fontSize: 16, fontWeight: '500' }}>
+        //                     Sign In to Continue
+        //                 </Text>
+        //             </TouchableOpacity>
                     
-                    {/* Additional Info */}
-                    <Text style={{
-                        fontSize: 14,
-                        color: '#6b7280',
-                        marginTop: 24,
-                        textAlign: 'center'
-                    }}>
-                        Don't have an account? 
-                        <Text style={{ color: '#2563eb', fontWeight: '500' }}> Create one here</Text>
-                    </Text>
-                </View>
-            </SafeAreaView>
-        );
+        //             {/* Additional Info */}
+        //             <Text style={{
+        //                 fontSize: 14,
+        //                 color: '#6b7280',
+        //                 marginTop: 24,
+        //                 textAlign: 'center'
+        //             }}>
+        //                 Don't have an account? 
+        //                 <Text style={{ color: '#2563eb', fontWeight: '500' }}> Create one here</Text>
+        //             </Text>
+        //         </View>
+        //     </SafeAreaView>
+        // );
+        navigation.navigate('Login' as never);
     }
 
     // Show loading state - matching Vite version

@@ -9,45 +9,7 @@ import { favoriteCollective, unfavoriteCollective } from '../../services/api/soc
 import { useToast } from '../../contexts/ToastContext';
 import { categories } from '../../Constants/categories';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
-
-// const orgAvatars = [
-//   {
-//     name: "ASPCA",
-//     image: require('../../assets/images/grocery.jpg'),
-//   },
-//   {
-//     name: "CRI",
-//     image: require('../../assets/images/redcross.png'),
-//   },
-//   {
-//     name: "CureSearch",
-//     image: require('../../assets/images/grocery.jpg'),
-//   },
-//   {
-//     name: "Paws",
-//     image: require('../../assets/images/redcross.png'),
-//   },
-// ];
-
-// const interests = ['Animal Welfare', 'Environment', 'Food Insecurity'];
-
-// const interests = [
-//   {
-//     name: "Animals",
-//     text: "#E36414", // Orange-Red
-//     background: "#FFE1CC", // Soft warm orange tint
-//   },
-//   {
-//     name: "Environment",
-//     text: "#6A994E", // Olive Green
-//     background: "#DFF0D6", // Fresh leafy green tint
-//   },
-//   {
-//     name: "Food",
-//     text: "#FF9F1C", // Carrot Orange
-//     background: "#FFE6CC", // Gentle light orange tint
-//   },
-// ];
+import { useAuthStore } from '../../store/store';
 
 interface GroupCRWDHeaderProps {
   hasJoined?: boolean;
@@ -67,6 +29,7 @@ const GroupCRWDHeader: React.FC<GroupCRWDHeaderProps> = ({
   const { showToast } = useToast();
   const [isLiked, setIsLiked] = useState(false);
   const [localCategories, setLocalCategories] = useState<any[]>([]);
+  const { user: currentUser } = useAuthStore();
 
   // Favorite/Unfavorite mutations
   const favoriteMutation = useMutation({
@@ -172,6 +135,7 @@ const GroupCRWDHeader: React.FC<GroupCRWDHeaderProps> = ({
         <Text style={{ fontSize: 14, fontWeight: '600', color: '#374151' }}>
           @{crwdData?.created_by?.username || 'ChadFofana1'}
         </Text>
+        {currentUser?.id && (
         <TouchableOpacity 
           onPress={handleLikePress}
           disabled={favoriteMutation.isPending || unfavoriteMutation.isPending}
@@ -188,6 +152,7 @@ const GroupCRWDHeader: React.FC<GroupCRWDHeaderProps> = ({
             fill={isLiked ? 'red' : 'none'}
           />
         </TouchableOpacity>
+        )}
       </View>
 
       {/* Bio */}

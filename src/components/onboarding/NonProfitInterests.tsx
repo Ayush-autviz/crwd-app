@@ -14,7 +14,7 @@ import {
 import { Check, ChevronLeft, Search, Loader2 } from 'lucide-react-native';
 import { PrimaryBlue, PrimaryGrey } from '../../Constants/Colors';
 import OnboardingHeader from './OnboardingHeader';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getCausesBySearch } from '../../services/api/crwd';
 import { bulkAddCauseFavorites, getFavoriteCauses } from '../../services/api/social';
@@ -40,6 +40,8 @@ export default function NonProfitInterests() {
   const [currentPage, setCurrentPage] = useState(1);
   const [allCauses, setAllCauses] = useState<any[]>([]);
   const navigation = useNavigation<any>();
+  const route = useRoute();
+  const { fromAuth } = (route.params as any) || {};
   const { user: currentUser } = useAuthStore();
   const queryClient = useQueryClient();
   const { showToast } = useToast();
@@ -69,8 +71,12 @@ export default function NonProfitInterests() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['favoriteCauses'] });
       showToast('Causes added to favorites', 2000);
-      // Navigate back if came from CreateCRWD, or to CreateCRWD if from onboarding
-      navigation.goBack();
+      // If came from auth (login), navigate to CompleteOnboard, otherwise go back
+      if (fromAuth) {
+        (navigation as any).navigate('CompleteOnboard');
+      } else {
+        navigation.goBack();
+      }
     },
     onError: () => {
       showToast('Failed to add causes to favorites', 2000);

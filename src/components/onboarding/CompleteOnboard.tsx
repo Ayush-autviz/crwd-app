@@ -39,7 +39,12 @@ export default function CompleteOnboard() {
   // }, []);
 
   const handleGoToDonationBox = () => {
-    navigation.navigate('DrawerNav' as never, { screen: 'Donation' } as never);
+    (navigation as any).navigate('DrawerNav', {
+      screen: 'MainTabs',
+      params: {
+        screen: 'My Giving'
+      }
+    });
   };
 
   const handleBrowseCrwd = () => {

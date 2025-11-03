@@ -66,7 +66,10 @@ export default function Profile() {
                     style: 'destructive',
                     onPress: () => {
                         logoutStore();
-                        navigation.navigate('Home' as never);
+                        navigation.reset({
+                            index: 0,
+                            routes: [{ name: 'Home' }],
+                        });
                     }
                 }
             ]

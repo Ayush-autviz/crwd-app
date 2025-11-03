@@ -103,7 +103,14 @@ export default function OnBoard() {
         });
       }
       showToast('Google authentication successful!');
-      navigation.navigate('DrawerNav' as never);
+      
+      // If last_login_at is null, navigate to nonprofit interests page (new user)
+      if (response.user && !response.user.last_login_at) {
+        (navigation as any).navigate('NonProfitInterests', { fromAuth: true })
+      } else {
+        // Navigate to main app for existing users
+        navigation.navigate('DrawerNav' as never);
+      }
     },
     onError: (error: any) => {
       console.error('Google callback error:', error)

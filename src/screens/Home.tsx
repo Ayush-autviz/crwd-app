@@ -13,13 +13,14 @@ import HomeHeader from '../components/HomeHeader'
 import CausesCarousel from '../components/CausesCarousel'
 import { useNavigation } from '@react-navigation/native'
 import { setDiscoverMode } from '../utils/discoverMode'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { getPosts } from '../services/api/social'
 import { getCauses, getCollectives, getCausesByLocation } from '../services/api/crwd'
 import { useAuthStore } from '../store/store'
 import { categories } from '../Constants/categories'
 import Geolocation, { GeoPosition } from 'react-native-geolocation-service'
 import messaging from '@react-native-firebase/messaging'
+import { registerNotificationToken } from '../services/api/notification'
 
 
 export default function Home() {
@@ -28,6 +29,18 @@ export default function Home() {
     const [locationPermissionGranted, setLocationPermissionGranted] = useState(false);
     const navigation = useNavigation();
     const { user: currentUser } = useAuthStore();
+
+    // fcm token send to backend
+    const sendFcmTokenToBackend = useMutation({
+        mutationFn: registerNotificationToken,
+        onSuccess: (data) => {
+            console.log('FCM token sent to backend successfully:', data);
+        },
+        onError: (error: any) => {
+            console.error('Error sending FCM token to backend:', error);
+        },
+    });
+
 
 
     const requestNotificationPermission = async () => {
@@ -58,18 +71,11 @@ export default function Home() {
           // Get FCM token from Firebase
           await messaging().registerDeviceForRemoteMessages()
           const token = await messaging().getToken();
-          console.log('🔥 FCM TOKEN in Home:', token);
+          console.log(' FCM TOKEN in Home:', token);
         //   setFcmToken(token);
-    
-        //   // Send token to backend
-        //   if (token) {
-        //     try {
-        //       const response = await updateFcmToken(token);
-        //       console.log('✅ FCM token sent to backend successfully:', response);
-        //     } catch (error) {
-        //       console.error('❌ Error sending FCM token to backend:', error);
-        //     }
-        //   }
+    if(token) {
+        sendFcmTokenToBackend.mutate({ token, device_type: 'ios' });
+    }
         } catch (error) {
           console.error('❌ Error getting FCM token:', error);
         }

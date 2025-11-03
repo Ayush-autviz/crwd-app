@@ -373,7 +373,7 @@ export default function CreateCRWD() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <MainHeaderNav menu={false} title={'Create a CRWD Collective'} show={true} />
+      <MainHeaderNav menu={false} title={'Create a CRWD'} show={true} />
       
       {/* Toast Notification */}
       {toast && (

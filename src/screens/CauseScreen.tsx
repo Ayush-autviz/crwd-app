@@ -151,7 +151,10 @@ export default function CauseScreen() {
             onLearnMoreClick={scrollToAboutCard} 
             causeData={causeData}
           />
-          <CauseRecentDonations showEmpty={true} />
+          <CauseRecentDonations 
+            donations={causeData?.recent_donations} 
+            showEmpty={!causeData?.recent_donations || causeData.recent_donations.length === 0} 
+          />
           <View style={{ paddingTop: 24 }}>
             <CauseAboutCard causeData={causeData} />
           </View>

@@ -1,93 +1,91 @@
 import React from 'react';
-import { View, Text, Image, TouchableOpacity, FlatList } from 'react-native';
+import { View, Text, TouchableOpacity, FlatList } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { PrimaryGrey, PrimaryBlue } from '../../Constants/Colors';
-import { Heart } from 'lucide-react-native';
+import { PrimaryGrey, PrimaryBlue, PrimaryGreen } from '../../Constants/Colors';
+import { Heart, Sparkles } from 'lucide-react-native';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/Avatar';
 
-interface Donation {
-  avatar: string;
-  name: string;
-  username: string;
+interface RecentDonation {
+  id: number;
+  amount: number;
+  donor: {
+    id: number;
+    username: string;
+    first_name: string;
+    last_name: string;
+    profile_picture?: string;
+  };
+  donation_type: string;
+  charged_at: string;
 }
 
-const donations: Donation[] = [
-  { avatar: 'https://randomuser.me/api/portraits/men/33.jpg', name: 'Chad F.', username: 'chad' },
-  { avatar: 'https://randomuser.me/api/portraits/women/44.jpg', name: 'Mia Cares', username: 'miacares1' },
-  { avatar: 'https://randomuser.me/api/portraits/men/34.jpg', name: 'Conrad M.', username: 'conradm1' },
-  { avatar: 'https://randomuser.me/api/portraits/women/45.jpg', name: 'Morgan Wallace', username: 'moremorgan' },
-  { avatar: 'https://randomuser.me/api/portraits/men/35.jpg', name: 'Ashton Thomas', username: 'ash_t2001' },
-  { avatar: 'https://randomuser.me/api/portraits/men/36.jpg', name: 'Marc Paul', username: 'makinmymarc' },
-  { avatar: 'https://randomuser.me/api/portraits/women/46.jpg', name: 'Cara Cara', username: 'carebear' },
-  { avatar: 'https://randomuser.me/api/portraits/women/47.jpg', name: 'Raquel Wells', username: 'rarawells' },
-];
-
 interface CauseRecentDonationsProps {
-  donations?: Donation[];
+  donations?: RecentDonation[];
   showEmpty?: boolean;
 }
 
 const CauseRecentDonations: React.FC<CauseRecentDonationsProps> = ({ 
-  donations: donationsProp = donations, 
+  donations: donationsProp = [], 
   showEmpty = false 
 }) => {
   const navigation = useNavigation();
 
-  const handleDonorPress = (donor: Donation) => {
-    navigation.navigate('Profile' as never);
+  // Show empty state if showEmpty is true or if donations array is empty
+  const shouldShowEmpty = showEmpty || !donationsProp || donationsProp.length === 0;
+
+  // Helper function to format amount
+  const formatAmount = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(amount);
+  };
+
+  // Helper function to format date
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    
+    if (diffInSeconds < 60) return 'Just now';
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} min ago`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hr ago`;
+    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} days ago`;
+    
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
+
+  const handleDonorPress = (donorId: number) => {
+    (navigation as any).navigate('UserProfile', { userId: donorId.toString() });
   };
 
   const handleDonateNow = () => {
-    navigation.navigate('Donation' as never);
+    (navigation as any).navigate('DrawerNav', {
+      screen: 'Donation',
+      params: {
+        initialTab: 'onetime'
+      }
+    });
   };
-
-  // Show empty state if showEmpty is true or if donations array is empty
-  const shouldShowEmpty = showEmpty || donationsProp.length === 0;
-
-  const renderDonation = ({ item }: { item: Donation }) => (
-    <TouchableOpacity 
-      onPress={() => handleDonorPress(item)}
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 12,
-        paddingVertical: 12,
-        paddingHorizontal: 32,
-        borderBottomWidth: 1,
-        borderBottomColor: '#e5e7eb',
-      }}
-    >
-      <Image 
-        source={{ uri: item.avatar }} 
-        style={{ width: 44, height: 44, borderRadius: 22 }} 
-      />
-      <View style={{ flex: 1 }}>
-        <Text style={{ fontSize: 16, fontWeight: '600', color: '#111827', marginBottom: 2 }}>
-          {item.name}
-        </Text>
-        <Text style={{ fontSize: 14, color: PrimaryGrey }}>
-          {item.username}
-        </Text>
-      </View>
-    </TouchableOpacity>
-  );
 
   return (
     <View style={{ 
       backgroundColor: 'white', 
-      paddingVertical: 16, 
-      borderTopWidth: 1, 
-      borderBottomWidth: 1, 
-      borderColor: '#e5e7eb' 
+      paddingVertical: 24
     }}>
-      <Text style={{ 
-        fontSize: 16, 
-        fontWeight: '600', 
-        color: '#111827', 
-        paddingHorizontal: 24, 
-        marginBottom: 8 
-      }}>
-        Recent Donations
-      </Text>
+      {/* Header */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 24, marginBottom: 16 }}>
+        {/* <Sparkles size={20} color={PrimaryGreen} /> */}
+        <Text style={{ 
+          fontSize: 18, 
+          fontWeight: '700', 
+          color: '#111827'
+        }}>
+          Recent Donations
+        </Text>
+      </View>
       
       {shouldShowEmpty ? (
         <View style={{ paddingHorizontal: 24 }}>
@@ -96,8 +94,6 @@ const CauseRecentDonations: React.FC<CauseRecentDonationsProps> = ({
             paddingVertical: 32 
           }}>
             <View style={{ 
-              // backgroundColor: '#f3f4f6', 
-              // borderRadius: 24, 
               padding: 12, 
               marginBottom: 16 
             }}>
@@ -117,7 +113,8 @@ const CauseRecentDonations: React.FC<CauseRecentDonationsProps> = ({
               color: '#6b7280', 
               textAlign: 'center',
               lineHeight: 20,
-              marginBottom: 16
+              marginBottom: 16,
+              paddingHorizontal: 16
             }}>
               Be the first to support this cause. Every donation makes a difference and helps us reach our goal.
             </Text>
@@ -137,13 +134,61 @@ const CauseRecentDonations: React.FC<CauseRecentDonationsProps> = ({
           </View>
         </View>
       ) : (
-        <FlatList
-          data={donationsProp}
-          renderItem={renderDonation}
-          keyExtractor={(item, index) => index.toString()}
-          scrollEnabled={false}
-          showsVerticalScrollIndicator={false}
-        />
+        <View style={{ gap: 8 }}>
+          {donationsProp.map((donation) => {
+            const donorName = `${donation.donor.first_name} ${donation.donor.last_name}`;
+            const initials = `${donation.donor.first_name.charAt(0)}${donation.donor.last_name.charAt(0)}`;
+
+            return (
+              <TouchableOpacity 
+                key={donation.id}
+                onPress={() => handleDonorPress(donation.donor.id)}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  paddingVertical: 16,
+                  paddingHorizontal: 16,
+                }}
+              >
+                <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, minWidth: 0 }}>
+                  <Avatar size={48}>
+                    <AvatarImage src={donation.donor.profile_picture} />
+                    <AvatarFallback 
+                      style={{ backgroundColor: '#dcfce7' }}
+                      textStyle={{ color: '#16a34a', fontSize: 18, fontWeight: '600' }}
+                    >
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
+                  <View style={{ marginLeft: 12, flex: 1, minWidth: 0 }}>
+                    <Text style={{ fontSize: 16, fontWeight: '600', color: '#111827', marginBottom: 2 }} numberOfLines={1}>
+                      {donorName}
+                    </Text>
+                    <Text style={{ fontSize: 14, color: '#6b7280' }} numberOfLines={1}>
+                      @{donation.donor.username}
+                    </Text>
+                  </View>
+                </View>
+                <View style={{ alignItems: 'flex-end', marginLeft: 16 }}>
+                  <Text style={{ fontSize: 18, fontWeight: 'bold', color: PrimaryGreen, marginBottom: 4 }}>
+                    {formatAmount(donation.amount)}
+                  </Text>
+                  <View style={{ 
+                    backgroundColor: '#f3f4f6', 
+                    paddingHorizontal: 8, 
+                    paddingVertical: 4, 
+                    borderRadius: 12 
+                  }}>
+                    <Text style={{ fontSize: 12, color: '#9ca3af', fontWeight: '500' }}>
+                      {formatDate(donation.charged_at)}
+                    </Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
       )}
     </View>
   );

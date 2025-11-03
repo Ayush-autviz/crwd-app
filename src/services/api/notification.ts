@@ -31,3 +31,8 @@ export const unregisterNotificationToken = async () => {
     return response.data;
 };
 
+export const getUnreadCount = async () => {
+    const response = await axiosClient.get('/notifications/unread-count/')
+    return response.data;
+};
+

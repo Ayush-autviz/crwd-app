@@ -222,7 +222,7 @@ export default function GroupCRWD() {
           isLoading={isLoadingPosts}
           recentActivities={collectiveData?.recent_activities || []}
         />
-        <GroupCRWDSuggested />
+        <GroupCRWDSuggested collectiveId={collectiveId} />
 
         {/* <GroupCRWDEvent /> */}
         <View style={{ height: 10 }} />

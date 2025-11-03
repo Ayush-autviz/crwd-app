@@ -1,35 +1,74 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Image, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { ChevronRight } from 'lucide-react-native';
 import { PrimaryBlue, PrimaryGrey } from '../../Constants/Colors';
 import { useNavigation } from '@react-navigation/native';
+import { useQuery } from '@tanstack/react-query';
+import { getSuggestedCrwds } from '../../services/api/crwd';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/Avatar';
 
-// Sample data for suggested CRWDs
-const suggestedCRWDs = [
-  {
-    name: "Grocery Spot",
-    members: "303 Members",
-    description: "Community lunches every Saturday",
-    image: require('../../assets/images/grocery.jpg'),
-  },
-  {
-    name: "Food for Thought",
-    members: "78 Members",
-    description: "Solving world hunger. One meal at a time.",
-    image: require('../../assets/images/grocery.jpg'),
-  },
-];
+interface GroupCRWDSuggestedProps {
+  collectiveId?: string;
+}
 
-const GroupCRWDSuggested: React.FC = () => {
+const GroupCRWDSuggested: React.FC<GroupCRWDSuggestedProps> = ({ collectiveId }) => {
   const navigation = useNavigation();
 
+  // Fetch suggested CRWDs
+  const { data: suggestedData, isLoading, error } = useQuery({
+    queryKey: ['suggestedCrwds', collectiveId],
+    queryFn: () => getSuggestedCrwds(collectiveId || ''),
+    enabled: !!collectiveId,
+  });
+
+  // Transform API data to match UI requirements
+  // Handle both array and object with results property
+  const suggestedCRWDs = React.useMemo(() => {
+    if (!suggestedData) return [];
+    
+    const dataArray = Array.isArray(suggestedData)
+      ? suggestedData
+      : (suggestedData?.results || suggestedData?.data || []);
+    
+    return dataArray.map((collective: any) => ({
+      id: collective.id,
+      name: collective.name || 'Unknown Collective',
+      members: collective.member_count || 0,
+      description: collective.description || '',
+      image: collective.image || collective.avatar || '',
+    }));
+  }, [suggestedData]);
+
   const handleVisit = (crwd: any) => {
-    navigation.navigate('GroupCRWD' as never);
+    if (crwd.id) {
+      (navigation as any).navigate('GroupCRWD', { collectiveId: crwd.id.toString() });
+    }
   };
 
-  const handleDiscoverMore = () => {
-    navigation.navigate('Search' as never);
-  };
+  if (isLoading) {
+    return (
+      <View style={{ marginTop: 16, paddingHorizontal: 16 }}>
+        <Text style={{ 
+          fontSize: 18, 
+          fontWeight: '600', 
+          marginBottom: 16,
+          color: '#111827'
+        }}>
+          Suggested CRWDS
+        </Text>
+        <View style={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 24 }}>
+          <ActivityIndicator size="small" color={PrimaryBlue} />
+          <Text style={{ marginTop: 8, fontSize: 14, color: PrimaryGrey }}>
+            Loading suggested collectives...
+          </Text>
+        </View>
+      </View>
+    );
+  }
+
+  if (error || !suggestedCRWDs || suggestedCRWDs.length === 0) {
+    return null; // Don't show the section if there's an error or no data
+  }
 
   return (
     <View style={{ marginTop: 16, paddingHorizontal: 16 }}>
@@ -48,29 +87,31 @@ const GroupCRWDSuggested: React.FC = () => {
         contentContainerStyle={{ paddingBottom: 8 }}
       >
         <View style={{ flexDirection: 'row', gap: 16 }}>
-          {suggestedCRWDs.map((crwd, index) => (
+          {suggestedCRWDs.map((crwd) => (
             <TouchableOpacity 
-              key={index}
+              key={crwd.id || crwd.name}
               onPress={() => handleVisit(crwd)}
               style={{
                 backgroundColor: '#f9fafb',
-                borderRadius: 8,
+                borderRadius: 16,
                 padding: 16,
-                minWidth: 200,
+                minWidth: 150,
                 alignItems: 'center',
-                gap: 12,
-                borderWidth: 1,
-                borderColor: '#e5e7eb',
+                gap: 6,
+                // borderWidth: 1,
+                // borderColor: '#e5e7eb',
               }}
             >
               {/* Image on top */}
-              <View style={{ width: 64, height: 64, borderRadius: 32, overflow: 'hidden' }}>
-                <Image 
-                  source={crwd.image} 
-                  style={{ width: '100%', height: '100%' }}
-                  resizeMode="cover"
-                />
-              </View>
+              <Avatar size={64}>
+                <AvatarImage src={crwd.image} />
+                <AvatarFallback 
+                  style={{ backgroundColor: '#dcfce7' }}
+                  textStyle={{ color: '#16a34a', fontSize: 24, fontWeight: '600' }}
+                >
+                  {crwd.name.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
 
               {/* Text content below image */}
               <View style={{ alignItems: 'center' }}>
@@ -88,7 +129,7 @@ const GroupCRWDSuggested: React.FC = () => {
                   color: '#6b7280',
                   marginBottom: 4
                 }}>
-                  {crwd.members}
+                  {crwd.members} {crwd.members === 1 ? 'Member' : 'Members'}
                 </Text>
                 <Text style={{ 
                   fontSize: 12, 
@@ -125,25 +166,6 @@ const GroupCRWDSuggested: React.FC = () => {
         </View>
       </ScrollView>
       
-      <View style={{ alignItems: 'flex-end', marginTop: 16 }}>
-        <TouchableOpacity 
-          onPress={handleDiscoverMore}
-          style={{ 
-            flexDirection: 'row', 
-            alignItems: 'center',
-            // paddingVertical: 8
-          }}
-        >
-          <Text style={{ 
-            color: PrimaryBlue, 
-            fontSize: 14,
-            marginRight: 4
-          }}>
-            Discover More
-          </Text>
-          <ChevronRight size={16} color={PrimaryBlue} />
-        </TouchableOpacity>
-      </View>
     </View>
   );
 };

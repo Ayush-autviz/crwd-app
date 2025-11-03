@@ -71,7 +71,7 @@ export default function SuggestedCrwd({ collectives = [], isLoading = false, err
         renderItem={({item}) => (
           <TouchableOpacity 
             onPress={() => handleVisitCrwd(item.id)}  
-            style={{marginHorizontal: 10, marginBottom:10, alignItems: 'center', gap: 10,}}
+            style={{marginHorizontal: 10, marginBottom:10, alignItems: 'center', gap: 10, backgroundColor: '#f9fafb', borderRadius: 16, padding: 16,}}
           >
             {/* <Image 
               source={typeof item.image === 'string' ? { uri: item.image } : item.image} 

@@ -4,6 +4,9 @@ import { AlignJustify, ChevronLeft, Plus, Search } from 'lucide-react-native'
 import { LightGrey, PrimaryGreen, PrimaryGrey } from '../Constants/Colors';
 import { useNavigation, DrawerActions } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { getUnreadCount } from '../services/api/notification';
+import { useQuery } from '@tanstack/react-query';
+import { useAuthStore } from '../store/store';
 
 type RootStackParamList = {
     Post: undefined;
@@ -18,6 +21,7 @@ export default function HomeHeader({ show = false, menu = true, post = true }) {
     const navigation = useNavigation<NavigationProp>();
     const screenWidth = Dimensions.get('window').width;
     const imageWidth = screenWidth * 0.25;
+    const { user: currentUser } = useAuthStore();
 
     const handlePostPress = () => {
         navigation.navigate('Post');
@@ -27,6 +31,12 @@ export default function HomeHeader({ show = false, menu = true, post = true }) {
         navigation.dispatch(DrawerActions.openDrawer());
     };
 
+    const { data: unreadCount } = useQuery({
+        queryKey: ['unreadCount'],
+        queryFn: getUnreadCount,
+        enabled: !!currentUser?.id,
+    });
+    console.log(unreadCount?.data, 'unreadCount.data');
 
     return (
         <SafeAreaView style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 5, alignItems: 'center', marginHorizontal: 10, borderBottomWidth: 2, borderBottomColor: LightGrey, }}>
@@ -56,7 +66,9 @@ export default function HomeHeader({ show = false, menu = true, post = true }) {
                     <TouchableOpacity onPress={handleMenuPress} disabled={!menu}>
                         <AlignJustify color={menu ? '#000' : '#fff'} />
                     </TouchableOpacity>
-                    <View style={{ position: 'absolute', top: -2, right: -6, width: 8, height: 8, borderRadius: 4, backgroundColor: 'red' }} />
+                    {unreadCount?.data > 0 && currentUser?.id && (
+                        <View style={{ position: 'absolute', top: -2, right: -6, width: 8, height: 8, borderRadius: 4, backgroundColor: 'red' }} />
+                    )}
                 </View>
                 
 

@@ -1,5 +1,5 @@
-import { View, Text, ScrollView, TouchableOpacity, Image, FlatList } from 'react-native'
-import React, { useState } from 'react'
+import { View, Text, ScrollView, TouchableOpacity, Image, FlatList, ActivityIndicator } from 'react-native'
+import React, { useState, useMemo, useEffect } from 'react'
 import MainHeaderNav from '../components/MainHeaderNav'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import PopularPosts from '../components/PopularPosts'
@@ -7,6 +7,35 @@ import { LightGrey, PrimaryBlue, PrimaryGrey } from '../Constants/Colors'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { ArrowLeftRight, Trophy, Heart, MessageCircle, MoreHorizontal, User } from 'lucide-react-native'
 import { useAuthStore } from '../store/store'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { getNotifications, markAllNotificationsAsRead } from '../services/api/notification'
+import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/Avatar'
+
+// Helper function to format time ago
+const formatTimeAgo = (dateString: string): string => {
+    if (!dateString) return '';
+    
+    try {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+        
+        if (diffInSeconds < 60) {
+            return `${diffInSeconds}s`;
+        } else if (diffInSeconds < 3600) {
+            const minutes = Math.floor(diffInSeconds / 60);
+            return `${minutes}m`;
+        } else if (diffInSeconds < 86400) {
+            const hours = Math.floor(diffInSeconds / 3600);
+            return `${hours}h`;
+        } else {
+            const days = Math.floor(diffInSeconds / 86400);
+            return `${days}d`;
+        }
+    } catch {
+        return '';
+    }
+};
 
 export default function Activity() {
     const route = useRoute()
@@ -14,137 +43,147 @@ export default function Activity() {
     const [activeTab, setActiveTab] = useState<'community' | 'notifications'>(tab ?? 'community')
     const navigation = useNavigation()
     const { user: currentUser } = useAuthStore();
+    const queryClient = useQueryClient();
 
-    // Regular notifications data
-    const regularNotifications = [
-        {
-            type: 'connect' as const,
-            avatarUrl: 'https://randomuser.me/api/portraits/women/1.jpg',
-            username: 'mandy',
-            message: 'Mandy would like to connect with you',
-            time: '17h',
-        },
-        {
-            type: 'donation' as const,
-            message: 'Your $25 monthly donation was processed',
-            time: '2h',
-        },
-        {
-            type: 'mention' as const,
-            avatarUrl: 'https://randomuser.me/api/portraits/men/15.jpg',
-            username: 'conrad',
-            message: 'Conrad mentioned you',
-            time: '19h',
-        },
-        {
-            type: 'like' as const,
-            avatarUrl: 'https://randomuser.me/api/portraits/men/32.jpg',
-            username: 'chad',
-            message: 'Chad liked your post',
-            time: '1d',
-        },
-        {
-            type: 'comment' as const,
-            avatarUrl: 'https://randomuser.me/api/portraits/men/32.jpg',
-            username: 'chad',
-            message: 'Chad commented on your post',
-            time: '1d',
-        },
-        {
-            type: 'achievement' as const,
-            message: 'Congratulations! You have donated 2 months in a row!',
-            time: '1d',
-        },
-        {
-            type: 'crwd_activity' as const,
-            message: 'Congratulations! Your CRWD has made 10 collective donations',
-            time: '1d',
-        },
-        {
-            type: 'crwd_join' as const,
-            avatarUrl: 'https://randomuser.me/api/portraits/women/1.jpg',
-            username: 'mandy',
-            message: 'Mandy joined runforourrights',
-            time: '17h',
-            groupName: 'runforourrights',
-        },
-        {
-            type: 'event_attend' as const,
-            avatarUrl: 'https://randomuser.me/api/portraits/men/32.jpg',
-            username: 'chad',
-            message: "Chad RSVP'd to your event",
-            time: '1d',
-        },
-    ]
+    // Fetch notifications from API
+    const { data: notificationsData, isLoading: isLoadingNotifications } = useQuery({
+        queryKey: ['notifications'],
+        queryFn: getNotifications,
+        enabled: !!currentUser?.id,
+    });
 
-    // Community posts data
-    const communityPosts = [
-        {
-            id: 2,
-            avatarUrl: 'https://randomuser.me/api/portraits/women/32.jpg',
-            username: 'mynameismya',
-            time: '17h',
-            org: 'feedthehungry',
-            text: 'The quick, brown fox jumps over a lazy dog. DJs flock by when MTV ax quiz prog. Junk MTV quiz graced by fox whelps. Bawds jog, flick quartz, vex nymphs. Waltz, bad nymph, for quick jigs vex!',
-            imageUrl: null,
-            likes: 2,
-            comments: 0,
-            shares: 3,
+    const markAllNotificationsAsReadMutation = useMutation({
+        mutationFn: markAllNotificationsAsRead,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['notifications'] });
+            queryClient.invalidateQueries({ queryKey: ['unreadCount'] });
         },
-        {
-            id: 3,
-            avatarUrl: 'https://randomuser.me/api/portraits/men/15.jpg',
-            username: 'conrad',
-            time: '4h',
-            org: null,
-            text: 'donated to',
-            imageUrl: null,
-            likes: 0,
-            comments: 0,
-            shares: 0,
-            isDonation: true,
-            donatedTo: 'The Red Cross',
-            organizationName: 'The Red Cross',
-            organizationLogo: '/redcross.png'
-        },
-        {
-            id: 4,
-            avatarUrl: 'https://randomuser.me/api/portraits/women/25.jpg',
-            username: 'emma_321',
-            time: '1d',
-            org: 'larelief',
-            text: 'The quick, brown fox jumps over a lazy dog. DJs flock by when MTV ax quiz prog. Junk',
-            link: 'www.thisisaurl.com',
-            imageUrl: 'https://images.unsplash.com/photo-1574870111867-089730e5a72b?auto=format&fit=crop&w=600&q=80',
-            likes: 2,
-            comments: 0,
-            shares: 3,
-            linkPreview: {
-                title: 'The LA wildfires have depleted local resources',
-                description: 'The quick, brown fox jumps over a lazy dog. DJs flock by when MTV ax quiz prog. Junk'
+    });
+
+    // Mark all notifications as read on mount
+    useEffect(() => {
+        if (currentUser?.id && notificationsData?.results?.length > 0) {
+            markAllNotificationsAsReadMutation.mutate();
+        }
+    }, []);
+
+    // Filter notifications by type
+    const personalNotifications = useMemo(() => {
+        return (notificationsData?.results || []).filter(
+            (notification: any) => notification.type === "personal"
+        );
+    }, [notificationsData]);
+
+    const communityNotifications = useMemo(() => {
+        return (notificationsData?.results || []).filter(
+            (notification: any) => notification.type === "community" || notification.type === "community_post"
+        );
+    }, [notificationsData]);
+
+    // Transform personal notifications
+    const transformedPersonalNotifications = useMemo(() => {
+        if (!personalNotifications || personalNotifications.length === 0) return [];
+
+        return personalNotifications.map((notification: any) => {
+            // Extract username from body if it contains @username pattern
+            let username = '';
+            const usernameMatch = notification.body?.match(/@(\w+)/);
+            if (usernameMatch) {
+                username = usernameMatch[1];
+            } else {
+                username = notification.user?.username || notification.data?.follower_username || '';
             }
-        },
-        {
-            id: 5,
-            avatarUrl: 'https://randomuser.me/api/portraits/women/30.jpg',
-            username: 'rachelwilson',
-            time: '3d',
-            org: 'foodforall',
-            text: 'Join us this saturday!',
-            imageUrl: null,
-            likes: 2,
-            comments: 0,
-            shares: 3,
-            isEvent: true,
-            eventDetails: {
-                date: '3/8/2025',
-                time: '7:00 am',
-                rsvp: '8',
-                maybe: '17',
-                place: '123 Main St. Somewhere, USA'
+
+            // Determine notification type based on title/body
+            let notificationType: 'connect' | 'donation' | 'mention' | 'like' | 'comment' | 'achievement' | 'crwd_activity' | 'crwd_join' | 'event_attend' = 'connect';
+            if (notification.title?.includes('Follower') || notification.body?.includes('started following')) {
+                notificationType = 'connect';
+            } else if (notification.title?.includes('Mention') || notification.body?.includes('@')) {
+                notificationType = 'mention';
+            } else if (notification.title?.includes('Like')) {
+                notificationType = 'like';
+            } else if (notification.title?.includes('Comment')) {
+                notificationType = 'comment';
+            } else if (notification.title?.includes('Donation') || notification.body?.includes('donation')) {
+                notificationType = 'donation';
             }
-        },
-    ]
+
+            return {
+                id: notification.id,
+                type: notificationType,
+                message: notification.body || notification.title || '',
+                time: formatTimeAgo(notification.created_at || notification.updated_at),
+                avatarUrl: notification.user?.profile_picture || notification.data?.profile_picture || '',
+                username: username,
+                userId: notification.data?.follower_id || notification.data?.user_id || notification.user?.id,
+            };
+        });
+    }, [personalNotifications]);
+
+    // Transform community notifications to posts
+    const transformedCommunityPosts = useMemo(() => {
+        if (!communityNotifications || communityNotifications.length === 0) return [];
+
+        return communityNotifications.map((notification: any) => {
+            // Extract username from body if it contains @username pattern
+            let username = '';
+            const usernameMatch = notification.body?.match(/@(\w+)/);
+            if (usernameMatch) {
+                username = usernameMatch[1];
+            } else {
+                username = notification.user?.username || notification.data?.creator_id || notification.data?.new_member_id || '';
+            }
+
+            // Extract collective name from body
+            let collectiveName = '';
+            if (notification.body) {
+                const inMatch = notification.body.match(/in (.+)$/);
+                if (inMatch) {
+                    collectiveName = inMatch[1].trim();
+                }
+                if (!collectiveName && notification.body.includes('joined')) {
+                    const joinMatch = notification.body.match(/joined (.+)$/);
+                    if (joinMatch) {
+                        collectiveName = joinMatch[1].trim();
+                    }
+                }
+            }
+
+            const isJoin = notification.type === "community" && notification.body?.includes("joined");
+            const isPost = notification.type === "community_post" || (notification.type === "community" && notification.body?.includes("posted"));
+
+            // Remove the collective name from text if it's a join notification to avoid duplication
+            let displayText = notification.body || notification.title || '';
+            if (isJoin && collectiveName && displayText.includes(collectiveName)) {
+                // Remove the duplicate collective name from the end of the text
+                const regex = new RegExp(`\\s*${collectiveName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*$`, 'i');
+                displayText = displayText.replace(regex, '').trim();
+            }
+
+            return {
+                id: notification.id,
+                avatarUrl: notification.user?.profile_picture || notification.data?.profile_picture || '',
+                username: username,
+                time: formatTimeAgo(notification.created_at || notification.updated_at),
+                org: collectiveName || null,
+                text: displayText,
+                imageUrl: null,
+                likes: 0,
+                comments: 0,
+                shares: 0,
+                isJoin: isJoin,
+                isPost: isPost,
+                groupName: collectiveName,
+                postId: notification.data?.post_id,
+                collectiveId: notification.data?.collective_id,
+            };
+        });
+    }, [communityNotifications]);
+
+    // Check if there are unread personal notifications
+    const hasUnreadNotifications = personalNotifications.some(
+        (notification: any) => !notification.is_read
+    ) || false;
 
 
     if (!currentUser?.id) {
@@ -234,24 +273,33 @@ export default function Activity() {
         switch (item.type) {
             case 'connect':
                 return (
-                    <View style={{ 
-                        flexDirection: 'row', 
-                        padding: 16, 
-                        borderTopWidth: 1, 
-                        borderTopColor: LightGrey,
-                        gap: 12 
-                    }}>
-                        <Image 
-                            source={{ uri: item.avatarUrl }} 
-                            style={{ width: 44, height: 44, borderRadius: 22, borderWidth: 2, borderColor: LightGrey }} 
-                        />
+                    <TouchableOpacity 
+                        style={{ 
+                            flexDirection: 'row', 
+                            padding: 16, 
+                            borderTopWidth: 1, 
+                            borderTopColor: LightGrey,
+                            gap: 12 
+                        }}
+                        onPress={() => {
+                            if (item.userId) {
+                                (navigation as any).navigate('UserProfile', { userId: item.userId.toString() });
+                            }
+                        }}
+                    >
+                        <Avatar size={44}>
+                            <AvatarImage src={item.avatarUrl} />
+                            <AvatarFallback>
+                                {item.username?.charAt(0).toUpperCase() || 'U'}
+                            </AvatarFallback>
+                        </Avatar>
                         <View style={{ flex: 1 }}>
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                                 <Text style={{ fontWeight: '600', color: '#111' }}>@{item.username}</Text>
                                 <Text style={{ fontSize: 12, color: PrimaryGrey }}>• {item.time}</Text>
                             </View>
                             <Text style={{ color: '#374151', marginTop: 4 }}>{item.message}</Text>
-                            <TouchableOpacity 
+                            {/* <TouchableOpacity 
                                 style={{ 
                                     backgroundColor: PrimaryBlue, 
                                     paddingHorizontal: 40, 
@@ -262,9 +310,9 @@ export default function Activity() {
                                 }}
                             >
                                 <Text style={{ color: 'white', fontWeight: '500', fontSize: 14 }}>Follow Back</Text>
-                            </TouchableOpacity>
+                            </TouchableOpacity> */}
                         </View>
-                    </View>
+                    </TouchableOpacity>
                 )
 
             case 'donation':
@@ -299,12 +347,18 @@ export default function Activity() {
                             borderTopColor: LightGrey,
                             gap: 12 
                         }}
-                        onPress={() => navigation.navigate('Profile' as never)}
+                        onPress={() => {
+                            if (item.userId) {
+                                (navigation as any).navigate('UserProfile', { userId: item.userId.toString() });
+                            }
+                        }}
                     >
-                        <Image 
-                            source={{ uri: item.avatarUrl }} 
-                            style={{ width: 44, height: 44, borderRadius: 22, borderWidth: 2, borderColor: LightGrey }} 
-                        />
+                        <Avatar size={44}>
+                            <AvatarImage src={item.avatarUrl} />
+                            <AvatarFallback>
+                                {item.username?.charAt(0).toUpperCase() || 'U'}
+                            </AvatarFallback>
+                        </Avatar>
                         <View style={{ flex: 1 }}>
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                                 <Text style={{ fontWeight: '600', color: '#111' }}>@{item.username}</Text>
@@ -337,17 +391,26 @@ export default function Activity() {
             case 'crwd_join':
             case 'event_attend':
                 return (
-                    <View style={{ 
-                        flexDirection: 'row', 
-                        padding: 16, 
-                        borderTopWidth: 1, 
-                        borderTopColor: LightGrey,
-                        gap: 12 
-                    }}>
-                        <Image 
-                            source={{ uri: item.avatarUrl }} 
-                            style={{ width: 44, height: 44, borderRadius: 22, borderWidth: 2, borderColor: LightGrey }} 
-                        />
+                    <TouchableOpacity 
+                        style={{ 
+                            flexDirection: 'row', 
+                            padding: 16, 
+                            borderTopWidth: 1, 
+                            borderTopColor: LightGrey,
+                            gap: 12 
+                        }}
+                        onPress={() => {
+                            if (item.userId) {
+                                (navigation as any).navigate('UserProfile', { userId: item.userId.toString() });
+                            }
+                        }}
+                    >
+                        <Avatar size={44}>
+                            <AvatarImage src={item.avatarUrl} />
+                            <AvatarFallback>
+                                {item.username?.charAt(0).toUpperCase() || 'U'}
+                            </AvatarFallback>
+                        </Avatar>
                         <View style={{ flex: 1 }}>
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                                 <Text style={{ fontWeight: '600', color: '#111' }}>@{item.username}</Text>
@@ -355,7 +418,7 @@ export default function Activity() {
                             </View>
                             <Text style={{ color: '#374151', marginTop: 4 }}>{item.message}</Text>
                         </View>
-                    </View>
+                    </TouchableOpacity>
                 )
 
             default:
@@ -371,12 +434,18 @@ export default function Activity() {
                 borderBottomColor: LightGrey,
                 padding: 16
             }}>
-                <TouchableOpacity onPress={() => navigation.navigate('PostDetail' as never)}>
+                <TouchableOpacity onPress={() => {
+                    if (item.postId) {
+                        (navigation as any).navigate('PostDetail', { postId: item.postId });
+                    }
+                }}>
                     <View style={{ flexDirection: 'row', gap: 12 }}>
-                        <Image 
-                            source={{ uri: item.avatarUrl }} 
-                            style={{ width: 40, height: 40, borderRadius: 20 }} 
-                        />
+                        <Avatar size={40}>
+                            <AvatarImage src={item.avatarUrl} />
+                            <AvatarFallback>
+                                {item.username?.charAt(0).toUpperCase() || 'U'}
+                            </AvatarFallback>
+                        </Avatar>
                         
                         <View style={{ flex: 1 }}>
                             {!item.isDonation && (
@@ -385,34 +454,48 @@ export default function Activity() {
                                         <Text style={{ fontWeight: '600', fontSize: 14, color: '#111' }}>{item.username}</Text>
                                         <Text style={{ fontSize: 12, color: PrimaryGrey }}>• {item.time}</Text>
                                     </View>
-                                    <MoreHorizontal size={16} color={PrimaryGrey} />
+                                    {/* <MoreHorizontal size={16} color={PrimaryGrey} /> */}
                                 </View>
                             )}
                             
                             {item.org && (
-                                <TouchableOpacity onPress={() => navigation.navigate('GroupCRWD' as never)}>
+                                <TouchableOpacity onPress={() => {
+                                    if (item.collectiveId) {
+                                        (navigation as any).navigate('GroupCRWD', { collectiveId: item.collectiveId.toString() });
+                                    }
+                                }}>
                                     <Text style={{ fontSize: 12, color: PrimaryBlue, marginTop: 2 }}>{item.org}</Text>
                                 </TouchableOpacity>
                             )}
 
                             <View style={{ marginTop: 8, marginBottom: 12 }}>
-                                {item.isDonation ? (
+                                {item.isJoin ? (
                                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                                        <Text style={{ fontWeight: '600', color: '#111' }}>@{item.username}</Text>
                                         <Text style={{ color: '#374151' }}>{item.text}</Text>
-                                        {item.donatedTo && (
-                                            <>
-                                                <Text style={{ color: PrimaryBlue, fontWeight: '600' }}>{item.donatedTo}</Text>
-                                                <Text style={{ fontSize: 12, color: PrimaryGrey }}>• {item.time}</Text>
-                                            </>
+                                        {item.groupName && (
+                                            <TouchableOpacity onPress={() => {
+                                                if (item.collectiveId) {
+                                                    (navigation as any).navigate('GroupCRWD', { collectiveId: item.collectiveId.toString() });
+                                                }
+                                            }}>
+                                                <Text style={{ color: PrimaryBlue, fontWeight: '600' }}>{item.groupName}</Text>
+                                            </TouchableOpacity>
+                                        )}
+                                    </View>
+                                ) : item.isPost ? (
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
+                                        <Text style={{ color: '#374151' }}>{item.text}</Text>
+                                        {item.postId && (
+                                            <TouchableOpacity onPress={() => {
+                                                (navigation as any).navigate('PostDetail', { postId: item.postId });
+                                            }}>
+                                                <Text style={{ color: PrimaryBlue, textDecorationLine: 'underline' }}>post</Text>
+                                            </TouchableOpacity>
                                         )}
                                     </View>
                                 ) : (
                                     <View>
                                         <Text style={{ color: '#374151', lineHeight: 20 }}>{item.text}</Text>
-                                        {item.link && (
-                                            <Text style={{ color: PrimaryBlue, marginTop: 4 }}>{item.link}</Text>
-                                        )}
                                     </View>
                                 )}
                             </View>
@@ -467,7 +550,7 @@ export default function Activity() {
                                 </View>
                             )}
 
-                            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+                            {/* <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
                                 <View style={{ flexDirection: 'row', gap: 16, alignItems: 'center' }}>
                                     <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                                         <Heart size={16} color={PrimaryGrey} />
@@ -482,7 +565,7 @@ export default function Activity() {
                                     <Image source={require('../assets/icons/forward.png')} style={{ width: 18, height: 18 }} />
                                     <Text style={{ color: PrimaryGrey, fontSize: 12 }}>{item.shares}</Text>
                                 </TouchableOpacity>
-                            </View>
+                            </View> */}
                         </View>
                     </View>
                 </TouchableOpacity>
@@ -530,8 +613,10 @@ export default function Activity() {
                         gap: 8
                     }}
                 >
-                    {/* Red dot notification indicator */}
-                    <View style={{ width: 8, height: 8, backgroundColor: '#EF4444', borderRadius: 4 }} />
+                    {/* Red dot notification indicator - show only if there are unread notifications */}
+                    {hasUnreadNotifications && (
+                        <View style={{ width: 8, height: 8, backgroundColor: '#EF4444', borderRadius: 4 }} />
+                    )}
                     <Text style={{
                         fontSize: 14,
                         fontWeight: '500',
@@ -545,21 +630,101 @@ export default function Activity() {
             {/* Tab Content */}
             <View style={{ flex: 1 }}>
                 {activeTab === 'notifications' && (
-                    <FlatList
-                        data={regularNotifications}
-                        renderItem={renderNotificationItem}
-                        keyExtractor={(item, index) => `notification-${index}`}
-                        showsVerticalScrollIndicator={false}
-                    />
+                    isLoadingNotifications ? (
+                        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 40 }}>
+                            <ActivityIndicator size="large" color={PrimaryBlue} />
+                            <Text style={{ marginTop: 12, fontSize: 14, color: PrimaryGrey }}>
+                                Loading notifications...
+                            </Text>
+                        </View>
+                    ) : transformedPersonalNotifications.length === 0 ? (
+                        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 }}>
+                            <View style={{
+                                width: 64,
+                                height: 64,
+                                borderRadius: 32,
+                                backgroundColor: '#f3f4f6',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                marginBottom: 16
+                            }}>
+                                <User size={32} color={PrimaryGrey} />
+                            </View>
+                            <Text style={{
+                                fontSize: 18,
+                                fontWeight: '600',
+                                color: '#111827',
+                                marginBottom: 8,
+                                textAlign: 'center'
+                            }}>
+                                No notifications yet
+                            </Text>
+                            <Text style={{
+                                fontSize: 14,
+                                color: '#6b7280',
+                                textAlign: 'center',
+                                maxWidth: 280
+                            }}>
+                                When someone follows you, mentions you, or interacts with your posts, you'll see it here.
+                            </Text>
+                        </View>
+                    ) : (
+                        <FlatList
+                            data={transformedPersonalNotifications}
+                            renderItem={renderNotificationItem}
+                            keyExtractor={(item) => `notification-${item.id}`}
+                            showsVerticalScrollIndicator={false}
+                        />
+                    )
                 )}
                 
                 {activeTab === 'community' && (
-                    <FlatList
-                        data={communityPosts}
-                        renderItem={renderCommunityPost}
-                        keyExtractor={(item) => `community-${item.id}`}
-                        showsVerticalScrollIndicator={false}
-                    />
+                    isLoadingNotifications ? (
+                        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 40 }}>
+                            <ActivityIndicator size="large" color={PrimaryBlue} />
+                            <Text style={{ marginTop: 12, fontSize: 14, color: PrimaryGrey }}>
+                                Loading community updates...
+                            </Text>
+                        </View>
+                    ) : transformedCommunityPosts.length === 0 ? (
+                        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 }}>
+                            <View style={{
+                                width: 64,
+                                height: 64,
+                                borderRadius: 32,
+                                backgroundColor: '#f3f4f6',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                marginBottom: 16
+                            }}>
+                                <MessageCircle size={32} color={PrimaryGrey} />
+                            </View>
+                            <Text style={{
+                                fontSize: 18,
+                                fontWeight: '600',
+                                color: '#111827',
+                                marginBottom: 8,
+                                textAlign: 'center'
+                            }}>
+                                No community updates yet
+                            </Text>
+                            <Text style={{
+                                fontSize: 14,
+                                color: '#6b7280',
+                                textAlign: 'center',
+                                maxWidth: 280
+                            }}>
+                                When members of your collectives post updates or join, you'll see them here.
+                            </Text>
+                        </View>
+                    ) : (
+                        <FlatList
+                            data={transformedCommunityPosts}
+                            renderItem={renderCommunityPost}
+                            keyExtractor={(item) => `community-${item.id}`}
+                            showsVerticalScrollIndicator={false}
+                        />
+                    )
                 )}
             </View>
         </SafeAreaView>

@@ -14,6 +14,8 @@ import { PrimaryGrey } from '../../Constants/Colors';
 import { Bell } from 'lucide-react-native';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/Avatar';
 import { useAuthStore } from '../../store/store';
+import { getUnreadCount } from '../../services/api/notification';
+import { useQuery } from '@tanstack/react-query';
 
 export default function CustomDrawerContent(props: DrawerContentComponentProps) {
   const { user: currentUser } = useAuthStore();
@@ -27,6 +29,12 @@ export default function CustomDrawerContent(props: DrawerContentComponentProps) 
     }
     navigation.closeDrawer();
   };
+
+  const { data: unreadCount } = useQuery({
+    queryKey: ['unreadCount'],
+    queryFn: getUnreadCount,
+    enabled: !!currentUser?.id,
+  });
 
   return (
     <SafeAreaView style={styles.container}>
@@ -56,6 +64,7 @@ export default function CustomDrawerContent(props: DrawerContentComponentProps) 
           style={{ padding: 6, position: 'relative', marginRight: 15 }}
         >
           <Bell size={22} color="#111827" />
+          {unreadCount?.data > 0 && currentUser?.id && (
           <View
             style={{
               position: 'absolute',
@@ -70,8 +79,9 @@ export default function CustomDrawerContent(props: DrawerContentComponentProps) 
               paddingHorizontal: 3,
             }}
           >
-            <Text style={{ color: 'white', fontSize: 10, fontWeight: '700' }}>5</Text>
+            <Text style={{ color: 'white', fontSize: 10, fontWeight: '700' }}>{unreadCount?.data}</Text>
           </View>
+          )}
         </TouchableOpacity>
         </View>
         ):(

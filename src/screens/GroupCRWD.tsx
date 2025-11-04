@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, ScrollView, Text, TouchableOpacity, Modal, StyleSheet, Dimensions, TouchableWithoutFeedback, ActivityIndicator } from 'react-native';
+import { View, ScrollView, Text, TouchableOpacity, Modal, StyleSheet, Dimensions, TouchableWithoutFeedback, ActivityIndicator, Clipboard } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import MainHeaderNav from '../components/MainHeaderNav';
@@ -17,6 +17,8 @@ import { getCollectiveById, joinCollective, leaveCollective } from '../services/
 import { getPosts } from '../services/api/social';
 import { useToast } from '../contexts/ToastContext';
 import { useAuthStore } from '../store/store';
+
+const WEB_BASE_URL = 'https://crwd-vite-1.onrender.com';
 
 const { width, height } = Dimensions.get('window');
 
@@ -132,10 +134,24 @@ export default function GroupCRWD() {
 
   const handleShare = async () => {
     try {
-      await Share.share({
-        message: 'Check out this CRWD Collective',
-        title: 'Feed the hungry - CRWD',
+      const webUrl = `${WEB_BASE_URL}/groupcrwd/${collectiveId}`;
+      const shareMessage = `Check out this CRWD Collective: ${collectiveData?.name || 'Collective'}\n${webUrl}`;
+      
+      const result = await Share.share({
+        message: shareMessage,
+        title: `${collectiveData?.name || 'Feed the hungry'} - CRWD`,
+        url: webUrl, // iOS only
       });
+      
+      // Copy link to clipboard when sharing
+      if (result.action === Share.sharedAction) {
+        try {
+          await Clipboard.setString(webUrl);
+          showToast('Link copied to clipboard!');
+        } catch (clipboardError) {
+          console.log('Error copying to clipboard:', clipboardError);
+        }
+      }
     } catch (error) {
       console.log('Error sharing:', error);
     }

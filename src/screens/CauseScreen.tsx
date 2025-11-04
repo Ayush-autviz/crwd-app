@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { View, ScrollView, Text, TouchableOpacity, Share, Alert, ActivityIndicator } from 'react-native';
+import { View, ScrollView, Text, TouchableOpacity, Share, Alert, ActivityIndicator, Clipboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useQuery } from '@tanstack/react-query';
@@ -11,6 +11,8 @@ import CauseRecentDonations from '../components/cause/CauseRecentDonations';
 import CauseAboutCard from '../components/cause/CauseAboutCard';
 import GroupCRWDBottomBar from '../components/groupcrwd/GroupCRWDBottomBar';
 import { useToast } from '../contexts/ToastContext';
+
+const WEB_BASE_URL = 'https://crwd-vite-1.onrender.com';
 
 export default function CauseScreen() {
   const aboutCardRef = useRef<ScrollView>(null);
@@ -35,10 +37,24 @@ export default function CauseScreen() {
 
   const handleShare = async () => {
     try {
+      const webUrl = `${WEB_BASE_URL}/cause/${causeId}`;
+      const shareMessage = `Check out this Nonprofit: ${causeData?.name || 'Cause'}\n${webUrl}`;
+      
       const result = await Share.share({
-        message: `Check out this Nonprofit: ${causeData?.name || 'Cause'}`,
+        message: shareMessage,
         title: `${causeData?.name || 'Helping Humanity'} - CRWD`,
+        url: webUrl, // iOS only
       });
+      
+      // Copy link to clipboard when sharing
+      if (result.action === Share.sharedAction) {
+        try {
+          await Clipboard.setString(webUrl);
+          showToast('Link copied to clipboard!');
+        } catch (clipboardError) {
+          console.log('Error copying to clipboard:', clipboardError);
+        }
+      }
     } catch (error) {
       Alert.alert('Error', 'Failed to share cause');
     }

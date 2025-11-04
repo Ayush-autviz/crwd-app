@@ -541,7 +541,7 @@ export default function Home() {
                         </View>
                     ) : (
                         <PopularPosts
-                            posts={posts.slice(0, 10)}
+                            posts={posts}
                             onLoadMore={handleLoadMore}
                             hasMore={false}
                             isLoading={isLoadingPosts}

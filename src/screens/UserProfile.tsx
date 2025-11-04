@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, TouchableOpacity, Share, Alert, StyleSheet, ActivityIndicator, Image } from 'react-native'
+import { View, Text, ScrollView, TouchableOpacity, Share, Alert, StyleSheet, ActivityIndicator, Image, Clipboard } from 'react-native'
 import React, { useState, useEffect, useRef } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -14,6 +14,8 @@ import { useAuthStore } from '../store/store'
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/Avatar'
 import { Flag, Share2, MessageSquare } from 'lucide-react-native'
 import { MapPin } from 'lucide-react-native'
+
+const WEB_BASE_URL = 'https://crwd-vite-1.onrender.com';
 
 // Organization avatars matching Vite version
 const orgAvatars = [
@@ -151,10 +153,26 @@ export default function UserProfile() {
 
     const handleShare = async () => {
         try {
-            await Share.share({
-                message: `Check out ${userProfile?.first_name} ${userProfile?.last_name}'s profile!`,
+            if (!userId) return;
+            
+            const webUrl = `${WEB_BASE_URL}/user-profile/${userId}`;
+            const shareMessage = `Check out ${userProfile?.first_name} ${userProfile?.last_name}'s profile!\n${webUrl}`;
+            
+            const result = await Share.share({
+                message: shareMessage,
                 title: `${userProfile?.first_name} ${userProfile?.last_name}'s Profile`,
+                url: webUrl, // iOS only
             });
+            
+            // Copy link to clipboard when sharing
+            if (result.action === Share.sharedAction) {
+                try {
+                    await Clipboard.setString(webUrl);
+                    showToast('Link copied to clipboard!');
+                } catch (clipboardError) {
+                    console.log('Error copying to clipboard:', clipboardError);
+                }
+            }
         } catch (error) {
             Alert.alert('Error', 'Failed to share profile');
         }
@@ -272,7 +290,7 @@ export default function UserProfile() {
                                 <Share2 size={16} color="#374151" />
                                 <Text style={{ fontSize: 14, color: '#374151' }}>Share Profile</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity 
+                            {/* <TouchableOpacity 
                                 onPress={() => {
                                     setShowMenu(false);
                                     Alert.alert('Report', 'Report profile functionality');
@@ -285,10 +303,10 @@ export default function UserProfile() {
                                     paddingVertical: 8,
                                 }}
                             >
-                                {/* <Text style={{ fontSize: 16 }}>🚩</Text> */}
+                               
                                 <Flag size={16} color="#ef4444" />
                                 <Text style={{ fontSize: 14, color: '#ef4444' }}>Report Profile</Text>
-                            </TouchableOpacity>
+                            </TouchableOpacity> */}
                         </View>
                     )}
                 </View>

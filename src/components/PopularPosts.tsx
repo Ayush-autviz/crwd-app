@@ -1,4 +1,4 @@
-import { View, Text, FlatList, Image, Dimensions, TouchableOpacity, StyleSheet, Modal, Pressable, ActivityIndicator, Alert, Share, TouchableWithoutFeedback } from 'react-native'
+import { View, Text, FlatList, Image, Dimensions, TouchableOpacity, StyleSheet, Modal, Pressable, ActivityIndicator, Alert, Share, TouchableWithoutFeedback, Clipboard } from 'react-native'
 import React, { useState, useEffect } from 'react'
 import { LightGrey, PrimaryBlue, PrimaryGrey, SecondaryGrey } from '../Constants/Colors'
 import { Ellipsis, Heart, MessageCircle, Trash2, Share2 } from 'lucide-react-native'
@@ -9,6 +9,8 @@ import { likePost, unlikePost, deletePost } from '../services/api/social'
 import { useToast } from '../contexts/ToastContext'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/Avatar'
 import { useAuthStore } from '../store/store'
+
+const WEB_BASE_URL = 'https://crwd-vite-1.onrender.com';
 
 interface Post {
     id: string;
@@ -193,19 +195,46 @@ export default function PopularPosts({
         }
     };
 
-    const handleShare = async () => {
- 
+    const handleShare = async (postId?: string) => {
         try {
-        // setTooltipVisible(false);
+            let webUrl = '';
+            let shareMessage = '';
+            let shareTitle = '';
 
-            const result = await Share.share({
-                message: `Check out my profile!`,
-                title: `My Profile`,
-            });
+
+
+            if (postId) {
+                // Share post
+                webUrl = `${WEB_BASE_URL}/post/${postId}`;
+                shareMessage = `Check out this post: ${webUrl}`;
+                shareTitle = 'Post';
+            } else if (user?.id) {
+                // Share profile
+                webUrl = `${WEB_BASE_URL}/user-profile/${user.id}`;
+                shareMessage = `Check out my profile!\n${webUrl}`;
+                shareTitle = 'My Profile';
+            }
+
+            if (webUrl) {
+                const result = await Share.share({
+                    message: shareMessage,
+                    title: shareTitle,
+                    url: webUrl, // iOS only
+                });
+
+                // Copy link to clipboard when sharing
+                if (result.action === Share.sharedAction) {
+                    try {
+                        await Clipboard.setString(webUrl);
+                        showToast('Link copied to clipboard!');
+                    } catch (clipboardError) {
+                        console.log('Error copying to clipboard:', clipboardError);
+                    }
+                }
+            }
         } catch (error) {
-            Alert.alert('Error', 'Failed to share profile');
-        }
-        finally {
+            Alert.alert('Error', 'Failed to share');
+        } finally {
             setTooltipVisible(false);
         }
     };
@@ -379,9 +408,11 @@ export default function PopularPosts({
                                     <Text style={{ fontSize: 14, color: PrimaryGrey }}>•</Text>
                                     <Text style={{ fontSize: 12, color: PrimaryGrey }}>{item.time}</Text>
                                 </View>
+                                {user?.id === item.userId && (
                                 <TouchableOpacity onPress={(event) => handleEllipsisPress(event, item)}>
                                     <Ellipsis size={18} color={PrimaryGrey} />
                                 </TouchableOpacity>
+                                )}
                             </View>
                             <TouchableOpacity 
                                 onPress={(e) => {
@@ -417,7 +448,10 @@ export default function PopularPosts({
                                         <Text style={{ color: '#808080' }}>{item.comments}</Text>
                                     </TouchableOpacity>
                                 </View>
-                                <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                                <TouchableOpacity onPress={() => {
+                                    setSelectedPost(item);
+                                    handleShare(item.id);
+                                }} style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                                     <Image source={require('../assets/icons/forward.png')} style={{ width: 18, height: 18 }} />
                                     
                                 </TouchableOpacity>
@@ -445,7 +479,7 @@ export default function PopularPosts({
                                     top: tooltipPosition.y - 20,
                                 }
                             ]}>
-                                {selectedPost && user?.id && selectedPost.userId && selectedPost.userId === user.id.toString() && (
+                                {/* {selectedPost && user?.id && selectedPost.userId && selectedPost.userId === user.id.toString() && ( */}
                                 <TouchableOpacity 
                                     style={styles.tooltipItem}
                                     onPress={() => {
@@ -458,8 +492,8 @@ export default function PopularPosts({
                                         <Text style={[styles.tooltipText, { color: '#ef4444' }]}>Delete Post</Text>
                                     </View>
                                 </TouchableOpacity>
-                                )}
-                                <TouchableOpacity 
+                                {/* )} */}
+                                {/* <TouchableOpacity 
                                     style={styles.tooltipItem}
                                     onPress={handleShare}
                                 >
@@ -467,7 +501,7 @@ export default function PopularPosts({
                                         <Share2 size={16} color={PrimaryGrey} />
                                         <Text style={styles.tooltipText}>Share Post</Text>
                                     </View>
-                                </TouchableOpacity>
+                                </TouchableOpacity> */}
                             </View>
                         </TouchableWithoutFeedback>
                     </View>

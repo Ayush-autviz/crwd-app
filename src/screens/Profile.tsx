@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, TouchableOpacity, Share, Alert, Image, Modal, TouchableWithoutFeedback, ActivityIndicator, RefreshControl } from 'react-native'
+import { View, Text, ScrollView, TouchableOpacity, Share, Alert, Image, Modal, TouchableWithoutFeedback, ActivityIndicator, RefreshControl, Clipboard } from 'react-native'
 import React, { useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -19,6 +19,9 @@ import { useMutation } from '@tanstack/react-query'
 import { logout } from '../services/api/auth'
 import { MapPin } from 'lucide-react-native'
 import { DoorOpenIcon } from 'lucide-react-native'
+import { useToast } from '../contexts/ToastContext'
+
+const WEB_BASE_URL = 'https://crwd-vite-1.onrender.com';
 
 type RootStackParamList = {
     ProfileEdit: undefined;
@@ -31,6 +34,7 @@ export default function Profile() {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const { user, token, logout: logoutStore } = useAuthStore();
     const queryClient = useQueryClient();
+    const { showToast } = useToast();
     const [showMenu, setShowMenu] = useState(false);
     const [showImageModal, setShowImageModal] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
@@ -139,11 +143,26 @@ export default function Profile() {
 
     const handleShare = async () => {
         try {
+            if (!user?.id) return;
+            
+            const webUrl = `${WEB_BASE_URL}/user-profile/${user.id}`;
+            const shareMessage = `Check out my profile!\n${webUrl}`;
+            
             const result = await Share.share({
-                message: `Check out my profile!`,
+                message: shareMessage,
                 title: `My Profile`,
+                url: webUrl, // iOS only
             });
             
+            // Copy link to clipboard when sharing
+            if (result.action === Share.sharedAction) {
+                try {
+                    await Clipboard.setString(webUrl);
+                    showToast('Link copied to clipboard!');
+                } catch (clipboardError) {
+                    console.log('Error copying to clipboard:', clipboardError);
+                }
+            }
         } catch (error) {
             Alert.alert('Error', 'Failed to share profile');
         }

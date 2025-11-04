@@ -188,22 +188,22 @@ export default function GroupCRWD() {
             <Text style={styles.shareButtonText}>Share</Text>
           </TouchableOpacity>
           {(currentUser?.id && collectiveData?.created_by?.id !== currentUser?.id) && (
-            <TouchableOpacity
-              style={[
-                styles.joinButton,
-                hasJoined && styles.joinedButton
-              ]}
-              onPress={handleJoin}
-            >
-              {hasJoined ? (
-                <>
-                  <Check size={16} color="#6b7280" />
-                  <Text style={styles.joinedButtonText}>Joined</Text>
-                </>
-              ) : (
-                <Text style={styles.joinButtonText}>Join This Collective</Text>
-              )}
-            </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.joinButton,
+              hasJoined && styles.joinedButton
+            ]}
+            onPress={handleJoin}
+          >
+            {hasJoined ? (
+              <>
+                <Check size={16} color="#6b7280" />
+                <Text style={styles.joinedButtonText}>Joined</Text>
+              </>
+            ) : (
+              <Text style={styles.joinButtonText}>Join This Collective</Text>
+            )}
+          </TouchableOpacity>
           )}
         </View>
       </View>

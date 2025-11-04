@@ -10,7 +10,7 @@ interface RecentDonation {
   amount: number;
   donor: {
     id: number;
-    username: string;
+  username: string;
     first_name: string;
     last_name: string;
     profile_picture?: string;
@@ -78,13 +78,13 @@ const CauseRecentDonations: React.FC<CauseRecentDonationsProps> = ({
       {/* Header */}
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 24, marginBottom: 16 }}>
         {/* <Sparkles size={20} color={PrimaryGreen} /> */}
-        <Text style={{ 
+      <Text style={{ 
           fontSize: 18, 
           fontWeight: '700', 
           color: '#111827'
-        }}>
-          Recent Donations
-        </Text>
+      }}>
+        Recent Donations
+      </Text>
       </View>
       
       {shouldShowEmpty ? (

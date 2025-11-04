@@ -3,17 +3,17 @@
 <plist version="1.0">
 <dict>
 	<key>API_KEY</key>
-	<string>AIzaSyCuq96tNkXpexBuhJ7at9qmO_uBd5onUVA</string>
+	<string>AIzaSyD-tx0HzH7P1nX0QvzomzchUS3nwicLmSw</string>
 	<key>GCM_SENDER_ID</key>
-	<string>921900116176</string>
+	<string>51912747149</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
 	<string>com.react.crwd</string>
 	<key>PROJECT_ID</key>
-	<string>crwd-test</string>
+	<string>crwd-e37fa</string>
 	<key>STORAGE_BUCKET</key>
-	<string>crwd-test.firebasestorage.app</string>
+	<string>crwd-e37fa.firebasestorage.app</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -25,6 +25,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:921900116176:ios:3534f6185e95ed348b16d5</string>
+	<string>1:51912747149:ios:7ad2c0b505031625c41ac4</string>
 </dict>
 </plist>

@@ -81,7 +81,7 @@ export default function Login() {
         (navigation as any).navigate('NonProfitInterests', { fromAuth: true })
       } else {
         // Navigate to main app for existing users
-        navigation.navigate('DrawerNav' as never)
+      navigation.navigate('DrawerNav' as never)
       }
     },
     onError: (error: any) => {
@@ -109,7 +109,7 @@ export default function Login() {
         (navigation as any).navigate('NonProfitInterests', { fromAuth: true })
       } else {
         // Navigate to main app for existing users
-        navigation.navigate('DrawerNav' as never);
+      navigation.navigate('DrawerNav' as never);
       }
     },
     onError: (error: any) => {

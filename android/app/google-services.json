@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "51912747149",
+    "project_id": "crwd-e37fa",
+    "storage_bucket": "crwd-e37fa.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:51912747149:android:5fbd046b32ee3d84c41ac4",
+        "android_client_info": {
+          "package_name": "com.crwd_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD7ytpvt2_L-9AylbH_h8GzWduYQO5R-Eo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

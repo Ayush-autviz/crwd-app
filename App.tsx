@@ -56,6 +56,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { StripeProvider } from '@stripe/stripe-react-native'
 import { STRIPE_PUBLISHABLE_KEY } from './src/config/stripe'
 import messaging from '@react-native-firebase/messaging'
+import notifee, { AndroidImportance } from '@notifee/react-native';
 
 export default function App() {
 
@@ -105,6 +106,52 @@ async function requestPermission() {
 useEffect(() => {
   requestPermission();
 }, []);
+
+  // Handle foreground messages
+  useEffect(() => {
+    console.log('useEffect');
+    const unsubscribe = messaging().onMessage(async remoteMessage => {
+      console.log('Foreground message:', remoteMessage);
+
+      console.log('Notification type:', remoteMessage.data?.type);
+
+      // Request permissions if needed
+      await notifee.requestPermission({
+        sound: true,
+        badge: true,
+        alert: true,
+      });
+
+      // await notifee.deleteChannel('default');
+
+      // Create single channel (Android)
+      await notifee.createChannel({
+        id: 'default',
+        name: 'Default Channel',
+        importance: AndroidImportance.HIGH,
+        vibration: true,
+        sound: 'default',
+      });
+
+      // Display a notification
+      await notifee.displayNotification({
+        title: remoteMessage.notification?.title,
+        body: remoteMessage.notification?.body,
+        ios: {
+          sound: 'default',
+        },
+        android: {
+          channelId: 'default',
+          pressAction: {
+            id: 'default',
+          },
+          sound: 'default',
+        },
+      });
+    });
+
+    return unsubscribe;
+  }, []);  
 
   function BottomTabs() {
     return (

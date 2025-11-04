@@ -12,7 +12,7 @@
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
-		CBA68BC52EB8ED9B004CCE8E /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = CBA68BC42EB8ED9B004CCE8E /* GoogleService-Info.plist */; };
+		CBA68BCB2EB9ECA2004CCE8E /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = CBA68BCA2EB9ECA2004CCE8E /* GoogleService-Info.plist */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -26,7 +26,7 @@
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = crwd_app/AppDelegate.swift; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = crwd_app/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		CBA68BC32EB4DB8B004CCE8E /* crwd_app.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = crwd_app.entitlements; path = crwd_app/crwd_app.entitlements; sourceTree = "<group>"; };
-		CBA68BC42EB8ED9B004CCE8E /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		CBA68BCA2EB9ECA2004CCE8E /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -74,7 +74,7 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
-				CBA68BC42EB8ED9B004CCE8E /* GoogleService-Info.plist */,
+				CBA68BCA2EB9ECA2004CCE8E /* GoogleService-Info.plist */,
 				13B07FAE1A68108700A75B9A /* crwd_app */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
@@ -165,7 +165,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
-				CBA68BC52EB8ED9B004CCE8E /* GoogleService-Info.plist in Resources */,
+				CBA68BCB2EB9ECA2004CCE8E /* GoogleService-Info.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				1353E35A34EEDB646557B97F /* PrivacyInfo.xcprivacy in Resources */,
 			);

@@ -14,6 +14,7 @@ import { getCausesBySearch } from '../services/api/crwd'
 import { categories } from '../Constants/categories'
 // Icons replaced with emoji for compatibility
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/Avatar'
+import { getNonprofitColor } from '../utils/getNonprofitColor'
 
 
 export default function SearchScreen() {
@@ -27,12 +28,18 @@ export default function SearchScreen() {
     const [allCauses, setAllCauses] = useState<any[]>([])
     const [showCategorySelector, setShowCategorySelector] = useState(false)
     const [search, setSearch] = useState("")
+    const [hasExitedDiscover, setHasExitedDiscover] = useState(false) // Track if user has manually exited discover mode
     const navigation = useNavigation()
     const route = useRoute()
     
     // Check discover mode and route parameters when screen comes into focus
     useFocusEffect(useCallback(() => {
         console.log('Search screen focus effect triggered');
+        
+        // If user has manually exited discover mode, don't reset it
+        if (hasExitedDiscover) {
+            return;
+        }
         
         // Get route parameters
         const params = route.params as any;
@@ -67,7 +74,7 @@ export default function SearchScreen() {
                 setSearchTrigger(prev => prev + 1);
             }
         }
-    }, [route.params, selectedCategory]))
+    }, [route.params, selectedCategory, hasExitedDiscover]))
 
     // Get causes with search and category filtering
     const { data: causesData, isLoading: isCausesLoading, error } = useQuery({
@@ -256,6 +263,11 @@ export default function SearchScreen() {
                                             setSelectedCategory(newCategory);
                                             setSearchQuery("");
                                             setSearchTrigger(prev => prev + 1);
+                                            // If in discover mode, exit discover mode and show search results
+                                            if (discover) {
+                                                setDiscover(false);
+                                                setHasExitedDiscover(true); // Mark that user has exited discover mode
+                                            }
                                         }}
                                     >
                                         <Text style={{ 
@@ -353,6 +365,11 @@ export default function SearchScreen() {
                                         setSelectedCategory(category.id);
                                         setSearchQuery("");
                                         setSearchTrigger(prev => prev + 1);
+                                        // If in discover mode, exit discover mode and show search results
+                                        if (discover) {
+                                            setDiscover(false);
+                                            setHasExitedDiscover(true); // Mark that user has exited discover mode
+                                        }
                                     }}
                                 >
                                     <Text style={{ 
@@ -377,7 +394,7 @@ export default function SearchScreen() {
                                 {searchQuery ? `Search results for "${searchQuery}" in ${categories.find(cat => cat.id === selectedCategory)?.name}` : 
                                  (selectedCategory !== "All" && selectedCategory !== "") ? 
                                  `Causes in ${categories.find(cat => cat.id === selectedCategory)?.name}` : 
-                                 "Causes near you"}
+                                 "Causes"}
                                  
                             </Text>
                         </View>
@@ -423,7 +440,7 @@ export default function SearchScreen() {
                                                 /> */}
                                                 <Avatar size={40}>
                                                     <AvatarImage src={cause.image} />
-                                                    <AvatarFallback style={{ backgroundColor: '#dbeafe' }} textStyle={{ color: '#2563eb', fontWeight: '600' }}>
+                                                    <AvatarFallback style={{ backgroundColor: getNonprofitColor(cause.id).bgColor }} textStyle={{ color: getNonprofitColor(cause.id).textColor, fontWeight: '600' }}>
                                                         {cause.name.split(' ')[0][0].toUpperCase()}
                                                     </AvatarFallback>
                                                 </Avatar>
@@ -668,6 +685,11 @@ export default function SearchScreen() {
                                             setSearchQuery("");
                                             setSearchTrigger(prev => prev + 1);
                                             setShowCategorySelector(false);
+                                            // If in discover mode, exit discover mode and show search results
+                                            if (discover) {
+                                                setDiscover(false);
+                                                setHasExitedDiscover(true); // Mark that user has exited discover mode
+                                            }
                                         }}
                                     >
                                         <Text style={{ fontSize: 16, fontWeight: '500', color: '#000000' }}>
@@ -694,6 +716,11 @@ export default function SearchScreen() {
                                                 setSearchQuery("");
                                                 setSearchTrigger(prev => prev + 1);
                                                 setShowCategorySelector(false);
+                                                // If in discover mode, exit discover mode and show search results
+                                                if (discover) {
+                                                    setDiscover(false);
+                                                    setHasExitedDiscover(true); // Mark that user has exited discover mode
+                                                }
                                             }}
                                         >
                                             <Text style={{ 

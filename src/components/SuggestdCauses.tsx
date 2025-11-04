@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native'
 import { PrimaryBlue, SecondaryBlue, TertiaryBlue, PrimaryGrey } from '../Constants/Colors';
 import { ChevronRight } from 'lucide-react-native';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/Avatar';
+import { getNonprofitColor } from '../utils/getNonprofitColor';
 
 interface SuggestdCausesProps {
   causes?: any[];
@@ -56,7 +57,7 @@ export default function SuggestdCauses({ causes = [], isLoading = false, error =
                                     /> */}
                                     <Avatar size={40}>
                                         <AvatarImage src={item.image} />
-                                        <AvatarFallback style={{ backgroundColor: '#dbeafe' }} textStyle={{ color: '#2563eb', fontWeight: '600' }}>
+                                        <AvatarFallback style={{ backgroundColor: getNonprofitColor(item.id).bgColor }} textStyle={{ color: getNonprofitColor(item.id).textColor, fontWeight: '600' }}>
                                             {item.name.split(' ')[0][0].toUpperCase()}
                                         </AvatarFallback>
                                     </Avatar>

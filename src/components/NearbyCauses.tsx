@@ -3,6 +3,7 @@ import React from 'react'
 import { useNavigation } from '@react-navigation/native'
 import { PrimaryBlue, PrimaryGreen, SecondaryBlue, SecondaryGreen, TertiaryBlue, PrimaryGrey } from '../Constants/Colors';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/Avatar';
+import { getNonprofitColor } from '../utils/getNonprofitColor';
 
 interface NearbyCausesProps {
   causes?: any[];
@@ -50,7 +51,10 @@ export default function NearbyCauses({ causes = [], isLoading = false, error = n
                 /> */}
                 <Avatar size={40}>
                     <AvatarImage src={item.image} />
-                    <AvatarFallback style={{ backgroundColor: '#dbeafe' }} textStyle={{ color: '#2563eb', fontWeight: '600' }}>
+                    <AvatarFallback 
+                        style={{ backgroundColor: item.type === "Nonprofit" ? getNonprofitColor(item.id).bgColor : '#dcfce7' }} 
+                        textStyle={{ color: item.type === "Nonprofit" ? getNonprofitColor(item.id).textColor : '#16a34a', fontWeight: '600' }}
+                    >
                         {item.name.split(' ')[0][0].toUpperCase()}
                     </AvatarFallback>
                 </Avatar>

@@ -22,6 +22,7 @@ import { useAuthStore } from '../../store/store';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
 import { categories } from '../../Constants/categories';
 import { useToast } from '../../contexts/ToastContext';
+import { getNonprofitColor } from '../../utils/getNonprofitColor';
 
 const { width } = Dimensions.get('window');
 // Calculate card width for 2 columns with proper spacing
@@ -209,7 +210,7 @@ export default function NonProfitInterests() {
         <View style={styles.avatarContainer}>
           <Avatar size={80}>
             <AvatarImage src={interest.image || interest.logo} />
-            <AvatarFallback style={{ backgroundColor: '#dbeafe' }} textStyle={{ color: '#2563eb', fontWeight: '600' }}>
+            <AvatarFallback style={{ backgroundColor: getNonprofitColor(interest.id).bgColor }} textStyle={{ color: getNonprofitColor(interest.id).textColor, fontWeight: '600' }}>
               {interest.name?.charAt(0)?.toUpperCase() || 'C'}
             </AvatarFallback>
           </Avatar>

@@ -11,6 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { getFavoriteCauses, getFavoriteCollectives, unfavoriteCause, unfavoriteCollective } from '../services/api/social';
 import { useAuthStore } from '../store/store';
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/Avatar';
+import { getNonprofitColor } from '../utils/getNonprofitColor';
 
 interface SavedData {
   id: string;
@@ -260,10 +261,10 @@ export default function Saved() {
                 <AvatarImage src={item.avatar} />
                 <AvatarFallback 
                   style={{ 
-                    backgroundColor: item.type === 'collective' ? '#dcfce7' : '#dbeafe' 
+                    backgroundColor: item.type === 'collective' ? '#dcfce7' : (item.causeId ? getNonprofitColor(item.causeId).bgColor : '#dbeafe')
                   }} 
                   textStyle={{ 
-                    color: item.type === 'collective' ? '#16a34a' : '#2563eb', 
+                    color: item.type === 'collective' ? '#16a34a' : (item.causeId ? getNonprofitColor(item.causeId).textColor : '#2563eb'), 
                     fontWeight: '600' 
                   }}
                 >

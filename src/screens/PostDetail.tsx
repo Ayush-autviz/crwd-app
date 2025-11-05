@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import MainHeaderNav from '../components/MainHeaderNav'
 import { PrimaryGrey, PrimaryBlue, LightGrey } from '../Constants/Colors'
 import { Heart, MessageCircle, ChevronRight, Trash2, Ellipsis } from 'lucide-react-native'
-import { useNavigation, useRoute, useFocusEffect, NavigationProp } from '@react-navigation/native'
+import { useNavigation, useRoute, useFocusEffect, NavigationProp, CommonActions } from '@react-navigation/native'
 import { useToast } from '../contexts/ToastContext'
 import { formatDistanceToNow } from 'date-fns'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -38,6 +38,11 @@ interface Post {
   comments: number;
   shares: number;
   isLiked?: boolean;
+  user?: {
+    id: string;
+    username: string;
+    profile_picture: string;
+  };
 }
 
 interface RouteParams {
@@ -48,7 +53,7 @@ interface RouteParams {
 
 
 type RootStackParamList = {
-  UserProfile: { imageUrl: string; username: string };
+  UserProfile: { userId: any };
   PostDetail: { post: Post };
 };
 
@@ -89,6 +94,11 @@ export default function PostDetail() {
     comments: postData.comments_count || 0,
     shares: 0,
     isLiked: postData.is_liked || false,
+    user: {
+      id: postData.user?.id?.toString() || '',
+      username: postData.user?.username || postData.user?.full_name || 'Unknown User',
+      profile_picture: postData.user?.profile_picture || '',
+    },
   } : (route.params as RouteParams)?.post;
 
   // Fetch comments for the post
@@ -290,16 +300,82 @@ export default function PostDetail() {
             source={{ uri: comment.avatarUrl }} 
             style={{ width: 32, height: 32, borderRadius: 16 }} 
           /> */}
-          <Avatar size={40}>
-            <AvatarImage src={comment.avatarUrl} />
-            <AvatarFallback>
-              {comment.username.split(' ')[0][0].toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
+          <TouchableOpacity onPress={() => {
+            // If it's the current user's own profile, navigate to Profile tab
+            // Otherwise navigate to UserProfile page
+            if (currentUser?.id && comment.userId && currentUser.id.toString() === comment.userId.toString()) {
+              // Profile is in Tab Navigator (MainTabs) within DrawerNav
+              // Use reset to properly navigate to the Me tab
+              navigation.dispatch(
+                CommonActions.reset({
+                  index: 0,
+                  routes: [
+                    {
+                      name: 'DrawerNav' as never,
+                      state: {
+                        routes: [
+                          {
+                            name: 'MainTabs' as never,
+                            state: {
+                              routes: [{ name: 'Me' as never }],
+                              index: 0,
+                            },
+                          },
+                        ],
+                        index: 0,
+                      },
+                    },
+                  ],
+                })
+              );
+            } else if (comment.userId) {
+              (navigation as any).navigate('UserProfile', { userId: comment.userId.toString() });
+            }
+          }}>
+            <Avatar size={40}>
+              <AvatarImage src={comment.avatarUrl} />
+              <AvatarFallback>
+                {comment.username.split(' ')[0][0].toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+          </TouchableOpacity>
           <View style={{ flex: 1 }}>
             <View style={{ backgroundColor: LightGrey, padding: 12, borderRadius: 12 }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
-                <Text style={{ fontWeight: '500', fontSize: 14 }}>@{comment.username}</Text>
+                <TouchableOpacity onPress={() => {
+                  // If it's the current user's own profile, navigate to Profile tab
+                  // Otherwise navigate to UserProfile page
+                  if (currentUser?.id && comment.userId && currentUser.id.toString() === comment.userId.toString()) {
+                    // Profile is in Tab Navigator (MainTabs) within DrawerNav
+                    // Use reset to properly navigate to the Me tab
+                    navigation.dispatch(
+                      CommonActions.reset({
+                        index: 0,
+                        routes: [
+                          {
+                            name: 'DrawerNav' as never,
+                            state: {
+                              routes: [
+                                {
+                                  name: 'MainTabs' as never,
+                                  state: {
+                                    routes: [{ name: 'Me' as never }],
+                                    index: 0,
+                                  },
+                                },
+                              ],
+                              index: 0,
+                            },
+                          },
+                        ],
+                      })
+                    );
+                  } else if (comment.userId) {
+                    (navigation as any).navigate('UserProfile', { userId: comment.userId.toString() });
+                  }
+                }}>
+                  <Text style={{ fontWeight: '500', fontSize: 14 }}>@{comment.username}</Text>
+                </TouchableOpacity>
                 {isOwnComment && (
                   <View style={{ position: 'relative' }}>
                     <TouchableOpacity
@@ -712,7 +788,38 @@ export default function PostDetail() {
           {/* Post Content */}
           <View style={{padding: 20}}>
             <View style={{flexDirection: 'row', gap: 12}}>
-              <TouchableOpacity onPress={() => navigation.navigate('UserProfile', { imageUrl: post.avatarUrl, username: post.username })}>
+              <TouchableOpacity onPress={() => {
+                // If it's the current user's own profile, navigate to Profile tab
+                // Otherwise navigate to UserProfile page
+                if (currentUser?.id && post?.user?.id && currentUser.id.toString() === post.user.id.toString()) {
+                  // Profile is in Tab Navigator (MainTabs) within DrawerNav
+                  // Use reset to properly navigate to the Me tab
+                  navigation.dispatch(
+                    CommonActions.reset({
+                      index: 0,
+                      routes: [
+                        {
+                          name: 'DrawerNav' as never,
+                          state: {
+                            routes: [
+                              {
+                                name: 'MainTabs' as never,
+                                state: {
+                                  routes: [{ name: 'Me' as never }],
+                                  index: 0,
+                                },
+                              },
+                            ],
+                            index: 0,
+                          },
+                        },
+                      ],
+                    })
+                  );
+                } else if (post?.user?.id) {
+                  (navigation as any).navigate('UserProfile', { userId: post.user.id.toString() });
+                }
+              }}>
                 {/* <Image 
                   source={{ uri: post.avatarUrl }} 
                   style={{width: 40, height: 40, borderRadius: 20}}
@@ -726,7 +833,40 @@ export default function PostDetail() {
               </TouchableOpacity>
               <View style={{flex: 1}}>
                 <View style={{flexDirection: 'row', alignItems: 'center', gap: 5}}>
-                  <Text style={{fontSize: 14, fontWeight: '500'}}>{post.username}</Text>
+                  <TouchableOpacity onPress={() => {
+                    // If it's the current user's own profile, navigate to Profile tab
+                    // Otherwise navigate to UserProfile page
+                    if (currentUser?.id && post?.user?.id && currentUser.id.toString() === post.user.id.toString()) {
+                      // Profile is in Tab Navigator (MainTabs) within DrawerNav
+                      // Use reset to properly navigate to the Me tab
+                      navigation.dispatch(
+                        CommonActions.reset({
+                          index: 0,
+                          routes: [
+                            {
+                              name: 'DrawerNav' as never,
+                              state: {
+                                routes: [
+                                  {
+                                    name: 'MainTabs' as never,
+                                    state: {
+                                      routes: [{ name: 'Me' as never }],
+                                      index: 0,
+                                    },
+                                  },
+                                ],
+                                index: 0,
+                              },
+                            },
+                          ],
+                        })
+                      );
+                    } else if (post?.user?.id) {
+                      (navigation as any).navigate('UserProfile', { userId: post.user.id.toString() });
+                    }
+                  }}>
+                    <Text style={{fontSize: 14, fontWeight: '500'}}>{post.username}</Text>
+                  </TouchableOpacity>
                   <Text style={{fontSize: 14, color: PrimaryGrey}}>•</Text>
                   <Text style={{fontSize: 12, color: PrimaryGrey}}>{post.time}</Text>
                 </View>

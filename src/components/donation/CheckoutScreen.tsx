@@ -147,12 +147,6 @@ export default function CheckoutScreen({
   return (
     <>
     <SafeAreaView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Donation Box</Text>
-        <View style={styles.headerSpacer} />
-      </View>
-
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Blue Summary Card */}
         <View style={styles.blueSummaryCard}>

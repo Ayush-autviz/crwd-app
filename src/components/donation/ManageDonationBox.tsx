@@ -334,17 +334,14 @@ export default function ManageDonationBox({
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <ChevronLeft size={20} color="#374151" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Manage Donation Box</Text>
-        <View style={styles.headerSpacer} />
-      </View>
-
+    <View style={styles.container}>
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Back Button - Only shown in ManageDonationBox */}
+        <View style={styles.backButtonContainer}>
+          <TouchableOpacity onPress={onBack} style={styles.backButton}>
+            <ChevronLeft size={20} color="#374151" />
+          </TouchableOpacity>
+        </View>
         {/* Blue Summary Card */}
         <View style={styles.summaryCard}>
           <TouchableOpacity style={styles.transactionLink}>
@@ -785,7 +782,7 @@ export default function ManageDonationBox({
           </View>
         </TouchableWithoutFeedback>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -794,14 +791,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#ffffff',
   },
-  header: {
+  backButtonContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
-    height: 64,
     paddingHorizontal: 16,
-    backgroundColor: '#ffffff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    paddingTop: 16,
+    paddingBottom: 8,
   },
   backButton: {
     width: 32,
@@ -809,16 +803,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 5,
-  },
-  headerTitle: {
-    flex: 1,
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#111827',
-  },
-  headerSpacer: {
-    width: 32,
+    backgroundColor: '#f3f4f6',
   },
   content: {
     flex: 1,

@@ -2,6 +2,7 @@ import React, { useEffect } from 'react'
 import 'react-native-gesture-handler'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { NavigationContainer } from '@react-navigation/native'
+import { navigationRef } from './src/navigation/navigationRef'
 import { createDrawerNavigator } from '@react-navigation/drawer'
 import Home from './src/screens/Home'
 import { ToastProvider } from './src/contexts/ToastContext'
@@ -48,6 +49,7 @@ import ClaimProfile from './src/components/onboarding/ClaimProfile'
 import AddPhoto from './src/components/onboarding/AddPhoto'
 import NonProfitInterests from './src/components/onboarding/NonProfitInterests'
 import CompleteOnboard from './src/components/onboarding/CompleteOnboard'
+import OnBoard from './src/components/onboarding/OnBoard'
 import {FontAwesome6} from '@react-native-vector-icons/fontawesome6'
 import { Image, Platform } from 'react-native'
 import { PermissionsAndroid } from 'react-native'
@@ -224,6 +226,7 @@ useEffect(() => {
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="DrawerNav" component={DrawerNavigator} />
         <Stack.Screen name="SplashScreen" component={SplashScreen} />
+        <Stack.Screen name="OnBoard" component={OnBoard} />
         <Stack.Screen name="ClaimProfile" component={ClaimProfile} />
         <Stack.Screen name="AddPhoto" component={AddPhoto} />
         <Stack.Screen name="NonProfitInterests" component={NonProfitInterests} />
@@ -262,8 +265,8 @@ useEffect(() => {
   }
 
   return (
-    <NavigationContainer>
-      <StripeProvider publishableKey={STRIPE_PUBLISHABLE_KEY}>
+    <NavigationContainer ref={navigationRef}>
+      <StripeProvider publishableKey={STRIPE_PUBLISHABLE_KEY} merchantIdentifier='merchant.com.react.crwd'>
         <QueryClientProvider client={queryClient}>
           <ToastProvider>
             <StackNavigator />

@@ -85,8 +85,8 @@ instance.interceptors.response.use(
         return instance(originalRequest);
       } catch (refreshError) {
         console.log('Refresh token failed:', refreshError);
-        useAuthStore.getState().setToken({ access_token: '', refresh_token: '' });
-        // You can trigger navigation or logout here if needed
+        // Logout and navigate to Login screen
+        useAuthStore.getState().logout();
       }
     }
 

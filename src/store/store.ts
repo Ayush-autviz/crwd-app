@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { persist, PersistOptions } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { navigate } from '../navigation/navigationRef';
+
 type User = Record<string, any>;
 
 interface Token {
@@ -47,11 +49,15 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       user: null,
-      token: '',
+      token: null,
       setUser: (user) => set({ user }),
       setToken: (token) => set({ token }),
-      logout: () => set({ user: null, token: null }),
-    }),
+      logout: () => {
+        set({ user: null, token: null });
+        // Navigate to OnBoard screen (onboarding)
+        navigate('SplashScreen');
+      }
+      }),
     persistConfig
   )
 );

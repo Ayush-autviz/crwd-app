@@ -246,59 +246,26 @@ export default function DonationScreen() {
         )
   }
 
-  if (checkout) {
-    return (
-      <CheckoutScreen
-        donationAmount={donationAmount}
-        selectedOrganizations={selectedOrganizations}
-        onBack={() => setCheckout(false)}
-        donationBox={donationBoxQuery.data || donationBox}
-      />
-    );
-  }
-
-  if (showManageDonationBox) {
-    const donationBoxData = donationBoxQuery.data || donationBox;
-    // Convert API data to format expected by ManageDonationBox
-    const causesAsObjects = [
-      ...(donationBoxData?.manual_causes || []).map((cause: any) => ({
-        id: `cause-${cause.id}`,
-        name: cause.name,
-        imageUrl: cause.logo || '',
-        color: '#4F46E5',
-        description: cause.mission || cause.description || '',
-        type: 'cause' as const,
-      })),
-      ...(donationBoxData?.attributing_collectives || []).map((collective: any) => ({
-        id: `collective-${collective.id}`,
-        name: collective.name,
-        imageUrl: collective.cover_image || '',
-        color: '#9333EA',
-        description: collective.description || '',
-        type: 'collective' as const,
-      })),
-    ];
-
-    return (
-      <ManageDonationBox
-        amount={donationBoxData?.monthly_amount || donationAmount}
-        causes={causesAsObjects}
-        onBack={async () => {
-          setShowManageDonationBox(false);
-          // Invalidate and refetch to get updated donation box data
-          await queryClient.invalidateQueries({ queryKey: ['donationBox'] });
-          const result = await donationBoxQuery.refetch();
-          
-          // If donation box was deactivated, update checkout state
-          if (result.data && !result.data.is_active) {
-            setCheckout(false);
-            setStep(2);
-          }
-        }}
-        donationBox={donationBoxData}
-      />
-    );
-  }
+  // Prepare donation box data for ManageDonationBox
+  const donationBoxData = donationBoxQuery.data || donationBox;
+  const causesAsObjects = [
+    ...(donationBoxData?.manual_causes || []).map((cause: any) => ({
+      id: `cause-${cause.id}`,
+      name: cause.name,
+      imageUrl: cause.logo || '',
+      color: '#4F46E5',
+      description: cause.mission || cause.description || '',
+      type: 'cause' as const,
+    })),
+    ...(donationBoxData?.attributing_collectives || []).map((collective: any) => ({
+      id: `collective-${collective.id}`,
+      name: collective.name,
+      imageUrl: collective.cover_image || '',
+      color: '#9333EA',
+      description: collective.description || '',
+      type: 'collective' as const,
+    })),
+  ];
 
   if (donationBoxQuery.isLoading) {
     return (
@@ -346,6 +313,9 @@ export default function DonationScreen() {
               activeTab === 'setup' && styles.activeTab
             ]}
             onPress={() => {
+              if (checkout) {
+                setCheckout(false);
+              }
               setActiveTab('setup');
               // Don't reset step - let useEffect handle it based on donation box existence
             }}
@@ -363,7 +333,12 @@ export default function DonationScreen() {
               styles.tab,
               activeTab === 'onetime' && styles.activeTab
             ]}
-            onPress={() => setActiveTab('onetime')}
+            onPress={() => {
+              if (checkout) {
+                setCheckout(false);
+              }
+              setActiveTab('onetime');
+            }}
           >
             <Text style={[
               styles.tabText,
@@ -377,6 +352,32 @@ export default function DonationScreen() {
 
       {/* Main Content */}
       <View style={styles.contentContainer}>
+        {checkout ? (
+          <CheckoutScreen
+            donationAmount={donationAmount}
+            selectedOrganizations={selectedOrganizations}
+            onBack={() => setCheckout(false)}
+            donationBox={donationBoxQuery.data || donationBox}
+          />
+        ) : showManageDonationBox ? (
+          <ManageDonationBox
+            amount={donationBoxData?.monthly_amount || donationAmount}
+            causes={causesAsObjects}
+            onBack={async () => {
+              setShowManageDonationBox(false);
+              // Invalidate and refetch to get updated donation box data
+              await queryClient.invalidateQueries({ queryKey: ['donationBox'] });
+              const result = await donationBoxQuery.refetch();
+              
+              // If donation box was deactivated, update checkout state
+              if (result.data && !result.data.is_active) {
+                setCheckout(false);
+                setStep(2);
+              }
+            }}
+            donationBox={donationBoxData}
+          />
+        ) : (
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
           {activeTab === 'onetime' ? (
             <OneTimeDonation
@@ -643,6 +644,7 @@ export default function DonationScreen() {
             </>
           )}
         </ScrollView>
+        )}
 
         {/* Footer - Only show for step 1 */}
 

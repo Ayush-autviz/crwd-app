@@ -99,6 +99,9 @@ export default function OneTimeDonation({
           paymentIntentClientSecret: clientSecret,
           merchantDisplayName: 'CRWD',
           allowsDelayedPaymentMethods: false,
+          applePay: {
+            merchantCountryCode: 'US',
+          }
         });
 
         if (init.error) {

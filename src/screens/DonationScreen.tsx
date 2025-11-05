@@ -16,7 +16,6 @@ import DonationStep3 from '../components/donation/DonationStep3';
 import OneTimeDonation from '../components/donation/OneTimeDonation';
 import CheckoutScreen from '../components/donation/CheckoutScreen';
 import PaymentSection from '../components/donation/PaymentSection';
-import ManageDonationBox from '../components/donation/ManageDonationBox';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PrimaryBlue, PrimaryGrey } from '../Constants/Colors';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -33,7 +32,6 @@ export default function DonationScreen() {
   const route = useRoute();
   const [activeTab, setActiveTab] = useState<'setup' | 'onetime'>('setup');
   const [checkout, setCheckout] = useState(false);
-  const [showManageDonationBox, setShowManageDonationBox] = useState(false);
   const [selectedOrganizations, setSelectedOrganizations] = useState<string[]>([]);
   const [donationAmount, setDonationAmount] = useState(7);
   const [step, setStep] = useState(1);
@@ -246,26 +244,6 @@ export default function DonationScreen() {
         )
   }
 
-  // Prepare donation box data for ManageDonationBox
-  const donationBoxData = donationBoxQuery.data || donationBox;
-  const causesAsObjects = [
-    ...(donationBoxData?.manual_causes || []).map((cause: any) => ({
-      id: `cause-${cause.id}`,
-      name: cause.name,
-      imageUrl: cause.logo || '',
-      color: '#4F46E5',
-      description: cause.mission || cause.description || '',
-      type: 'cause' as const,
-    })),
-    ...(donationBoxData?.attributing_collectives || []).map((collective: any) => ({
-      id: `collective-${collective.id}`,
-      name: collective.name,
-      imageUrl: collective.cover_image || '',
-      color: '#9333EA',
-      description: collective.description || '',
-      type: 'collective' as const,
-    })),
-  ];
 
   if (donationBoxQuery.isLoading) {
     return (
@@ -359,35 +337,17 @@ export default function DonationScreen() {
             onBack={() => setCheckout(false)}
             donationBox={donationBoxQuery.data || donationBox}
           />
-        ) : showManageDonationBox ? (
-          <ManageDonationBox
-            amount={donationBoxData?.monthly_amount || donationAmount}
-            causes={causesAsObjects}
-            onBack={async () => {
-              setShowManageDonationBox(false);
-              // Invalidate and refetch to get updated donation box data
-              await queryClient.invalidateQueries({ queryKey: ['donationBox'] });
-              const result = await donationBoxQuery.refetch();
-              
-              // If donation box was deactivated, update checkout state
-              if (result.data && !result.data.is_active) {
-                setCheckout(false);
-                setStep(2);
-              }
-            }}
-            donationBox={donationBoxData}
+        ) : activeTab === 'onetime' ? (
+          <OneTimeDonation
+            setCheckout={setCheckout}
+            selectedOrganizations={selectedOrganizations}
+            setSelectedOrganizations={setSelectedOrganizations}
+            preselectedItem={(route.params as any)?.preselectedItem}
+            activeTab={(route.params as any)?.activeTab}
           />
         ) : (
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-          {activeTab === 'onetime' ? (
-            <OneTimeDonation
-              setCheckout={setCheckout}
-              selectedOrganizations={selectedOrganizations}
-              setSelectedOrganizations={setSelectedOrganizations}
-              preselectedItem={(route.params as any)?.preselectedItem}
-              activeTab={(route.params as any)?.activeTab}
-            />
-          ) : (
+          {(
             <>
               {step === 1 ? (
                 <View style={styles.stepContent}>
@@ -630,7 +590,7 @@ export default function DonationScreen() {
                       {(donationBoxQuery.data?.id || donationBox?.id) && (
                         <TouchableOpacity
                           onPress={() => {
-                            setShowManageDonationBox(true);
+                            navigation.navigate('ManageDonationBox' as never);
                           }}
                           style={styles.manageButton}
                         >

@@ -67,8 +67,26 @@ instance.interceptors.response.use(
       console.log('403 Forbidden - Trying to refresh token');
 
       try {
-        const refresh_token = useAuthStore.getState().token?.refresh_token;
-        const username = useAuthStore.getState().user?.username;
+        const authState = useAuthStore.getState();
+        const token = authState.token;
+        const refresh_token = token?.refresh_token;
+        const username = authState.user?.username;
+
+        console.log('Token state:', token);
+        console.log('Refresh token:', refresh_token);
+        console.log('Username:', username);
+
+        if (!refresh_token) {
+          console.error('No refresh token available');
+          useAuthStore.getState().logout();
+          return Promise.reject(error);
+        }
+
+        if (!username) {
+          console.error('No username available');
+          useAuthStore.getState().logout();
+          return Promise.reject(error);
+        }
 
         const res = await axios.post(`${BaseURL}/auth/cognito/refresh/`, {
           refresh_token,
@@ -77,8 +95,12 @@ instance.interceptors.response.use(
 
         console.log('Refresh token response:', res.data);
 
-        // Save new token
-        useAuthStore.getState().setToken(res.data);
+        // Save new token - preserve refresh_token if response doesn't include it
+        const newToken = {
+          access_token: res.data.access_token,
+          refresh_token: res.data.refresh_token || refresh_token, // Preserve old refresh_token if not in response
+        };
+        useAuthStore.getState().setToken(newToken);
 
         // Update Authorization header and retry the failed request
         originalRequest.headers.Authorization = `Bearer ${res.data.access_token}`;

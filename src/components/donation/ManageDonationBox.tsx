@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,39 +6,70 @@ import {
   ScrollView,
   StyleSheet,
   Image,
-  SafeAreaView,
   TextInput,
   Modal,
   TouchableWithoutFeedback,
+  ActivityIndicator,
 } from 'react-native';
-import { Plus, Trash2, ChevronLeft, Search, X } from 'lucide-react-native';
+import { Plus, Trash2, Search, X, ChevronLeft } from 'lucide-react-native';
+import { useNavigation } from '@react-navigation/native';
+import { SafeAreaView as RNSafeAreaView, SafeAreaView } from 'react-native-safe-area-context';
 import { Organization } from '../../Constants/organizations';
 import { PrimaryBlue } from '../../Constants/Colors';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getCausesBySearch, getJoinCollective } from '../../services/api/crwd';
-import { updateDonationBox, cancelDonationBox } from '../../services/api/donation';
+import { getDonationBox, updateDonationBox, cancelDonationBox } from '../../services/api/donation';
 import { useAuthStore } from '../../store/store';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
 
-interface ManageDonationBoxProps {
-  amount: number;
-  causes: Organization[];
-  onBack: () => void;
-  onRemove?: (id: string) => void;
-  donationBox?: any;
-}
-
-export default function ManageDonationBox({
-  amount,
-  causes,
-  onBack,
-  onRemove,
-  donationBox,
-}: ManageDonationBoxProps) {
+export default function ManageDonationBoxScreen() {
+  const navigation = useNavigation();
   const queryClient = useQueryClient();
   const { user: currentUser } = useAuthStore();
+  
+  // Fetch donation box data
+  const donationBoxQuery = useQuery({
+    queryKey: ['donationBox'],
+    queryFn: getDonationBox,
+  });
+
+  const donationBox = donationBoxQuery.data;
+  const amount = donationBox?.monthly_amount || 7;
+  
+  // Prepare causes from donation box data
+  const causes: Organization[] = [
+    ...(donationBox?.manual_causes || []).map((cause: any) => ({
+      id: `cause-${cause.id}`,
+      name: cause.name,
+      imageUrl: cause.logo || '',
+      color: '#4F46E5',
+      description: cause.mission || cause.description || '',
+      type: 'cause' as const,
+    })),
+    ...(donationBox?.attributing_collectives || []).map((collective: any) => ({
+      id: `collective-${collective.id}`,
+      name: collective.name,
+      imageUrl: collective.cover_image || '',
+      color: '#9333EA',
+      description: collective.description || '',
+      type: 'collective' as const,
+    })),
+  ];
+
+  const handleBack = async () => {
+    await queryClient.invalidateQueries({ queryKey: ['donationBox'] });
+    navigation.goBack();
+  };
+
   const [activeTab, setActiveTab] = useState<'nonprofits' | 'collectives'>('nonprofits');
-  const [editableAmount, setEditableAmount] = useState(Math.round(amount));
+  const [editableAmount, setEditableAmount] = useState(7);
+
+  // Update editableAmount when donation box data loads
+  useEffect(() => {
+    if (donationBox?.monthly_amount) {
+      setEditableAmount(Math.round(donationBox.monthly_amount));
+    }
+  }, [donationBox?.monthly_amount]);
   const [isEditingAmount, setIsEditingAmount] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [temporarilyRemovedCauses, setTemporarilyRemovedCauses] = useState<string[]>([]);
@@ -56,7 +87,7 @@ export default function ManageDonationBox({
   } | null>(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
   
-  // Get isActive from donationBox prop
+  // Get isActive from donationBox
   const isActive = donationBox?.is_active ?? true;
 
   // Separate existing causes/collectives from new selections
@@ -84,7 +115,7 @@ export default function ManageDonationBox({
     mutationFn: (data: any) => updateDonationBox(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['donationBox'] });
-      onBack();
+      handleBack();
     },
     onError: (error: any) => {
       console.error('Error updating donation box:', error);
@@ -97,7 +128,7 @@ export default function ManageDonationBox({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['donationBox'] });
       setShowCancelModal(false);
-      onBack();
+      handleBack();
     },
     onError: (error: any) => {
       console.error('Error canceling donation box:', error);
@@ -147,18 +178,12 @@ export default function ManageDonationBox({
         setSelectedCausesData(prev => prev.filter(c => c.id !== itemToDelete.id));
       } else {
         handleRemove(`cause-${itemToDelete.id}`);
-        if (onRemove) {
-          onRemove(`cause-${itemToDelete.id}`);
-        }
       }
     } else {
       if (itemToDelete.isNewlySelected) {
         setSelectedCollectives(prev => prev.filter(id => id !== itemToDelete.id));
       } else {
         handleRemove(`collective-${itemToDelete.id}`);
-        if (onRemove) {
-          onRemove(`collective-${itemToDelete.id}`);
-        }
       }
     }
 
@@ -243,7 +268,7 @@ export default function ManageDonationBox({
 
       // Refresh and go back
       queryClient.invalidateQueries({ queryKey: ['donationBox'] });
-      onBack();
+      handleBack();
     } catch (error) {
       console.error('Error updating donation box:', error);
       // You might want to show an error toast here
@@ -333,16 +358,58 @@ export default function ManageDonationBox({
     !allSelectedCollectiveIds.includes(collective.id)
   );
 
-  return (
-    <View style={styles.container}>
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Back Button - Only shown in ManageDonationBox */}
-        <View style={styles.backButtonContainer}>
-          <TouchableOpacity onPress={onBack} style={styles.backButton}>
-            <ChevronLeft size={20} color="#374151" />
-          </TouchableOpacity>
+  // Calculate remaining items (existing items not removed + newly selected items)
+  const remainingExistingCauseIds = existingCauses
+    .filter(c => !temporarilyRemovedCauses.includes(c.id))
+    .map(c => {
+      const id = c.id.replace('cause-', '');
+      return parseInt(id);
+    })
+    .filter(id => !isNaN(id));
+
+  const remainingExistingCollectiveIds = existingCollectives
+    .filter(c => !temporarilyRemovedCauses.includes(c.id))
+    .map(c => {
+      const id = c.id.replace('collective-', '');
+      return parseInt(id);
+    })
+    .filter(id => !isNaN(id));
+
+  const totalCauseIds = [...remainingExistingCauseIds, ...selectedCauses];
+  const totalCollectiveIds = [...remainingExistingCollectiveIds, ...selectedCollectives];
+
+  // Check if there are any items selected (either nonprofits or collectives)
+  const hasItems = totalCauseIds.length > 0 || totalCollectiveIds.length > 0;
+
+  if (donationBoxQuery.isLoading) {
+    return (
+      <RNSafeAreaView style={{ backgroundColor: 'white', flex: 1 }} edges={['top', 'left', 'right']}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color={PrimaryBlue} />
         </View>
-        {/* Blue Summary Card */}
+      </RNSafeAreaView>
+    );
+  }
+
+  return (
+    <RNSafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+      {/* Header with title and back button */}
+      <View style={styles.header}>
+        <TouchableOpacity
+          onPress={handleBack}
+          style={styles.headerButton}
+        >
+          <ChevronLeft size={18} color="#374151" />
+        </TouchableOpacity>
+
+        <Text style={styles.headerTitle}>Manage Donation Box</Text>
+
+        <View style={styles.headerSpacer} />
+      </View>
+
+      <View style={styles.container}>
+        <ScrollView style={styles.content} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
+          {/* Blue Summary Card */}
         <View style={styles.summaryCard}>
           <TouchableOpacity style={styles.transactionLink}>
             <Text style={styles.transactionLinkText}>See full transaction history</Text>
@@ -644,36 +711,6 @@ export default function ManageDonationBox({
           </Text>
         </View>
 
-        {/* Update Donation Button */}
-        <View style={styles.updateButtonContainer}>
-          <TouchableOpacity
-            style={[styles.updateButton, updateDonationBoxMutation.isPending && styles.updateButtonDisabled]}
-            onPress={handleUpdateDonation}
-            disabled={updateDonationBoxMutation.isPending}
-          >
-            <Text style={styles.updateButtonText}>
-              {updateDonationBoxMutation.isPending
-                ? 'Updating...'
-                : 'Update Donation'}
-            </Text>
-          </TouchableOpacity>
-          
-          {/* Deactivate Subscription Button - Only show if subscription is active */}
-          {isActive && (
-            <TouchableOpacity
-              style={[styles.deactivateButton, cancelDonationBoxMutation.isPending && styles.deactivateButtonDisabled]}
-              onPress={() => setShowCancelModal(true)}
-              disabled={cancelDonationBoxMutation.isPending}
-            >
-              <Text style={styles.deactivateButtonText}>
-                {cancelDonationBoxMutation.isPending
-                  ? 'Deactivating...'
-                  : 'Deactivate Subscription'}
-              </Text>
-            </TouchableOpacity>
-          )}
-        </View>
-
         {/* Next Payment Section */}
         <View style={styles.nextPaymentSection}>
           <Text style={styles.sectionTitle}>NEXT PAYMENT</Text>
@@ -693,6 +730,41 @@ export default function ManageDonationBox({
           Allocations will automatically adjust for 100% distribution
         </Text>
       </ScrollView>
+
+      {/* Update Donation Button Footer - Always visible at bottom */}
+      <SafeAreaView edges={['bottom']} style={{ backgroundColor: '#ffffff' }}>
+        <View style={styles.footer}>
+          <TouchableOpacity
+            style={[
+              styles.updateButton, 
+              (updateDonationBoxMutation.isPending || !hasItems) && styles.updateButtonDisabled
+            ]}
+            onPress={handleUpdateDonation}
+            disabled={updateDonationBoxMutation.isPending || !hasItems}
+          >
+            {updateDonationBoxMutation.isPending ? (
+              <ActivityIndicator color="#ffffff" />
+            ) : (
+              <Text style={styles.updateButtonText}>Update Donation</Text>
+            )}
+          </TouchableOpacity>
+          
+          {/* Deactivate Subscription Button - Only show if subscription is active */}
+          {isActive && (
+            <TouchableOpacity
+              style={[styles.deactivateButton, cancelDonationBoxMutation.isPending && styles.deactivateButtonDisabled]}
+              onPress={() => setShowCancelModal(true)}
+              disabled={cancelDonationBoxMutation.isPending}
+            >
+              {cancelDonationBoxMutation.isPending ? (
+                <ActivityIndicator color="#dc2626" />
+              ) : (
+                <Text style={styles.deactivateButtonText}>Deactivate Subscription</Text>
+              )}
+            </TouchableOpacity>
+          )}
+        </View>
+      </SafeAreaView>
 
       {/* Delete Confirmation Modal */}
       <Modal
@@ -782,28 +854,46 @@ export default function ManageDonationBox({
           </View>
         </TouchableWithoutFeedback>
       </Modal>
-    </View>
+      </View>
+    </RNSafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
     backgroundColor: '#ffffff',
   },
-  backButtonContainer: {
+  header: {
     flexDirection: 'row',
+    alignItems: 'center',
+    height: 64,
     paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
   },
-  backButton: {
+  headerButton: {
     width: 32,
     height: 32,
     borderRadius: 16,
+    backgroundColor: '#f3f4f6',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#f3f4f6',
+    marginRight: 8,
+  },
+  headerTitle: {
+    flex: 1,
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#111827',
+    marginLeft: 8,
+  },
+  headerSpacer: {
+    width: 32,
+  },
+  container: {
+    flex: 1,
+    backgroundColor: '#ffffff',
   },
   content: {
     flex: 1,
@@ -1115,16 +1205,29 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 20,
   },
-  updateButtonContainer: {
-    paddingHorizontal: 32,
-    paddingBottom: 24,
+  footer: {
+    backgroundColor: '#ffffff',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#f3f4f6',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: -2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 5,
+    width: '100%',
   },
   updateButton: {
     backgroundColor: PrimaryBlue,
     borderRadius: 8,
     paddingVertical: 16,
     alignItems: 'center',
-    marginBottom: 16,
+    justifyContent: 'center',
+    marginBottom: 12,
   },
   updateButtonDisabled: {
     opacity: 0.6,

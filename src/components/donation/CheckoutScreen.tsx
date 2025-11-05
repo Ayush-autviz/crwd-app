@@ -13,9 +13,8 @@ import {
 } from 'react-native';
 import { ChevronLeft, Check } from 'lucide-react-native';
 import { CROWDS, RECENTS, SUGGESTED, Organization } from '../../Constants/organizations';
-import ManageDonationBox from './ManageDonationBox';
-import ConfettiCannon from 'react-native-confetti-cannon';
 import { useNavigation } from '@react-navigation/native';
+import ConfettiCannon from 'react-native-confetti-cannon';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
 import { HelpCircle } from 'lucide-react-native';
 import { Settings } from 'lucide-react-native';
@@ -41,10 +40,9 @@ export default function CheckoutScreen({
   onBack,
   donationBox,
 }: CheckoutScreenProps) {
-  const [showManageDonationBox, setShowManageDonationBox] = useState(false);
+  const navigation = useNavigation();
   const [showCongratulationsModal, setShowCongratulationsModal] = useState(false);
   const confettiRef = useRef<ConfettiCannon>(null);
-  const navigation = useNavigation();
 
   // Get manual causes and attributing collectives from donation box API
   const manualCauses = donationBox?.manual_causes || [];
@@ -103,46 +101,6 @@ export default function CheckoutScreen({
       ? Math.floor(100 / totalItems)
       : 0;
 
-  if (showManageDonationBox) {
-    // Convert API data to Organization objects for ManageDonationBox
-    const causesAsObjects = hasApiData 
-      ? [
-          ...manualCauses.map((cause: any) => ({
-            id: `cause-${cause.id}`,
-            name: cause.name,
-            imageUrl: cause.logo || "",
-            color: "#4F46E5",
-            description: cause.mission || cause.description || "",
-            type: 'cause' as const,
-          })),
-          ...attributingCollectives.map((collective: any) => ({
-            id: `collective-${collective.id}`,
-            name: collective.name,
-            imageUrl: collective.cover_image || "",
-            color: "#9333EA",
-            description: collective.description || "",
-            type: 'collective' as const,
-          })),
-        ]
-      : selectedOrganizationsList.map(
-          (orgName: string, index: number) => ({
-            id: `${orgName}-${index}`,
-            name: orgName,
-            imageUrl: "",
-            color: "#9333EA",
-            description: getOrganizationDescription(orgName),
-            type: 'cause' as const,
-          })
-        );
-
-    return (
-      <ManageDonationBox
-        amount={actualDonationAmount}
-        causes={causesAsObjects}
-        onBack={() => setShowManageDonationBox(false)}
-      />
-    );
-  }
 
   return (
     <>
@@ -172,7 +130,7 @@ export default function CheckoutScreen({
 
             <View style={styles.manageSection}>
               <TouchableOpacity
-                onPress={() => setShowManageDonationBox(true)}
+                onPress={() => navigation.navigate('ManageDonationBox' as never)}
                 style={styles.manageButton}
               >
                 <Settings size={16} color="#ffffff" />

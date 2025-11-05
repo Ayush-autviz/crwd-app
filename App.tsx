@@ -13,6 +13,7 @@ import { Bell, Home as HomeIcon, Search, Users, Archive } from 'lucide-react-nat
 import SearchScreen from './src/screens/Search'
 import Search2 from './src/screens/Search2'
 import DonationScreen from './src/screens/DonationScreen'
+import ManageDonationBoxScreen from './src/components/donation/ManageDonationBox'
 import CreateCRWD from './src/screens/CreateCRWD'
 import YourCRWDs from './src/screens/YourCRWDs'
 import Saved from './src/screens/Saved'
@@ -260,6 +261,7 @@ useEffect(() => {
         <Stack.Screen name='Search' component={SearchScreen} />
         <Stack.Screen name='Activity' component={Activity} />
         <Stack.Screen name="Post" component={Post} />
+        <Stack.Screen name="ManageDonationBox" component={ManageDonationBoxScreen} />
       </Stack.Navigator>
     )
   }

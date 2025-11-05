@@ -11,6 +11,7 @@ import {
   Linking,
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Minus, Plus, Trash2 } from 'lucide-react-native';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { createOneTimeDonationMobile } from '../../services/api/donation';
@@ -226,7 +227,8 @@ export default function OneTimeDonation({
   };
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <View style={styles.containerWrapper}>
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
       {/* Selected Items Display */}
       {selectedItems.length > 0 && (
         <View style={styles.selectedSection}>
@@ -424,9 +426,10 @@ export default function OneTimeDonation({
           })}
         </View>
       )}
-
-      {/* Checkout Button */}
-      <View style={styles.checkoutButtonContainer}>
+        </ScrollView>
+      
+      {/* Checkout Button Footer - Always visible at bottom */}
+      <View style={styles.footer}>
         <TouchableOpacity
           onPress={handleCheckout}
           disabled={oneTimeDonationMutation.isPending || isPresenting || selectedItems.length === 0}
@@ -442,14 +445,16 @@ export default function OneTimeDonation({
           )}
         </TouchableOpacity>
       </View>
-
-      <View style={{ height: 20 }} />
-    </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  containerWrapper: {
+    flex: 1,
+    backgroundColor: '#f9fafb',
+  },
+  content: {
     flex: 1,
     padding: 16,
   },
@@ -590,11 +595,25 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#2563eb',
   },
-  checkoutButtonContainer: {
-    paddingVertical: 16,
+  footer: {
+    backgroundColor: '#ffffff',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    // paddingBottom: 30,
+    borderTopWidth: 1,
+    borderTopColor: '#f3f4f6',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: -2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 5,
+    width: '100%',
   },
   checkoutButton: {
-    backgroundColor: '#16a34a',
+    backgroundColor: PrimaryBlue,
     paddingVertical: 16,
     borderRadius: 8,
     alignItems: 'center',
@@ -647,13 +666,13 @@ const styles = StyleSheet.create({
     height: 40,
   },
   listContainer: {
-    marginBottom: 16,
-    gap: 16,
+    // marginBottom: 16,
+    gap: 8,
   },
   organizationItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
+    padding: 10,
     borderWidth: 1,
     borderColor: '#e5e7eb',
     borderRadius: 8,

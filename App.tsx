@@ -118,6 +118,9 @@ useEffect(() => {
 
       console.log('Notification type:', remoteMessage.data?.type);
 
+      // Invalidate unread count query to update notification count in drawer
+      queryClient.invalidateQueries({ queryKey: ['unreadCount'] });
+
       // Request permissions if needed
       await notifee.requestPermission({
         sound: true,
@@ -154,7 +157,7 @@ useEffect(() => {
     });
 
     return unsubscribe;
-  }, []);  
+  }, [queryClient]);  
 
   function BottomTabs() {
     return (

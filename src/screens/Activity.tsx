@@ -1,10 +1,10 @@
 import { View, Text, ScrollView, TouchableOpacity, Image, FlatList, ActivityIndicator } from 'react-native'
-import React, { useState, useMemo, useEffect } from 'react'
+import React, { useState, useMemo, useEffect, useCallback } from 'react'
 import MainHeaderNav from '../components/MainHeaderNav'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import PopularPosts from '../components/PopularPosts'
 import { LightGrey, PrimaryBlue, PrimaryGrey } from '../Constants/Colors'
-import { useNavigation, useRoute } from '@react-navigation/native'
+import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native'
 import { ArrowLeftRight, Trophy, Heart, MessageCircle, MoreHorizontal, User } from 'lucide-react-native'
 import { useAuthStore } from '../store/store'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -55,17 +55,21 @@ export default function Activity() {
     const markAllNotificationsAsReadMutation = useMutation({
         mutationFn: markAllNotificationsAsRead,
         onSuccess: () => {
+            console.log('Mark all notifications as read successfully');
             queryClient.invalidateQueries({ queryKey: ['notifications'] });
             queryClient.invalidateQueries({ queryKey: ['unreadCount'] });
         },
     });
 
     // Mark all notifications as read on mount
-    useEffect(() => {
-        if (currentUser?.id && notificationsData?.results?.length > 0) {
+    useFocusEffect(
+        useCallback(() => {
+          if (currentUser?.id && notificationsData?.results?.length > 0) {
             markAllNotificationsAsReadMutation.mutate();
-        }
-    }, []);
+          }
+        }, [currentUser?.id, notificationsData?.results?.length])
+      );
+      
 
     // Filter notifications by type
     const personalNotifications = useMemo(() => {

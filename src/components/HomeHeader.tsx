@@ -56,9 +56,9 @@ export default function HomeHeader({ show = false, menu = true, post = true }) {
                         <Plus color={post ? '#000' : '#fff'} />
                     </TouchableOpacity>  */}
 
-                <TouchableOpacity style={{ backgroundColor: PrimaryGreen, padding: 5, borderRadius: 8 }} onPress={() => navigation.navigate('Circles')}>
+                {/* <TouchableOpacity style={{ backgroundColor: PrimaryGreen, padding: 5, borderRadius: 8 }} onPress={() => navigation.navigate('Circles')}>
                     <Text style={{ color: 'white', fontSize: 14, fontWeight: 'bold' }}>Collectives</Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
 
                 
             

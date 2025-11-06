@@ -84,7 +84,10 @@ export default function Signup() {
       await new Promise(resolve => setTimeout(resolve, 1500))
       Alert.alert('Success', 'Account created successfully! Welcome to our platform!', [
         // { text: 'OK', onPress: () => navigation.navigate('DrawerNav' as never) }
-        { text: 'OK', onPress: () => navigation.navigate('Interests' as never) }
+        { text: 'OK', onPress: () => navigation.reset({
+          index: 0,
+          routes: [{ name: 'Interests' as never }],
+        }) }
       ])
     } catch (error) {
       Alert.alert('Error', 'Something went wrong. Please try again later.')
@@ -99,7 +102,10 @@ export default function Signup() {
       // Simulate Google signup
       await new Promise(resolve => setTimeout(resolve, 1000))
       Alert.alert('Success', 'Google signup successful!', [
-        { text: 'OK', onPress: () => navigation.navigate('DrawerNav' as never) }
+        { text: 'OK', onPress: () => navigation.reset({
+          index: 0,
+          routes: [{ name: 'DrawerNav' as never }],
+        }) }
       ])
     } catch (error) {
       Alert.alert('Error', 'Google signup failed')

@@ -78,10 +78,13 @@ export default function Login() {
       
       // If last_login_at is null, navigate to nonprofit interests page (new user)
       if (response.user && !response.user.last_login_at) {
-        (navigation as any).navigate('NonProfitInterests', { fromAuth: true })
+        (navigation as any).reset('NonProfitInterests', { fromAuth: true })
       } else {
         // Navigate to main app for existing users
-      navigation.navigate('DrawerNav' as never)
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'DrawerNav' as never }],
+      })
       }
     },
     onError: (error: any) => {

@@ -54,8 +54,7 @@ export const useAuthStore = create<AuthState>()(
       setToken: (token) => set({ token }),
       logout: () => {
         set({ user: null, token: null });
-        // Navigate to OnBoard screen (onboarding)
-        navigate('SplashScreen');
+        // Don't navigate here - let callers handle navigation
       }
       }),
     persistConfig

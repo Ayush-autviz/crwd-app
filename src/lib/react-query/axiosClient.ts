@@ -31,6 +31,7 @@
 // lib/axios.js
 import axios from 'axios';
 import { useAuthStore } from '../../store/store';
+import { reset } from '../../navigation/navigationRef';
 
 const instance = axios.create({
   timeout: 90000,
@@ -79,12 +80,14 @@ instance.interceptors.response.use(
         if (!refresh_token) {
           console.error('No refresh token available');
           useAuthStore.getState().logout();
+          reset('SplashScreen');
           return Promise.reject(error);
         }
 
         if (!username) {
           console.error('No username available');
           useAuthStore.getState().logout();
+          reset('SplashScreen');
           return Promise.reject(error);
         }
 
@@ -107,8 +110,10 @@ instance.interceptors.response.use(
         return instance(originalRequest);
       } catch (refreshError) {
         console.log('Refresh token failed:', refreshError);
-        // Logout and navigate to Login screen
+        // Logout and reset to SplashScreen (onboarding) when refresh token fails
+        // This clears the navigation stack so user can't go back
         useAuthStore.getState().logout();
+        reset('SplashScreen');
       }
     }
 

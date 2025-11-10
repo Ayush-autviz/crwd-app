@@ -302,7 +302,7 @@ export default function DonationScreen() {
               styles.tabText,
               activeTab === 'setup' && styles.activeTabText
             ]}>
-              Set up donation box
+             {donationBoxQuery.data.id ? 'Donation Box' : 'Set up donation box'}
             </Text>
           </TouchableOpacity>
 

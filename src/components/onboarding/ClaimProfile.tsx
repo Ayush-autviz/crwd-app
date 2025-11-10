@@ -41,6 +41,9 @@ export default function ClaimProfile() {
     })
     
     const [open, setOpen] = useState(false)
+    const scrollViewRef = useRef<ScrollView>(null)
+    const passwordStrengthRef = useRef<View>(null)
+    const passwordStrengthY = useRef<number>(0)
 
     // const formattedDate = formData.dateOfBirth
     //     ? formData.dateOfBirth.toLocaleDateString('en-GB', {
@@ -235,6 +238,26 @@ export default function ClaimProfile() {
         })
     }
 
+    const handlePasswordFocus = () => {
+        // Scroll to password strength container after a short delay to ensure it's rendered
+        setTimeout(() => {
+            if (passwordStrengthY.current > 0) {
+                scrollViewRef.current?.scrollTo({
+                    y: passwordStrengthY.current - 20, // Add some padding above
+                    animated: true
+                })
+            } else {
+                // Fallback: scroll to end if position not measured yet
+                scrollViewRef.current?.scrollToEnd({ animated: true })
+            }
+        }, 100)
+    }
+
+    const handlePasswordStrengthLayout = (event: any) => {
+        const { y } = event.nativeEvent.layout
+        passwordStrengthY.current = y
+    }
+
     return (
         <SafeAreaView style={{ flex: 1, paddingHorizontal: 20, backgroundColor: 'white' }}>
             <OnboardingHeader />
@@ -266,7 +289,7 @@ export default function ClaimProfile() {
             </View>
 
             {/* Heading */}
-            <ScrollView showsVerticalScrollIndicator={false}>
+            <ScrollView ref={scrollViewRef} showsVerticalScrollIndicator={false}>
             <View style={styles.headingContainer}>
                 <Text style={styles.heading}>Finish your profile</Text>
                 <Text style={styles.subheading}>So others can connect with you on CRWD</Text>
@@ -345,6 +368,7 @@ export default function ClaimProfile() {
                             handleInputChange('password', text)
                             clearError('password')
                         }}
+                        onFocus={handlePasswordFocus}
                         secureTextEntry={!showPassword}
                     />
                     <TouchableOpacity 
@@ -358,73 +382,78 @@ export default function ClaimProfile() {
                 </View>
                 
                 {/* Password Strength Indicator */}
-                {formData.password && (
-                    <View style={styles.passwordStrengthContainer}>
-                        <Text style={styles.passwordStrengthTitle}>Password must contain:</Text>
-                        <View style={styles.passwordStrengthList}>
-                            <View style={styles.passwordStrengthItem}>
-                                <Check 
-                                    size={12} 
-                                    color={passwordStrength.hasMinLength ? '#16a34a' : '#d1d5db'} 
-                                />
-                                <Text style={[
-                                    styles.passwordStrengthText,
-                                    { color: passwordStrength.hasMinLength ? '#16a34a' : '#9ca3af' }
-                                ]}>
-                                    At least 8 characters
-                                </Text>
-                            </View>
-                            <View style={styles.passwordStrengthItem}>
-                                <Check 
-                                    size={12} 
-                                    color={passwordStrength.hasUppercase ? '#16a34a' : '#d1d5db'} 
-                                />
-                                <Text style={[
-                                    styles.passwordStrengthText,
-                                    { color: passwordStrength.hasUppercase ? '#16a34a' : '#9ca3af' }
-                                ]}>
-                                    One uppercase letter
-                                </Text>
-                            </View>
-                            <View style={styles.passwordStrengthItem}>
-                                <Check 
-                                    size={12} 
-                                    color={passwordStrength.hasLowercase ? '#16a34a' : '#d1d5db'} 
-                                />
-                                <Text style={[
-                                    styles.passwordStrengthText,
-                                    { color: passwordStrength.hasLowercase ? '#16a34a' : '#9ca3af' }
-                                ]}>
-                                    One lowercase letter
-                                </Text>
-                            </View>
-                            <View style={styles.passwordStrengthItem}>
-                                <Check 
-                                    size={12} 
-                                    color={passwordStrength.hasNumber ? '#16a34a' : '#d1d5db'} 
-                                />
-                                <Text style={[
-                                    styles.passwordStrengthText,
-                                    { color: passwordStrength.hasNumber ? '#16a34a' : '#9ca3af' }
-                                ]}>
-                                    One number
-                                </Text>
-                            </View>
-                            <View style={styles.passwordStrengthItem}>
-                                <Check 
-                                    size={12} 
-                                    color={passwordStrength.hasSpecialChar ? '#16a34a' : '#d1d5db'} 
-                                />
-                                <Text style={[
-                                    styles.passwordStrengthText,
-                                    { color: passwordStrength.hasSpecialChar ? '#16a34a' : '#9ca3af' }
-                                ]}>
-                                    One special character
-                                </Text>
-                            </View>
+                <View 
+                    ref={passwordStrengthRef} 
+                    style={[
+                        styles.passwordStrengthContainer,
+                        !formData.password && { opacity: 0.6 }
+                    ]}
+                    onLayout={handlePasswordStrengthLayout}
+                >
+                    <Text style={styles.passwordStrengthTitle}>Password must contain:</Text>
+                    <View style={styles.passwordStrengthList}>
+                        <View style={styles.passwordStrengthItem}>
+                            <Check 
+                                size={12} 
+                                color={passwordStrength.hasMinLength ? '#16a34a' : '#d1d5db'} 
+                            />
+                            <Text style={[
+                                styles.passwordStrengthText,
+                                { color: passwordStrength.hasMinLength ? '#16a34a' : '#9ca3af' }
+                            ]}>
+                                At least 8 characters
+                            </Text>
+                        </View>
+                        <View style={styles.passwordStrengthItem}>
+                            <Check 
+                                size={12} 
+                                color={passwordStrength.hasUppercase ? '#16a34a' : '#d1d5db'} 
+                            />
+                            <Text style={[
+                                styles.passwordStrengthText,
+                                { color: passwordStrength.hasUppercase ? '#16a34a' : '#9ca3af' }
+                            ]}>
+                                One uppercase letter
+                            </Text>
+                        </View>
+                        <View style={styles.passwordStrengthItem}>
+                            <Check 
+                                size={12} 
+                                color={passwordStrength.hasLowercase ? '#16a34a' : '#d1d5db'} 
+                            />
+                            <Text style={[
+                                styles.passwordStrengthText,
+                                { color: passwordStrength.hasLowercase ? '#16a34a' : '#9ca3af' }
+                            ]}>
+                                One lowercase letter
+                            </Text>
+                        </View>
+                        <View style={styles.passwordStrengthItem}>
+                            <Check 
+                                size={12} 
+                                color={passwordStrength.hasNumber ? '#16a34a' : '#d1d5db'} 
+                            />
+                            <Text style={[
+                                styles.passwordStrengthText,
+                                { color: passwordStrength.hasNumber ? '#16a34a' : '#9ca3af' }
+                            ]}>
+                                One number
+                            </Text>
+                        </View>
+                        <View style={styles.passwordStrengthItem}>
+                            <Check 
+                                size={12} 
+                                color={passwordStrength.hasSpecialChar ? '#16a34a' : '#d1d5db'} 
+                            />
+                            <Text style={[
+                                styles.passwordStrengthText,
+                                { color: passwordStrength.hasSpecialChar ? '#16a34a' : '#9ca3af' }
+                            ]}>
+                                One special character
+                            </Text>
                         </View>
                     </View>
-                )}
+                </View>
                 
                 {errors.password && (
                     <Text style={styles.errorText}>{errors.password}</Text>

@@ -17,6 +17,7 @@ import { getCollectiveById, joinCollective, leaveCollective } from '../services/
 import { getPosts } from '../services/api/social';
 import { useToast } from '../contexts/ToastContext';
 import { useAuthStore } from '../store/store';
+import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/Avatar';
 
 const WEB_BASE_URL = 'https://crwd-vite-1.onrender.com';
 
@@ -276,10 +277,10 @@ export default function GroupCRWD() {
                 
                 <View style={styles.modalBody}>
                   <Text style={styles.modalTitle}>
-                    Join "Save the Trees Atlanta"?
+                    Join {collectiveData?.name}?
                   </Text>
                   <Text style={styles.modalDescription}>
-                    This CRWD includes 3 nonprofits.
+                    This Collective includes {collectiveData?.causes?.length || 0} nonprofits.
                   </Text>
                   
                   <View style={styles.modalActions}>
@@ -329,7 +330,7 @@ export default function GroupCRWD() {
                 
                 <View style={styles.modalBody}>
                   <Text style={styles.modalTitle}>
-                    You've joined Save the Trees Atlanta!
+                    You've joined {collectiveData?.name}!
                   </Text>
                   <Text style={styles.modalDescription}>
                     Welcome to the community.
@@ -341,34 +342,46 @@ export default function GroupCRWD() {
                   {/* Community Info Card */}
                   <View style={styles.communityCard}>
                     <View style={styles.communityInfo}>
-                      <View style={styles.communityIcon}>
-                        <Text style={styles.communityIconText}>🌳</Text>
-                      </View>
+                      <Avatar size={48}>
+                        <AvatarImage src={collectiveData?.cover_image || collectiveData?.image || collectiveData?.avatar || collectiveData?.created_by?.profile_picture} />
+                        <AvatarFallback style={{ backgroundColor: '#14b8a6' }} textStyle={{ color: 'white', fontWeight: '600', fontSize: 20 }}>
+                          {collectiveData?.name?.charAt(0)?.toUpperCase() || 'C'}
+                        </AvatarFallback>
+                      </Avatar>
                       <View style={styles.communityDetails}>
                         <Text style={styles.communityName}>
-                          Save the Trees Atlanta
+                          {collectiveData?.name}
                         </Text>
                         <View style={styles.memberInfo}>
                           <View style={styles.avatarGroup}>
                             <View style={styles.avatar} />
                             <View style={styles.avatar} />
                           </View>
-                          <Text style={styles.memberCount}>44 members</Text>
+                          <Text style={styles.memberCount}>{collectiveData?.member_count || 0} members</Text>
                         </View>
                       </View>
                     </View>
                   </View>
                   
-                  <Text style={styles.modalDescription}>
-                    We've added 3 nonprofits from Save the Trees Atlanta to your
-                    donation box. You can edit or remove them any time.
-                  </Text>
-                  
                   <View style={styles.successActions}>
-                    <TouchableOpacity style={styles.goToCrwdButton} onPress={handleCloseSuccessModal}>
-                      <Text style={styles.goToCrwdButtonText}>GO TO CRWD</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.manageDonationsButton} onPress={handleCloseSuccessModal}>
+                    <TouchableOpacity 
+                      style={styles.manageDonationsButton} 
+                      onPress={() => {
+                        handleCloseSuccessModal();
+                        (navigation as any).navigate('DrawerNav', {
+                          screen: 'Donation',
+                          params: { 
+                            initialTab: 'onetime',
+                            preselectedItem: collectiveData ? {
+                              id: collectiveData.id.toString(),
+                              type: 'collective' as const,
+                              data: collectiveData
+                            } : undefined,
+                            activeTab: 'collectives'
+                          }
+                        });
+                      }}
+                    >
                       <Text style={styles.manageDonationsButtonText}>MANAGE DONATIONS</Text>
                     </TouchableOpacity>
                   </View>
@@ -618,17 +631,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-  },
-  communityIcon: {
-    width: 48,
-    height: 48,
-    backgroundColor: '#14b8a6',
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  communityIconText: {
-    fontSize: 20,
   },
   communityDetails: {
     flex: 1,

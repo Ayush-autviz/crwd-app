@@ -1,4 +1,4 @@
-import { View, Text, Image, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform, Share, Dimensions, Modal, Pressable, TouchableWithoutFeedback, ActivityIndicator } from 'react-native'
+import { View, Text, Image, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform, Share, Dimensions, Modal, Pressable, TouchableWithoutFeedback, ActivityIndicator, Linking, Alert } from 'react-native'
 import React, { useState, useEffect } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import MainHeaderNav from '../components/MainHeaderNav'
@@ -26,12 +26,22 @@ interface CommentData {
   userId?: string | number; // User ID to check if comment belongs to current user
 }
 
+interface PreviewDetails {
+  title: string | null;
+  description: string | null;
+  image: string | null;
+  site_name: string | null;
+  url: string;
+  domain: string;
+}
+
 interface Post {
   id: string;
   text: string;
   username: string;
   avatarUrl: string;
   imageUrl?: string;
+  previewDetails?: PreviewDetails | null;
   time: string;
   org: string;
   likes: number;
@@ -88,6 +98,7 @@ export default function PostDetail() {
     username: postData.user?.username || postData.user?.full_name || 'Unknown User',
     avatarUrl: postData.user?.profile_picture ,
     imageUrl: postData.media || undefined,
+    previewDetails: postData.preview_details || null,
     time: new Date(postData.created_at).toLocaleDateString(),
     org: postData.collective?.name || 'Unknown Collective',
     likes: postData.likes_count || 0,
@@ -876,7 +887,56 @@ export default function PostDetail() {
 
             <Text style={{fontSize: 14, marginTop: 12, lineHeight: 20}}>{post.text}</Text>
 
-            {post.imageUrl && (
+            {/* Show preview card if previewDetails exists, otherwise show image */}
+            {post.previewDetails ? (
+              <TouchableOpacity
+                onPress={() => {
+                  if (post.previewDetails?.url) {
+                    Linking.openURL(post.previewDetails.url).catch(err => {
+                      console.error('Failed to open URL:', err);
+                      Alert.alert('Error', 'Failed to open link');
+                    });
+                  }
+                }}
+                style={{
+                  width: '100%',
+                  marginTop: 12,
+                  borderRadius: 8,
+                  borderWidth: 1,
+                  borderColor: '#e5e7eb',
+                  backgroundColor: 'white',
+                  overflow: 'hidden',
+                }}
+              >
+                {post.previewDetails.image && (
+                  <Image
+                    source={{ uri: post.previewDetails.image }}
+                    style={{ width: '100%', height: 200 }}
+                    resizeMode="cover"
+                  />
+                )}
+                <View style={{ padding: 12 }}>
+                  {post.previewDetails.site_name && (
+                    <Text style={{ fontSize: 10, color: PrimaryGrey, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>
+                      {post.previewDetails.site_name}
+                    </Text>
+                  )}
+                  {post.previewDetails.title && (
+                    <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827', marginBottom: 4 }} numberOfLines={2}>
+                      {post.previewDetails.title}
+                    </Text>
+                  )}
+                  {post.previewDetails.description && (
+                    <Text style={{ fontSize: 12, color: PrimaryGrey, marginBottom: 4 }} numberOfLines={2}>
+                      {post.previewDetails.description}
+                    </Text>
+                  )}
+                  <Text style={{ fontSize: 11, color: PrimaryGrey }} numberOfLines={1}>
+                    {post.previewDetails.domain}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            ) : post.imageUrl ? (
               <Image 
                 source={{ uri: post.imageUrl }} 
                 style={{
@@ -886,7 +946,7 @@ export default function PostDetail() {
                   marginTop: 12
                 }}
               />
-            )}
+            ) : null}
 
             <View style={{
               flexDirection: 'row',

@@ -1,4 +1,4 @@
-import { View, Text, FlatList, Image, Dimensions, TouchableOpacity, StyleSheet, Modal, Pressable, ActivityIndicator, Alert, Share, TouchableWithoutFeedback, Clipboard } from 'react-native'
+import { View, Text, FlatList, Image, Dimensions, TouchableOpacity, StyleSheet, Modal, Pressable, ActivityIndicator, Alert, Share, TouchableWithoutFeedback, Clipboard, Linking } from 'react-native'
 import React, { useState, useEffect } from 'react'
 import { LightGrey, PrimaryBlue, PrimaryGrey, SecondaryGrey } from '../Constants/Colors'
 import { Ellipsis, Heart, MessageCircle, Trash2, Share2 } from 'lucide-react-native'
@@ -12,6 +12,15 @@ import { useAuthStore } from '../store/store'
 
 const WEB_BASE_URL = 'https://crwd-vite-1.onrender.com';
 
+interface PreviewDetails {
+    title: string | null;
+    description: string | null;
+    image: string | null;
+    site_name: string | null;
+    url: string;
+    domain: string;
+}
+
 interface Post {
     id: string;
     userId?: string;
@@ -22,6 +31,7 @@ interface Post {
     orgUrl?: string | number; // Collective ID for navigation
     text: string;
     imageUrl?: string;
+    previewDetails?: PreviewDetails | null;
     likes: number;
     comments: number;
     shares: number;
@@ -426,7 +436,61 @@ export default function PopularPosts({
                                 <Text style={{ fontSize: 12, color: PrimaryBlue }}>{item.org}</Text>
                             </TouchableOpacity>
                             <Text ellipsizeMode='tail' style={{ fontSize: 14, fontWeight: '400', flexWrap: 'wrap', width: screenWidth - 120, marginTop: 5 }} numberOfLines={3}>{item.text}</Text>
-                            { item.imageUrl && <Image source={{ uri: item.imageUrl }} style={{ width: screenWidth - 120, height: 150, borderRadius: 10, marginTop: 10 }} />}
+                            
+                            {/* Show preview card if previewDetails exists, otherwise show image */}
+                            {item.previewDetails ? (
+                                <TouchableOpacity
+                                    onPress={(e) => {
+                                        e.stopPropagation();
+                                        if (item.previewDetails?.url) {
+                                            Linking.openURL(item.previewDetails.url).catch(err => {
+                                                console.error('Failed to open URL:', err);
+                                                Alert.alert('Error', 'Failed to open link');
+                                            });
+                                        }
+                                    }}
+                                    activeOpacity={0.7}
+                                    style={{
+                                        width: screenWidth - 120,
+                                        marginTop: 10,
+                                        borderRadius: 10,
+                                        borderWidth: 1,
+                                        borderColor: '#e5e7eb',
+                                        backgroundColor: 'white',
+                                        overflow: 'hidden',
+                                    }}
+                                >
+                                    {item.previewDetails.image && (
+                                        <Image
+                                            source={{ uri: item.previewDetails.image }}
+                                            style={{ width: '100%', height: 150 }}
+                                            resizeMode="cover"
+                                        />
+                                    )}
+                                    <View style={{ padding: 12 }}>
+                                        {item.previewDetails.site_name && (
+                                            <Text style={{ fontSize: 10, color: PrimaryGrey, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>
+                                                {item.previewDetails.site_name}
+                                            </Text>
+                                        )}
+                                        {item.previewDetails.title && (
+                                            <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827', marginBottom: 4 }} numberOfLines={2}>
+                                                {item.previewDetails.title}
+                                            </Text>
+                                        )}
+                                        {item.previewDetails.description && (
+                                            <Text style={{ fontSize: 12, color: PrimaryGrey, marginBottom: 4 }} numberOfLines={2}>
+                                                {item.previewDetails.description}
+                                            </Text>
+                                        )}
+                                        <Text style={{ fontSize: 11, color: PrimaryGrey }} numberOfLines={1}>
+                                            {item.previewDetails.domain}
+                                        </Text>
+                                    </View>
+                                </TouchableOpacity>
+                            ) : item.imageUrl ? (
+                                <Image source={{ uri: item.imageUrl }} style={{ width: screenWidth - 120, height: 150, borderRadius: 10, marginTop: 10 }} />
+                            ) : null}
                             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: screenWidth - 120, gap: 10, marginTop: 10 }}>
                                 <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
                                     <TouchableOpacity 

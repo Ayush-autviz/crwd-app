@@ -39,11 +39,14 @@ export default function CompleteOnboard() {
   // }, []);
 
   const handleGoToDonationBox = () => {
-    (navigation as any).navigate('DrawerNav', {
-      screen: 'MainTabs',
-      params: {
-        screen: 'My Giving'
-      }
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'DrawerNav' as never, params: {
+        screen: 'MainTabs',
+        params: {
+          screen: 'My Giving'
+        }
+      } }],
     });
   };
 
@@ -96,13 +99,13 @@ export default function CompleteOnboard() {
 
           {/* Action Buttons */}
           <View style={styles.buttonContainer}>
-            {/* <TouchableOpacity
+            <TouchableOpacity
               style={styles.primaryButton}
               onPress={handleGoToDonationBox}
               activeOpacity={0.8}
             >
               <Text style={styles.primaryButtonText}>Go to Donation Box</Text>
-            </TouchableOpacity> */}
+            </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.secondaryButton}

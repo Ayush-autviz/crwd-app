@@ -4,7 +4,11 @@ import { ChevronLeft, Plus } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { LightGrey } from '../../Constants/Colors';
 
-export default function OnboardingHeader() {
+interface OnboardingHeaderProps {
+  showBackButton?: boolean;
+}
+
+export default function OnboardingHeader({ showBackButton = true }: OnboardingHeaderProps) {
   const navigation = useNavigation();
 
   return (
@@ -15,7 +19,7 @@ export default function OnboardingHeader() {
         // paddingHorizontal: 16,
         paddingBottom: 10,
         borderRadius: 16,
-        backgroundColor: '#ffffff',
+        // backgroundColor: '#ffffff',
         // borderWidth: 1,
         borderColor: LightGrey,
         flexDirection: 'row',
@@ -24,16 +28,20 @@ export default function OnboardingHeader() {
       }}
     >
       {/* Back Button */}
-      <TouchableOpacity
-        onPress={() => navigation.goBack()}
-        style={{
-          padding: 6,
-          borderRadius: 50,
-          backgroundColor: '#f2f2f2',
-        }}
-      >
-        <ChevronLeft size={20} color="#000" strokeWidth={2.5} />
-      </TouchableOpacity>
+      {showBackButton ? (
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={{
+            padding: 6,
+            borderRadius: 50,
+            // backgroundColor: '#f2f2f2',      
+          }}
+        >
+          <ChevronLeft size={20} color="#000" />
+        </TouchableOpacity>
+      ) : (
+        <View style={{ padding: 6, width: 32 }} />
+      )}
 
       {/* Logo */}
       <Image

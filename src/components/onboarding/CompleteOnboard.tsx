@@ -48,7 +48,11 @@ export default function CompleteOnboard() {
   };
 
   const handleBrowseCrwd = () => {
-    navigation.navigate('DrawerNav' as never);
+    // navigation.reset('DrawerNav' as never);
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'DrawerNav' as never }],
+    });
   };
 
   return (
@@ -92,13 +96,13 @@ export default function CompleteOnboard() {
 
           {/* Action Buttons */}
           <View style={styles.buttonContainer}>
-            <TouchableOpacity
+            {/* <TouchableOpacity
               style={styles.primaryButton}
               onPress={handleGoToDonationBox}
               activeOpacity={0.8}
             >
               <Text style={styles.primaryButtonText}>Go to Donation Box</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
             <TouchableOpacity
               style={styles.secondaryButton}

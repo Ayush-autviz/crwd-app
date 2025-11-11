@@ -259,7 +259,7 @@ export default function NonProfitInterests() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.contentWrapper}>
-        <OnboardingHeader />
+        <OnboardingHeader showBackButton={!fromAuth} />
 
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           {/* White Card Container */}

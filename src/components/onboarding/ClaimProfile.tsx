@@ -8,8 +8,9 @@ import DatePicker from 'react-native-date-picker'
 import { PrimaryBlue } from '../../Constants/Colors'
 import * as ImagePicker from 'react-native-image-picker'
 import { useMutation } from '@tanstack/react-query'
-import { emailRegistration, emailVerification, resendEmailVerificationCode } from '../../services/api/auth'
+import { emailRegistration, emailVerification, resendEmailVerificationCode, login } from '../../services/api/auth'
 import { useToast } from '../../contexts/ToastContext'
+import { useAuthStore } from '../../store/store'
 import { Camera } from 'lucide-react-native'
 import { EyeOff } from 'lucide-react-native'
 import { Eye } from 'lucide-react-native'
@@ -17,6 +18,7 @@ import { Eye } from 'lucide-react-native'
 export default function ClaimProfile() {
     const navigation = useNavigation<any>()
     const { showToast } = useToast()
+    const { setUser, setToken } = useAuthStore()
     
     const [formData, setFormData] = useState({
         firstName: "",
@@ -149,6 +151,45 @@ export default function ClaimProfile() {
     }
 
     // React Query mutations
+    const loginMutation = useMutation({
+        mutationFn: login,
+        onSuccess: (response) => {
+            console.log('Login successful:', response)
+            
+            // Store user data and token in the store
+            if (response.user) {
+                setUser(response.user)
+            }
+            if (response.access_token) {
+                setToken({ 
+                    access_token: response.access_token, 
+                    refresh_token: response.refresh_token 
+                })
+            }
+            
+            // If last_login_at is null, navigate to nonprofit interests page (new user)
+            if (response.user && !response.user.last_login_at) {
+                (navigation as any).reset({
+                    index: 0,
+                    routes: [{ name: 'NonProfitInterests', params: { fromAuth: true } }],
+                })
+            } else {
+                // Navigate to main app for existing users
+                navigation.reset({
+                    index: 0,
+                    routes: [{ name: 'DrawerNav' as never }],
+                })
+            }
+        },
+        onError: (error: any) => {
+            console.error('Login error:', error)
+            const errorMessage = error?.response?.data?.message || error.message || 'Login failed'
+            showToast(errorMessage)
+            // Navigate to login page if auto-login fails
+            navigation.navigate('Login' as never)
+        },
+    })
+
     const emailRegistrationMutation = useMutation({
         mutationFn: emailRegistration,
         onSuccess: (data) => {
@@ -164,9 +205,20 @@ export default function ClaimProfile() {
 
     const emailVerificationMutation = useMutation({
         mutationFn: emailVerification,
-        onSuccess: (data) => {
+        onSuccess: async (data) => {
             console.log('Email verification successful:', data)
-            navigation.navigate('Login' as never)
+            // Auto-login after successful verification
+            try {
+                const loginResponse = await loginMutation.mutateAsync({
+                    email: formData.email,
+                    password: formData.password
+                })
+                console.log('Auto-login successful:', loginResponse)
+            } catch (loginError: any) {
+                console.error('Auto-login failed:', loginError)
+                // If auto-login fails, navigate to login page
+                navigation.navigate('Login' as never)
+            }
         },
         onError: (error: any) => {
             console.error('Email verification failed:', error)

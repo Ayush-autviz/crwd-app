@@ -529,31 +529,70 @@ export default function DonationScreen() {
                         (joinedCollectivesData?.data || []).map((item: any) => {
                           const collective = item.collective;
                           const isSelected = selectedCollectiveIds.includes(collective.id);
+                          const isExpanded = expandedCollectives.has(collective.id);
+                          const details = collectiveDetails[collective.id];
+                          const isLoading = isExpanded && !details;
+                          
                           return (
-                            <TouchableOpacity
-                              key={collective.id}
-                              style={[styles.organizationItem, isSelected && styles.selectedOrganizationItem]}
-                              onPress={() => {
-                                if (isSelected) {
-                                  setSelectedCollectiveIds(selectedCollectiveIds.filter(id => id !== collective.id));
-                                  setSelectedCollectivesData(selectedCollectivesData.filter(c => c.id !== collective.id));
-                                } else {
-                                  setSelectedCollectiveIds([...selectedCollectiveIds, collective.id]);
-                                  setSelectedCollectivesData([...selectedCollectivesData, collective]);
-                                }
-                              }}
-                            >
-                              <View style={[styles.orgAvatar, { backgroundColor: '#dcfce7' }]}>
-                                <Text style={[styles.orgAvatarText, { color: '#16a34a' }]}>{collective.name?.charAt(0).toUpperCase() || 'C'}</Text>
+                            <View key={collective.id}>
+                              <View style={[styles.organizationItem, isSelected && styles.selectedOrganizationItem]}>
+                                <TouchableOpacity
+                                  style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}
+                                  onPress={() => handleToggleCollective(collective.id)}
+                                >
+                                  <View style={[styles.orgAvatar, { backgroundColor: '#dcfce7' }]}>
+                                    <Text style={[styles.orgAvatarText, { color: '#16a34a' }]}>{collective.name?.charAt(0).toUpperCase() || 'C'}</Text>
+                                  </View>
+                                  <View style={styles.orgInfo}>
+                                    <Text style={styles.orgName}>{collective.name}</Text>
+                                    {!!collective.description && <Text style={styles.orgDescription} numberOfLines={1}>{collective.description}</Text>}
+                                  </View>
+                                  {isLoading ? (
+                                    <ActivityIndicator size="small" color={PrimaryBlue} style={{ marginLeft: 8 }} />
+                                  ) : (
+                                    isExpanded ? (
+                                      <ChevronUp size={20} color="#6b7280" style={{ marginLeft: 8 }} />
+                                    ) : (
+                                      <ChevronDown size={20} color="#6b7280" style={{ marginLeft: 8 }} />
+                                    )
+                                  )}
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                  onPress={() => {
+                                    if (isSelected) {
+                                      setSelectedCollectiveIds(selectedCollectiveIds.filter(id => id !== collective.id));
+                                      setSelectedCollectivesData(selectedCollectivesData.filter(c => c.id !== collective.id));
+                                    } else {
+                                      setSelectedCollectiveIds([...selectedCollectiveIds, collective.id]);
+                                      setSelectedCollectivesData([...selectedCollectivesData, collective]);
+                                    }
+                                  }}
+                                  style={{ marginLeft: 8 }}
+                                >
+                                  <View style={[styles.checkbox, isSelected && styles.checkedBox]}>
+                                    {isSelected && <Text style={styles.checkmark}>✓</Text>}
+                                  </View>
+                                </TouchableOpacity>
                               </View>
-                              <View style={styles.orgInfo}>
-                                <Text style={styles.orgName}>{collective.name}</Text>
-                                {!!collective.description && <Text style={styles.orgDescription} numberOfLines={1}>{collective.description}</Text>}
-                              </View>
-                              <View style={[styles.checkbox, isSelected && styles.checkedBox]}>
-                                {isSelected && <Text style={styles.checkmark}>✓</Text>}
-                              </View>
-                            </TouchableOpacity>
+                              {isExpanded && details && details.causes && details.causes.length > 0 && (
+                                <View style={{ paddingLeft: 60, paddingTop: 8, paddingBottom: 8, backgroundColor: '#f9fafb' }}>
+                                  <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827', marginBottom: 8 }}>Nonprofits ({details.causes.length})</Text>
+                                  {details.causes.map((causeItem: any) => (
+                                    <View key={causeItem.id} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#e5e7eb' }}>
+                                      <View style={[styles.orgAvatar, { backgroundColor: '#dbeafe', marginRight: 12, width: 32, height: 32 }]}>
+                                        <Text style={[styles.orgAvatarText, { color: '#2563eb', fontSize: 12 }]}>{causeItem.cause?.name?.charAt(0).toUpperCase() || 'N'}</Text>
+                                      </View>
+                                      <View style={{ flex: 1 }}>
+                                        <Text style={{ fontWeight: '600', color: '#111827', fontSize: 14 }}>{causeItem.cause?.name}</Text>
+                                        {!!causeItem.cause?.description && (
+                                          <Text style={{ color: '#6b7280', fontSize: 12 }} numberOfLines={2}>{causeItem.cause.description}</Text>
+                                        )}
+                                      </View>
+                                    </View>
+                                  ))}
+                                </View>
+                              )}
+                            </View>
                           );
                         })
                       )}

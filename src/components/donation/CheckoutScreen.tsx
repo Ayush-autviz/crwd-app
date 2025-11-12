@@ -166,6 +166,8 @@ export default function CheckoutScreen({
           </View>
         </View>
 
+        <Text style={{fontSize: 14, color: '#6b7280', marginBottom: 16, marginHorizontal: 20}}>Donation amount is equally distributed across all the nonprofits</Text>
+
         {/* Nonprofits Section */}
         {manualCauses.length > 0 && (
           <View style={styles.causesSection}>
@@ -189,7 +191,7 @@ export default function CheckoutScreen({
                           {cause.mission || cause.description || 'Making a positive impact in the community'}
                         </Text>
                       </View>
-                      <Text style={styles.causePercentage}>{distributionPercentage}%</Text>
+                      {/* <Text style={styles.causePercentage}>{distributionPercentage}%</Text> */}
                     </View>
                   </View>
                 </View>
@@ -231,7 +233,7 @@ export default function CheckoutScreen({
                             </Text>
                           </View>
                           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                            <Text style={styles.causePercentage}>{distributionPercentage}%</Text>
+                            {/* <Text style={styles.causePercentage}>{distributionPercentage}%</Text> */}
                             {isLoading ? (
                               <ActivityIndicator size="small" color={PrimaryBlue} style={{ marginLeft: 8 }} />
                             ) : (

@@ -19,8 +19,8 @@ import { useToast } from '../contexts/ToastContext';
 import { useAuthStore } from '../store/store';
 import { getDonationBox, addCollectiveToDonation } from '../services/api/donation';
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/Avatar';
+import { WEB_BASE_URL } from '../Constants/url';
 
-const WEB_BASE_URL = 'https://crwd-vite-1.onrender.com';
 
 const { width, height } = Dimensions.get('window');
 

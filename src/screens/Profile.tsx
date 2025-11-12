@@ -20,8 +20,7 @@ import { logout } from '../services/api/auth'
 import { MapPin } from 'lucide-react-native'
 import { DoorOpenIcon } from 'lucide-react-native'
 import { useToast } from '../contexts/ToastContext'
-
-const WEB_BASE_URL = 'https://crwd-vite-1.onrender.com';
+import { WEB_BASE_URL } from '../Constants/url'
 
 type RootStackParamList = {
     ProfileEdit: undefined;

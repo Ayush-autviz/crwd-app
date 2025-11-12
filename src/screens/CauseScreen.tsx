@@ -11,8 +11,8 @@ import CauseRecentDonations from '../components/cause/CauseRecentDonations';
 import CauseAboutCard from '../components/cause/CauseAboutCard';
 import GroupCRWDBottomBar from '../components/groupcrwd/GroupCRWDBottomBar';
 import { useToast } from '../contexts/ToastContext';
+import { WEB_BASE_URL } from '../Constants/url';
 
-const WEB_BASE_URL = 'https://crwd-vite-1.onrender.com';
 
 export default function CauseScreen() {
   const aboutCardRef = useRef<ScrollView>(null);

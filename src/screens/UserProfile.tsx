@@ -14,8 +14,7 @@ import { useAuthStore } from '../store/store'
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/Avatar'
 import { Flag, Share2, MessageSquare } from 'lucide-react-native'
 import { MapPin } from 'lucide-react-native'
-
-const WEB_BASE_URL = 'https://crwd-vite-1.onrender.com';
+import { WEB_BASE_URL } from '../Constants/url'
 
 // Organization avatars matching Vite version
 const orgAvatars = [

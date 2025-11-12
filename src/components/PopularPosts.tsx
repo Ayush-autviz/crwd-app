@@ -9,8 +9,8 @@ import { likePost, unlikePost, deletePost } from '../services/api/social'
 import { useToast } from '../contexts/ToastContext'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/Avatar'
 import { useAuthStore } from '../store/store'
+import { WEB_BASE_URL } from '../Constants/url'
 
-const WEB_BASE_URL = 'https://crwd-vite-1.onrender.com';
 
 interface PreviewDetails {
     title: string | null;

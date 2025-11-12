@@ -1,0 +1,1 @@
+export const WEB_BASE_URL = 'https://crwd-vite-1.onrender.com';

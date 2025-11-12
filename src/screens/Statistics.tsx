@@ -6,7 +6,7 @@ import { LightGrey, PrimaryBlue, PrimaryGrey } from '../Constants/Colors'
 import { Search } from 'lucide-react-native'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getUserFollowers, getUserFollowing, getFavoriteCausesByUserId, followUser, unfollowUser } from '../services/api/social'
+import { getUserFollowers, getUserFollowing, getSupportedCausesByUserId, followUser, unfollowUser } from '../services/api/social'
 import { getJoinCollective } from '../services/api/crwd'
 import { useAuthStore } from '../store/store'
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/Avatar'
@@ -102,8 +102,8 @@ export default function Statistics() {
     });
 
     const { data: causesData, isLoading: causesLoading, error: causesError } = useQuery({
-        queryKey: ['favoriteCauses', targetUserId],
-        queryFn: () => getFavoriteCausesByUserId(targetUserId),
+        queryKey: ['supportedCauses', targetUserId],
+        queryFn: () => getSupportedCausesByUserId(targetUserId),
         enabled: !!targetUserId,
     });
 

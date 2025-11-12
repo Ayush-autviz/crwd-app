@@ -511,7 +511,7 @@ export default function Profile() {
 
                     {/* Profile Stats */}
                     <ProfileStats 
-                        causes={favoriteCausesQuery?.data?.count || profileData?.favorite_causes_count || 0}
+                        causes={ profileData?.supported_causes_count || 0}
                         crwds={userCollectivesQuery?.data?.data?.length || profileData?.joined_collectives_count || 0}
                         followers={followersQuery?.data?.count || profileData?.followers_count || 0}
                         following={followingQuery?.data?.count || profileData?.following_count || 0}

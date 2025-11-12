@@ -388,7 +388,7 @@ export default function UserProfile() {
 
                     {/* Profile Stats */}
                     <ProfileStats
-                        causes={userProfile.favorite_causes_count || 0}
+                        causes={userProfile.supported_causes_count || 0}
                         crwds={userProfile.joined_collectives_count || 0}
                         followers={userProfile.followers_count || 0}
                         following={userProfile.following_count || 0}

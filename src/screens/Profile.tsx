@@ -69,6 +69,7 @@ export default function Profile() {
                     text: 'Logout', 
                     style: 'destructive',
                     onPress: () => {
+                        queryClient.clear();
                         logoutStore();
                         navigation.reset({
                             index: 0,

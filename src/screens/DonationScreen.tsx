@@ -45,6 +45,7 @@ export default function DonationScreen() {
   const [donationBox, setDonationBox] = useState<any>(null);
   const [expandedCollectives, setExpandedCollectives] = useState<Set<number>>(new Set());
   const [collectiveDetails, setCollectiveDetails] = useState<Record<number, any>>({});
+  const [preselectedItemAdded, setPreselectedItemAdded] = useState(false);
   const { user: currentUser } = useAuthStore();
   const queryClient = useQueryClient();
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
@@ -176,12 +177,43 @@ export default function DonationScreen() {
     const maybeParams: any = (route as any)?.params;
     if (maybeParams?.initialTab === 'onetime') {
       setActiveTab('onetime');
+    } else if (maybeParams?.initialTab === 'setup') {
+      setActiveTab('setup');
+    }
+    
+    // Handle preselected item for setup tab (collectives) - only once
+    if (maybeParams?.preselectedItem && maybeParams?.initialTab === 'setup' && !preselectedItemAdded) {
+      const preselectedItem = maybeParams.preselectedItem;
+      if (preselectedItem.type === 'collective') {
+        const collectiveId = parseInt(preselectedItem.id);
+        if (!isNaN(collectiveId)) {
+          // Add to selectedCollectiveIds
+          setSelectedCollectiveIds(prev => {
+            if (!prev.includes(collectiveId)) {
+              return [...prev, collectiveId];
+            }
+            return prev;
+          });
+          // Also add to selectedCollectivesData so it shows in the UI
+          if (preselectedItem.data) {
+            setSelectedCollectivesData(prev => {
+              // Check if already exists
+              const exists = prev.some(c => c.id === collectiveId);
+              if (!exists) {
+                return [...prev, preselectedItem.data];
+              }
+              return prev;
+            });
+          }
+          setPreselectedItemAdded(true);
+        }
+      }
     }
     // Handle preselected item for one-time donations
-    if (maybeParams?.preselectedItem) {
+    if (maybeParams?.preselectedItem && maybeParams?.initialTab === 'onetime') {
       // preselectedItem is already being passed to OneTimeDonation below
     }
-  }, [route]);
+  }, [route, preselectedItemAdded]);
 
   if (!currentUser?.id) {
             return (
@@ -471,7 +503,7 @@ export default function DonationScreen() {
                   )}
 
                   {/* Choose Nonprofit to Support */}
-                  <View style={styles.organizationsCard}>
+                  {/* <View style={styles.organizationsCard}> */}
                     <Text style={styles.organizationsTitle}>Choose nonprofit to support</Text>
                     <TextInput
                       placeholder="Search nonprofits..."
@@ -517,11 +549,11 @@ export default function DonationScreen() {
                         })
                       )}
                     </View>
-                  </View>
+                  {/* </View> */}
 
                   {/* Choose Collective to Support */}
-                  <View style={styles.organizationsCard}>
-                    <Text style={styles.organizationsTitle}>Choose collective to support</Text>
+                  {/* <View style={styles.organizationsCard}> */}
+                    <Text style={[styles.organizationsTitle, { marginTop: 16 }]}>Choose collective to support</Text>
                     <View style={styles.organizationsList}>
                       {collectivesLoading ? (
                         <ActivityIndicator />
@@ -597,7 +629,7 @@ export default function DonationScreen() {
                         })
                       )}
                     </View>
-                  </View>
+                  {/* </View> */}
                 </View>
               // ) : step === 2 ? (
               //   <DonationStep2

@@ -56,6 +56,11 @@ export const updateDonationBoxAmount = async (data: any) => {
     return response.data;
 };
 
+export const addCollectiveToDonation = async (collective_id: string) => {
+    const response = await axiosClient.post(`/donations/box/add-collective/${collective_id}/`);
+    return response.data;
+};
+
 // General Donation API endpoints
 export const getDonationHistory = async () => {
     const response = await axiosClient.get('/donations/history/');

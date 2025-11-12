@@ -17,6 +17,7 @@ import { getCollectiveById, joinCollective, leaveCollective } from '../services/
 import { getPosts } from '../services/api/social';
 import { useToast } from '../contexts/ToastContext';
 import { useAuthStore } from '../store/store';
+import { getDonationBox, addCollectiveToDonation } from '../services/api/donation';
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/Avatar';
 
 const WEB_BASE_URL = 'https://crwd-vite-1.onrender.com';
@@ -92,20 +93,115 @@ export default function GroupCRWD() {
   // Join collective mutation
   const joinCollectiveMutation = useMutation({
     mutationFn: joinCollective,
-    onSuccess: (response) => {
+    onSuccess: async (response) => {
       console.log('Join collective successful:', response);
       setHasJoined(true);
       setShowJoinModal(false);
-      setShowSuccessModal(true);
       showToast('Successfully joined the collective!', 3000);
-      
-      // Fire confetti after modal appears
-      setTimeout(() => {
-        confettiRef.current?.start();
-      }, 300);
       
       // Invalidate queries to refresh data
       queryClient.invalidateQueries({ queryKey: ['collective', collectiveId] });
+      queryClient.invalidateQueries({ queryKey: ['joined-collectives'] });
+      queryClient.invalidateQueries({ queryKey: ['joined-collectives', currentUser?.id] });
+      queryClient.invalidateQueries({ queryKey: ['donationBox', currentUser?.id] });
+      
+      // Check if donation box exists
+      try {
+        const donationBoxData = await getDonationBox();
+        
+        // If donation box doesn't exist or has no ID, redirect to setup
+        if (!donationBoxData || !donationBoxData.id) {
+          // Navigate to donation screen with setup tab and collective preselected
+          // Navigate through MainTabs -> My Giving to show bottom tabs
+          (navigation as any).navigate('DrawerNav', {
+            screen: 'MainTabs',
+            params: {
+              screen: 'My Giving',
+              params: {
+                initialTab: 'setup',
+                preselectedItem: {
+                  id: collectiveId,
+                  type: 'collective' as const,
+                  data: collectiveData
+                },
+                activeTab: 'collectives'
+              }
+            }
+          });
+        } else {
+          // Donation box exists, add collective to donation box
+          try {
+            if (!collectiveId) {
+              throw new Error('Collective ID is missing');
+            }
+            await addCollectiveToDonation(collectiveId);
+            console.log('Collective added to donation box successfully');
+            
+            // Invalidate and refetch donation box query to refresh data
+            // Note: Mobile app uses ['donationBox'] without user ID
+            await queryClient.invalidateQueries({ queryKey: ['donationBox'] });
+            await queryClient.invalidateQueries({ queryKey: ['donationBox', currentUser?.id] });
+            await queryClient.refetchQueries({ queryKey: ['donationBox'] });
+            await queryClient.refetchQueries({ queryKey: ['donationBox', currentUser?.id] });
+            
+            // Navigate to donation screen with setup tab and collective preselected
+            // Navigate through MainTabs -> My Giving to show bottom tabs
+            (navigation as any).navigate('DrawerNav', {
+              screen: 'MainTabs',
+              params: {
+                screen: 'My Giving',
+                params: {
+                  initialTab: 'setup',
+                  preselectedItem: {
+                    id: collectiveId,
+                    type: 'collective' as const,
+                    data: collectiveData
+                  },
+                  activeTab: 'collectives'
+                }
+              }
+            });
+          } catch (addError) {
+            console.error('Error adding collective to donation box:', addError);
+            // On error, still navigate to setup tab
+            // Navigate through MainTabs -> My Giving to show bottom tabs
+            (navigation as any).navigate('DrawerNav', {
+              screen: 'MainTabs',
+              params: {
+                screen: 'My Giving',
+                params: {
+                  initialTab: 'setup',
+                  preselectedItem: {
+                    id: collectiveId,
+                    type: 'collective' as const,
+                    data: collectiveData
+                  },
+                  activeTab: 'collectives'
+                }
+              }
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error checking donation box:', error);
+        // On error, navigate to setup tab
+        // Navigate through MainTabs -> My Giving to show bottom tabs
+        (navigation as any).navigate('DrawerNav', {
+          screen: 'MainTabs',
+          params: {
+            screen: 'My Giving',
+            params: {
+              initialTab: 'setup',
+              preselectedItem: {
+                id: collectiveId,
+                type: 'collective' as const,
+                data: collectiveData
+              },
+              activeTab: 'collectives'
+            }
+          }
+        });
+      }
     },
     onError: (error: any) => {
       console.error('Join collective error:', error);
@@ -117,7 +213,7 @@ export default function GroupCRWD() {
   // Leave collective mutation
   const leaveCollectiveMutation = useMutation({
     mutationFn: leaveCollective,
-    onSuccess: (response) => {
+    onSuccess: async (response) => {
       console.log('Leave collective successful:', response);
       setHasJoined(false);
       setShowConfirmDialog(false);
@@ -125,6 +221,14 @@ export default function GroupCRWD() {
       
       // Invalidate queries to refresh data
       queryClient.invalidateQueries({ queryKey: ['collective', collectiveId] });
+      queryClient.invalidateQueries({ queryKey: ['joined-collectives'] });
+      queryClient.invalidateQueries({ queryKey: ['joined-collectives', currentUser?.id] });
+      // Invalidate and refetch donation box as leaving collective updates it
+      // Note: Mobile app uses ['donationBox'] without user ID
+      await queryClient.invalidateQueries({ queryKey: ['donationBox'] });
+      await queryClient.invalidateQueries({ queryKey: ['donationBox', currentUser?.id] });
+      await queryClient.refetchQueries({ queryKey: ['donationBox'] });
+      await queryClient.refetchQueries({ queryKey: ['donationBox', currentUser?.id] });
     },
     onError: (error: any) => {
       console.error('Leave collective error:', error);

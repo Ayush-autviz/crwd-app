@@ -8,7 +8,7 @@ import {
   StyleSheet,
   Dimensions,
 } from 'react-native';
-import { ChevronLeft, Plus, Trash2, User, X } from 'lucide-react-native';
+import { ChevronLeft, Plus, Trash2, User, X, ChevronDown, ChevronUp } from 'lucide-react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import Slider from '@react-native-community/slider';
 import DonationStep2 from '../components/donation/DonationStep2';
@@ -20,7 +20,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { PrimaryBlue, PrimaryGrey } from '../Constants/Colors';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getDonationBox, createDonationBox, removeCauseFromBox, removeCollectiveFromBox, activateDonationBoxMobile, confirmMobileActivation } from '../services/api/donation';
-import { getCausesBySearch, getJoinCollective } from '../services/api/crwd';
+import { getCausesBySearch, getJoinCollective, getCollectiveById } from '../services/api/crwd';
 import { useAuthStore } from '../store/store';
 import { Alert, ActivityIndicator, Modal } from 'react-native';
 import { useStripe } from '@stripe/stripe-react-native';
@@ -43,6 +43,8 @@ export default function DonationScreen() {
   const [selectedCausesData, setSelectedCausesData] = useState<any[]>([]);
   const [selectedCollectivesData, setSelectedCollectivesData] = useState<any[]>([]);
   const [donationBox, setDonationBox] = useState<any>(null);
+  const [expandedCollectives, setExpandedCollectives] = useState<Set<number>>(new Set());
+  const [collectiveDetails, setCollectiveDetails] = useState<Record<number, any>>({});
   const { user: currentUser } = useAuthStore();
   const queryClient = useQueryClient();
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
@@ -141,6 +143,27 @@ export default function DonationScreen() {
       queryClient.invalidateQueries({ queryKey: ['donationBox'] });
     },
   });
+
+  const handleToggleCollective = async (collectiveId: number) => {
+    const isExpanded = expandedCollectives.has(collectiveId);
+    const newExpanded = new Set(expandedCollectives);
+    
+    if (isExpanded) {
+      newExpanded.delete(collectiveId);
+    } else {
+      newExpanded.add(collectiveId);
+      // Fetch collective details if not already cached
+      if (!collectiveDetails[collectiveId]) {
+        try {
+          const details = await getCollectiveById(collectiveId.toString());
+          setCollectiveDetails(prev => ({ ...prev, [collectiveId]: details }));
+        } catch (error) {
+          console.error('Error fetching collective details:', error);
+        }
+      }
+    }
+    setExpandedCollectives(newExpanded);
+  };
 
   const handleSliderChange = (value: number) => {
     const roundedValue = Math.round(value);
@@ -572,15 +595,55 @@ export default function DonationScreen() {
                       <View style={{ backgroundColor: '#fff', borderRadius: 12, padding: 16, borderWidth: 1, borderColor: '#e5e7eb', marginBottom: 16 }}>
                         <Text style={{ fontSize: 18, fontWeight: '700', color: '#111827', marginBottom: 12 }}>Collectives</Text>
                         {(donationBoxQuery.data?.attributing_collectives || donationBox?.attributing_collectives || []).length > 0 ? (
-                          (donationBoxQuery.data?.attributing_collectives || donationBox?.attributing_collectives || []).map((collective: any) => (
-                            <View key={collective.id} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' }}>
-                              <View style={[styles.orgAvatar, { backgroundColor: '#dcfce7', marginRight: 12 }]}><Text style={[styles.orgAvatarText, { color: '#16a34a' }]}>{collective.name?.charAt(0).toUpperCase() || 'C'}</Text></View>
-                              <View style={{ flex: 1 }}>
-                                <Text style={{ fontWeight: '600', color: '#111827' }}>{collective.name}</Text>
-                                {!!collective.description && <Text style={{ color: '#6b7280' }} numberOfLines={1}>{collective.description}</Text>}
+                          (donationBoxQuery.data?.attributing_collectives || donationBox?.attributing_collectives || []).map((collective: any) => {
+                            const isExpanded = expandedCollectives.has(collective.id);
+                            const details = collectiveDetails[collective.id];
+                            const isLoading = isExpanded && !details;
+                            
+                            return (
+                              <View key={collective.id}>
+                                <TouchableOpacity 
+                                  style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' }}
+                                  onPress={() => handleToggleCollective(collective.id)}
+                                >
+                                  <View style={[styles.orgAvatar, { backgroundColor: '#dcfce7', marginRight: 12 }]}>
+                                    <Text style={[styles.orgAvatarText, { color: '#16a34a' }]}>{collective.name?.charAt(0).toUpperCase() || 'C'}</Text>
+                                  </View>
+                                  <View style={{ flex: 1 }}>
+                                    <Text style={{ fontWeight: '600', color: '#111827' }}>{collective.name}</Text>
+                                    {!!collective.description && <Text style={{ color: '#6b7280' }} numberOfLines={1}>{collective.description}</Text>}
+                                  </View>
+                                  {isLoading ? (
+                                    <ActivityIndicator size="small" color={PrimaryBlue} style={{ marginLeft: 8 }} />
+                                  ) : (
+                                    isExpanded ? (
+                                      <ChevronUp size={20} color="#6b7280" style={{ marginLeft: 8 }} />
+                                    ) : (
+                                      <ChevronDown size={20} color="#6b7280" style={{ marginLeft: 8 }} />
+                                    )
+                                  )}
+                                </TouchableOpacity>
+                                {isExpanded && details && details.causes && details.causes.length > 0 && (
+                                  <View style={{ paddingLeft: 60, paddingTop: 8, paddingBottom: 8, backgroundColor: '#f9fafb' }}>
+                                    <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827', marginBottom: 8 }}>Nonprofits ({details.causes.length})</Text>
+                                    {details.causes.map((causeItem: any) => (
+                                      <View key={causeItem.id} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#e5e7eb' }}>
+                                        <View style={[styles.orgAvatar, { backgroundColor: '#dbeafe', marginRight: 12, width: 32, height: 32 }]}>
+                                          <Text style={[styles.orgAvatarText, { color: '#2563eb', fontSize: 12 }]}>{causeItem.cause?.name?.charAt(0).toUpperCase() || 'N'}</Text>
+                                        </View>
+                                        <View style={{ flex: 1 }}>
+                                          <Text style={{ fontWeight: '600', color: '#111827', fontSize: 14 }}>{causeItem.cause?.name}</Text>
+                                          {!!causeItem.cause?.description && (
+                                            <Text style={{ color: '#6b7280', fontSize: 12 }} numberOfLines={2}>{causeItem.cause.description}</Text>
+                                          )}
+                                        </View>
+                                      </View>
+                                    ))}
+                                  </View>
+                                )}
                               </View>
-                            </View>
-                          ))
+                            );
+                          })
                         ) : (
                           <Text style={{ color: PrimaryGrey, paddingVertical: 12 }}>No collectives added yet</Text>
                         )}

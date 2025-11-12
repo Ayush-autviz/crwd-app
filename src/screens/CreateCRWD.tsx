@@ -546,7 +546,7 @@ export default function CreateCRWD() {
           onChangeText={setDesc}
         />
 
-        <Text style={{ color: PrimaryGrey, fontSize: 16 }}>Choose one or more causes for your CRWD</Text>
+        <Text style={{ color: PrimaryGrey, fontSize: 16, marginBottom: 10 }}>Choose one or more causes for your CRWD</Text>
 
         {/* Selected Causes Section */}
         {selectedCausesData.length > 0 && (

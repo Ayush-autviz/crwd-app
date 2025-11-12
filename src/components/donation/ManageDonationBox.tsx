@@ -11,13 +11,13 @@ import {
   TouchableWithoutFeedback,
   ActivityIndicator,
 } from 'react-native';
-import { Plus, Trash2, Search, X, ChevronLeft } from 'lucide-react-native';
+import { Plus, Trash2, Search, X, ChevronLeft, ChevronDown, ChevronUp } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView as RNSafeAreaView, SafeAreaView } from 'react-native-safe-area-context';
 import { Organization } from '../../Constants/organizations';
 import { PrimaryBlue } from '../../Constants/Colors';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getCausesBySearch, getJoinCollective } from '../../services/api/crwd';
+import { getCausesBySearch, getJoinCollective, getCollectiveById } from '../../services/api/crwd';
 import { getDonationBox, updateDonationBox, cancelDonationBox } from '../../services/api/donation';
 import { useAuthStore } from '../../store/store';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
@@ -86,6 +86,8 @@ export default function ManageDonationBoxScreen() {
     isNewlySelected: boolean 
   } | null>(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [expandedCollectives, setExpandedCollectives] = useState<Set<number>>(new Set());
+  const [collectiveDetails, setCollectiveDetails] = useState<Record<number, any>>({});
   
   // Get isActive from donationBox
   const isActive = donationBox?.is_active ?? true;
@@ -218,6 +220,27 @@ export default function ManageDonationBoxScreen() {
         ? prev.filter(id => id !== collectiveId)
         : [...prev, collectiveId]
     );
+  };
+
+  const handleToggleCollectiveDropdown = async (collectiveId: number) => {
+    const isExpanded = expandedCollectives.has(collectiveId);
+    const newExpanded = new Set(expandedCollectives);
+    
+    if (isExpanded) {
+      newExpanded.delete(collectiveId);
+    } else {
+      newExpanded.add(collectiveId);
+      // Fetch collective details if not already cached
+      if (!collectiveDetails[collectiveId]) {
+        try {
+          const details = await getCollectiveById(collectiveId.toString());
+          setCollectiveDetails(prev => ({ ...prev, [collectiveId]: details }));
+        } catch (error) {
+          console.error('Error fetching collective details:', error);
+        }
+      }
+    }
+    setExpandedCollectives(newExpanded);
   };
 
   const handleUpdateDonation = async () => {
@@ -628,29 +651,66 @@ export default function ManageDonationBoxScreen() {
                   <View style={styles.list}>
                     {selectedCollectivesForDisplay.map((org) => {
                       const collectiveId = org.isNewlySelected ? (org as any).collectiveId : parseInt(org.id.replace('collective-', ''));
+                      const isExpanded = expandedCollectives.has(collectiveId);
+                      const details = collectiveDetails[collectiveId];
+                      const isLoading = isExpanded && !details;
+                      
                       return (
-                        <View key={org.id} style={styles.causeItem}>
-                          <Avatar size={48}>
-                            <AvatarImage src={org.imageUrl} />
-                            <AvatarFallback style={{ backgroundColor: '#dcfce7' }} textStyle={{ color: '#16a34a', fontWeight: '600' }}>
-                              {org.name.charAt(0).toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          <View style={[styles.causeInfo, { marginLeft: 12 }]}>
-                            <Text style={styles.causeName}>{org.name}</Text>
-                            {org.description && (
-                              <Text style={styles.causeDescription} numberOfLines={2}>
-                                {org.description}
-                              </Text>
-                            )}
+                        <View key={org.id}>
+                          <View style={styles.causeItem}>
+                            <TouchableOpacity
+                              style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}
+                              onPress={() => handleToggleCollectiveDropdown(collectiveId)}
+                            >
+                              <Avatar size={48}>
+                                <AvatarImage src={org.imageUrl} />
+                                <AvatarFallback style={{ backgroundColor: '#dcfce7' }} textStyle={{ color: '#16a34a', fontWeight: '600' }}>
+                                  {org.name.charAt(0).toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                              <View style={[styles.causeInfo, { marginLeft: 12, flex: 1 }]}>
+                                <Text style={styles.causeName}>{org.name}</Text>
+                                {org.description && (
+                                  <Text style={styles.causeDescription} numberOfLines={2}>
+                                    {org.description}
+                                  </Text>
+                                )}
+                              </View>
+                              {isLoading ? (
+                                <ActivityIndicator size="small" color={PrimaryBlue} style={{ marginLeft: 8 }} />
+                              ) : (
+                                isExpanded ? (
+                                  <ChevronUp size={20} color="#6b7280" style={{ marginLeft: 8 }} />
+                                ) : (
+                                  <ChevronDown size={20} color="#6b7280" style={{ marginLeft: 8 }} />
+                                )
+                              )}
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                              style={styles.removeButton}
+                              onPress={() => handleDeselectCollective(collectiveId, org.isNewlySelected, org.name)}
+                            >
+                              <Trash2 size={16} color="#ef4444" />
+                            </TouchableOpacity>
                           </View>
-                          <TouchableOpacity
-                            style={styles.removeButton}
-                            onPress={() => handleDeselectCollective(collectiveId, org.isNewlySelected, org.name)}
-                          >
-                            <Trash2 size={16} color="#ef4444" />
-                            {/* <Text style={styles.removeText}>Remove</Text> */}
-                          </TouchableOpacity>
+                          {isExpanded && details && details.causes && details.causes.length > 0 && (
+                            <View style={{ paddingLeft: 60, paddingTop: 8, paddingBottom: 8, backgroundColor: '#f9fafb' }}>
+                              <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827', marginBottom: 8 }}>Nonprofits ({details.causes.length})</Text>
+                              {details.causes.map((causeItem: any) => (
+                                <View key={causeItem.id} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#e5e7eb' }}>
+                                  <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: '#dbeafe', justifyContent: 'center', alignItems: 'center', marginRight: 12 }}>
+                                    <Text style={{ color: '#2563eb', fontSize: 12, fontWeight: '600' }}>{causeItem.cause?.name?.charAt(0).toUpperCase() || 'N'}</Text>
+                                  </View>
+                                  <View style={{ flex: 1 }}>
+                                    <Text style={{ fontWeight: '600', color: '#111827', fontSize: 14 }}>{causeItem.cause?.name}</Text>
+                                    {!!causeItem.cause?.description && (
+                                      <Text style={{ color: '#6b7280', fontSize: 12 }} numberOfLines={2}>{causeItem.cause.description}</Text>
+                                    )}
+                                  </View>
+                                </View>
+                              ))}
+                            </View>
+                          )}
                         </View>
                       );
                     })}
@@ -668,30 +728,69 @@ export default function ManageDonationBoxScreen() {
                 <View style={styles.list}>
                   {availableCollectives.map((collective: any) => {
                     const isSelected = selectedCollectives.includes(collective.id);
+                    const isExpanded = expandedCollectives.has(collective.id);
+                    const details = collectiveDetails[collective.id];
+                    const isLoading = isExpanded && !details;
+                    
                     return (
-                      <TouchableOpacity
-                        key={collective.id}
-                        style={styles.resultItem}
-                        onPress={() => handleToggleCollective(collective.id)}
-                      >
-                        <Avatar size={48}>
-                          <AvatarImage src={collective.cover_image} />
-                          <AvatarFallback style={{ backgroundColor: '#dcfce7' }} textStyle={{ color: '#16a34a', fontWeight: '600' }}>
-                            {collective.name?.charAt(0).toUpperCase() || 'C'}
-                          </AvatarFallback>
-                        </Avatar>
-                        <View style={styles.resultInfo}>
-                          <Text style={styles.resultName}>{collective.name}</Text>
-                          <Text style={styles.resultDescription} numberOfLines={1}>
-                            {collective.description || 'Community collective'}
-                          </Text>
+                      <View key={collective.id}>
+                        <View style={styles.resultItem}>
+                          <TouchableOpacity
+                            style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}
+                            onPress={() => handleToggleCollectiveDropdown(collective.id)}
+                          >
+                            <Avatar size={48}>
+                              <AvatarImage src={collective.cover_image} />
+                              <AvatarFallback style={{ backgroundColor: '#dcfce7' }} textStyle={{ color: '#16a34a', fontWeight: '600' }}>
+                                {collective.name?.charAt(0).toUpperCase() || 'C'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <View style={[styles.resultInfo, { flex: 1 }]}>
+                              <Text style={styles.resultName}>{collective.name}</Text>
+                              <Text style={styles.resultDescription} numberOfLines={1}>
+                                {collective.description || 'Community collective'}
+                              </Text>
+                            </View>
+                            {isLoading ? (
+                              <ActivityIndicator size="small" color={PrimaryBlue} style={{ marginLeft: 8 }} />
+                            ) : (
+                              isExpanded ? (
+                                <ChevronUp size={20} color="#6b7280" style={{ marginLeft: 8 }} />
+                              ) : (
+                                <ChevronDown size={20} color="#6b7280" style={{ marginLeft: 8 }} />
+                              )
+                            )}
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            onPress={() => handleToggleCollective(collective.id)}
+                            style={{ marginLeft: 8 }}
+                          >
+                            <View style={[styles.checkbox, isSelected && styles.checkboxSelected]}>
+                              {isSelected && (
+                                <View style={styles.checkmark} />
+                              )}
+                            </View>
+                          </TouchableOpacity>
                         </View>
-                        <View style={[styles.checkbox, isSelected && styles.checkboxSelected]}>
-                          {isSelected && (
-                            <View style={styles.checkmark} />
-                          )}
-                        </View>
-                      </TouchableOpacity>
+                        {isExpanded && details && details.causes && details.causes.length > 0 && (
+                          <View style={{ paddingLeft: 60, paddingTop: 8, paddingBottom: 8, backgroundColor: '#f9fafb' }}>
+                            <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827', marginBottom: 8 }}>Nonprofits ({details.causes.length})</Text>
+                            {details.causes.map((causeItem: any) => (
+                              <View key={causeItem.id} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#e5e7eb' }}>
+                                <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: '#dbeafe', justifyContent: 'center', alignItems: 'center', marginRight: 12 }}>
+                                  <Text style={{ color: '#2563eb', fontSize: 12, fontWeight: '600' }}>{causeItem.cause?.name?.charAt(0).toUpperCase() || 'N'}</Text>
+                                </View>
+                                <View style={{ flex: 1 }}>
+                                  <Text style={{ fontWeight: '600', color: '#111827', fontSize: 14 }}>{causeItem.cause?.name}</Text>
+                                  {!!causeItem.cause?.description && (
+                                    <Text style={{ color: '#6b7280', fontSize: 12 }} numberOfLines={2}>{causeItem.cause.description}</Text>
+                                  )}
+                                </View>
+                              </View>
+                            ))}
+                          </View>
+                        )}
+                      </View>
                     );
                   })}
                 </View>

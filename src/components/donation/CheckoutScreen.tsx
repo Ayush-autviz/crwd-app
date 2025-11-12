@@ -10,14 +10,17 @@ import {
   Modal,
   Dimensions,
   TouchableWithoutFeedback,
+  ActivityIndicator,
 } from 'react-native';
-import { ChevronLeft, Check } from 'lucide-react-native';
+import { ChevronLeft, Check, ChevronDown, ChevronUp } from 'lucide-react-native';
 import { CROWDS, RECENTS, SUGGESTED, Organization } from '../../Constants/organizations';
 import { useNavigation } from '@react-navigation/native';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
 import { HelpCircle } from 'lucide-react-native';
 import { Settings } from 'lucide-react-native';
+import { getCollectiveById } from '../../services/api/crwd';
+import { PrimaryBlue } from '../../Constants/Colors';
 
 const { width, height } = Dimensions.get('window');
 
@@ -43,6 +46,8 @@ export default function CheckoutScreen({
   const navigation = useNavigation();
   const [showCongratulationsModal, setShowCongratulationsModal] = useState(false);
   const confettiRef = useRef<ConfettiCannon>(null);
+  const [expandedCollectives, setExpandedCollectives] = useState<Set<number>>(new Set());
+  const [collectiveDetails, setCollectiveDetails] = useState<Record<number, any>>({});
 
   // Get manual causes and attributing collectives from donation box API
   const manualCauses = donationBox?.manual_causes || [];
@@ -77,6 +82,27 @@ export default function CheckoutScreen({
 
   const handleCloseCongratulationsModal = () => {
     setShowCongratulationsModal(false);
+  };
+
+  const handleToggleCollectiveDropdown = async (collectiveId: number) => {
+    const isExpanded = expandedCollectives.has(collectiveId);
+    const newExpanded = new Set(expandedCollectives);
+    
+    if (isExpanded) {
+      newExpanded.delete(collectiveId);
+    } else {
+      newExpanded.add(collectiveId);
+      // Fetch collective details if not already cached
+      if (!collectiveDetails[collectiveId]) {
+        try {
+          const details = await getCollectiveById(collectiveId.toString());
+          setCollectiveDetails(prev => ({ ...prev, [collectiveId]: details }));
+        } catch (error) {
+          console.error('Error fetching collective details:', error);
+        }
+      }
+    }
+    setExpandedCollectives(newExpanded);
   };
 
   const getOrganizationDescription = (orgName: string): string => {
@@ -179,27 +205,67 @@ export default function CheckoutScreen({
               <Text style={styles.sectionTitle}>COLLECTIVES</Text>
             </View>
             <View style={styles.causesList}>
-              {attributingCollectives.map((collective: any, index: number) => (
-                <View key={`collective-${collective.id}-${index}`} style={styles.causeItem}>
-                  <Avatar size={48}>
-                    <AvatarImage src={collective.cover_image} />
-                    <AvatarFallback style={{ backgroundColor: '#dcfce7' }} textStyle={{ color: '#16a34a', fontWeight: '600' }}>
-                      {collective.name?.charAt(0).toUpperCase() || 'C'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <View style={[styles.causeInfo, { marginLeft: 12 }]}>
-                    <View style={styles.causeInfoRow}>
-                      <View style={styles.causeInfoContent}>
-                        <Text style={styles.causeName}>{collective.name}</Text>
-                        <Text style={styles.causeDescription} numberOfLines={2}>
-                          {collective.description || 'Community collective'}
-                        </Text>
+              {attributingCollectives.map((collective: any, index: number) => {
+                const isExpanded = expandedCollectives.has(collective.id);
+                const details = collectiveDetails[collective.id];
+                const isLoading = isExpanded && !details;
+                
+                return (
+                  <View key={`collective-${collective.id}-${index}`}>
+                    <TouchableOpacity 
+                      style={styles.causeItem}
+                      onPress={() => handleToggleCollectiveDropdown(collective.id)}
+                    >
+                      <Avatar size={48}>
+                        <AvatarImage src={collective.cover_image} />
+                        <AvatarFallback style={{ backgroundColor: '#dcfce7' }} textStyle={{ color: '#16a34a', fontWeight: '600' }}>
+                          {collective.name?.charAt(0).toUpperCase() || 'C'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <View style={[styles.causeInfo, { marginLeft: 12, flex: 1 }]}>
+                        <View style={styles.causeInfoRow}>
+                          <View style={styles.causeInfoContent}>
+                            <Text style={styles.causeName}>{collective.name}</Text>
+                            <Text style={styles.causeDescription} numberOfLines={2}>
+                              {collective.description || 'Community collective'}
+                            </Text>
+                          </View>
+                          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <Text style={styles.causePercentage}>{distributionPercentage}%</Text>
+                            {isLoading ? (
+                              <ActivityIndicator size="small" color={PrimaryBlue} style={{ marginLeft: 8 }} />
+                            ) : (
+                              isExpanded ? (
+                                <ChevronUp size={20} color="#6b7280" style={{ marginLeft: 8 }} />
+                              ) : (
+                                <ChevronDown size={20} color="#6b7280" style={{ marginLeft: 8 }} />
+                              )
+                            )}
+                          </View>
+                        </View>
                       </View>
-                      <Text style={styles.causePercentage}>{distributionPercentage}%</Text>
-                    </View>
+                    </TouchableOpacity>
+                    {isExpanded && details && details.causes && details.causes.length > 0 && (
+                      <View style={{ paddingLeft: 60, paddingTop: 8, paddingBottom: 8, backgroundColor: '#f9fafb' }}>
+                        <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827', marginBottom: 8 }}>Nonprofits ({details.causes.length})</Text>
+                        {details.causes.map((causeItem: any) => (
+                          <View key={causeItem.id} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#e5e7eb' }}>
+                            <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: '#dbeafe', justifyContent: 'center', alignItems: 'center', marginRight: 12 }}>
+                              <Text style={{ color: '#2563eb', fontSize: 12, fontWeight: '600' }}>{causeItem.cause?.name?.charAt(0).toUpperCase() || 'N'}</Text>
+                            </View>
+                            <View style={{ flex: 1 }}>
+                              <Text style={{ fontWeight: '600', color: '#111827', fontSize: 14 }}>{causeItem.cause?.name}</Text>
+                              {!!causeItem.cause?.description && (
+                                <Text style={{ color: '#6b7280', fontSize: 12 }} numberOfLines={2}>{causeItem.cause.description}</Text>
+                              )}
+                            </View>
+                          </View>
+                        ))}
+                      </View>
+                    )}
                   </View>
-                </View>
-              ))}
+                );
+              })}
             </View>
           </View>
         )}

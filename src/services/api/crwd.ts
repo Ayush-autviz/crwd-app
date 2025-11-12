@@ -158,3 +158,9 @@ export const getSuggestedCrwds = async (id: any) => {
     const response = await axiosClient.get(`/crwd/collectives/${id}/suggested/`);
     return response.data;
 };
+
+// Collective Donation History API endpoint
+export const getCollectiveDonationHistory = async (id: any) => {
+    const response = await axiosClient.get(`/crwd/collectives/${id}/donations/`);
+    return response.data;
+};

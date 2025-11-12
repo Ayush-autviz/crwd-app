@@ -6,9 +6,10 @@ import { LightGrey, PrimaryBlue, PrimaryGrey } from '../Constants/Colors';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useQuery } from '@tanstack/react-query';
-import { getCollectiveMembers } from '../services/api/crwd';
+import { getCollectiveMembers, getCollectiveDonationHistory } from '../services/api/crwd';
 import { useAuthStore } from '../store/store';
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/Avatar';
+import RecentDonationsList from '../components/members/RecentDonationsList';
 
 // Type declarations
 interface Member {
@@ -37,7 +38,6 @@ export default function Members() {
   const collectiveData = routeParams?.collectiveData;
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState<TabType>(defaultTab);
-  const [showRecentDonations, setShowRecentDonations] = useState(false);
   const navigation = useNavigation()
   const { user: currentUser } = useAuthStore();
 
@@ -45,6 +45,13 @@ export default function Members() {
   const { data: membersData, isLoading: isMembersLoading, error: membersError } = useQuery({
     queryKey: ['members', collectiveData?.id],
     queryFn: () => getCollectiveMembers(collectiveData?.id),
+    enabled: !!collectiveData?.id,
+  });
+
+  // Get donation history from API
+  const { data: donationHistoryData, isLoading: isDonationHistoryLoading } = useQuery({
+    queryKey: ['donationHistory', collectiveData?.id],
+    queryFn: () => getCollectiveDonationHistory(collectiveData?.id),
     enabled: !!collectiveData?.id,
   });
 
@@ -234,50 +241,10 @@ export default function Members() {
   );
 
   const renderCollectiveDonationsTab = () => (
-    <>
-      {/* Search Bar */}
-      {/* <View style={styles.searchContainer}>
-        <View style={styles.searchBar}>
-          <Search size={20} color={PrimaryGrey} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search"
-            placeholderTextColor={PrimaryGrey}
-          />
-        </View>
-      </View> */}
-
-      {/* Impact Metrics */}
-      <View style={styles.impactMetrics}>
-        <Text style={styles.impactTitle}>Impact Metrics</Text>
-        
-        <View style={styles.metricItem}>
-          <View style={styles.metricRow}>
-            <View style={styles.metricLabel}>
-              <Text style={styles.metricText}>Collective Donations</Text>
-            </View>
-            <Text style={styles.metricValue}>${collectiveData?.total_donated_amount || 0}</Text>
-          </View>
-          <TouchableOpacity onPress={() => setShowRecentDonations(true)}>
-            <Text style={styles.seeRecentText}>See recent donations</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.metricItem}>
-          <View style={styles.metricRow}>
-            <Text style={styles.metricText}>Causes</Text>
-            <Text style={styles.metricValue}>{collectiveData?.causes?.length ?? 0}</Text>
-          </View>
-        </View>
-
-        <View style={styles.metricItem}>
-          <View style={styles.metricRow}>
-            <Text style={styles.metricText}>Members</Text>
-            <Text style={styles.metricValue}>{collectiveData?.member_count ?? 0}</Text>
-          </View>
-        </View>
-      </View>
-    </>
+    <RecentDonationsList
+      donationHistory={Array.isArray(donationHistoryData) ? donationHistoryData : (donationHistoryData?.results || [])}
+      isLoading={isDonationHistoryLoading}
+    />
   );
 
   return (

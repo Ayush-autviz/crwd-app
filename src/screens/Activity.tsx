@@ -112,6 +112,15 @@ export default function Activity() {
                 notificationType = 'donation';
             }
 
+            // Extract user ID from notification data based on type
+            const userId = 
+                notification.data?.follower_id || 
+                notification.data?.liker_id ||
+                notification.data?.user_id || 
+                notification.data?.donor_id ||
+                notification.user?.id ||
+                null;
+
             return {
                 id: notification.id,
                 type: notificationType,
@@ -119,7 +128,7 @@ export default function Activity() {
                 time: formatTimeAgo(notification.created_at || notification.updated_at),
                 avatarUrl: notification.user?.profile_picture || notification.data?.profile_picture || '',
                 username: username,
-                userId: notification.data?.follower_id || notification.data?.user_id || notification.user?.id,
+                userId: userId,
             };
         });
     }, [personalNotifications]);
@@ -153,6 +162,15 @@ export default function Activity() {
                 }
             }
 
+            // Extract user ID from notification data based on type
+            const userId = 
+                notification.data?.new_member_id || 
+                notification.data?.creator_id || 
+                notification.data?.donor_id ||
+                notification.data?.liker_id ||
+                notification.data?.user_id ||
+                null;
+
             const isJoin = notification.type === "community" && notification.body?.includes("joined");
             const isPost = notification.type === "community_post" || (notification.type === "community" && notification.body?.includes("posted"));
 
@@ -168,6 +186,7 @@ export default function Activity() {
                 id: notification.id,
                 avatarUrl: notification.user?.profile_picture || notification.data?.profile_picture || '',
                 username: username,
+                userId: userId,
                 time: formatTimeAgo(notification.created_at || notification.updated_at),
                 org: collectiveName || null,
                 text: displayText,
@@ -438,18 +457,32 @@ export default function Activity() {
                 borderBottomColor: LightGrey,
                 padding: 16
             }}>
-                <TouchableOpacity onPress={() => {
-                    if (item.postId) {
-                        (navigation as any).navigate('PostDetail', { postId: item.postId });
-                    }
-                }}>
-                    <View style={{ flexDirection: 'row', gap: 12 }}>
+                <View style={{ flexDirection: 'row', gap: 12 }}>
+                    <TouchableOpacity 
+                        onPress={() => {
+                            if (item.userId) {
+                                (navigation as any).navigate('UserProfile', { userId: item.userId.toString() });
+                            }
+                        }}
+                        activeOpacity={0.7}
+                    >
                         <Avatar size={40}>
                             <AvatarImage src={item.avatarUrl} />
                             <AvatarFallback>
                                 {item.username?.charAt(0).toUpperCase() || 'U'}
                             </AvatarFallback>
                         </Avatar>
+                    </TouchableOpacity>
+                    
+                    <TouchableOpacity 
+                        onPress={() => {
+                            if (item.postId) {
+                                (navigation as any).navigate('PostDetail', { postId: item.postId });
+                            }
+                        }}
+                        style={{ flex: 1 }}
+                        activeOpacity={0.7}
+                    >
                         
                         <View style={{ flex: 1 }}>
                             {!item.isDonation && (
@@ -571,8 +604,8 @@ export default function Activity() {
                                 </TouchableOpacity>
                             </View> */}
                         </View>
-                    </View>
-                </TouchableOpacity>
+                    </TouchableOpacity>
+                </View>
             </View>
         )
     }

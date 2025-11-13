@@ -74,3 +74,8 @@ export const updateProfile = async (data: any) => {
     const response = await axiosClient.patch('/auth/me/update/', data);
     return response.data;
 };
+
+export const deactivateAccount = async () => {
+    const response = await axiosClient.post('/auth/me/deactivate/');
+    return response.data;
+};

@@ -1,16 +1,83 @@
-import { View, Text, ScrollView, Image, StyleSheet, TouchableOpacity } from 'react-native'
+import { View, Text, ScrollView, Image, StyleSheet, TouchableOpacity, Alert } from 'react-native'
 import React from 'react'
 import MainHeaderNav from '../components/MainHeaderNav'
-import { CircleHelp, CreditCard, FileText, Info, Lock, Mail, MessageSquare, Shield, User } from 'lucide-react-native'
+import { CircleHelp, CreditCard, FileText, Info, Lock, Mail, MessageSquare, Shield, User, Trash2 } from 'lucide-react-native'
 import { LightGrey, PrimaryBlue, PrimaryGrey, SecondaryGrey } from '../Constants/Colors'
 import { useNavigation } from '@react-navigation/native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useAuthStore } from '../store/store'
+import { useMutation } from '@tanstack/react-query'
+import { deactivateAccount } from '../services/api/auth'
+import { useToast } from '../contexts/ToastContext'
 
 export default function Settings() {
 
     const navigation = useNavigation();
-    const { user: currentUser } = useAuthStore();
+    const { user: currentUser, setUser, setToken } = useAuthStore();
+    const { showToast } = useToast();
+
+    // Deactivate account mutation
+    const deactivateAccountMutation = useMutation({
+        mutationFn: deactivateAccount,
+        onSuccess: () => {
+            // Clear user data and token
+            setUser({});
+            setToken({ access_token: '', refresh_token: '' });
+            showToast('Account deactivated successfully', 3000);
+            // Navigate to login/splash screen
+            navigation.reset({
+                index: 0,
+                routes: [{ name: 'SplashScreen' as never }],
+            });
+        },
+        onError: (error: any) => {
+            console.error('Error deactivating account:', error);
+            const errorMessage = error.response?.data?.message || error.message || 'Failed to deactivate account';
+            showToast(errorMessage, 3000);
+        },
+    });
+
+    const handleDeleteAccount = () => {
+        Alert.alert(
+            'Delete Account',
+            'Are you sure you want to permanently delete your account? This action cannot be undone and all your data will be lost.',
+            [
+                {
+                    text: 'Cancel',
+                    style: 'cancel',
+                    onPress: () => {
+                        // User cancelled, do nothing
+                    },
+                },
+                {
+                    text: 'Delete',
+                    style: 'destructive',
+                    onPress: () => {
+                        // Show second confirmation
+                        Alert.alert(
+                            'Final Confirmation',
+                            'This is your last chance. Your account will be permanently deleted. Are you absolutely sure?',
+                            [
+                                {
+                                    text: 'No, Keep My Account',
+                                    style: 'cancel',
+                                },
+                                {
+                                    text: 'Yes, Delete Forever',
+                                    style: 'destructive',
+                                    onPress: () => {
+                                        deactivateAccountMutation.mutate();
+                                    },
+                                },
+                            ],
+                            { cancelable: true }
+                        );
+                    },
+                },
+            ],
+            { cancelable: true }
+        );
+    };
 
     return (
         <SafeAreaView style={{ backgroundColor: '#fff', flex: 1 }}>
@@ -92,6 +159,32 @@ export default function Settings() {
                     </TouchableOpacity>
 
                 </View>
+
+                {/* User ID Display and Delete Account Button */}
+                {currentUser?.id && (
+                    <View style={styles.container}>
+                       
+                        
+                        <TouchableOpacity 
+                            onPress={handleDeleteAccount}
+                            disabled={deactivateAccountMutation.isPending}
+                            style={[
+                                { 
+                                    flexDirection: 'row', 
+                                    alignItems: 'center', 
+                                    gap: 10, 
+                                    marginVertical: 10,
+                                    opacity: deactivateAccountMutation.isPending ? 0.5 : 1
+                                }
+                            ]}
+                        >
+                            <Trash2 size={20} color="#ef4444" />
+                            <Text style={{ color: '#ef4444', fontWeight: '500' }}>
+                                {deactivateAccountMutation.isPending ? 'Deactivating...' : 'Delete Account'}
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
+                )}
 
             </ScrollView>
         </SafeAreaView>

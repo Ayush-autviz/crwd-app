@@ -63,6 +63,14 @@ export default function SuggestedCrwd({ collectives = [], isLoading = false, err
           Failed to load collectives. Please try again.
         </Text>
       </View>
+    )
+    :
+    collectives.length === 0 ? (
+      <View style={{ padding: 20, alignItems: 'center' }}>
+        <Text style={{ color: 'grey', textAlign: 'center' }}>
+          No collectives found.
+        </Text>
+      </View>
     ) : (
       <FlatList 
         data={collectives.slice(0, 10)}

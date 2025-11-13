@@ -215,3 +215,21 @@ export const reportIssue = async (data: any) => {
     const response = await axiosClient.post('/social/report-issue/', data);
     return response.data;
 };
+
+// Recent Searches API endpoints
+export const getRecentSearches = async () => {
+    const response = await axiosClient.get('/social/users/recent-searches/');
+    return response.data;
+};
+
+export const createRecentSearch = async (search_query: string) => {
+    const response = await axiosClient.post('/social/users/recent-searches/', {
+        search_query
+    });
+    return response.data;
+};
+
+export const deleteRecentSearch = async (searchId: string) => {
+    const response = await axiosClient.delete(`/social/users/recent-searches/${searchId}/`);
+    return response.data;
+};

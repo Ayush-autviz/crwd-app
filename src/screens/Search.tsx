@@ -9,15 +9,21 @@ import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/nativ
 import { Search } from 'lucide-react-native'
 import NearbyCauses from '../components/NearbyCauses'
 import { getDiscoverMode, resetDiscoverMode } from '../utils/discoverMode'
-import { useQuery } from '@tanstack/react-query'
-import { getCausesBySearch } from '../services/api/crwd'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { getCausesBySearch, getCauses } from '../services/api/crwd'
+import { getRecentSearches, createRecentSearch, deleteRecentSearch } from '../services/api/social'
+import { useAuthStore } from '../store/store'
 import { categories } from '../Constants/categories'
 // Icons replaced with emoji for compatibility
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/Avatar'
 import { getNonprofitColor } from '../utils/getNonprofitColor'
+import { Clock } from 'lucide-react-native'
+import { TrendingUp } from 'lucide-react-native'
 
 
 export default function SearchScreen() {
+    const queryClient = useQueryClient();
+    const { user: currentUser } = useAuthStore();
     const [discover, setDiscover] = useState(false) // Always start with false
     const [categoryId, setCategoryId] = useState<string | null>(null)
     const [categoryName, setCategoryName] = useState<string | null>(null)
@@ -68,36 +74,75 @@ export default function SearchScreen() {
             console.log('Setting discover to false - no discover mode set');
             setDiscover(false)
             
-            // If no category or search params, trigger initial search for "All" category
-            if (!params?.categoryId && !params?.categoryName && selectedCategory === "All") {
-                console.log('Triggering initial search for All category');
-                setSearchTrigger(prev => prev + 1);
-            }
+            // Don't auto-trigger search - only on Enter key press
         }
     }, [route.params, selectedCategory, hasExitedDiscover]))
 
-    // Get causes with search and category filtering
+    // Get recent searches (only if user is logged in)
+    const { data: recentSearchesData } = useQuery({
+        queryKey: ['recentSearches'],
+        queryFn: () => getRecentSearches(),
+        enabled: !!currentUser?.id,
+        refetchOnMount: true,
+    });
+
+    // Update recent searches list when data is available (limit to 5)
+    useEffect(() => {
+        if (recentSearchesData?.results) {
+            const searches = recentSearchesData.results
+                .slice(0, 5) // Limit to 5 items
+                .map((item: any) => ({
+                    id: item.id,
+                    search_query: item.search_query
+                }));
+            setRecentSearches(searches);
+        }
+    }, [recentSearchesData]);
+
+    // Create recent search mutation
+    const createRecentSearchMutation = useMutation({
+        mutationFn: (search_query: string) => createRecentSearch(search_query),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['recentSearches'] });
+            queryClient.refetchQueries({ queryKey: ['recentSearches'] });
+        },
+    });
+
+    // Delete recent search mutation
+    const deleteRecentSearchMutation = useMutation({
+        mutationFn: (searchId: string) => deleteRecentSearch(searchId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['recentSearches'] });
+            queryClient.refetchQueries({ queryKey: ['recentSearches'] });
+        },
+    });
+
+    // Get causes with search and category filtering (only when searchTrigger is set)
     const { data: causesData, isLoading: isCausesLoading, error } = useQuery({
         queryKey: ['causes', selectedCategory, searchQuery, searchTrigger, currentPage],
         queryFn: () => {
             return getCausesBySearch(searchQuery, selectedCategory === "All" || selectedCategory === "" ? '' : selectedCategory, currentPage);
         },
-        enabled: !discover, // Always enabled when not in discover mode to fetch causes
-        refetchOnMount: true,
+        enabled: searchTrigger > 0, // Only enabled when search is triggered (not on mount)
+        refetchOnMount: false,
         refetchOnWindowFocus: false,
     });
 
 
-    // Handle API response and accumulate results
+    // Handle API response and accumulate results, and save to recent searches
     useEffect(() => {
         if (causesData?.results) {
             if (currentPage === 1) {
                 setAllCauses(causesData.results);
+                // Save to recent searches on successful search (only if user is logged in)
+                if (searchQuery.trim() && currentUser?.id) {
+                    createRecentSearchMutation.mutate(searchQuery.trim());
+                }
             } else {
                 setAllCauses(prev => [...prev, ...causesData.results]);
             }
         }
-    }, [causesData, currentPage]);
+    }, [causesData, currentPage, searchQuery, currentUser?.id]);
 
     // Reset page when search or category changes
     useEffect(() => {
@@ -105,53 +150,51 @@ export default function SearchScreen() {
         setAllCauses([]);
     }, [searchTrigger, selectedCategory]);
 
-    // Ensure data is fetched when screen comes into focus with no params
-    useEffect(() => {
-        // When search trigger changes, ensure query is triggered
-        if (searchTrigger > 0 && !discover) {
-            // Query will automatically run due to enabled: !discover
-        }
-    }, [searchTrigger, discover]);
-
-    // Trigger search when category changes (only in non-discover mode)
-    useEffect(() => {
-        if (!discover) {
-            // Clear search query when "All" is selected
-            if (selectedCategory === "All" || selectedCategory === "") {
-                setSearchQuery("");
-            }
-            setSearchTrigger(prev => prev + 1);
-        }
-    }, [selectedCategory, discover]);
-
-    // Trigger initial search on mount if no category or search query is set
-    useEffect(() => {
-        if (!discover && !categoryId && !categoryName && searchQuery === "" && (selectedCategory === "All" || selectedCategory === "")) {
-            // Auto-trigger search on page load to show all causes
-            setSearchTrigger(prev => prev + 1);
-        }
-    }, [discover]);
+    // Don't auto-trigger search - only on Enter key press
 
     // Show search results when typing, show default content when empty
     const showSearchResults = search.trim().length > 0 || searchQuery.trim().length > 0
     
-    const [recentSearches, setRecentSearches] = useState([
-        "Atlanta animal shelters", 
-        "Gaza support efforts", 
-        "Marine wildlife charities"
-    ])
+    const [recentSearches, setRecentSearches] = useState<Array<{ id: number; search_query: string }>>([])
     
-    const [popularSearches, setPopularSearches] = useState([
-        "Protests near me", 
-        "Harvard opens free classes to public"
-    ])
+    const [popularSearches, setPopularSearches] = useState<any[]>([])
 
-    const removeRecentSearch = (index: number) => {
-        setRecentSearches(prev => prev.filter((_, i) => i !== index))
+    // Fetch nonprofits for popular searches
+    const { data: nonprofitsData, isLoading: isNonprofitsLoading } = useQuery({
+        queryKey: ['nonprofits'],
+        queryFn: () => getCauses(),
+        enabled: true,
+    });
+
+    // Update popular searches list with nonprofits when data is available
+    useEffect(() => {
+        if (nonprofitsData?.results && nonprofitsData.results.length > 0) {
+            // Take first few nonprofits (limit to 5 or available)
+            const nonprofits = nonprofitsData.results.slice(0, 5).map((nonprofit: any) => ({
+                id: nonprofit.id,
+                name: nonprofit.name,
+            }));
+            setPopularSearches(nonprofits);
+        }
+    }, [nonprofitsData]);
+
+    const removeRecentSearch = (searchId: number) => {
+        if (currentUser?.id) {
+            deleteRecentSearchMutation.mutate(searchId.toString());
+        }
+    }
+
+    const handleRecentSearchClick = (searchQuery: string) => {
+        // Set the search query and trigger search
+        setSearch(searchQuery);
+        setSearchQuery(searchQuery);
+        setSearchTrigger(prev => prev + 1);
+        setDiscover(false);
     }
 
     const removePopularSearch = (index: number) => {
-        setPopularSearches(prev => prev.filter((_, i) => i !== index))
+        // Don't allow removing nonprofits from popular searches
+        // They are fetched from API, so we don't remove them
     }
 
     // Handle search input with Enter key
@@ -391,10 +434,9 @@ export default function SearchScreen() {
                         {/* Results Header */}
                         <View style={{ marginBottom: 16 }}>
                             <Text style={{ fontSize: 18, fontWeight: '600', color: '#111827' }}>
-                                {searchQuery ? `Search results for "${searchQuery}" in ${categories.find(cat => cat.id === selectedCategory)?.name}` : 
+                                {searchQuery ? `Search results for "${searchQuery}"` : 
                                  (selectedCategory !== "All" && selectedCategory !== "") ? 
-                                 `Causes in ${categories.find(cat => cat.id === selectedCategory)?.name}` : 
-                                 "Causes"}
+                                 "Causes" : "Causes"}
                                  
                             </Text>
                         </View>
@@ -494,10 +536,9 @@ export default function SearchScreen() {
                         ) : (
                             <View style={{ padding: 20, alignItems: 'center' }}>
                                 <Text style={{ color: PrimaryGrey, textAlign: 'center' }}>
-                                    {searchQuery ? `No causes found for "${searchQuery}" in ${categories.find(cat => cat.id === selectedCategory)?.name}` : 
+                                    {searchQuery ? `No causes found for "${searchQuery}"` : 
                                      (selectedCategory !== "All" && selectedCategory !== "") ? 
-                                     `No causes found in ${categoryName || categories.find(cat => cat.id === selectedCategory)?.name || selectedCategory}` : 
-                                     "No causes available"}
+                                     "No causes found" : "No causes available"}
                                 </Text>
                             </View>
                         )}
@@ -514,25 +555,21 @@ export default function SearchScreen() {
                       
                     </View>
 
-                {/* Recent Searches */}
-                {recentSearches.length > 0 && (
+                {/* Recent Searches - Only show if user is logged in */}
+                {currentUser?.id && recentSearches.length > 0 && allCauses.length === 0 && (
                     <View style={{ marginTop: 10 }}>
                         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }}>
-                            <Text style={{ fontSize: 16, marginRight: 8 }}>🕒</Text>
+                            {/* <Text style={{ fontSize: 16, marginRight: 8 }}>🕒</Text> s*/}
+                            <Clock size={20} color={PrimaryGrey} style={{ marginRight: 8 }} />
                             <Text style={{ fontSize: 16, fontWeight: '600', color: PrimaryGrey }}>Recent Searches</Text>
                         </View>
                         <View style={{ 
                             backgroundColor: 'white',
                             borderRadius: 12,
-                           // shadowColor: '#000',
-                           // shadowOffset: { width: 0, height: 1 },
-                           // shadowOpacity: 0.1,
-                           // shadowRadius: 3,
-                           // elevation: 2,
                         }}>
-                            {recentSearches.map((searchTerm, index) => (
+                            {recentSearches.map((item, index) => (
                                 <TouchableOpacity
-                                    key={index}
+                                    key={item.id || index}
                                     style={{
                                         flexDirection: 'row',
                                         alignItems: 'center',
@@ -542,24 +579,21 @@ export default function SearchScreen() {
                                         borderBottomWidth: index < recentSearches.length - 1 ? 1 : 0,
                                         borderBottomColor: LightGrey,
                                     }}
-                                    onPress={() => navigation.navigate('Search2' as never)}
+                                    onPress={() => handleRecentSearchClick(item.search_query)}
                                 >
                                     <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
                                         <View style={{ 
-                                            padding: 8, 
-                                            // backgroundColor: LightGrey, 
-                                            // borderRadius: 20, 
-                                            // marginRight: 12 
+                                            padding: 4, 
                                         }}>
-                                            {/* <Text style={{ fontSize: 16 }}>🕒</Text> */}
-                                            <Text style={{ fontSize: 16, marginRight: 8 }}>🕒</Text>
+                                            {/* <Text style={{ fontSize: 16, marginRight: 8 }}>🕒</Text> */}
+                                            <Clock size={20} color={PrimaryGrey} style={{ marginRight: 8 }} />
                                         </View>
-                                        <Text style={{ fontSize: 14, fontWeight: '500', flex: 1 }}>{searchTerm}</Text>
+                                        <Text style={{ fontSize: 14, fontWeight: '500', flex: 1 }}>{item.search_query}</Text>
                                     </View>
                                     <TouchableOpacity
                                         onPress={(e) => {
                                             e.stopPropagation()
-                                            removeRecentSearch(index)
+                                            removeRecentSearch(item.id)
                                         }}
                                         style={{ padding: 4 }}
                                     >
@@ -575,7 +609,16 @@ export default function SearchScreen() {
                 {popularSearches.length > 0 && (
                     <View style={{ marginTop: 20 }}>
                         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }}>
-                            <Text style={{ fontSize: 16, marginRight: 8 }}>🔥</Text>
+                            <View style={{ 
+                                width: 20, 
+                                height: 20, 
+                                justifyContent: 'center', 
+                                alignItems: 'center',
+                                marginRight: 8 
+                            }}>
+                                {/* <Text style={{ fontSize: 18, color: PrimaryGrey }}>⚡</Text> */}
+                                <TrendingUp size={20} color={PrimaryGrey} style={{ marginRight: 8 }} />
+                            </View>
                             <Text style={{ fontSize: 16, fontWeight: '600', color: PrimaryGrey }}>Popular Searches</Text>
                         </View>
                         <View style={{ 
@@ -587,9 +630,9 @@ export default function SearchScreen() {
                            // shadowRadius: 3,
                            // elevation: 2,
                         }}>
-                            {popularSearches.map((searchTerm, index) => (
+                            {popularSearches.map((item, index) => (
                                 <TouchableOpacity
-                                    key={index}
+                                    key={item.id || index}
                                     style={{
                                         flexDirection: 'row',
                                         alignItems: 'center',
@@ -599,29 +642,32 @@ export default function SearchScreen() {
                                         borderBottomWidth: index < popularSearches.length - 1 ? 1 : 0,
                                         borderBottomColor: LightGrey,
                                     }}
-                                    onPress={() => navigation.navigate('Search2' as never)}
+                                    onPress={() => {
+                                        if (item.id) {
+                                            (navigation as any).navigate('CauseScreen', { causeId: item.id });
+                                        } else {
+                                            navigation.navigate('Search2' as never);
+                                        }
+                                    }}
                                 >
                                     <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
                                         <View style={{ 
-                                            padding: 8, 
-                                            // backgroundColor: LightGrey, 
-                                            // borderRadius: 20, 
-                                            // marginRight: 12 
+                                            padding: 8,
+                                            backgroundColor: '#f3f4f6',
+                                            borderRadius: 20,
+                                            marginRight: 12,
+                                            width: 32,
+                                            height: 32,
+                                            justifyContent: 'center',
+                                            alignItems: 'center',
                                         }}>
-                                            {/* <Text style={{ fontSize: 16 }}>🔥</Text> */}
-                                            <Text style={{ fontSize: 16, marginRight: 8 }}>🔥</Text>
+                                            {/* <Text style={{ fontSize: 14, color: '#4b5563' }}>📈</Text> */}
+                                            <TrendingUp size={20} color={PrimaryGrey} />
                                         </View>
-                                        <Text style={{ fontSize: 14, fontWeight: '500', flex: 1 }}>{searchTerm}</Text>
+                                        <Text style={{ fontSize: 14, fontWeight: '500', flex: 1 }}>
+                                            {item.name || item}
+                                        </Text>
                                     </View>
-                                    <TouchableOpacity
-                                        onPress={(e) => {
-                                            e.stopPropagation()
-                                            removePopularSearch(index)
-                                        }}
-                                        style={{ padding: 4 }}
-                                    >
-                                        <Text style={{ fontSize: 16, color: PrimaryGrey }}>✕</Text>
-                                    </TouchableOpacity>
                                 </TouchableOpacity>
                             ))}
                         </View>

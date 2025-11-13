@@ -435,7 +435,7 @@ export default function Home() {
                 </View>
 
                 {/* Nearby Causes Section */}
-                <View style={{ marginTop: 32 }}>
+                <View style={{ marginTop: 32, marginBottom: 24 }}>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                         <Text style={{ fontSize: 18, fontWeight: '600', color: '#111827' }}>Nearby Causes</Text>
                         <TouchableOpacity 
@@ -535,11 +535,7 @@ export default function Home() {
                             </Text>
                         </View>
                     ) : posts.length === 0 ? (
-                        <View style={{ padding: 20, alignItems: 'center' }}>
-                            <Text style={{ color: PrimaryGrey, textAlign: 'center' }}>
-                                No posts found
-                            </Text>
-                        </View>
+                       <></>
                     ) : (
                         <PopularPosts
                             posts={posts}

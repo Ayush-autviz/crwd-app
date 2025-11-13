@@ -21,6 +21,7 @@ import { HelpCircle } from 'lucide-react-native';
 import { Settings } from 'lucide-react-native';
 import { getCollectiveById } from '../../services/api/crwd';
 import { PrimaryBlue } from '../../Constants/Colors';
+import { useQueryClient } from '@tanstack/react-query';
 
 const { width, height } = Dimensions.get('window');
 
@@ -29,6 +30,8 @@ interface CheckoutScreenProps {
   selectedOrganizations?: string[];
   onBack: () => void;
   donationBox?: any;
+  fromPaymentResult?: boolean;
+  onConfettiShown?: () => void;
 }
 
 // Mock data for CRWDS section
@@ -42,10 +45,14 @@ export default function CheckoutScreen({
   selectedOrganizations = [],
   onBack,
   donationBox,
+  fromPaymentResult = false,
+  onConfettiShown,
 }: CheckoutScreenProps) {
   const navigation = useNavigation();
+  const queryClient = useQueryClient();
   const [showCongratulationsModal, setShowCongratulationsModal] = useState(false);
   const confettiRef = useRef<ConfettiCannon>(null);
+  const confettiShownRef = useRef(false);
   const [expandedCollectives, setExpandedCollectives] = useState<Set<number>>(new Set());
   const [collectiveDetails, setCollectiveDetails] = useState<Record<number, any>>({});
 
@@ -67,18 +74,35 @@ export default function CheckoutScreen({
     console.log('CheckoutScreen - hasApiData:', hasApiData);
   }, [donationBox, manualCauses, attributingCollectives, hasApiData]);
 
-  // Show congratulations modal when component mounts
-  // useEffect(() => {
-  //   const timer = setTimeout(() => {
-  //     setShowCongratulationsModal(true);
-  //     // Fire confetti after modal appears
-  //     setTimeout(() => {
-  //       confettiRef.current?.start();
-  //     }, 300);
-  //   }, 500);
+  // Reset confetti ref when fromPaymentResult becomes false
+  useEffect(() => {
+    if (!fromPaymentResult) {
+      confettiShownRef.current = false;
+    }
+  }, [fromPaymentResult]);
 
-  //   return () => clearTimeout(timer);
-  // }, []);
+  // Show confetti when coming from successful payment (only once)
+  useEffect(() => {
+    if (fromPaymentResult && donationBox?.id && !confettiShownRef.current) {
+      // Show confetti modal
+      setShowCongratulationsModal(true);
+      confettiShownRef.current = true;
+      
+      // Refetch donation box data
+      queryClient.invalidateQueries({ queryKey: ['donationBox'] });
+      queryClient.refetchQueries({ queryKey: ['donationBox'] });
+      
+      // Fire confetti after modal appears
+      setTimeout(() => {
+        confettiRef.current?.start();
+      }, 300);
+      
+      // Notify parent that confetti has been shown (to clear the flag)
+      if (onConfettiShown) {
+        onConfettiShown();
+      }
+    }
+  }, [fromPaymentResult, donationBox?.id, onConfettiShown, queryClient]);
 
   const handleCloseCongratulationsModal = () => {
     setShowCongratulationsModal(false);

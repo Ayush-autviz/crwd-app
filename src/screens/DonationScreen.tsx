@@ -46,6 +46,8 @@ export default function DonationScreen() {
   const [expandedCollectives, setExpandedCollectives] = useState<Set<number>>(new Set());
   const [collectiveDetails, setCollectiveDetails] = useState<Record<number, any>>({});
   const [preselectedItemAdded, setPreselectedItemAdded] = useState(false);
+  const [fromPaymentResult, setFromPaymentResult] = useState(false);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const { user: currentUser } = useAuthStore();
   const queryClient = useQueryClient();
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
@@ -102,10 +104,16 @@ export default function DonationScreen() {
   const activateDonationBoxConfirm = useMutation({
     mutationFn: confirmMobileActivation,
     onSuccess: () => {
-      Alert.alert('Success', 'Donation box activated');
+      // Alert.alert('Success', 'Donation box activated');
       queryClient.invalidateQueries({ queryKey: ['donationBox'] });
+      // Set flag to show confetti in checkout screen
+      setFromPaymentResult(true);
+      setIsProcessingPayment(false);
     },
-    onError: (e: any) => Alert.alert('Error', e?.response?.data?.message || 'Activation failed'),
+    onError: (e: any) => {
+      Alert.alert('Error', e?.response?.data?.message || 'Activation failed');
+      setIsProcessingPayment(false);
+    },
   });
 
   // Activate donation box (Stripe PaymentSheet)
@@ -115,33 +123,46 @@ export default function DonationScreen() {
       const clientSecret = response?.client_secret;
       if (!clientSecret) {
         Alert.alert('Error', 'Missing client secret');
+        setIsProcessingPayment(false);
         return;
       }
-      const init = await initPaymentSheet({
-        paymentIntentClientSecret: clientSecret,
-        merchantDisplayName: 'CRWD',
-      });
-      if (init.error) {
-        Alert.alert('Error', init.error.message || 'Failed to initialize payment');
-        return;
-      }
-      const present = await presentPaymentSheet();
-      if (present.error && present.error.code !== 'Canceled') {
-        Alert.alert('Payment Failed', present.error.message || 'Unable to complete payment');
-        return;
-      }
-
-
-      if(!present.error) {
-        activateDonationBoxConfirm.mutate({
-         payment_intent_id: response.payment_intent_id,
+      
+      setIsProcessingPayment(true);
+      try {
+        const init = await initPaymentSheet({
+          paymentIntentClientSecret: clientSecret,
+          merchantDisplayName: 'CRWD',
         });
+        if (init.error) {
+          Alert.alert('Error', init.error.message || 'Failed to initialize payment');
+          setIsProcessingPayment(false);
+          return;
+        }
+        const present = await presentPaymentSheet();
+        if (present.error && present.error.code !== 'Canceled') {
+          Alert.alert('Payment Failed', present.error.message || 'Unable to complete payment');
+          setIsProcessingPayment(false);
+          return;
+        }
+
+        if(!present.error) {
+          // Keep loader showing while confirming
+          activateDonationBoxConfirm.mutate({
+           payment_intent_id: response.payment_intent_id,
+          });
+        } else {
+          setIsProcessingPayment(false);
+        }
+      } catch (error) {
+        setIsProcessingPayment(false);
+        Alert.alert('Error', 'Payment processing failed');
       }
     },
     onError: (e: any) => {
       console.log('error', e);
       Alert.alert('Error', e?.response?.data?.message || 'Activation failed');
       queryClient.invalidateQueries({ queryKey: ['donationBox'] });
+      setIsProcessingPayment(false);
     },
   });
 
@@ -389,8 +410,13 @@ export default function DonationScreen() {
           <CheckoutScreen
             donationAmount={donationAmount}
             selectedOrganizations={selectedOrganizations}
-            onBack={() => setCheckout(false)}
+            onBack={() => {
+              setCheckout(false);
+              setFromPaymentResult(false); // Clear flag when going back
+            }}
             donationBox={donationBoxQuery.data || donationBox}
+            fromPaymentResult={fromPaymentResult}
+            onConfettiShown={() => setFromPaymentResult(false)} // Clear flag after confetti is shown
           />
         ) : activeTab === 'onetime' ? (
           <OneTimeDonation
@@ -801,6 +827,20 @@ export default function DonationScreen() {
           </TouchableOpacity>
           </View>
         )} */}
+
+        {/* Payment Processing Loader */}
+        <Modal
+          visible={isProcessingPayment || activateMutation.isPending || activateDonationBoxConfirm.isPending}
+          transparent={true}
+          animationType="fade"
+        >
+          <View style={styles.loaderOverlay}>
+            <View style={styles.loaderContainer}>
+              <ActivityIndicator size="large" color={PrimaryBlue} />
+              <Text style={styles.loaderText}>Processing payment...</Text>
+            </View>
+          </View>
+        </Modal>
         </SafeAreaView>
     </>
   );
@@ -1176,5 +1216,24 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
     color: '#2563eb',
+  },
+  loaderOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loaderContainer: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 24,
+    alignItems: 'center',
+    minWidth: 200,
+  },
+  loaderText: {
+    marginTop: 16,
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#111827',
   },
 });

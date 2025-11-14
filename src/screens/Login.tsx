@@ -249,7 +249,7 @@ const handleGoogleLogin = async () => {
           </View>
 
           {/* Google Login Button */}
-          <TouchableOpacity 
+          {/* <TouchableOpacity 
             style={styles.googleButton}
             onPress={handleGoogleLogin}
             disabled={isGoogleLoading}
@@ -264,14 +264,14 @@ const handleGoogleLogin = async () => {
             <Text style={styles.googleButtonText}>
               {isGoogleLoading ? 'Signing in...' : 'Continue with Google'}
             </Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
           {/* Divider */}
-          <View style={styles.divider}>
+          {/* <View style={styles.divider}>
             <View style={styles.dividerLine} />
             <Text style={styles.dividerText}>Or continue with email</Text>
             <View style={styles.dividerLine} />
-          </View>
+          </View> */}
 
           {/* Form */}
           <View style={styles.form}>

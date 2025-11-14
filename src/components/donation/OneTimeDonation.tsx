@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -10,6 +10,9 @@ import {
   ActivityIndicator,
   Linking,
   Alert,
+  Modal,
+  TouchableWithoutFeedback,
+  Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Minus, Plus, Trash2 } from 'lucide-react-native';
@@ -20,6 +23,9 @@ import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
 import { getCausesBySearch, getJoinCollective } from '../../services/api/crwd';
 import { useAuthStore } from '../../store/store';
 import { useStripe } from '@stripe/stripe-react-native';
+import ConfettiCannon from 'react-native-confetti-cannon';
+
+const { width, height } = Dimensions.get('window');
 
 interface SelectedItem {
   id: string;
@@ -59,6 +65,8 @@ export default function OneTimeDonation({
   const { user: currentUser } = useAuthStore();
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const [isPresenting, setIsPresenting] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const confettiRef = useRef<ConfettiCannon>(null);
 
   // Handle preselected item from navigation
   useEffect(() => {
@@ -123,8 +131,11 @@ export default function OneTimeDonation({
         }
 
         // Payment succeeded
-        Alert.alert('Success', 'Donation completed successfully');
-        // setCheckout(true);
+        setShowSuccessModal(true);
+        // Fire confetti after modal appears
+        setTimeout(() => {
+          confettiRef.current?.start();
+        }, 300);
         setSelectedItems([]);
         setSelectedOrganizations([]);
       } catch (err: any) {
@@ -445,6 +456,65 @@ export default function OneTimeDonation({
           )}
         </TouchableOpacity>
       </View>
+
+      {/* Success Modal with Confetti */}
+      <Modal
+        visible={showSuccessModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowSuccessModal(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setShowSuccessModal(false)}>
+          <View style={styles.modalOverlay}>
+            {/* Confetti */}
+            <View style={styles.confettiContainer}>
+              <ConfettiCannon
+                ref={confettiRef}
+                count={200}
+                origin={{ x: width / 2, y: 0 }}
+                autoStart={false}
+                colors={['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8']}
+                fadeOut
+              />
+            </View>
+            
+            <TouchableWithoutFeedback onPress={() => {}}>
+              <View style={styles.modalContent}>
+                <TouchableOpacity
+                  style={styles.closeButton}
+                  onPress={() => setShowSuccessModal(false)}
+                >
+                  <Text style={styles.closeButtonText}>×</Text>
+                </TouchableOpacity>
+                
+                <View style={styles.modalBody}>
+                  <Text style={styles.modalTitle}>Donation Successful! 🎉</Text>
+                  <Text style={styles.modalDescription}>
+                    Here's your donation summary:
+                  </Text>
+
+                  {/* Donation Summary Card */}
+                  <View style={styles.summaryCard}>
+                    <View style={styles.summaryCardContent}>
+                      <View style={styles.summaryIcon}>
+                        <Text style={styles.heartEmoji}>💝</Text>
+                      </View>
+                      <View style={styles.summaryTextContainer}>
+                        <Text style={styles.summaryCardTitle}>One-Time Donation</Text>
+                        <Text style={styles.summaryCardAmount}>${donationAmount.toFixed(2)}</Text>
+                      </View>
+                    </View>
+                  </View>
+
+                  {/* <Text style={styles.supportingText}>
+                    Supporting {selectedItems.length} {selectedItems.length === 1 ? 'organization' : 'organizations'} with your one-time donation.
+                  </Text> */}
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
     </View>
   );
 }
@@ -724,5 +794,105 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 14,
     fontWeight: 'bold',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 24,
+    width: '100%',
+    maxWidth: 400,
+    position: 'relative',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    backgroundColor: '#f3f4f6',
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000,
+  },
+  closeButtonText: {
+    fontSize: 18,
+    color: '#9ca3af',
+    fontWeight: 'bold',
+  },
+  modalBody: {
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#111827',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  modalDescription: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginBottom: 24,
+    textAlign: 'center',
+  },
+  summaryCard: {
+    backgroundColor: '#F3F4F6',
+    borderRadius: 12,
+    padding: 16,
+    width: '100%',
+    marginBottom: 20,
+  },
+  summaryCardContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  summaryIcon: {
+    width: 48,
+    height: 48,
+    backgroundColor: '#2563eb',
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  heartEmoji: {
+    fontSize: 20,
+  },
+  summaryTextContainer: {
+    flex: 1,
+  },
+  summaryCardTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#111827',
+    marginBottom: 4,
+  },
+  summaryCardAmount: {
+    fontSize: 14,
+    color: '#6B7280',
+  },
+  supportingText: {
+    fontSize: 14,
+    color: '#6B7280',
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 20,
+  },
+  confettiContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 999,
+    pointerEvents: 'none',
   },
 });

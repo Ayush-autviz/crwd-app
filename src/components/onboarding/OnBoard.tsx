@@ -435,7 +435,7 @@ export default function OnBoard() {
         </View>
 
         {/* Google Login Button */}
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={{
             borderWidth: 1,
             borderColor: '#d1d5db',
@@ -464,7 +464,7 @@ export default function OnBoard() {
           }}>
             {isGoogleLoading ? 'Signing in...' : 'Continue with Google'}
           </Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         {/* Get Started button */}
         <TouchableOpacity

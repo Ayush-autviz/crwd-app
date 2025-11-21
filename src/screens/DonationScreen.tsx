@@ -129,9 +129,14 @@ export default function DonationScreen() {
       
       setIsProcessingPayment(true);
       try {
+        const merchantDisplayName = getMerchantDisplayName();
         const init = await initPaymentSheet({
           paymentIntentClientSecret: clientSecret,
-          merchantDisplayName: 'CRWD',
+          merchantDisplayName: `${merchantDisplayName} via CRWD`,
+          allowsDelayedPaymentMethods: false,
+          applePay: {
+            merchantCountryCode: 'US',
+          }
         });
         if (init.error) {
           Alert.alert('Error', init.error.message || 'Failed to initialize payment');
@@ -165,6 +170,50 @@ export default function DonationScreen() {
       setIsProcessingPayment(false);
     },
   });
+
+  // Generate merchant display name from donation box (Apple guideline requirement)
+  const getMerchantDisplayName = (): string => {
+    const donationBoxData = donationBoxQuery.data || donationBox;
+    if (!donationBoxData) {
+      return 'CRWD';
+    }
+
+    const causes = donationBoxData.manual_causes || [];
+    const collectives = donationBoxData.attributing_collectives || [];
+    const allItems = [...causes, ...collectives];
+
+    if (allItems.length === 0) {
+      return 'CRWD';
+    }
+
+    if (allItems.length === 1) {
+      // Single organization: show its name
+      return allItems[0]?.name || 'CRWD';
+    }
+
+    // Multiple organizations: show them in a readable format
+    // Apple Pay has display limits, so we'll show up to 2-3 names or use a summary
+    const names = allItems
+      .map(item => item?.name)
+      .filter(Boolean)
+      .slice(0, 3); // Limit to first 3 to avoid truncation
+
+    if (names.length === 0) {
+      return 'CRWD';
+    }
+
+    if (names.length === 2) {
+      return `${names[0]} & ${names[1]}`;
+    }
+
+    if (names.length === 3 && allItems.length === 3) {
+      return `${names[0]}, ${names[1]} & ${names[2]}`;
+    }
+
+    // More than 3 selected, show first 2 and count
+    const remainingCount = allItems.length - 2;
+    return `${names[0]} & ${names[1]} +${remainingCount} more`;
+  };
 
   const handleToggleCollective = async (collectiveId: number) => {
     const isExpanded = expandedCollectives.has(collectiveId);

@@ -104,9 +104,10 @@ export default function OneTimeDonation({
 
       try {
         setIsPresenting(true);
+        const merchantDisplayName = getMerchantDisplayName();
         const init = await initPaymentSheet({
           paymentIntentClientSecret: clientSecret,
-          merchantDisplayName: 'CRWD',
+          merchantDisplayName: `${merchantDisplayName} via CRWD`,
           allowsDelayedPaymentMethods: false,
           applePay: {
             merchantCountryCode: 'US',
@@ -200,6 +201,41 @@ export default function OneTimeDonation({
     console.log('handleClearAllItems called');
     setSelectedItems([]);
     setSelectedOrganizations([]);
+  };
+
+  // Generate merchant display name from selected items (Apple guideline requirement)
+  const getMerchantDisplayName = (): string => {
+    if (selectedItems.length === 0) {
+      return 'CRWD';
+    }
+    
+    if (selectedItems.length === 1) {
+      // Single organization: show its name
+      return selectedItems[0].data?.name || 'CRWD';
+    }
+    
+    // Multiple organizations: show them in a readable format
+    // Apple Pay has display limits, so we'll show up to 2-3 names or use a summary
+    const names = selectedItems
+      .map(item => item.data?.name)
+      .filter(Boolean)
+      .slice(0, 3); // Limit to first 3 to avoid truncation
+    
+    if (names.length === 0) {
+      return 'CRWD';
+    }
+    
+    if (names.length === 2) {
+      return `${names[0]} & ${names[1]}`;
+    }
+    
+    if (names.length === 3 && selectedItems.length === 3) {
+      return `${names[0]}, ${names[1]} & ${names[2]}`;
+    }
+    
+    // More than 3 selected, show first 2 and count
+    const remainingCount = selectedItems.length - 2;
+    return `${names[0]} & ${names[1]} +${remainingCount} more`;
   };
 
   const handleCheckout = () => {

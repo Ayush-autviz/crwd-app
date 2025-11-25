@@ -265,6 +265,7 @@ export default function SearchScreen() {
                                     value={search}
                                     onChangeText={setSearch}
                                     onSubmitEditing={handleSearchSubmit}
+                                    returnKeyLabel='search'
                                     style={{ 
                                     flex: 1, 
                                     fontSize: 16, 

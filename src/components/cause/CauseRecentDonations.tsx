@@ -118,7 +118,7 @@ const CauseRecentDonations: React.FC<CauseRecentDonationsProps> = ({
             }}>
               Be the first to support this cause. Every donation makes a difference and helps us reach our goal.
             </Text>
-            <TouchableOpacity 
+            {/* <TouchableOpacity 
               style={{
                 backgroundColor: PrimaryBlue,
                 paddingHorizontal: 20,
@@ -130,7 +130,7 @@ const CauseRecentDonations: React.FC<CauseRecentDonationsProps> = ({
               <Text style={{ color: 'white', fontSize: 14, fontWeight: '500' }}>
                 Donate Now
               </Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
         </View>
       ) : (

@@ -55,7 +55,7 @@ export default function SuggestdCauses({ causes = [], isLoading = false, error =
                                         source={typeof item.image === 'string' ? { uri: item.image } : item.image} 
                                         style={{ width: 40, height: 40, borderRadius: 20, }} 
                                     /> */}
-                                    <Avatar size={40}>
+                                    <Avatar style={{borderWidth: 1, borderColor: '#e5e7eb'}} size={40}>
                                         <AvatarImage src={item.image} />
                                         <AvatarFallback style={{ backgroundColor: getNonprofitColor(item.id).bgColor }} textStyle={{ color: getNonprofitColor(item.id).textColor, fontWeight: '600' }}>
                                             {item.name.split(' ')[0][0].toUpperCase()}

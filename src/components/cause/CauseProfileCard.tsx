@@ -75,8 +75,8 @@ const CauseProfileCard: React.FC<CauseProfileCardProps> = ({ onLearnMoreClick, c
           source={{ uri: causeData?.logo || 'https://randomuser.me/api/portraits/men/32.jpg' }} 
           style={{ width: 56, height: 56, borderRadius: 12 }} 
         /> */}
-        <Avatar size={48}>
-          <AvatarImage src={causeData?.logo} />
+        <Avatar style={{borderWidth: 1, borderColor: '#e5e7eb'}} size={48}>
+          <AvatarImage src={causeData?.image} />
           <AvatarFallback style={{ backgroundColor: '#dbeafe' }} textStyle={{ color: '#2563eb', fontWeight: '600' }}>
             {causeData?.name?.charAt(0).toUpperCase()}
           </AvatarFallback>
@@ -173,7 +173,7 @@ const CauseProfileCard: React.FC<CauseProfileCardProps> = ({ onLearnMoreClick, c
           Your donation is protected by our guarantee
         </Text>
       </View>
-      <Text style={{ fontSize: 14, color: PrimaryBlue, textDecorationLine: 'underline', marginTop: 8 }}>Learn More</Text>
+      {/* <Text style={{ fontSize: 14, color: PrimaryBlue, textDecorationLine: 'underline', marginTop: 8 }}>Learn More</Text> */}
     </View>
   );
 };

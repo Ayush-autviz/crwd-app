@@ -49,7 +49,7 @@ export default function NearbyCauses({ causes = [], isLoading = false, error = n
                   source={typeof item.image === 'string' ? { uri: item.image } : item.image} 
                   style={{ width: 40, height: 40, borderRadius: 20, }} 
                 /> */}
-                <Avatar size={40}>
+                <Avatar style={{borderWidth: 1, borderColor: '#e5e7eb'}} size={40}>
                     <AvatarImage src={item.image} />
                     <AvatarFallback 
                         style={{ backgroundColor: item.type === "Nonprofit" ? getNonprofitColor(item.id).bgColor : '#dcfce7' }} 

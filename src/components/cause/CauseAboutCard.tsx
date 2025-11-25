@@ -33,8 +33,8 @@ const CauseAboutCard: React.FC<CauseAboutCardProps> = ({ causeData }) => {
           source={{ uri: causeData?.logo }} 
           style={{ width: 48, height: 48, borderRadius: 12 }} 
         /> */}
-        <Avatar size={48}>
-          <AvatarImage src={causeData?.logo} />
+        <Avatar style={{borderWidth: 1, borderColor: '#e5e7eb'}} size={48}>
+          <AvatarImage src={causeData?.image} />
           <AvatarFallback style={{ backgroundColor: '#dbeafe' }} textStyle={{ color: '#2563eb', fontWeight: '600' }}>
             {causeData?.name?.charAt(0).toUpperCase()}
           </AvatarFallback>
@@ -80,15 +80,15 @@ const CauseAboutCard: React.FC<CauseAboutCardProps> = ({ causeData }) => {
             <Text style={{ fontSize: 14, fontWeight: '600', color: PrimaryGrey, marginBottom: 4 }}>
               MAIN FOCUS
             </Text>
-            <TouchableOpacity onPress={handleSearchCategory}>
+            {/* <TouchableOpacity onPress={handleSearchCategory}> */}
               <Text style={{ 
                 fontSize: 14, 
                 color: PrimaryBlue, 
-                textDecorationLine: 'underline' 
+                // textDecorationLine: 'underline' 
               }}>
                 {category?.name || 'Not Available'}
               </Text>
-            </TouchableOpacity>
+            {/* </TouchableOpacity> */}
           </View>
 
           {/* Established */}

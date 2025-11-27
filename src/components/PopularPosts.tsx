@@ -366,79 +366,131 @@ export default function PopularPosts({
             {!isLoading && !error && (
             <FlatList
                 data={posts}
-                renderItem={({ item }) => (
-                    <TouchableOpacity 
-                        style={styles.container}
-                        onPress={() => handlePostPress(item)}
-                    >
-                        <TouchableOpacity onPress={() => {
-                            // If it's the current user's own profile, navigate to Profile tab
-                            // Otherwise navigate to UserProfile page
-                            if (user?.id && item.userId && user.id.toString() === item.userId.toString()) {
-                                // Profile is in Tab Navigator (MainTabs) within DrawerNav
-                                // Use reset to properly navigate to the Me tab
-                                navigation.dispatch(
-                                    CommonActions.reset({
-                                        index: 0,
-                                        routes: [
-                                            {
-                                                name: 'DrawerNav',
-                                                state: {
-                                                    routes: [
-                                                        {
-                                                            name: 'MainTabs',
-                                                            state: {
-                                                                routes: [{ name: 'Me' }],
-                                                                index: 0,
-                                                            },
-                                                        },
-                                                    ],
-                                                    index: 0,
-                                                },
-                                            },
-                                        ],
-                                    })
-                                );
-                            } else {
-                                navigation.navigate('UserProfile', { userId: item.userId || '' });
-                            }
-                        }}>
-                            {/* <Image source={{ uri: item.avatarUrl }} style={{ width: 40, height: 40, borderRadius: 20 }} /> */}
-                            <Avatar size={40}>
-                                <AvatarImage src={item.avatarUrl} />
-                                <AvatarFallback>
-                                    {item.username.split(' ')[0][0].toUpperCase()}
-                                </AvatarFallback>
-                            </Avatar>
-                        </TouchableOpacity>
-                        <View style={{ flex: 1 }}>
-                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, justifyContent: 'space-between' }}>
-                                <View style={{ flexDirection: 'row', gap: 5, alignItems: 'center' }}>
-                                    <Text style={{ fontSize: 14, fontWeight: '500' }}>{item.username}</Text>
-                                    <Text style={{ fontSize: 14, color: PrimaryGrey }}>•</Text>
-                                    <Text style={{ fontSize: 12, color: PrimaryGrey }}>{item.time}</Text>
-                                </View>
-                                {user?.id === item.userId && (
-                                <TouchableOpacity onPress={(event) => handleEllipsisPress(event, item)}>
-                                    <Ellipsis size={18} color={PrimaryGrey} />
-                                </TouchableOpacity>
-                                )}
-                            </View>
+                contentContainerStyle={{ paddingVertical: 8 }}
+                renderItem={({ item }) => {
+                    // Generate consistent color based on username
+                    const avatarColors = [
+                        '#10b981', // green
+                        '#3b82f6', // blue
+                        '#8b5cf6', // purple
+                        '#f59e0b', // amber
+                        '#ef4444', // red
+                        '#ec4899', // pink
+                        '#06b6d4', // cyan
+                        '#84cc16', // lime
+                    ];
+                    const colorIndex = (item.username?.charCodeAt(0) || 0) % avatarColors.length;
+                    const avatarBgColor = avatarColors[colorIndex];
+                    
+                    // Generate different color for collective tag based on post ID (so same collective can have different colors)
+                    const tagColors = [
+                        '#ec4899', // pink
+                        '#3b82f6', // blue
+                        '#10b981', // green
+                        '#f59e0b', // amber
+                        '#8b5cf6', // purple
+                        '#ef4444', // red
+                        '#06b6d4', // cyan
+                        '#f97316', // orange
+                        '#84cc16', // lime
+                        '#a855f7', // violet
+                        '#14b8a6', // teal
+                        '#f43f5e', // rose
+                        '#6366f1', // indigo
+                    ];
+                    // Use post ID to generate different colors even for same collective
+                    // Handle both string and number IDs, and undefined cases
+                    let tagColorIndex = 0;
+                    if (item.id) {
+                        const idStr = String(item.id);
+                        if (idStr.length > 0) {
+                            tagColorIndex = idStr.charCodeAt(idStr.length - 1) % tagColors.length;
+                        } else {
+                            // Fallback: use a hash of the org name or random
+                            tagColorIndex = (item.org?.charCodeAt(0) || 0) % tagColors.length;
+                        }
+                    } else {
+                        // Fallback: use org name or random index
+                        tagColorIndex = (item.org?.charCodeAt(0) || Math.floor(Math.random() * tagColors.length)) % tagColors.length;
+                    }
+                    const tagBgColor = tagColors[tagColorIndex];
+                    
+                    return (
+                    <View style={styles.postCard}>
+                        {/* Header */}
+                        <View style={styles.postHeader}>
                             <TouchableOpacity 
-                                onPress={(e) => {
-                                    e.stopPropagation(); // Prevent triggering parent TouchableOpacity
-                                    if (item.orgUrl) {
-                                        (navigation as any).navigate('GroupCRWD', { collectiveId: item.orgUrl.toString() });
+                                onPress={() => {
+                                    // If it's the current user's own profile, navigate to Profile tab
+                                    // Otherwise navigate to UserProfile page
+                                    if (user?.id && item.userId && user.id.toString() === item.userId.toString()) {
+                                        navigation.dispatch(
+                                            CommonActions.reset({
+                                                index: 0,
+                                                routes: [
+                                                    {
+                                                        name: 'DrawerNav',
+                                                        state: {
+                                                            routes: [
+                                                                {
+                                                                    name: 'MainTabs',
+                                                                    state: {
+                                                                        routes: [{ name: 'Me' }],
+                                                                        index: 0,
+                                                                    },
+                                                                },
+                                                            ],
+                                                            index: 0,
+                                                        },
+                                                    },
+                                                ],
+                                            })
+                                        );
+                                    } else {
+                                        navigation.navigate('UserProfile', { userId: item.userId || '' });
                                     }
                                 }}
-                                disabled={!item.orgUrl}
+                                style={styles.avatarContainer}
                             >
-                                <Text style={{ fontSize: 12, color: PrimaryBlue }}>{item.org}</Text>
+                                <Avatar size={40}>
+                                    <AvatarImage src={item.avatarUrl} />
+                                    <AvatarFallback style={{ backgroundColor: avatarBgColor }} textStyle={{ color: 'white', fontWeight: '600' }}>
+                                        {item.username.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                                    </AvatarFallback>
+                                </Avatar>
                             </TouchableOpacity>
-                            <Text ellipsizeMode='tail' style={{ fontSize: 14, fontWeight: '400', flexWrap: 'wrap', width: screenWidth - 120, marginTop: 5 }} numberOfLines={3}>{item.text}</Text>
+                            <View style={styles.headerInfo}>
+                                <View style={styles.headerTop}>
+                                    <Text style={styles.username}>{item.username}</Text>
+                                    <View style={{flexDirection: 'row', alignItems: 'center', gap: 4}}>
+                                    <Text style={styles.date}>{item.time}</Text>
+                                    {item.org && (
+                                        <View style={[styles.tag, { backgroundColor: tagBgColor }]}>
+                                            <Text style={styles.tagText}>{item.org}</Text>
+                                        </View>
+                                    )}
+                                    </View>
+                                </View>
+                            </View>
+                            {user?.id && user.id.toString() === item.userId?.toString() && (
+                            <TouchableOpacity 
+                                onPress={(event) => handleEllipsisPress(event, item)}
+                                style={styles.menuButton}
+                            >
+                                <Ellipsis size={20} color="#6b7280" />
+                            </TouchableOpacity>
+                            )}
+                        </View>
+
+                        {/* Content */}
+                        <TouchableOpacity 
+                            onPress={() => handlePostPress(item)}
+                            activeOpacity={1}
+                        >
+                            <Text style={styles.postText}>{item.text}</Text>
                             
-                            {/* Show preview card if previewDetails exists, otherwise show image */}
-                            {item.previewDetails ? (
+                            {/* Media Section - Only show if there's actual media content */}
+                            {item.previewDetails && (item.previewDetails.image || item.previewDetails.title || item.previewDetails.description) ? (
                                 <TouchableOpacity
                                     onPress={(e) => {
                                         e.stopPropagation();
@@ -450,79 +502,82 @@ export default function PopularPosts({
                                         }
                                     }}
                                     activeOpacity={0.7}
-                                    style={{
-                                        width: screenWidth - 120,
-                                        marginTop: 10,
-                                        borderRadius: 10,
-                                        borderWidth: 1,
-                                        borderColor: '#e5e7eb',
-                                        backgroundColor: 'white',
-                                        overflow: 'hidden',
-                                    }}
+                                    style={styles.mediaContainer}
                                 >
                                     {item.previewDetails.image && (
                                         <Image
                                             source={{ uri: item.previewDetails.image }}
-                                            style={{ width: '100%', height: 150 }}
+                                            style={styles.mediaImage}
                                             resizeMode="cover"
                                         />
                                     )}
-                                    <View style={{ padding: 12 }}>
+                                    <View style={styles.previewContent}>
                                         {item.previewDetails.site_name && (
-                                            <Text style={{ fontSize: 10, color: PrimaryGrey, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>
-                                                {item.previewDetails.site_name}
+                                            <Text style={styles.previewSiteName}>
+                                                {item.previewDetails.site_name.toUpperCase()}
                                             </Text>
                                         )}
                                         {item.previewDetails.title && (
-                                            <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827', marginBottom: 4 }} numberOfLines={2}>
+                                            <Text style={styles.previewTitle} numberOfLines={2}>
                                                 {item.previewDetails.title}
                                             </Text>
                                         )}
                                         {item.previewDetails.description && (
-                                            <Text style={{ fontSize: 12, color: PrimaryGrey, marginBottom: 4 }} numberOfLines={2}>
+                                            <Text style={styles.previewDescription} numberOfLines={2}>
                                                 {item.previewDetails.description}
                                             </Text>
                                         )}
-                                        <Text style={{ fontSize: 11, color: PrimaryGrey }} numberOfLines={1}>
-                                            {item.previewDetails.domain}
-                                        </Text>
+                                        {item.previewDetails.domain && (
+                                            <Text style={styles.previewDomain} numberOfLines={1}>
+                                                {item.previewDetails.domain}
+                                            </Text>
+                                        )}
                                     </View>
                                 </TouchableOpacity>
                             ) : item.imageUrl ? (
-                                <Image source={{ uri: item.imageUrl }} style={{ width: screenWidth - 120, height: 150, borderRadius: 10, marginTop: 10 }} />
+                                <Image 
+                                    source={{ uri: item.imageUrl }} 
+                                    style={styles.mediaImage}
+                                    resizeMode="cover"
+                                />
                             ) : null}
-                            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: screenWidth - 120, gap: 10, marginTop: 10 }}>
-                                <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
+
+                            {/* Footer */}
+                            <View style={styles.postFooter}>
+                                <View style={styles.footerLeft}>
                                     <TouchableOpacity 
-                                        style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}
+                                        style={styles.footerButton}
                                         onPress={() => handleLikePress(item.id)}
                                         disabled={likeMutation.isPending || unlikeMutation.isPending}
                                     >
                                         <Heart 
                                             size={18} 
-                                            color={likedPosts.has(item.id) ? '#ef4444' : PrimaryGrey}
+                                            color={likedPosts.has(item.id) ? '#ef4444' : '#6b7280'}
                                             fill={likedPosts.has(item.id) ? '#ef4444' : 'none'}
                                         />
-                                        <Text style={{ color: PrimaryGrey }}>
+                                        <Text style={styles.footerCount}>
                                             {postsLikesCount[item.id] !== undefined ? postsLikesCount[item.id] : item.likes}
                                         </Text>
                                     </TouchableOpacity>
-                                    <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                                        <MessageCircle size={18} color={PrimaryGrey} />
-                                        <Text style={{ color: '#808080' }}>{item.comments}</Text>
+                                    <TouchableOpacity style={styles.footerButton}>
+                                        <MessageCircle size={18} color="#6b7280" />
+                                        <Text style={styles.footerCount}>{item.comments}</Text>
                                     </TouchableOpacity>
                                 </View>
-                                <TouchableOpacity onPress={() => {
-                                    setSelectedPost(item);
-                                    handleShare(item.id);
-                                }} style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                                    <Image source={require('../assets/icons/forward.png')} style={{ width: 18, height: 18 }} />
-                                    
+                                <TouchableOpacity 
+                                    onPress={() => {
+                                        setSelectedPost(item);
+                                        handleShare(item.id);
+                                    }}
+                                    style={styles.shareButton}
+                                >
+                                    <Share2 size={18} color="#6b7280" />
                                 </TouchableOpacity>
                             </View>
-                        </View>
-                    </TouchableOpacity>
-                )}
+                        </TouchableOpacity>
+                    </View>
+                    );
+                }}
                 ListFooterComponent={renderFooter}
             />
             )}
@@ -678,6 +733,147 @@ export default function PopularPosts({
 }
 
 const styles = StyleSheet.create({
+    postCard: {
+        backgroundColor: 'white',
+        borderRadius: 12,
+        marginHorizontal: 4,
+        marginBottom: 16,
+        padding: 16,
+        shadowColor: '#595959',
+        shadowOffset: {
+            width: 2,
+            height: 2,
+        },
+        shadowOpacity: 0.15,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    postHeader: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        marginBottom: 12,
+        gap: 12,
+    },
+    avatarContainer: {
+        marginRight: 0,
+    },
+    headerInfo: {
+        flex: 1,
+    },
+    headerTop: {
+        // flexDirection: 'row',
+        // alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: 2,
+    },
+    username: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#111827',
+    },
+    date: {
+        fontSize: 12,
+        color: '#6b7280',
+    },
+    tag: {
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 12,
+    },
+    tagText: {
+        fontSize: 11,
+        fontWeight: '500',
+        color: 'white',
+    },
+    menuButton: {
+        padding: 4,
+    },
+    postText: {
+        fontSize: 14,
+        color: '#111827',
+        lineHeight: 20,
+        marginBottom: 12,
+    },
+    mediaContainer: {
+        width: '100%',
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#e5e7eb',
+        backgroundColor: 'white',
+        overflow: 'hidden',
+        marginBottom: 12,
+    },
+    mediaImage: {
+        width: '100%',
+        height: 200,
+        borderRadius: 12,
+    },
+    mediaPlaceholder: {
+        width: '100%',
+        height: 200,
+        backgroundColor: '#f3f4f6',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    placeholderIcon: {
+        width: 64,
+        height: 64,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    placeholderIconText: {
+        fontSize: 48,
+    },
+    previewContent: {
+        padding: 12,
+    },
+    previewSiteName: {
+        fontSize: 10,
+        color: '#6b7280',
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
+        marginBottom: 4,
+    },
+    previewTitle: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#111827',
+        marginBottom: 4,
+    },
+    previewDescription: {
+        fontSize: 12,
+        color: '#6b7280',
+        marginBottom: 4,
+    },
+    previewDomain: {
+        fontSize: 11,
+        color: '#6b7280',
+    },
+    postFooter: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingTop: 12,
+        borderTopWidth: 1,
+        borderTopColor: '#f3f4f6',
+    },
+    footerLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 16,
+    },
+    footerButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+    },
+    footerCount: {
+        fontSize: 14,
+        color: '#6b7280',
+    },
+    shareButton: {
+        padding: 4,
+    },
     container: {
         flexDirection: 'row',
         paddingVertical: 16,

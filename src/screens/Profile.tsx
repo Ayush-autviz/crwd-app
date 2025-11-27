@@ -533,9 +533,11 @@ export default function Profile() {
                         isLoadingFollowing={followingQuery?.isLoading || false}
                     />
 
+                    <View style={{ height: 1, backgroundColor: '#e5e7eb', marginHorizontal: 8, marginTop: 8 }}></View>
+
                     {/* Recently Supported Section */}
                     {profileData?.recently_supported_causes && profileData.recently_supported_causes.length > 0 && (
-                    <View style={{ marginTop: 24, marginBottom: 16 }}>
+                    <View style={{ marginTop: 24 }}>
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                             <Text style={{ fontSize: 18, fontWeight: '700', color: '#111827' }}>
                                 Supports
@@ -546,7 +548,7 @@ export default function Profile() {
                         <View style={{ 
                             flexDirection: 'row', 
                             flexWrap: 'wrap', 
-                            marginBottom: 16,
+                            
                             marginHorizontal: -6,
                         }}>
                             {profileData.recently_supported_causes.slice(0, 6).map((cause: any, i: number) => {
@@ -653,6 +655,8 @@ export default function Profile() {
                         )}
                     </View>
                     )}
+
+                    <View style={{ height: 1, backgroundColor: '#e5e7eb', marginHorizontal: 8, marginTop: 16 }}></View>
 
                     {/* Profile Bio */}
                     {profileData?.bio && <ProfileBio bio={profileData.bio} />}

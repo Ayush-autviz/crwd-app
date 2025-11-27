@@ -1,16 +1,17 @@
-import { View, Text, ScrollView, TouchableOpacity, Share, Alert, Image, Modal, TouchableWithoutFeedback, ActivityIndicator, RefreshControl, Clipboard } from 'react-native'
-import React, { useState } from 'react'
+import { View, Text, ScrollView, TouchableOpacity, Share, Alert, Image, Modal, TouchableWithoutFeedback, ActivityIndicator, RefreshControl, Clipboard, StyleSheet, Dimensions } from 'react-native'
+import React, { useState, useCallback, useMemo, useRef } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import BottomSheet, { BottomSheetView, BottomSheetBackdrop, BottomSheetScrollView } from '@gorhom/bottom-sheet'
 import MainHeaderNav from '../components/MainHeaderNav'
 import ProfileBio from '../components/ProfileBio'
 import ProfileStats from '../components/ProfileStats'
 import PopularPosts from '../components/PopularPosts'
 import ProfileInterests from '../components/ProfileInterests'
-import { PrimaryBlue, PrimaryGrey } from '../Constants/Colors'
+import { PrimaryBlue, PrimaryGrey, LightGrey } from '../Constants/Colors'
 import { useNavigation, NavigationProp } from '@react-navigation/native'
-import { Share2, Flag, ChevronRight, Ellipsis, MessageCircle, MessageSquare } from 'lucide-react-native'
-import { getPosts, getUserProfileById, getUserFollowers, getUserFollowing, getFavoriteCauses } from '../services/api/social'
+import { Share2, Flag, ChevronRight, Ellipsis, MessageCircle, MessageSquare, ArrowLeft } from 'lucide-react-native'
+import { getPosts, getUserProfileById, getUserFollowers, getUserFollowing, getFavoriteCauses, getSupportedCausesByUserId, followUser, unfollowUser } from '../services/api/social'
 import { getUserCollectives, getJoinCollective } from '../services/api/crwd'
 import { useAuthStore } from '../store/store'
 import { Pencil } from 'lucide-react-native'
@@ -37,6 +38,12 @@ export default function Profile() {
     const [showMenu, setShowMenu] = useState(false);
     const [showImageModal, setShowImageModal] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
+    const [activeStatsTab, setActiveStatsTab] = useState<'causes' | 'following' | 'followers' | 'crwds'>('causes');
+    
+    // Bottom sheet ref
+    const bottomSheetRef = useRef<BottomSheet>(null);
+    const screenHeight = Dimensions.get('window').height;
+    const snapPoints = useMemo(() => [screenHeight * 0.75], [screenHeight]);
 
     console.log('user', token);
     
@@ -121,6 +128,84 @@ export default function Profile() {
         queryFn: () => getJoinCollective(user?.id),
         enabled: !!user?.id,
     });
+
+    // Statistics bottom sheet queries
+    const targetUserId = profileData?.id?.toString() || user?.id?.toString() || '';
+    
+    const { data: statsCausesData, isLoading: statsCausesLoading } = useQuery({
+        queryKey: ['supportedCauses', targetUserId],
+        queryFn: () => getSupportedCausesByUserId(targetUserId),
+        enabled: !!targetUserId,
+    });
+
+    const { data: statsCollectivesData, isLoading: statsCollectivesLoading } = useQuery({
+        queryKey: ['joinCollective', targetUserId],
+        queryFn: () => getJoinCollective(targetUserId),
+        enabled: !!targetUserId,
+    });
+
+    const { data: statsFollowersData, isLoading: statsFollowersLoading } = useQuery({
+        queryKey: ['followers', targetUserId],
+        queryFn: () => getUserFollowers(targetUserId),
+        enabled: !!targetUserId,
+    });
+
+    const { data: statsFollowingData, isLoading: statsFollowingLoading } = useQuery({
+        queryKey: ['following', targetUserId],
+        queryFn: () => getUserFollowing(targetUserId),
+        enabled: !!targetUserId,
+    });
+
+    // Follow/Unfollow mutations
+    const followUserMutation = useMutation({
+        mutationFn: followUser,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['followers'] });
+            queryClient.invalidateQueries({ queryKey: ['following'] });
+            queryClient.invalidateQueries({ queryKey: ['userProfile', user?.id] });
+            if (targetUserId && targetUserId !== user?.id?.toString()) {
+                queryClient.invalidateQueries({ queryKey: ['userProfile', targetUserId] });
+            }
+            showToast('Followed');
+        },
+        onError: (error) => {
+            console.error('Error following user:', error);
+            showToast('Error following user');
+        },
+    });
+
+    const unfollowUserMutation = useMutation({
+        mutationFn: unfollowUser,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['followers'] });
+            queryClient.invalidateQueries({ queryKey: ['following'] });
+            queryClient.invalidateQueries({ queryKey: ['userProfile', user?.id] });
+            if (targetUserId && targetUserId !== user?.id?.toString()) {
+                queryClient.invalidateQueries({ queryKey: ['userProfile', targetUserId] });
+            }
+            showToast('Unfollowed');
+        },
+        onError: (error) => {
+            console.error('Error unfollowing user:', error);
+            showToast('Error unfollowing user');
+        },
+    });
+
+    const handleFollowToggle = (userId: string, isFollowing: boolean) => {
+        if (isFollowing) {
+            unfollowUserMutation.mutate(userId, {
+                onSuccess: () => {
+                    queryClient.invalidateQueries({ queryKey: ['userProfile', userId] });
+                }
+            });
+        } else {
+            followUserMutation.mutate(userId, {
+                onSuccess: () => {
+                    queryClient.invalidateQueries({ queryKey: ['userProfile', userId] });
+                }
+            });
+        }
+    };
     
 
 
@@ -187,6 +272,255 @@ export default function Profile() {
         navigation.navigate('Interests' as never);
     };
 
+    // Transform statistics data
+    const statsCauses = statsCausesData?.results?.map((item: any) => {
+        const cause = item.cause || item;
+        return {
+            name: cause.name || 'Unknown Cause',
+            avatar: cause.image || cause.avatar || '',
+            id: cause.id,
+            description: cause.mission || '',
+        };
+    }) || [];
+
+    const statsCrwds = statsCollectivesData?.data?.map((item: any) => {
+        const collective = item.collective || item;
+        return {
+            name: collective.name || 'Unknown Collective',
+            avatar: collective.created_by?.profile_picture || collective.avatar || collective.image || '',
+            role: item.role || 'Member',
+            id: collective.id,
+            description: collective.description || '',
+        };
+    }) || [];
+
+    const statsFollowing = statsFollowingData?.following?.map((item: any) => {
+        const userData = item.followee || item.following || item.user || item;
+        const isFollowing = item.is_following ?? userData.is_following ?? false;
+        return {
+            name: userData.first_name && userData.last_name 
+                ? `${userData.first_name} ${userData.last_name}` 
+                : userData.first_name || userData.name || 'Unknown User',
+            username: userData.username || 'unknown',
+            avatar: userData.profile_picture || userData.avatar || '',
+            id: userData.id,
+            is_following: isFollowing,
+        };
+    }) || [];
+
+    const statsFollowers = statsFollowersData?.followers?.map((item: any) => {
+        const userData = item.follower || item.user || item;
+        const isFollowing = item.is_following ?? userData.is_following ?? false;
+        return {
+            name: userData.first_name && userData.last_name 
+                ? `${userData.first_name} ${userData.last_name}` 
+                : userData.first_name || userData.name || 'Unknown User',
+            username: userData.username || 'unknown',
+            avatar: userData.profile_picture || userData.avatar || '',
+            id: userData.id,
+            is_following: isFollowing,
+        };
+    }) || [];
+
+    // Get tab title and subtitle
+    const getTabInfo = () => {
+        switch (activeStatsTab) {
+            case 'causes':
+                return { title: 'Causes', subtitle: 'Causes you support' };
+            case 'crwds':
+                return { title: 'Collectives', subtitle: "Collectives you're part of" };
+            case 'followers':
+                return { title: 'Followers', subtitle: 'People following you' };
+            case 'following':
+                return { title: 'Following', subtitle: 'People you follow' };
+            default:
+                return { title: 'Statistics', subtitle: '' };
+        }
+    };
+
+    // Bottom sheet backdrop
+    const renderBackdrop = useCallback(
+        (props: any) => (
+            <BottomSheetBackdrop
+                {...props}
+                disappearsOnIndex={-1}
+                appearsOnIndex={0}
+                opacity={0.5}
+            />
+        ),
+        []
+    );
+
+    // Render statistics content
+    const renderStatsContent = () => {
+        const tabInfo = getTabInfo();
+
+        if (activeStatsTab === 'causes') {
+            if (statsCausesLoading) {
+                return (
+                    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 40 }}>
+                        <ActivityIndicator size="large" color={PrimaryBlue} />
+                        <Text style={{ marginTop: 10, fontSize: 16, color: PrimaryGrey }}>Loading causes...</Text>
+                    </View>
+                );
+            }
+            return (
+                <View>
+                    {statsCauses.length > 0 ? statsCauses.map((cause: any, index: number) => {
+                        // Generate consistent color based on cause name
+                        const causeColors = [
+                            '#f97316', // orange
+                            '#ec4899', // pink
+                            '#3b82f6', // blue
+                            '#10b981', // green
+                            '#f59e0b', // amber
+                            '#8b5cf6', // purple
+                        ];
+                        const colorIndex = (cause.name?.charCodeAt(0) || 0) % causeColors.length;
+                        const causeBgColor = causeColors[colorIndex];
+                        
+                        return (
+                            <TouchableOpacity
+                                key={cause.id || index}
+                                style={styles.causeItem}
+                                onPress={() => {
+                                    bottomSheetRef.current?.close();
+                                    (navigation as any).navigate('CauseScreen', { causeId: cause.id });
+                                }}
+                            >
+                                <View style={[styles.causeIcon, { backgroundColor: causeBgColor }]}>
+                                    <Text style={styles.causeIconText}>
+                                        {cause.name?.charAt(0)?.toUpperCase() || 'N'}
+                                    </Text>
+                                </View>
+                                <View style={styles.causeContent}>
+                                    <Text style={styles.causeName}>{cause.name}</Text>
+                                    <Text style={styles.causeDescription} numberOfLines={2}>
+                                        {cause.description || 'Supporting this cause'}
+                                    </Text>
+                                </View>
+                            </TouchableOpacity>
+                        );
+                    }) : (
+                        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 40 }}>
+                            <Text style={{ fontSize: 16, color: PrimaryGrey }}>No causes found</Text>
+                        </View>
+                    )}
+                </View>
+            );
+        }
+
+        if (activeStatsTab === 'crwds') {
+            if (statsCollectivesLoading) {
+                return (
+                    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 40 }}>
+                        <ActivityIndicator size="large" color={PrimaryBlue} />
+                        <Text style={{ marginTop: 10, fontSize: 16, color: PrimaryGrey }}>Loading collectives...</Text>
+                    </View>
+                );
+            }
+            return (
+                <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+                    {statsCrwds.length > 0 ? statsCrwds.map((crwd: any, index: number) => (
+                        <View key={crwd.id || index} style={styles.statsItem}>
+                            <View style={styles.statsItemLeft}>
+                                <Avatar size={40}>
+                                    <AvatarImage src={crwd.avatar} />
+                                    <AvatarFallback style={{ backgroundColor: '#dcfce7' }} textStyle={{ color: '#16a34a', fontWeight: '600' }}>
+                                        {crwd.name.charAt(0).toUpperCase()}
+                                    </AvatarFallback>
+                                </Avatar>
+                                <View style={styles.statsItemInfo}>
+                                    <View style={[styles.badge, styles.crwdBadge]}>
+                                        <Text style={[styles.badgeText, styles.crwdText]}>Collective</Text>
+                                    </View>
+                                    <Text style={styles.statsItemName}>{crwd.name}</Text>
+                                    <Text style={styles.statsItemDescription} numberOfLines={2}>{crwd.description}</Text>
+                                </View>
+                            </View>
+                            <TouchableOpacity 
+                                style={styles.viewButton}
+                                onPress={() => {
+                                    bottomSheetRef.current?.close();
+                                    (navigation as any).navigate('GroupCRWD', { collectiveId: crwd.id });
+                                }}
+                            >
+                                <Text style={styles.viewButtonText}>View Details</Text>
+                            </TouchableOpacity>
+                        </View>
+                    )) : (
+                        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 40 }}>
+                            <Text style={{ fontSize: 16, color: PrimaryGrey }}>No collectives found</Text>
+                        </View>
+                    )}
+                </ScrollView>
+            );
+        }
+
+        const renderMembersList = (members: typeof statsFollowing, title: string) => {
+            const isLoading = title === 'Following' ? statsFollowingLoading : statsFollowersLoading;
+            const isFollowingTab = title === 'Following';
+
+            if (isLoading) {
+                return (
+                    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 40 }}>
+                        <ActivityIndicator size="large" color={PrimaryBlue} />
+                        <Text style={{ marginTop: 10, fontSize: 16, color: PrimaryGrey }}>Loading {title.toLowerCase()}...</Text>
+                    </View>
+                );
+            }
+
+            return (
+                <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+                    {members.length > 0 ? members.map((member: any, index: number) => {
+                        const isFollowing = isFollowingTab ? true : (member.is_following || false);
+                        return (
+                            <View key={member.id || index} style={styles.memberItem}>
+                                <View style={styles.memberInfo}>
+                                    <Avatar size={40}>
+                                        <AvatarImage src={member.avatar} />
+                                        <AvatarFallback>
+                                            {member.name.split(' ').map((word: string) => word[0]).join('').toUpperCase()}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <View style={styles.memberDetails}>
+                                        <Text style={styles.memberName}>{member.name}</Text>
+                                        <Text style={styles.memberUsername}>@{member.username}</Text>
+                                    </View>
+                                </View>
+                                {member.id !== user?.id && (
+                                    <TouchableOpacity 
+                                        style={[styles.followButton, isFollowing && styles.followingButton]}
+                                        onPress={() => handleFollowToggle(member.id.toString(), isFollowing)}
+                                        disabled={followUserMutation.isPending || unfollowUserMutation.isPending}
+                                    >
+                                        <Text style={[styles.followButtonText, isFollowing && styles.followingButtonText]}>
+                                            {isFollowing ? 'Following' : 'Follow'}
+                                        </Text>
+                                    </TouchableOpacity>
+                                )}
+                            </View>
+                        );
+                    }) : (
+                        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 40 }}>
+                            <Text style={{ fontSize: 16, color: PrimaryGrey }}>No {title.toLowerCase()} found</Text>
+                        </View>
+                    )}
+                </ScrollView>
+            );
+        };
+
+        if (activeStatsTab === 'following') {
+            return renderMembersList(statsFollowing, 'Following');
+        }
+
+        if (activeStatsTab === 'followers') {
+            return renderMembersList(statsFollowers, 'Followers');
+        }
+
+        return null;
+    };
+
     // Pull to refresh handler
     const onRefresh = async () => {
         setRefreshing(true);
@@ -209,82 +543,6 @@ export default function Profile() {
 
     // Show login prompt if user is not logged in - matching Vite version
     if (!user?.id) {
-        // return (
-        //     <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }} edges={['top', 'left', 'right']}>
-        //         <MainHeaderNav title={'Me'} />
-        //         <View style={{ 
-        //             flex: 1, 
-        //             justifyContent: 'center', 
-        //             alignItems: 'center', 
-        //             paddingHorizontal: 32,
-        //             backgroundColor: 'white'
-        //         }}>
-        //             {/* Icon */}
-        //             <View style={{
-        //                 width: 80,
-        //                 height: 80,
-        //                 backgroundColor: '#dbeafe',
-        //                 borderRadius: 40,
-        //                 justifyContent: 'center',
-        //                 alignItems: 'center',
-        //                 marginBottom: 24
-        //             }}>
-        //                 <Text style={{ fontSize: 40, color: '#2563eb' }}>👤</Text>
-        //             </View>
-                    
-        //             {/* Title */}
-        //             <Text style={{
-        //                 fontSize: 24,
-        //                 fontWeight: 'bold',
-        //                 color: '#111827',
-        //                 marginBottom: 12,
-        //                 textAlign: 'center'
-        //             }}>
-        //                 Sign in to view your profile
-        //             </Text>
-                    
-        //             {/* Description */}
-        //             <Text style={{
-        //                 fontSize: 16,
-        //                 color: '#6b7280',
-        //                 marginBottom: 32,
-        //                 textAlign: 'center',
-        //                 lineHeight: 24
-        //             }}>
-        //                 Sign in to view your profile, manage your causes, and connect with your community.
-        //             </Text>
-                    
-        //             {/* CTA Button */}
-        //             <TouchableOpacity
-        //                 onPress={() => navigation.navigate('Login' as never)}
-        //                 style={{
-        //                     backgroundColor: '#2563eb',
-        //                     paddingHorizontal: 32,
-        //                     paddingVertical: 12,
-        //                     borderRadius: 8,
-        //                     flexDirection: 'row',
-        //                     alignItems: 'center',
-        //                     gap: 8
-        //                 }}
-        //             >
-        //                 <Text style={{ color: 'white', fontSize: 16, fontWeight: '500' }}>
-        //                     Sign In to Continue
-        //                 </Text>
-        //             </TouchableOpacity>
-                    
-        //             {/* Additional Info */}
-        //             <Text style={{
-        //                 fontSize: 14,
-        //                 color: '#6b7280',
-        //                 marginTop: 24,
-        //                 textAlign: 'center'
-        //             }}>
-        //                 Don't have an account? 
-        //                 <Text style={{ color: '#2563eb', fontWeight: '500' }}> Create one here</Text>
-        //             </Text>
-        //         </View>
-        //     </SafeAreaView>
-        // );
         navigation.navigate('Login' as never);
     }
 
@@ -531,6 +789,10 @@ export default function Profile() {
                         isLoadingCrwds={userCollectivesQuery?.isLoading || profileLoading}
                         isLoadingFollowers={followersQuery?.isLoading || false}
                         isLoadingFollowing={followingQuery?.isLoading || false}
+                        onStatPress={(tab) => {
+                            setActiveStatsTab(tab);
+                            bottomSheetRef.current?.snapToIndex(0);
+                        }}
                     />
 
                     <View style={{ height: 1, backgroundColor: '#e5e7eb', marginHorizontal: 8, marginTop: 8 }}></View>
@@ -767,6 +1029,268 @@ export default function Profile() {
                     </View>
                 </TouchableWithoutFeedback>
             </Modal>
+
+            {/* Statistics Bottom Sheet */}
+            <BottomSheet
+                ref={bottomSheetRef}
+                index={-1}
+                snapPoints={snapPoints}
+                enablePanDownToClose
+                backdropComponent={renderBackdrop}
+                backgroundStyle={{ backgroundColor: 'white' }}
+                enableDynamicSizing={false}
+            >
+                  
+
+                    
+                    <View style={styles.titleSection}>
+                        <Text style={styles.bottomSheetTitle}>{getTabInfo().title}</Text>
+                        <Text style={styles.bottomSheetSubtitle}>{getTabInfo().subtitle}</Text>
+                    </View>
+
+                    
+                    <View style={styles.tabsContainer}>
+                        {[
+                            { label: 'Causes', value: 'causes' },
+                            { label: 'Collectives', value: 'crwds' },
+                            { label: 'Followers', value: 'followers' },
+                            { label: 'Following', value: 'following' },
+                        ].map((tab) => (
+                            <TouchableOpacity
+                                key={tab.value}
+                                onPress={() => setActiveStatsTab(tab.value as typeof activeStatsTab)}
+                                style={[
+                                    styles.tab,
+                                    activeStatsTab === tab.value && styles.activeTab
+                                ]}
+                            >
+                                <Text style={[
+                                    styles.tabText,
+                                    activeStatsTab === tab.value && styles.activeTabText
+                                ]}>
+                                    {tab.label}
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+
+                    <BottomSheetScrollView 
+                        showsVerticalScrollIndicator={false}
+                        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 30 }}
+    >
+                        {renderStatsContent()}
+                    </BottomSheetScrollView>
+            </BottomSheet>
         </SafeAreaView>
     )
 }
+
+const styles = StyleSheet.create({
+    bottomSheetHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        backgroundColor: '#f9fafb',
+        borderBottomWidth: 1,
+        borderBottomColor: '#e5e7eb',
+    },
+    backButton: {
+        padding: 4,
+    },
+    headerName: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#111827',
+        flex: 1,
+        textAlign: 'center',
+    },
+    menuButtonHeader: {
+        padding: 4,
+    },
+    titleSection: {
+        paddingHorizontal: 16,
+        paddingTop: 24,
+        paddingBottom: 8,
+    },
+    bottomSheetTitle: {
+        fontSize: 28,
+        fontWeight: '700',
+        color: '#111827',
+        marginBottom: 4,
+    },
+    bottomSheetSubtitle: {
+        fontSize: 14,
+        color: '#6b7280',
+    },
+    tabsContainer: {
+        flexDirection: 'row',
+        paddingHorizontal: 16,
+        marginTop: 16,
+        marginBottom: 8,
+        paddingVertical: 4,
+        gap: 2,
+        backgroundColor: '#f3f4f6',
+        borderRadius: 16,
+        marginHorizontal: 2
+    },
+    tab: {
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 8,
+        // backgroundColor: ,
+    },
+    activeTab: {
+        backgroundColor: '#fff',
+        borderRadius: 16,
+    },
+    tabText: {
+        fontSize: 14,
+        color: '#111827',
+        fontWeight: '600',
+    },
+    activeTabText: {
+        color: '#111827',
+        fontWeight: '700',
+    },
+    causeItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 16,
+        paddingHorizontal: 16,
+    },
+    causeIcon: {
+        width: 48,
+        height: 48,
+        borderRadius: 8,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 12,
+    },
+    causeIconText: {
+        fontSize: 20,
+        fontWeight: '700',
+        color: 'white',
+    },
+    causeContent: {
+        flex: 1,
+    },
+    causeName: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#111827',
+        marginBottom: 4,
+    },
+    causeDescription: {
+        fontSize: 13,
+        color: '#6b7280',
+        lineHeight: 20,
+    },
+    statsItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingVertical: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: LightGrey,
+    },
+    statsItemLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        flex: 1,
+        marginRight: 16,
+    },
+    statsItemInfo: {
+        flex: 1,
+        marginLeft: 12,
+    },
+    badge: {
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 4,
+        alignSelf: 'flex-start',
+        marginBottom: 4,
+    },
+    badgeText: {
+        fontSize: 10,
+        fontWeight: '600',
+    },
+    nonprofitBadge: {
+        backgroundColor: '#dbeafe',
+    },
+    nonprofitText: {
+        color: '#2563eb',
+    },
+    crwdBadge: {
+        backgroundColor: '#dcfce7',
+    },
+    crwdText: {
+        color: '#16a34a',
+    },
+    statsItemName: {
+        fontSize: 14,
+        fontWeight: '500',
+        color: '#111827',
+        marginBottom: 4,
+    },
+    statsItemDescription: {
+        fontSize: 12,
+        color: PrimaryGrey,
+        lineHeight: 16,
+    },
+    viewButton: {
+        backgroundColor: PrimaryBlue,
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 8,
+    },
+    viewButtonText: {
+        color: 'white',
+        fontSize: 12,
+        fontWeight: '500',
+    },
+    memberItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingVertical: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: LightGrey,
+    },
+    memberInfo: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        flex: 1,
+    },
+    memberDetails: {
+        marginLeft: 12,
+    },
+    memberName: {
+        fontSize: 14,
+        fontWeight: '500',
+        color: '#111827',
+    },
+    memberUsername: {
+        fontSize: 12,
+        color: PrimaryGrey,
+        marginTop: 2,
+    },
+    followButton: {
+        backgroundColor: PrimaryBlue,
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 20,
+    },
+    followingButton: {
+        backgroundColor: '#f3f4f6',
+    },
+    followButtonText: {
+        color: 'white',
+        fontSize: 14,
+        fontWeight: '500',
+    },
+    followingButtonText: {
+        color: '#6b7280',
+    },
+});

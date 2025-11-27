@@ -13,6 +13,7 @@ interface ProfileStatsProps {
     isLoadingCrwds?: boolean;
     isLoadingFollowers?: boolean;
     isLoadingFollowing?: boolean;
+    onStatPress?: (tab: 'causes' | 'following' | 'followers' | 'crwds') => void;
 }
 
 export default function ProfileStats({ 
@@ -24,12 +25,17 @@ export default function ProfileStats({
     isLoadingCauses = false,
     isLoadingCrwds = false,
     isLoadingFollowers = false,
-    isLoadingFollowing = false
+    isLoadingFollowing = false,
+    onStatPress
 }: ProfileStatsProps) {
     const navigation = useNavigation()
 
     const handleStatsPress = (tab: 'causes' | 'following' | 'followers' | 'crwds') => {
-        navigation.navigate('Statistics' as never, { screen: tab, userId: profileId || undefined })
+        if (onStatPress) {
+            onStatPress(tab);
+        } else {
+            navigation.navigate('Statistics' as never, { screen: tab, userId: profileId || undefined })
+        }
     }
 
     return (

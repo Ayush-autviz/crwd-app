@@ -854,8 +854,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingTop: 12,
-        borderTopWidth: 1,
-        borderTopColor: '#f3f4f6',
+        // borderTopWidth: 1,
+        // borderTopColor: '#f3f4f6',
     },
     footerLeft: {
         flexDirection: 'row',

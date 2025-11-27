@@ -46,82 +46,127 @@ const Circles = () => {
     }
   }, [joinCollectiveData]);
 
-  const renderJoinedCollectiveItem = ({ item }: { item: any }) => (
-    <TouchableOpacity
-      onPress={() => navigation.navigate('GroupCRWD', { collectiveId: item.collective?.id?.toString() })}
-      activeOpacity={0.9}
-      style={styles.card}
-    >
-      <View style={styles.cardLeft}>
-        <Avatar size={48}>
-          <AvatarImage src={item?.collective?.created_by?.profile_picture} />
-          <AvatarFallback>
-            {item?.collective?.name?.charAt(0) || 'C'}
-          </AvatarFallback>
-        </Avatar>
-        <View style={styles.cardTextWrapper}>
-          <View style={styles.badgeWrapper}>
-            <View style={[styles.badge, { backgroundColor: SecondaryGreen }]}>
-              <Text style={[styles.badgeText, { color: PrimaryGreen }]}>
-                Collective
-              </Text>
-            </View>
-          </View>
-          <Text style={styles.cardTitle} numberOfLines={1}>
-            {item?.collective?.name}
-          </Text>
-          <Text style={styles.cardDescription} numberOfLines={2}>
-            {item?.collective?.description}
+  const renderJoinedCollectiveItem = ({ item }: { item: any }) => {
+    const circle = item.collective || item;
+    // Generate consistent color based on collective name
+    const colors = [
+      '#f97316', // orange
+      '#ec4899', // pink
+      '#3b82f6', // blue
+      '#10b981', // green
+      '#f59e0b', // amber
+      '#8b5cf6', // purple
+      '#ef4444', // red
+    ];
+    const colorIndex = (circle.name?.charCodeAt(0) || 0) % colors.length;
+    const circleBgColor = colors[colorIndex];
+    const founderName = circle.created_by 
+      ? `${circle.created_by.first_name || ''} ${circle.created_by.last_name || ''}`.trim() || circle.created_by.username
+      : 'Unknown';
+    
+    return (
+      <TouchableOpacity
+        onPress={() => navigation.navigate('GroupCRWD', { collectiveId: circle.id?.toString() })}
+        activeOpacity={0.9}
+        style={styles.card}
+      >
+        {/* Collective Icon */}
+        <View
+          style={[styles.collectiveIcon, { backgroundColor: circleBgColor }]}
+        >
+          <Text style={styles.collectiveIconText}>
+            {circle.name?.charAt(0)?.toUpperCase() || 'C'}
           </Text>
         </View>
-      </View>
-      <TouchableOpacity
-        onPress={() => navigation.navigate('GroupCRWD', { collectiveId: item.collective?.id?.toString() })}
-        style={[styles.actionButton, { backgroundColor: PrimaryGreen }]}
-        activeOpacity={0.8}
-      >
-        <Text style={styles.actionButtonText}>Learn More</Text>
+
+        <Text style={styles.cardTitle} numberOfLines={1}>
+          {circle.name}
+        </Text>
+        <Text style={styles.cardDescription} numberOfLines={2}>
+          {circle.description}
+        </Text>
+        
+        {/* Founder Info */}
+        {circle.created_by && (
+          <View style={styles.founderInfo}>
+            <Avatar size={20}>
+              <AvatarImage src={circle.created_by.profile_picture} />
+              <AvatarFallback>
+                {founderName.charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <Text style={styles.founderText}>
+              Founded by {founderName}
+            </Text>
+          </View>
+        )}
+        
+        {/* Supporting nonprofits count */}
+        <Text style={styles.nonprofitCount}>
+          Supporting {circle.causes_count || circle.supported_causes_count || 0} nonprofits
+        </Text>
       </TouchableOpacity>
-    </TouchableOpacity>
-  );
+    );
+  };
 
   const renderDiscoverItem = ({ item }: { item: any }) => {
+    // Generate consistent color based on collective name
+    const colors = [
+      '#f97316', // orange
+      '#ec4899', // pink
+      '#3b82f6', // blue
+      '#10b981', // green
+      '#f59e0b', // amber
+      '#8b5cf6', // purple
+      '#ef4444', // red
+    ];
+    const colorIndex = (item.name?.charCodeAt(0) || 0) % colors.length;
+    const circleBgColor = colors[colorIndex];
+    const founderName = item.created_by 
+      ? `${item.created_by.first_name || ''} ${item.created_by.last_name || ''}`.trim() || item.created_by.username
+      : 'Unknown';
+    
     return (
       <TouchableOpacity
         onPress={() => navigation.navigate('GroupCRWD', { collectiveId: item.id?.toString() })}
         activeOpacity={0.9}
         style={styles.card}
       >
-        <View style={styles.cardLeft}>
-          <Avatar size={48}>
-            <AvatarImage src={item.created_by?.profile_picture} />
-            <AvatarFallback>
-              {item.name?.charAt(0) || 'C'}
-            </AvatarFallback>
-          </Avatar>
-          <View style={styles.cardTextWrapper}>
-            <View style={styles.badgeWrapper}>
-              <View style={[styles.badge, { backgroundColor: SecondaryGreen }]}>
-                <Text style={[styles.badgeText, { color: PrimaryGreen }]}>
-                  Collective
-                </Text>
-              </View>
-            </View>
-            <Text style={styles.cardTitle} numberOfLines={1}>
-              {item.name}
-            </Text>
-            <Text style={styles.cardDescription} numberOfLines={2}>
-              {item.description}
+        {/* Collective Icon */}
+        <View
+          style={[styles.collectiveIcon, { backgroundColor: circleBgColor }]}
+        >
+          <Text style={styles.collectiveIconText}>
+            {item.name?.charAt(0)?.toUpperCase() || 'C'}
+          </Text>
+        </View>
+
+        <Text style={styles.cardTitle} numberOfLines={1}>
+          {item.name}
+        </Text>
+        <Text style={styles.cardDescription} numberOfLines={2}>
+          {item.description}
+        </Text>
+        
+        {/* Founder Info */}
+        {item.created_by && (
+          <View style={styles.founderInfo}>
+            <Avatar size={20}>
+              <AvatarImage src={item.created_by.profile_picture} />
+              <AvatarFallback>
+                {founderName.charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <Text style={styles.founderText}>
+              Founded by {founderName}
             </Text>
           </View>
-        </View>
-        <TouchableOpacity
-          onPress={() => navigation.navigate('GroupCRWD', { collectiveId: item.id?.toString() })}
-          style={[styles.actionButton, { backgroundColor: PrimaryGreen }]}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.actionButtonText}>Learn More</Text>
-        </TouchableOpacity>
+        )}
+        
+        {/* Supporting nonprofits count */}
+        <Text style={styles.nonprofitCount}>
+          Supporting {item.causes_count || item.supported_causes_count || 0} nonprofits
+        </Text>
       </TouchableOpacity>
     )
   }
@@ -254,7 +299,7 @@ const styles = StyleSheet.create({
     backgroundColor: PrimaryGreen,
     paddingHorizontal: 16,
     paddingVertical: 10,
-    borderRadius: 10,
+    borderRadius: 999,
   },
   createButtonText: {
     color: '#fff',
@@ -264,7 +309,10 @@ const styles = StyleSheet.create({
   tabsRow: {
     flexDirection: 'row',
     paddingHorizontal: 16,
-    gap: 8,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 999,
+    padding: 6,
+    gap: 2,
     marginTop: 8,
     marginBottom: 8,
   },
@@ -272,14 +320,13 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 10,
+    gap: 8,
     paddingVertical: 10,
-    borderRadius: 8,
-    backgroundColor: '#F3F4F6',
+    borderRadius: 999,
     alignItems: 'center',
   },
   tabButtonActive: {
-    backgroundColor: '#E5E7EB',
+    backgroundColor: '#FFFFFF',
   },
   tabText: {
     color: '#6B7280',
@@ -298,63 +345,51 @@ const styles = StyleSheet.create({
     height: 10,
   },
   card: {
-    padding: 12,
+    padding: 16,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#E5E7EB',
     backgroundColor: '#fff',
-    flexDirection: 'row',
+    flexDirection: 'column',
+  },
+  collectiveIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    marginBottom: 12,
   },
-  cardLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-    minWidth: 0,
-    gap: 12,
-  },
-  cardTextWrapper: {
-    flex: 1,
-    minWidth: 0,
-  },
-  badgeWrapper: {
-    marginBottom: 4,
-  },
-  badge: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#DCFCE7',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  badgeText: {
-    color: '#16A34A',
-    fontSize: 12,
-    fontWeight: '600',
+  collectiveIconText: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
   cardTitle: {
     fontSize: 16,
     fontWeight: '600',
     color: '#111827',
-    marginBottom: 2,
-    maxWidth: '90%',
+    marginBottom: 6,
   },
   cardDescription: {
-    fontSize: 13,
-    color: '#6B7280',
-    maxWidth: '90%',
-  },
-  actionButton: {
-    paddingHorizontal: 10,
-    paddingVertical: 10,
-    borderRadius: 10,
-    marginBottom: 5,
-  },
-  actionButtonText: {
-    color: '#fff',
     fontSize: 14,
-    fontWeight: '600',
+    color: '#4B5563',
+    marginBottom: 12,
+    lineHeight: 20,
+  },
+  founderInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
+  },
+  founderText: {
+    fontSize: 12,
+    color: '#6B7280',
+  },
+  nonprofitCount: {
+    fontSize: 12,
+    color: '#6B7280',
   },
   placeholderWrapper: {
     paddingHorizontal: 24,

@@ -92,6 +92,45 @@ export default function ManageDonationBoxScreen() {
   // Get isActive from donationBox
   const isActive = donationBox?.is_active ?? true;
 
+  // Format next charge date
+  const formatNextChargeDate = (dateString?: string) => {
+    if (!dateString) return 'December 26, 2024'; // Fallback
+    
+    try {
+      const date = new Date(dateString);
+      const options: Intl.DateTimeFormatOptions = { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      };
+      return date.toLocaleDateString('en-US', options);
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'December 26, 2024'; // Fallback
+    }
+  };
+
+  // Get day of month from next charge date
+  const getChargeDay = (dateString?: string) => {
+    if (!dateString) return '26th'; // Fallback
+    
+    try {
+      const date = new Date(dateString);
+      const day = date.getDate();
+      // Add ordinal suffix
+      if (day > 3 && day < 21) return `${day}th`;
+      switch (day % 10) {
+        case 1: return `${day}st`;
+        case 2: return `${day}nd`;
+        case 3: return `${day}rd`;
+        default: return `${day}th`;
+      }
+    } catch (error) {
+      console.error('Error getting charge day:', error);
+      return '26th'; // Fallback
+    }
+  };
+
   // Separate existing causes/collectives from new selections
   // Note: Organization type doesn't have 'type' property, so we'll treat all as causes by default
   // In a real implementation, you might need to extend the Organization interface
@@ -473,7 +512,7 @@ export default function ManageDonationBoxScreen() {
               </TouchableOpacity>
             </View>
 
-            <Text style={styles.scheduleText}>on the 26th of every month</Text>
+            <Text style={styles.scheduleText}>on the {getChargeDay(donationBox?.next_charge_date)} of every month</Text>
 
             <View style={styles.actionButtons}>
               <TouchableOpacity
@@ -816,7 +855,7 @@ export default function ManageDonationBoxScreen() {
           <View style={styles.nextPaymentCard}>
             <View style={styles.nextPaymentInfo}>
               <Text style={styles.nextPaymentLabel}>Next payment date</Text>
-              <Text style={styles.nextPaymentDate}>December 26, 2024</Text>
+              <Text style={styles.nextPaymentDate}>{formatNextChargeDate(donationBox?.next_charge_date)}</Text>
             </View>
             <View style={styles.nextPaymentAmount}>
               <Text style={styles.nextPaymentValue}>${Math.round(editableAmount)}</Text>

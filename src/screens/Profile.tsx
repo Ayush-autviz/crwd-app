@@ -467,7 +467,7 @@ export default function Profile() {
                                     marginBottom: 16
                                 }}
                             /> */}
-                            <Avatar size={56}>
+                            <Avatar size={64}>
                                 <AvatarImage src={profileData?.profile_picture} />
                                 <AvatarFallback>
                                     {profileData?.username?.split(' ')[0][0].toUpperCase()}
@@ -478,7 +478,7 @@ export default function Profile() {
                             fontSize: 18,
                             fontWeight: 'bold',
                             color: '#111827',
-                            marginBottom: 16
+                            marginVertical: 16
                         }}>
                             {profileData?.first_name && profileData?.last_name 
                                 ? `${profileData.first_name} ${profileData.last_name}` 
@@ -489,13 +489,13 @@ export default function Profile() {
                         {/* Location and Link */}
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                             {profileData?.location && (
-                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                                     {/* <Text style={{ fontSize: 16, color: '#6b7280' }}>📍</Text> */}
                                     <MapPin size={16} color="#6b7280" />
-                                    <Text style={{ fontSize: 12, color: '#6b7280' }}>{profileData.location}</Text>
+                                    <Text style={{ fontSize: 14, color: '#6b7280' }}>{profileData.location}</Text>
                                 </View>
                             )}
-                            {profileData?.username && (
+                            {/* {profileData?.username && (
                                 <TouchableOpacity>
                                     <Text style={{ fontSize: 12, color: PrimaryBlue,}}>
                                         {profileData.username}
@@ -504,8 +504,20 @@ export default function Profile() {
                             )}
                             <Text style={{ fontSize: 12, color: '#6b7280' }}>
                                 Active since {profileData?.date_joined ? new Date(profileData.date_joined).getFullYear() : '2023'}
-                            </Text>
+                            </Text> */}
                         </View>
+                    </View>
+
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 16, marginTop: 16 }}>
+                        <TouchableOpacity onPress={handleEditProfile} style={{ paddingHorizontal: 16, paddingVertical: 10, borderRadius: 8, borderWidth: 1, borderColor: '#e5e7eb', minWidth: 120 }}>
+                            <Text style={{ fontSize: 14, color: '#595959', fontWeight: '700', textAlign: 'center' }}>Edit Profile</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={handleShare} style={{ paddingHorizontal: 16, paddingVertical: 10, borderRadius: 8, borderWidth: 1, borderColor: '#e5e7eb', minWidth: 120 }}>
+                            <View style={{flexDirection: 'row', alignItems: 'center', gap: 4, justifyContent: 'center'}}>
+                                <Share2 size={16} color="#595959" />
+                            <Text style={{ fontSize: 14, color: '#595959', fontWeight: '700' }}>Share Profile</Text>
+                            </View>
+                        </TouchableOpacity>
                     </View>
 
                     {/* Profile Stats */}
@@ -525,68 +537,121 @@ export default function Profile() {
                     {profileData?.recently_supported_causes && profileData.recently_supported_causes.length > 0 && (
                     <View style={{ marginTop: 24, marginBottom: 16 }}>
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                            <Text style={{ fontSize: 18, fontWeight: '600', color: '#111827' }}>
-                                Recently Supported
+                            <Text style={{ fontSize: 18, fontWeight: '700', color: '#111827' }}>
+                                Supports
                             </Text>
-                            {/* <TouchableOpacity onPress={handleMoreInterests}>
-                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                                    <Text style={{ fontSize: 14, color: PrimaryBlue, textDecorationLine: 'underline' }}>
-                                        More
-                                    </Text>
-                                    <ChevronRight size={16} color={PrimaryBlue} />
-                                </View>
-                            </TouchableOpacity> */}
                         </View>
 
-                            {/* Organization Avatars - Horizontal Scrollable */}
-                            <ScrollView 
-                                horizontal 
-                                showsHorizontalScrollIndicator={false}
-                                contentContainerStyle={{ 
-                                    paddingLeft: 20,
-                                    paddingRight: 20,
-                                    gap: 16,
-                                    alignItems: 'center'
-                                }}
-                                style={{ 
-                                    marginHorizontal: -20,
-                                    flexGrow: 0 
-                                }}
-                            >
-                                {profileData.recently_supported_causes.map((cause: any, i: number) => (
-                                <TouchableOpacity 
+                        {/* Grid Layout - 2 rows, 3 columns */}
+                        <View style={{ 
+                            flexDirection: 'row', 
+                            flexWrap: 'wrap', 
+                            marginBottom: 16,
+                            marginHorizontal: -6,
+                        }}>
+                            {profileData.recently_supported_causes.slice(0, 6).map((cause: any, i: number) => {
+                                // Generate consistent color based on cause name
+                                const colors = [
+                                    '#f97316', // orange
+                                    '#ec4899', // pink
+                                    '#3b82f6', // blue
+                                    '#ef4444', // red
+                                    '#10b981', // green
+                                    '#f97316', // orange (repeat)
+                                ];
+                                const bgColor = colors[i % colors.length];
+                                
+                                return (
+                                    <TouchableOpacity 
                                         key={cause.id || i} 
-                                    onPress={() => navigation.navigate('CauseScreen' as never)} 
+                                        onPress={() => navigation.navigate('CauseScreen' as never)} 
                                         style={{
-                                            alignItems: 'center', 
-                                            width: 80,
-                                            flexShrink: 0
+                                            width: '33.333%',
+                                            paddingHorizontal: 6,
+                                            marginBottom: 12,
                                         }}
                                     >
-                                        <Avatar size={56}>
-                                            <AvatarImage src={cause.logo} />
-                                            <AvatarFallback style={{ backgroundColor: '#dbeafe' }} textStyle={{ color: '#2563eb', fontWeight: '600' }}>
-                                                {cause.name?.charAt(0)?.toUpperCase() || 'N'}
-                                            </AvatarFallback>
-                                        </Avatar>
+                                        <View style={{
+                                            backgroundColor: 'white',
+                                            borderRadius: 8,
+                                            borderWidth: 1,
+                                            borderColor: '#e5e7eb',
+                                            padding: 12,
+                                            alignItems: 'center',
+                                        }}>
+                                        {cause.logo ? (
+                                            <View style={{
+                                                width: 48,
+                                                height: 48,
+                                                borderRadius: 8,
+                                                marginBottom: 8,
+                                                overflow: 'hidden',
+                                            }}>
+                                                <Image 
+                                                    source={{ uri: cause.logo }} 
+                                                    style={{
+                                                        width: 48,
+                                                        height: 48,
+                                                        borderRadius: 8,
+                                                    }}
+                                                    resizeMode="cover"
+                                                />
+                                            </View>
+                                        ) : (
+                                            <View style={{
+                                                width: 48,
+                                                height: 48,
+                                                borderRadius: 8,
+                                                backgroundColor: bgColor,
+                                                justifyContent: 'center',
+                                                alignItems: 'center',
+                                                marginBottom: 8,
+                                            }}>
+                                                <Text style={{
+                                                    fontSize: 20,
+                                                    fontWeight: '600',
+                                                    color: 'white',
+                                                }}>
+                                                    {cause.name?.charAt(0)?.toUpperCase() || 'N'}
+                                                </Text>
+                                            </View>
+                                        )}
                                         <Text 
                                             numberOfLines={2}
                                             ellipsizeMode="tail"
                                             style={{ 
                                                 fontSize: 12, 
                                                 fontWeight: '600', 
-                                                color: '#6b7280', 
-                                                marginTop: 4, 
+                                                color: '#111827', 
                                                 textAlign: 'center',
-                                                width: 80,
                                             }}
                                         >
                                             {cause.name}
+                                        </Text>
+                                        </View>
+                                    </TouchableOpacity>
+                                );
+                            })}
+                        </View>
+
+                        {/* Show more causes text and link */}
+                        {profileData.recently_supported_causes.length > 6 && (
+                            <View style={{ alignItems: 'center', gap: 8 }}>
+                                <Text style={{ fontSize: 14, color: '#6b7280' }}>
+                                    + {profileData.recently_supported_causes.length - 6} more causes
+                                </Text>
+                                <TouchableOpacity onPress={handleMoreInterests}>
+                                    <Text style={{ 
+                                        fontSize: 14, 
+                                        color: PrimaryBlue, 
+                                        fontWeight: '500' 
+                                    }}>
+                                        See all {profileData.recently_supported_causes.length} →
                                     </Text>
                                 </TouchableOpacity>
-                            ))}
-                            </ScrollView>
-                        </View>
+                            </View>
+                        )}
+                    </View>
                     )}
 
                     {/* Profile Bio */}

@@ -35,7 +35,7 @@ export default function ProfileStats({
     return (
         <View style={{ 
             flexDirection: 'row', 
-            backgroundColor: '#f9fafb', 
+            // backgroundColor: '#f9fafb', 
             borderRadius: 12, 
             paddingVertical: 16,
             marginTop: 25
@@ -47,13 +47,17 @@ export default function ProfileStats({
                 {isLoadingCauses ? (
                     <ActivityIndicator size="small" color={PrimaryBlue} />
                 ) : (
-                    <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#111827', textAlign: 'center' }}>
+                    <View style={{flexDirection: 'row', alignItems: 'center', gap: 4}}>
+                    <Text style={{ fontSize: 12, fontWeight: '600', color: '#595959', textAlign: 'center' }}>
                         {causes}
                     </Text>
+                <Text style={{ fontSize: 12, color: '#595959', textAlign: 'center', fontWeight: '600' }}>Causes</Text>
+                </View>
+
                 )}
-                <Text style={{ fontSize: 12, color: PrimaryGrey, textAlign: 'center' }}>Causes</Text>
+                {/* <Text style={{ fontSize: 12, color: PrimaryGrey, textAlign: 'center' }}>Causes</Text> */}
             </TouchableOpacity>
-            <View style={{ width: 1, backgroundColor: '#e5e7eb', marginHorizontal: 8 }} />
+            <View style={{ width: 4, height: 4, backgroundColor: '#595959', marginHorizontal: 8, borderRadius: 5, alignSelf: 'center' }} />
             <TouchableOpacity 
                 onPress={() => handleStatsPress('crwds')}
                 style={{ flex: 1, alignItems: 'center', justifyContent: "center" }}
@@ -61,13 +65,15 @@ export default function ProfileStats({
                 {isLoadingCrwds ? (
                     <ActivityIndicator size="small" color={PrimaryBlue} />
                 ) : (
-                    <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#111827', textAlign: "center" }}>
-                        {crwds}
-                    </Text>
+                    <View style={{flexDirection: 'row', alignItems: 'center', gap: 4}}> 
+                        <Text style={{ fontSize: 12, fontWeight: '600', color: '#595959', textAlign: "center" }}>
+                            {crwds}
+                        </Text>
+                        <Text style={{ fontSize: 12, color: '#595959', textAlign: "center", fontWeight: '600' }}>Collectives</Text>
+                    </View>
                 )}
-                <Text style={{ fontSize: 12, color: PrimaryGrey, textAlign: "center" }}>Collectives</Text>
             </TouchableOpacity>
-            <View style={{ width: 1, backgroundColor: '#e5e7eb', marginHorizontal: 8 }} />
+            <View style={{ width: 4, height: 4, backgroundColor: '#595959', marginHorizontal: 8, borderRadius: 5, alignSelf: 'center' }} />
             <TouchableOpacity 
                 onPress={() => handleStatsPress('followers')}
                 style={{ flex: 1, alignItems: 'center', justifyContent: "center" }}
@@ -75,13 +81,15 @@ export default function ProfileStats({
                 {isLoadingFollowers ? (
                     <ActivityIndicator size="small" color={PrimaryBlue} />
                 ) : (
-                    <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#111827', textAlign: "center" }}>
+                    <View style={{flexDirection: 'row', alignItems: 'center', gap: 4}}>
+                    <Text style={{ fontSize: 12, fontWeight: '600', color: '#595959', textAlign: "center" }}>
                         {followers}
                     </Text>
+                    <Text style={{ fontSize: 12, color: '#595959', textAlign: "center", fontWeight: '600' }}>Followers</Text>
+                    </View>
                 )}
-                <Text style={{ fontSize: 12, color: PrimaryGrey, textAlign: "center" }}>Followers</Text>
             </TouchableOpacity>
-            <View style={{ width: 1, backgroundColor: '#e5e7eb', marginHorizontal: 8 }} />
+            <View style={{ width: 4, height: 4, backgroundColor: '#595959', marginHorizontal: 8, borderRadius: 5, alignSelf: 'center' }} />
             <TouchableOpacity 
                 onPress={() => handleStatsPress('following')}
                 style={{ flex: 1, alignItems: 'center', justifyContent: "center" }}
@@ -89,11 +97,13 @@ export default function ProfileStats({
                 {isLoadingFollowing ? (
                     <ActivityIndicator size="small" color={PrimaryBlue} />
                 ) : (
-                    <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#111827', textAlign: "center" }}>
+                    <View style={{flexDirection: 'row', alignItems: 'center', gap: 4}}>
+                    <Text style={{ fontSize: 12, fontWeight: '600', color: '#595959', textAlign: "center" }}>
                         {following}
                     </Text>
+                    <Text style={{ fontSize: 12, color: '#595959', textAlign: "center", fontWeight: '600' }}>Following</Text>
+                    </View>
                 )}
-                <Text style={{ fontSize: 12, color: PrimaryGrey, textAlign: "center" }}>Following</Text>
             </TouchableOpacity>
         </View>
     )

@@ -172,7 +172,7 @@ const Circles = () => {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'right', 'left']}>
         <MainHeaderNav title={'CRWD Collectives'} show={true} menu={false} postButton={false} />
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Discover Collectives</Text>
@@ -195,7 +195,7 @@ const Circles = () => {
           onPress={() => setActiveTab('my-crwds')}
           activeOpacity={0.7}
         >
-            <Users size={18} color={activeTab === 'my-crwds' ? '#000' : '#6B7280'}/>
+            <Users size={16} color={activeTab === 'my-crwds' ? '#000' : '#6B7280'}/>
           <Text style={[styles.tabText, activeTab === 'my-crwds' && styles.tabTextActive]}>
             My Collectives ({joinCollectiveData?.data?.length || 0})
           </Text>
@@ -205,7 +205,7 @@ const Circles = () => {
           onPress={() => setActiveTab('discover')}
           activeOpacity={0.7}
         >
-            <Search color={activeTab === 'discover' ? '#000' : '#6B7280'} size={18} />
+            <Search color={activeTab === 'discover' ? '#000' : '#6B7280'} size={16} />
           <Text style={[styles.tabText, activeTab === 'discover' && styles.tabTextActive]}>Discover</Text>
         </TouchableOpacity>
       </View>
@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    paddingBottom: 16,
+    // paddingBottom: 16,
   },
   header: {
     paddingHorizontal: 20,
@@ -315,6 +315,7 @@ const styles = StyleSheet.create({
     gap: 2,
     marginTop: 8,
     marginBottom: 8,
+    marginHorizontal: 16,
   },
   tabButton: {
     flex: 1,
@@ -331,6 +332,7 @@ const styles = StyleSheet.create({
   tabText: {
     color: '#6B7280',
     fontWeight: '600',
+    fontSize: 12,
   },
   tabTextActive: {
     color: '#111827',
@@ -358,7 +360,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 6,
   },
   collectiveIconText: {
     fontSize: 20,
@@ -366,22 +368,22 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   cardTitle: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 18,
+    fontWeight: '700',
     color: '#111827',
-    marginBottom: 6,
+    marginBottom: 2,
   },
   cardDescription: {
     fontSize: 14,
     color: '#4B5563',
-    marginBottom: 12,
+    marginBottom: 6,
     lineHeight: 20,
   },
   founderInfo: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    marginBottom: 8,
+    marginBottom: 6,
   },
   founderText: {
     fontSize: 12,
@@ -411,7 +413,7 @@ const styles = StyleSheet.create({
   contentContainer: {
     flex: 1,
     paddingHorizontal: 16,
-    marginBottom: 16,
+    marginBottom: 48,
   },
   loadingContainer: {
     flex: 1,
@@ -449,6 +451,7 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     flex: 1,
+    marginBottom: 48,
   },
   listContainer: {
     // No specific height limit, let it grow naturally

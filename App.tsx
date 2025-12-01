@@ -9,7 +9,7 @@ import { ToastProvider } from './src/contexts/ToastContext'
 import Post from './src/screens/Post'
 import Activity from './src/screens/Activity'
 import Profile from './src/screens/Profile'
-import { Bell, Home as HomeIcon, Search, Users, Archive } from 'lucide-react-native'
+import { Bell, Home as HomeIcon, Search, Users, Archive, Heart } from 'lucide-react-native'
 import SearchScreen from './src/screens/Search'
 import Search2 from './src/screens/Search2'
 import DonationScreen from './src/screens/DonationScreen'
@@ -18,7 +18,7 @@ import CreateCRWD from './src/screens/CreateCRWD'
 import YourCRWDs from './src/screens/YourCRWDs'
 import Saved from './src/screens/Saved'
 import CustomDrawerContent from './src/components/drawer/CustomDrawerContent'
-import { LightGrey, PrimaryGrey } from './src/Constants/Colors'
+import { LightGrey, PrimaryGrey, PrimaryBlue } from './src/Constants/Colors'
 import Settings from './src/screens/Settings'
 import TransactionHistory from './src/screens/TransactionHistory'
 import GroupCRWD from './src/screens/GroupCRWD'
@@ -52,9 +52,10 @@ import NonProfitInterests from './src/components/onboarding/NonProfitInterests'
 import CompleteOnboard from './src/components/onboarding/CompleteOnboard'
 import OnBoard from './src/components/onboarding/OnBoard'
 import {FontAwesome6} from '@react-native-vector-icons/fontawesome6'
-import { Image, Platform } from 'react-native'
+import { Image, Platform, View } from 'react-native'
 import { PermissionsAndroid } from 'react-native'
 import Circles from './src/screens/Circles'
+import NewSettings from './src/screens/NewSettings'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { StripeProvider } from '@stripe/stripe-react-native'
 import { STRIPE_PUBLISHABLE_KEY } from './src/config/stripe'
@@ -163,36 +164,63 @@ useEffect(() => {
     return (
       <Tab.Navigator screenOptions={({route}) => ({
         headerShown: false,
-        tabBarActiveTintColor: '#000',
-        tabBarInactiveTintColor: '#000',
-       // tabBarStyle: route.name === 'Donation' ? { display: 'none' } : undefined,
-        tabBarIcon: ({focused}) => {
+        tabBarActiveTintColor: PrimaryBlue,
+        tabBarInactiveTintColor: PrimaryGrey,
+        tabBarStyle: {
+          backgroundColor: '#fff',
+          borderTopWidth: 0,
+          elevation: 8,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 8,
+          height: Platform.OS === 'ios' ? 75 : 70,
+          paddingBottom: Platform.OS === 'ios' ? 28 : 12,
+          paddingTop: 4,
+          borderTopLeftRadius: 20,
+          borderTopRightRadius: 20,
+          position: 'absolute',
+        },
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: '400',
+          marginTop: 4,
+        },
+        tabBarActiveLabelStyle: {
+          fontWeight: '600',
+        },
+        tabBarIcon: ({focused, color}) => {
           if (route.name === 'Home') {
-            // return !focused ? <FontAwesome6 name='house' size={22} color="black" /> : <FontAwesome6 name="house" size={22} color="black" iconStyle='solid' /> 
-            return focused ? <Image source={require('./src/assets/icons/home-fill.png')} style={{width: 22, height: 22}} /> : <Image source={require('./src/assets/icons/home.png')} style={{width: 20, height: 20}} />
+            return <Image source={require('./src/assets/icons/home.png')} style={{width: 22, height: 22, tintColor: color}} />
           } else if (route.name === 'Search') {
-          //  return <Search color={PrimaryGrey} size={22} />
-          return focused ? <Image source={require('./src/assets/icons/search-fill.png')} style={{width: 22, height: 22}} /> : <Image source={require('./src/assets/icons/search.png')} style={{width: 22, height: 22}} />
-          } else if (route.name === 'My Giving') {
-            // return <Archive color={PrimaryGrey} size={22} />
-            return focused ? <Image source={require('./src/assets/icons/box-fill.png')} style={{width: 22, height: 22}} /> : <Image source={require('./src/assets/icons/box.png')} style={{width: 22, height: 22}} />
-          } else if (route.name === 'Activity') {
-            // return <Bell color={PrimaryGrey} size={22} />
-
-            return focused ? <Image source={require('./src/assets/icons/bell-fill.png')} style={{width: 25, height: 25}} /> : <Image source={require('./src/assets/icons/bell.png')} style={{width: 22, height: 22}} />
-
-          } else if (route.name === 'Me') {
-            // return <User color={PrimaryGrey} size={22} />
-
-            return focused ? <Image source={require('./src/assets/icons/user-fill.png')} style={{width: 22, height: 22}} /> : <Image source={require('./src/assets/icons/user.png')} style={{width: 22, height: 22}} />
+            return <Image source={require('./src/assets/icons/search.png')} style={{width: 22, height: 22, tintColor: color}} />
+          } else if (route.name === 'Donate') {
+            return (
+              <View style={{
+                width: 50,
+                height: 50,
+                borderRadius: 100,
+                backgroundColor: '#F3F4F6',
+                justifyContent: 'center',
+                alignItems: 'center',
+                marginTop: -30,
+                marginBottom: -8,
+              }}>
+                <Heart size={28} color={color} />
+              </View>
+            )
+          } else if (route.name === 'Collectives') {
+            return <Users color={color} size={22} />
+          } else if (route.name === 'Profile') {
+            return <Image source={require('./src/assets/icons/user.png')} style={{width: 22, height: 22, tintColor: color}} />
           }
         }
       })}>
-        <Tab.Screen name="Home" component={Home} />
-        {/* <Tab.Screen name="Search" component={SearchScreen} /> */}
-        <Tab.Screen name="My Giving" component={DonationScreen} />
-        {/* <Tab.Screen name="Activity" component={Activity} /> */}
-        <Tab.Screen name="Me" component={Profile} />
+        <Tab.Screen name="Home" component={Home} options={{ tabBarLabel: 'Home' }} />
+        <Tab.Screen name="Search" component={SearchScreen} options={{ tabBarLabel: 'Search' }} />
+        <Tab.Screen name="Donate" component={DonationScreen} options={{ tabBarLabel: 'Donate' }} />
+        <Tab.Screen name="Collectives" component={Circles} options={{ tabBarLabel: 'Collectives' }} />
+        <Tab.Screen name="Profile" component={Profile} options={{ tabBarLabel: 'Profile' }} />
       </Tab.Navigator>
     )
   }
@@ -262,6 +290,7 @@ useEffect(() => {
         <Stack.Screen name="UserProfile" component={UserProfile} />
         <Stack.Screen name="Circles" component={Circles} />
         <Stack.Screen name='Search' component={SearchScreen} />
+        <Stack.Screen name="NewSettings" component={NewSettings} />
         <Stack.Screen name='Activity' component={Activity} />
         <Stack.Screen name="Post" component={Post} />
         <Stack.Screen name="ManageDonationBox" component={ManageDonationBoxScreen} />

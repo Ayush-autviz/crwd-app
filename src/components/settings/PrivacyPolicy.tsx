@@ -2,7 +2,7 @@ import { View, Text, SafeAreaView, ScrollView, StyleSheet } from 'react-native'
 import React from 'react'
 import MainHeaderNav from '../MainHeaderNav'
 import { PrimaryBlue, PrimaryGrey, SecondaryGrey } from '../../Constants/Colors'
-
+import { APP_NAME } from '../../utils/constan'
 export default function PrivacyPolicy() {
   return (
     <SafeAreaView style={styles.container}>
@@ -13,7 +13,7 @@ export default function PrivacyPolicy() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>1. Introduction</Text>
           <Text style={styles.paragraph}>
-            At CRWD, we take your privacy seriously. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform.
+            At {APP_NAME}, we take your privacy seriously. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform.
           </Text>
         </View>
         
@@ -98,7 +98,7 @@ export default function PrivacyPolicy() {
             If you have any questions about this Privacy Policy, please contact us at:
           </Text>
           <Text style={styles.paragraph}>
-            Email: privacy@crwd.com{'\n'}
+            Email: privacy@autviz.in{'\n'}
             Address: 123 Privacy Street, Security City, SC 12345
           </Text>
         </View>

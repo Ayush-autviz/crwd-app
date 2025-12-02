@@ -14,6 +14,7 @@ import { useAuthStore } from '../../store/store'
 import { Camera } from 'lucide-react-native'
 import { EyeOff } from 'lucide-react-native'
 import { Eye } from 'lucide-react-native'
+import { APP_NAME } from '../../utils/constan'
 
 export default function ClaimProfile() {
     const navigation = useNavigation<any>()
@@ -344,7 +345,7 @@ export default function ClaimProfile() {
             <ScrollView ref={scrollViewRef} showsVerticalScrollIndicator={false}>
             <View style={styles.headingContainer}>
                 <Text style={styles.heading}>Finish your profile</Text>
-                <Text style={styles.subheading}>So others can connect with you on CRWD</Text>
+                <Text style={styles.subheading}>So others can connect with you on {APP_NAME}</Text>
             </View>
 
             {/* Add Photo Section */}
@@ -542,7 +543,7 @@ export default function ClaimProfile() {
 
                 <View style={{ flex: 1 }}>
                     <Text style={{ fontSize: 13, lineHeight: 18, color: 'gray', textAlign: 'center' }}>
-                        By checking this box, you acknowledge and agree to CRWD's{' '}
+                        By checking this box, you acknowledge and agree to {APP_NAME}'{' '}
                         <Text style={{ color: 'black', fontWeight: '600' }}>Terms of Use</Text>
                         {' '}and{' '}
                         <Text style={{ color: 'black', fontWeight: '600' }}>Privacy Policy</Text>.

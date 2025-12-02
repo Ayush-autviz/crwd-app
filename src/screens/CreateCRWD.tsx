@@ -15,6 +15,7 @@ import { useToast } from '../contexts/ToastContext';
 import { useAuthStore } from '../store/store';
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/Avatar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { APP_NAME } from '../utils/constan';
 
 export default function CreateCRWD() {
   const navigation = useNavigation<any>();
@@ -251,7 +252,7 @@ export default function CreateCRWD() {
                         marginBottom: 12,
                         textAlign: 'center'
                     }}>
-                        Sign in to create a CRWD
+                        Sign in to create a {APP_NAME}
                     </Text>
                     
                     {/* Description */}
@@ -262,7 +263,7 @@ export default function CreateCRWD() {
                         textAlign: 'center',
                         lineHeight: 24
                     }}>
-                        Sign in to create a CRWD, manage your causes, and connect with your community.
+                        Sign in to create a {APP_NAME}, manage your causes, and connect with your community.
                     </Text>
                     
                     {/* CTA Button */}
@@ -314,7 +315,7 @@ export default function CreateCRWD() {
             style={styles.successLogo}
             resizeMode="contain"
           />
-          <Text style={styles.successTitle}>You've started a CRWD!</Text>
+          <Text style={styles.successTitle}>You've started a {APP_NAME}!</Text>
           {createdCollective && (
             <View style={{ marginBottom: 20, alignItems: 'center' }}>
               <Text style={{ fontSize: 16, fontWeight: '600', color: PrimaryBlue, marginBottom: 5 }}>
@@ -331,8 +332,8 @@ export default function CreateCRWD() {
               onPress={async () => {
                 try {
                   await Share.share({
-                  message: `Join me in my new CRWD "${name}"! We're working together to make a difference. Download the CRWD app to get involved!`,
-                  title: `Join my CRWD: ${name}`,
+                  message: `Join me in my new ${APP_NAME} "${name}"! We're working together to make a difference. Download the ${APP_NAME} app to get involved!`,
+                  title: `Join my ${APP_NAME}: ${name}`,
                 });
                 } catch (error) {
                   console.error('Error sharing:', error);
@@ -391,12 +392,12 @@ export default function CreateCRWD() {
       )}
 
       <ScrollView style={styles.content}>
-        <Text style={styles.title}>Create a CRWD</Text>
+        <Text style={styles.title}>Create a {APP_NAME}</Text>
         <Text style={styles.subtitle}>Be the inspiration to your community. Choose causes, invite friends, discuss and make an impact together</Text>
 
         <View style={{ position: 'relative', marginBottom: 10 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Text style={{ color: PrimaryGrey, fontSize: 16 }}>Name your CRWD</Text>
+            <Text style={{ color: PrimaryGrey, fontSize: 16 }}>Name your {APP_NAME}</Text>
             <TouchableOpacity
               onPress={() => setShowNameTooltip(!showNameTooltip)}
               style={{ padding: 8 }}
@@ -546,7 +547,7 @@ export default function CreateCRWD() {
           onChangeText={setDesc}
         />
 
-        <Text style={{ color: PrimaryGrey, fontSize: 16, marginBottom: 10 }}>Choose one or more causes for your CRWD</Text>
+        <Text style={{ color: PrimaryGrey, fontSize: 16, marginBottom: 10 }}>Choose one or more causes for your {APP_NAME}</Text>
 
         {/* Selected Causes Section */}
         {selectedCausesData.length > 0 && (
@@ -718,7 +719,7 @@ export default function CreateCRWD() {
           </View>
         ) : (
           <Text style={styles.donateButtonText}>
-            Create CRWD
+            Create {APP_NAME}
           </Text>
         )}
       </TouchableOpacity>

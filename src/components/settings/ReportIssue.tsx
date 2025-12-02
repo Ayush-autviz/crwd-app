@@ -6,6 +6,7 @@ import { AlertCircle, ChevronDown, Info, MessageSquare } from 'lucide-react-nati
 import { useMutation } from '@tanstack/react-query'
 import { reportIssue } from '../../services/api/social'
 import { useToast } from '../../contexts/ToastContext'
+import { APP_NAME } from '../../utils/constan'
 
 const issueTypes = [
   { value: 'bug', label: 'Bug' },
@@ -100,7 +101,7 @@ export default function ReportIssue() {
         </View>
         
         <Text style={styles.subtitle}>
-          Help us improve CRWD by reporting any issues you encounter or providing feedback.
+          Help us improve {APP_NAME} by reporting any issues you encounter or providing feedback.
         </Text>
         
         <View style={styles.form}>

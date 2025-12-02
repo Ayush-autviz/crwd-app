@@ -11,6 +11,7 @@ import { createPost } from '../services/api/social'
 import { getCollectives } from '../services/api/crwd'
 import { useToast } from '../contexts/ToastContext'
 import { useAuthStore } from '../store/store'
+import { APP_NAME } from '../utils/constan'
 
 export default function Post() {
   const navigation = useNavigation<any>();
@@ -305,7 +306,7 @@ export default function Post() {
             alignItems: 'center',
             marginBottom: 20
           }}>
-            <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Select a CRWD Collective</Text>
+            <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Select a {APP_NAME} Collective</Text>
             <TouchableOpacity onPress={() => setShowCRWDDropdown(false)}>
               <X size={24} color={PrimaryGrey} />
             </TouchableOpacity>
@@ -407,7 +408,7 @@ export default function Post() {
       <MainHeaderNav show title={'Create a Post'} menu={false}/>
       <ScrollView style={{paddingHorizontal: 20}}>
       <View style={{marginTop: 20}}>
-          <Text style={{fontSize: 16, fontWeight: 'bold', marginBottom: 10}}>Post to a CRWD Collective</Text>
+          <Text style={{fontSize: 16, fontWeight: 'bold', marginBottom: 10}}>Post to a {APP_NAME} Collective</Text>
           
           {/* CRWD Selection */}
           {/* <TouchableOpacity

@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { CROWDS, RECENTS, SUGGESTED, Organization } from '../../Constants/organizations';
 import { ChevronRight } from 'lucide-react-native';
+import { APP_NAME } from '../../utils/constan';
 
 interface DonationStep2Props {
   selectedOrganizations: string[];
@@ -73,7 +74,7 @@ export default function DonationStep2({
       <View style={styles.orgSection}>
         <Text style={styles.sectionTitle}>Choose Organizations</Text>
 
-        <Text style={styles.subsectionTitle}>CRWDS</Text>
+        <Text style={styles.subsectionTitle}>{APP_NAME}</Text>
         {CROWDS.map(renderOrganizationCard)}
 
         <Text style={styles.subsectionTitle}>RECENT</Text>

@@ -11,6 +11,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import { PrimaryBlue } from '../../Constants/Colors';
+import { APP_NAME } from '../../utils/constan';
 
 const { width, height } = Dimensions.get('window');
 
@@ -91,7 +92,7 @@ export default function CompleteOnboard() {
 
           {/* Welcome Message */}
           <View style={styles.welcomeContainer}>
-            <Text style={styles.welcomeTitle}>Welcome to CRWD!</Text>
+            <Text style={styles.welcomeTitle}>Welcome to {APP_NAME}!</Text>
             <Text style={styles.welcomeSubtitle}>
               Start giving now, or explore causes and Circles first.
             </Text>
@@ -112,7 +113,7 @@ export default function CompleteOnboard() {
               onPress={handleBrowseCrwd}
               activeOpacity={0.8}
             >
-              <Text style={styles.secondaryButtonText}>Browse CRWD</Text>
+              <Text style={styles.secondaryButtonText}>Browse {APP_NAME}</Text>
             </TouchableOpacity>
           </View>
         </View>

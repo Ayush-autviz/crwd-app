@@ -5,6 +5,7 @@ import PopularPosts from '../PopularPosts';
 import { MessageSquare } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
+import { APP_NAME } from '../../utils/constan';
 
 interface GroupCRWDUpdatesProps {
   showEmpty?: boolean;
@@ -225,7 +226,7 @@ const GroupCRWDUpdates: React.FC<GroupCRWDUpdatesProps> = ({
                                 </TouchableOpacity>
                               ) : (
                                 <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827' }}>
-                                  CRWD Updates
+                                  {APP_NAME} Updates
                                 </Text>
                               )}
                             </>
@@ -240,12 +241,12 @@ const GroupCRWDUpdates: React.FC<GroupCRWDUpdatesProps> = ({
                                     </Text>
                                   </TouchableOpacity>
                                   <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827' }}>
-                                    {' '}· CRWD Milestones
+                                    {' '}· {APP_NAME} Milestones
                                   </Text>
                                 </>
                               ) : (
                                 <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827' }}>
-                                  CRWD Milestones
+                                  {APP_NAME} Milestones
                                 </Text>
                               )}
                             </>
@@ -401,7 +402,7 @@ const GroupCRWDUpdates: React.FC<GroupCRWDUpdatesProps> = ({
                                 </TouchableOpacity>
                               ) : (
                                 <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827' }}>
-                                  CRWD Updates
+                                  {APP_NAME} Updates
                                 </Text>
                               )}
                             </>
@@ -416,12 +417,12 @@ const GroupCRWDUpdates: React.FC<GroupCRWDUpdatesProps> = ({
                                     </Text>
                                   </TouchableOpacity>
                                   <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827' }}>
-                                    {' '}· CRWD Milestones
+                                    {' '}· {APP_NAME} Milestones
                                   </Text>
                                 </>
                               ) : (
                                 <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827' }}>
-                                  CRWD Milestones
+                                  {APP_NAME} Milestones
                                 </Text>
                               )}
                             </>

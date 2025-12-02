@@ -21,6 +21,7 @@ import { categories } from '../Constants/categories'
 import Geolocation, { GeoPosition } from 'react-native-geolocation-service'
 import messaging from '@react-native-firebase/messaging'
 import { registerNotificationToken } from '../services/api/notification'
+import { APP_NAME } from '../utils/constan'
 
 
 export default function Home() {
@@ -411,7 +412,7 @@ export default function Home() {
                                 marginBottom: 8,
                                 textAlign: 'center'
                             }}>
-                                Why CRWD?
+                                Why {APP_NAME}?
                             </Text>
                             <Text style={{
                                 fontSize: 18,
@@ -429,7 +430,7 @@ export default function Home() {
                             lineHeight: 24,
                             fontSize: 16
                         }}>
-                            On CRWD, one donation supports all the causes you care about. You're not just donating, you're joining others who care about the same things, creating bigger impact together.
+                            On {APP_NAME}, one donation supports all the causes you care about. You're not just donating, you're joining others who care about the same things, creating bigger impact together.
                         </Text>
                     </View>
                 </View>

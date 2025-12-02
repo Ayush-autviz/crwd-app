@@ -16,6 +16,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/Avatar';
 import { useAuthStore } from '../../store/store';
 import { getUnreadCount } from '../../services/api/notification';
 import { useQuery } from '@tanstack/react-query';
+import { APP_NAME } from '../../utils/constan';
 
 export default function CustomDrawerContent(props: DrawerContentComponentProps) {
   const { user: currentUser } = useAuthStore();
@@ -110,7 +111,7 @@ export default function CustomDrawerContent(props: DrawerContentComponentProps) 
         >
           <View style={styles.menuItemContent}>
             <Text style={styles.plusIcon}>+</Text>
-            <Text style={styles.menuLabel}>CRWD Collectives</Text>
+            <Text style={styles.menuLabel}>{APP_NAME} Collectives</Text>
           </View>
         </TouchableOpacity>
         
@@ -149,7 +150,7 @@ export default function CustomDrawerContent(props: DrawerContentComponentProps) 
             <Text style={styles.footerLink}>Terms of Service</Text>
           </TouchableOpacity>
         </View>
-        <Text style={{fontSize: 12, color: PrimaryGrey, textAlign: 'center', marginTop: 8}}>CRWD ©2025</Text>
+        <Text style={{fontSize: 12, color: PrimaryGrey, textAlign: 'center', marginTop: 8}}>{APP_NAME} ©2025</Text>
 
       </View>
     </SafeAreaView>

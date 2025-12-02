@@ -6,6 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useQuery } from '@tanstack/react-query';
 import { getSuggestedCrwds } from '../../services/api/crwd';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/Avatar';
+import { APP_NAME } from '../../utils/constan';
 
 interface GroupCRWDSuggestedProps {
   collectiveId?: string;
@@ -54,7 +55,7 @@ const GroupCRWDSuggested: React.FC<GroupCRWDSuggestedProps> = ({ collectiveId })
           marginBottom: 16,
           color: '#111827'
         }}>
-          Suggested CRWDS
+          Suggested {APP_NAME}
         </Text>
         <View style={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 24 }}>
           <ActivityIndicator size="small" color={PrimaryBlue} />
@@ -78,7 +79,7 @@ const GroupCRWDSuggested: React.FC<GroupCRWDSuggestedProps> = ({ collectiveId })
         marginBottom: 16,
         color: '#111827'
       }}>
-        Suggested CRWDS
+        Suggested {APP_NAME}
       </Text>
       
       <ScrollView 

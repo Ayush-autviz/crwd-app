@@ -9,6 +9,7 @@ import { useQuery } from '@tanstack/react-query'
 import { getCollectives, getJoinCollective } from '../services/api/crwd'
 import { useAuthStore } from '../store/store'
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/Avatar'
+import { APP_NAME } from '../utils/constan'
 
 type TabKey = 'my-crwds' | 'discover'
 
@@ -128,7 +129,7 @@ const Circles = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-        <MainHeaderNav title={'CRWD Collectives'} show={true} menu={false} postButton={false} />
+        <MainHeaderNav title={`${APP_NAME} Collectives`} show={true} menu={false} postButton={false} />
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Discover Collectives</Text>
         <Text style={styles.headerSubtitle}>

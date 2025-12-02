@@ -19,6 +19,7 @@ import { googleLogin, googleCallback as googleCallbackApi } from '../../services
 import { useAuthStore } from '../../store/store';
 import { useToast } from '../../contexts/ToastContext';
 import InAppBrowser from 'react-native-inappbrowser-reborn';
+import { APP_NAME } from '../../utils/constan';
 
 const images = [
   require('../../assets/ngo/aspca.jpg'),
@@ -351,7 +352,7 @@ export default function OnBoard() {
             // marginTop: 20,
           }}
         >
-          Welcome to CRWD
+          Welcome to {APP_NAME}
         </Text>
 
         {/* Subtitle */}
@@ -378,7 +379,7 @@ export default function OnBoard() {
             marginBottom: 50,
           }}
         >
-          Discover nonprofits like these on CRWD
+          Discover nonprofits like these on {APP_NAME}
         </Text>
 
       

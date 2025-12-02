@@ -26,6 +26,7 @@ import {
 import { useNavigation } from '@react-navigation/native'
 import { PrimaryGrey, PrimaryBlue, LightGrey } from '../Constants/Colors'
 import MainHeaderNav from '../components/MainHeaderNav'
+import { APP_NAME } from '../utils/constan'
 
 interface FAQItem {
   question: string
@@ -42,36 +43,36 @@ export default function HelpCenter() {
 
   const faqData: FAQItem[] = [
     {
-      question: "What is CRWD and how does it work?",
-      answer: "CRWD is a social platform that connects people with causes they care about. You can join or create CRWDs (communities) focused on specific charitable causes, participate in group donations, and track your collective impact."
+      question: `What is ${APP_NAME} and how does it work?`,
+      answer: `${APP_NAME} is a social platform that connects people with causes they care about. You can join or create ${APP_NAME} (communities) focused on specific charitable causes, participate in group donations, and track your collective impact.`
     },
     {
-      question: "How do I join a CRWD?",
-      answer: "You can join a CRWD by browsing our community directory, searching for causes you're interested in, or receiving an invitation from a friend. Simply click 'Join' on any CRWD that interests you."
+      question: `How do I join a ${APP_NAME}?`,
+      answer: `You can join a ${APP_NAME} by browsing our community directory, searching for causes you're interested in, or receiving an invitation from a friend. Simply click 'Join' on any ${APP_NAME} that interests you.`
     },
     {
       question: "How do donations work?",
-      answer: "CRWD facilitates group donations to verified non-profit organizations. When your CRWD decides to support a cause, members can contribute any amount they're comfortable with. All donations are secure and go directly to the chosen organization."
+      answer: `${APP_NAME} facilitates group donations to verified non-profit organizations. When your ${APP_NAME} decides to support a cause, members can contribute any amount they're comfortable with. All donations are secure and go directly to the chosen organization.`
     },
     {
       question: "Is my personal information safe?",
-      answer: "Yes, we take privacy seriously. Your personal information is encrypted and never shared with third parties without your consent. You control what information is visible to other CRWD members."
+      answer: `Yes, we take privacy seriously. Your personal information is encrypted and never shared with third parties without your consent. You control what information is visible to other ${APP_NAME} members.`
     },
     {
-      question: "How do I create my own CRWD?",
-      answer: "To create a CRWD, go to 'Your CRWDs' and click 'Create New CRWD'. Choose a cause, write a description, and invite friends to join your community."
+      question: `How do I create my own ${APP_NAME}?`,
+      answer: `To create a ${APP_NAME}, go to 'Your ${APP_NAME}' and click 'Create New ${APP_NAME}'. Choose a cause, write a description, and invite friends to join your community.`
     },
     {
-      question: "Can I leave a CRWD Collective?",
-      answer: "Yes, you can leave any CRWD at any time by going to the CRWD page and selecting 'Leave CRWD' from the menu."
+      question: `Can I leave a ${APP_NAME} Collective?`,
+      answer: `Yes, you can leave any ${APP_NAME} at any time by going to the ${APP_NAME} page and selecting 'Leave ${APP_NAME}' from the menu.`
     },
     {
       question: "How are non-profits verified?",
       answer: "We verify all non-profit organizations through official databases and documentation to ensure they are legitimate 501(c)(3) organizations in good standing."
     },
     {
-      question: "What happens if a CRWD becomes inactive?",
-      answer: "Inactive CRWDs are archived after 90 days of no activity. Members are notified and can reactivate the CRWD or join similar active communities."
+      question: `What happens if a ${APP_NAME} becomes inactive?`,
+      answer: `Inactive ${APP_NAME} are archived after 90 days of no activity. Members are notified and can reactivate the ${APP_NAME} or join similar active communities.`
     }
   ]
 
@@ -79,12 +80,12 @@ export default function HelpCenter() {
     {
       icon: <Users size={24} color={PrimaryBlue} />,
       title: "Getting Started",
-      description: "Learn the basics of using CRWD"
+      description: `Learn the basics of using ${APP_NAME}`
     },
     {
       icon: <Heart size={24} color={PrimaryBlue} />,
       title: "Joining Causes",
-      description: "How to find and join CRWDs"
+      description: `How to find and join ${APP_NAME}`
     },
     {
       icon: <DollarSign size={24} color={PrimaryBlue} />,
@@ -109,7 +110,7 @@ export default function HelpCenter() {
   ]
 
   const handleEmailPress = async () => {
-    const url = 'mailto:support@crwd.app?subject=Help Request'
+    const url = 'mailto:support@autviz.app?subject=Help Request'
     const supported = await Linking.canOpenURL(url)
     if (supported) {
       await Linking.openURL(url)
@@ -210,7 +211,7 @@ export default function HelpCenter() {
               </View>
               <View style={styles.contactContent}>
                 <Text style={styles.contactTitle}>Email Support</Text>
-                <Text style={styles.contactDescription}>support@crwd.app</Text>
+                <Text style={styles.contactDescription}>support@autviz.app</Text>
               </View>
             </TouchableOpacity>
 

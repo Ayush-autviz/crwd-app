@@ -20,6 +20,7 @@ import { useAuthStore } from '../store/store';
 import { getDonationBox, addCollectiveToDonation } from '../services/api/donation';
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/Avatar';
 import { WEB_BASE_URL } from '../Constants/url';
+import { APP_NAME } from '../utils/constan';
 
 
 const { width, height } = Dimensions.get('window');
@@ -240,7 +241,7 @@ export default function GroupCRWD() {
   const handleShare = async () => {
     try {
       const webUrl = `${WEB_BASE_URL}/groupcrwd/${collectiveId}`;
-      const shareMessage = `Check out this CRWD Collective: ${collectiveData?.name || 'Collective'}\n${webUrl}`;
+      const shareMessage = `Check out this ${APP_NAME} Collective: ${collectiveData?.name || 'Collective'}\n${webUrl}`;
       
       const result = await Share.share({
         message: shareMessage,
@@ -440,7 +441,7 @@ export default function GroupCRWD() {
                     Welcome to the community.
                   </Text>
                   <Text style={styles.modalDescription}>
-                    Here's what's inside your CRWD:
+                    Here's what's inside your {APP_NAME}:
                   </Text>
                   
                   {/* Community Info Card */}

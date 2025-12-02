@@ -21,6 +21,7 @@ import MainHeaderNav from '../components/MainHeaderNav'
 import { useToast } from '../contexts/ToastContext'
 import { Edit2 } from 'lucide-react-native'
 import { X } from 'lucide-react-native'
+import { APP_NAME } from '../utils/constan'
 
 // Define the Cause type
 type Cause = {
@@ -92,7 +93,7 @@ export default function ManageCRWD() {
 
     // Basic validation
     if (field === 'name' && !value.trim()) {
-      Alert.alert('Error', 'CRWD name cannot be empty')
+      Alert.alert('Error', `${APP_NAME} name cannot be empty`)
       return
     }
 
@@ -103,7 +104,7 @@ export default function ManageCRWD() {
 
     setFormData(prev => ({ ...prev, [field]: value }))
     setEditingField(null)
-    Alert.alert('Success', 'CRWD updated successfully!')
+    Alert.alert('Success', `${APP_NAME} updated successfully!`)
   }
 
   const handleCancel = () => {
@@ -118,7 +119,7 @@ export default function ManageCRWD() {
 
   const handleImageChange = () => {
     Alert.alert(
-      'Change CRWD Picture',
+      `Change ${APP_NAME} Picture`,
       'Image picker functionality will be implemented with proper image library setup.',
       [{ text: 'OK' }]
     )
@@ -414,13 +415,13 @@ export default function ManageCRWD() {
               </TouchableOpacity>
             </View>
             <TouchableOpacity onPress={handleImageChange}>
-              <Text style={styles.editPictureText}>Edit CRWD picture</Text>
+              <Text style={styles.editPictureText}>Edit {APP_NAME} picture</Text>
             </TouchableOpacity>
           </View>
 
           {/* Editable Fields */}
           <View style={styles.fieldsContainer}>
-            {renderField('name', 'CRWD Name', formData.name)}
+            {renderField('name', `${APP_NAME} Name`, formData.name)}
             {renderField('username', 'Username', formData.username)}
             {renderField('location', 'Location', formData.location)}
             {renderField('description', 'Description', formData.description, true)}

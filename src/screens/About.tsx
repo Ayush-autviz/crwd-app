@@ -22,6 +22,7 @@ import {
 import { useNavigation } from '@react-navigation/native'
 import { PrimaryGrey, PrimaryBlue, LightGrey } from '../Constants/Colors'
 import MainHeaderNav from '../components/MainHeaderNav'
+import { APP_NAME } from '../utils/constan'
 
 interface QuickLinkItem {
   id: string
@@ -40,13 +41,13 @@ export default function About() {
 
   const quickLinks: QuickLinkItem[] = [
     {
-      id: 'about-crwd',
-      title: 'About CRWD',
+      id: `about-${APP_NAME}`,
+      title: `About ${APP_NAME}`,
       icon: <Heart size={20} color={PrimaryBlue} />
     },
     {
       id: 'how-it-works',
-      title: 'How CRWD Works',
+      title: `How ${APP_NAME} Works`,
       icon: <Target size={20} color={PrimaryBlue} />
     },
     {
@@ -55,13 +56,13 @@ export default function About() {
       icon: <DollarSign size={20} color={PrimaryBlue} />
     },
     {
-      id: 'what-are-crwds',
-      title: 'What Are CRWD Collectives?',
+      id: `what-are-${APP_NAME}`,
+      title: `What Are ${APP_NAME} Collectives?`,
       icon: <Users size={20} color={PrimaryBlue} />
     },
     {
-      id: 'why-crwd',
-      title: 'Why CRWD',
+      id: `why-${APP_NAME}`,
+      title: `Why ${APP_NAME}`,
       icon: <TrendingUp size={20} color={PrimaryBlue} />
     }
   ]
@@ -73,11 +74,11 @@ export default function About() {
     },
     {
       title: 'Donate once or monthly',
-      description: 'Your donation is split evenly across all nonprofits in your box. CRWD processes the payment and distributes funds on your behalf.'
+      description: `Your donation is split evenly across all nonprofits in your box. ${APP_NAME} processes the payment and distributes funds on your behalf.`
     },
     {
       title: 'We send the funds',
-      description: 'CRWD distributes donations to nonprofits within 45 days, bundled as a single payment that includes all contributions made to that nonprofit across the platform.'
+      description: `${APP_NAME} distributes donations to nonprofits within 45 days, bundled as a single payment that includes all contributions made to that nonprofit across the platform.`
     },
     {
       title: 'Track your giving',
@@ -130,9 +131,9 @@ export default function About() {
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Hero Section */}
         <View style={styles.heroSection}>
-          <Text style={styles.heroTitle}>CRWD About Page</Text>
+          <Text style={styles.heroTitle}>{APP_NAME} About Page</Text>
           <Text style={styles.heroSubtitle}>
-            Learn how CRWD makes it easy to give to multiple nonprofits in one place.
+            Learn how {APP_NAME} makes it easy to give to multiple nonprofits in one place.
           </Text>
         </View>
 
@@ -158,12 +159,12 @@ export default function About() {
 
         {/* About CRWD Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>About CRWD</Text>
+          <Text style={styles.sectionTitle}>About {APP_NAME}</Text>
           <Text style={styles.paragraphText}>
-            CRWD makes it easy to give to multiple nonprofits in one place.
+            {APP_NAME} makes it easy to give to multiple nonprofits in one place.
           </Text>
           <Text style={styles.paragraphText}>
-            You can build a personalized donation box, add nonprofits you care about, and give once or monthly. CRWD handles the rest—including distributing your donation and keeping everything organized.
+            You can build a personalized donation box, add nonprofits you care about, and give once or monthly. {APP_NAME} handles the rest—including distributing your donation and keeping everything organized.
           </Text>
           <Text style={[styles.paragraphText, styles.boldText]}>
             We're here to simplify generosity.
@@ -172,7 +173,7 @@ export default function About() {
 
         {/* How CRWD Works Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>How CRWD Works</Text>
+          <Text style={styles.sectionTitle}>How {APP_NAME} Works</Text>
           <View style={styles.stepsContainer}>
             {howItWorksSteps.map((step, index) => (
               <View key={index} style={styles.stepItem}>
@@ -192,12 +193,12 @@ export default function About() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>About Tax Deductibility</Text>
           <Text style={styles.paragraphText}>
-            Because CRWD uses a collective giving model, where donations are pooled and distributed on your behalf, most donations are not currently tax deductible, even if they support 501(c)(3) organizations.
+            Because {APP_NAME} uses a collective giving model, where donations are pooled and distributed on your behalf, most donations are not currently tax deductible, even if they support 501(c)(3) organizations.
           </Text>
           
           <Text style={styles.subsectionTitle}>That's changing.</Text>
           <Text style={styles.paragraphText}>
-            Some nonprofits on CRWD have already enrolled to receive direct payments, which makes donations to them tax deductible and helps reduce processing time and costs. These nonprofits are clearly labeled across the platform, and you'll receive a tax receipt when you give to them.
+            Some nonprofits on {APP_NAME} have already enrolled to receive direct payments, which makes donations to them tax deductible and helps reduce processing time and costs. These nonprofits are clearly labeled across the platform, and you'll receive a tax receipt when you give to them.
           </Text>
           <Text style={styles.paragraphText}>
             We're working daily to expand this option—so more nonprofits can accept direct donations, and more of your giving can qualify for tax benefits.
@@ -215,7 +216,7 @@ export default function About() {
               <View style={styles.bulletItem}>
                 <View style={styles.bullet} />
                 <Text style={styles.bulletText}>
-                  You'll receive a giving summary from CRWD for your records
+                  You'll receive a giving summary from {APP_NAME} for your records
                 </Text>
               </View>
             </View>
@@ -224,16 +225,16 @@ export default function About() {
 
         {/* What Are CRWDs Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>What Are CRWD Collectives?</Text>
+          <Text style={styles.sectionTitle}>What Are {APP_NAME} Collectives?</Text>
           <Text style={styles.paragraphText}>
-            CRWDs are curated collections of nonprofits tied to a shared cause or identity.
+            {APP_NAME} are curated collections of nonprofits tied to a shared cause or identity.
           </Text>
           <Text style={styles.paragraphText}>
-            You can join a CRWD, create one, or share it with others.
+            You can join a {APP_NAME}, create one, or share it with others.
           </Text>
 
           <View style={styles.featuresCard}>
-            <Text style={styles.featuresCardTitle}>Each CRWD includes:</Text>
+            <Text style={styles.featuresCardTitle}>Each {APP_NAME} includes:</Text>
             <View style={styles.featuresList}>
               {crwdFeatures.map((feature, index) => (
                 <View key={index} style={styles.featureItem}>
@@ -245,18 +246,18 @@ export default function About() {
           </View>
 
           <Text style={styles.paragraphText}>
-            Joining a CRWD adds its nonprofits to your donation box. You can keep them all, or remove any you don't want to support.
+            Joining a {APP_NAME} adds its nonprofits to your donation box. You can keep them all, or remove any you don't want to support.
           </Text>
         </View>
 
         {/* Why CRWD Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Why CRWD</Text>
+          <Text style={styles.sectionTitle}>Why {APP_NAME}</Text>
           <Text style={styles.paragraphText}>
             Giving to multiple nonprofits shouldn't require multiple accounts, receipts, or payment forms.
           </Text>
           <Text style={styles.paragraphText}>
-            CRWD simplifies the process—so you can focus on giving, not managing it.
+            {APP_NAME} simplifies the process—so you can focus on giving, not managing it.
           </Text>
 
           <View style={styles.whyFeaturesList}>

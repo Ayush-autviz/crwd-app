@@ -22,6 +22,7 @@ import { Settings } from 'lucide-react-native';
 import { getCollectiveById } from '../../services/api/crwd';
 import { PrimaryBlue } from '../../Constants/Colors';
 import { useQueryClient } from '@tanstack/react-query';
+import { APP_NAME } from '../../utils/constan';
 
 const { width, height } = Dimensions.get('window');
 
@@ -174,7 +175,7 @@ export default function CheckoutScreen({
             <View style={styles.statDivider} />
             <View style={styles.statItem}>
               <Text style={styles.statNumber}>{totalCollectives}</Text>
-              <Text style={styles.statLabel}>CRWDS</Text>
+              <Text style={styles.statLabel}>{APP_NAME}</Text>
             </View>
             <View style={styles.statDivider} />
 
@@ -331,7 +332,7 @@ export default function CheckoutScreen({
 
         {/* Give Together Section */}
         <View style={styles.giveTogetherCard}>
-          <Text style={styles.giveTogetherText}>Want to give together? Turn this into a CRWD Collective</Text>
+          <Text style={styles.giveTogetherText}>Want to give together? Turn this into a {APP_NAME} Collective</Text>
           <TouchableOpacity>
             <Text style={styles.learnMoreLink}>Learn more</Text>
           </TouchableOpacity>

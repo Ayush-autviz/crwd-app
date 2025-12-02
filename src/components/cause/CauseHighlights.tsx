@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, Image, TouchableOpacity, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { PrimaryBlue, LightGrey, PrimaryGrey } from '../../Constants/Colors';
-
+import { APP_NAME } from '../../utils/constan';
 interface Highlight {
   avatar: string;
   name: string;
@@ -14,31 +14,31 @@ interface Highlight {
 const highlights: Highlight[] = [
   {
     avatar: 'https://randomuser.me/api/portraits/men/33.jpg',
-    name: "Chad's CRWD",
+    name: `Chad's ${APP_NAME}`,
     founder: 'chad',
     founderAvatar: 'https://randomuser.me/api/portraits/men/33.jpg',
-    bio: "This is a CRWD bio that provides a preview of the group's mission and goals. The elements are clickable.",
+    bio: `This is a ${APP_NAME} bio that provides a preview of the group's mission and goals. The elements are clickable.`,
   },
   {
     avatar: 'https://randomuser.me/api/portraits/women/46.jpg',
     name: 'Better Together',
     founder: 'carebear',
     founderAvatar: 'https://randomuser.me/api/portraits/women/46.jpg',
-    bio: "Community outreach is my love language. This is the CRWD bio. We'd love to have you",
+    bio: `Community outreach is my love language. This is the ${APP_NAME} bio. We'd love to have you`,
   },
   {
     avatar: 'https://randomuser.me/api/portraits/men/34.jpg',
-    name: "Chad's CRWD",
+    name:  `Chad's ${APP_NAME}`,
     founder: 'chad',
     founderAvatar: 'https://randomuser.me/api/portraits/men/33.jpg',
-    bio: "This is a CRWD bio that provides a preview of the group's mission and goals. The elements are clickable.",
+    bio: `This is a ${APP_NAME} bio that provides a preview of the group's mission and goals. The elements are clickable.`,
   },
   {
     avatar: 'https://randomuser.me/api/portraits/women/47.jpg',
     name: 'Better Together',
     founder: 'carebear',
     founderAvatar: 'https://randomuser.me/api/portraits/women/46.jpg',
-    bio: "Community outreach is my love language. This is the CRWD bio. We'd love to have you",
+    bio: `Community outreach is my love language. This is the ${APP_NAME} bio. We'd love to have you`,
   },
 ];
 
@@ -107,7 +107,7 @@ const CauseHighlights: React.FC = () => {
       <View style={{ marginBottom: 12 }}>
         <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827' }}>
           Community Highlights{' '}
-          <Text style={{ fontWeight: '400', color: PrimaryGrey }}>• In 6 CRWDS</Text>
+          <Text style={{ fontWeight: '400', color: PrimaryGrey }}>• In 6 {APP_NAME}</Text>
         </Text>
       </View>
       
@@ -126,7 +126,7 @@ const CauseHighlights: React.FC = () => {
       <View style={{ alignItems: 'flex-end', marginTop: 12 }}>
         <TouchableOpacity onPress={handleCreateCRWD}>
           <Text style={{ color: PrimaryBlue, fontSize: 14, fontWeight: '500' }}>
-            Create a CRWD
+            Create a {APP_NAME}
           </Text>
         </TouchableOpacity>
       </View>

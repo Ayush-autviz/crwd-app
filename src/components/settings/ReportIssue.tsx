@@ -6,7 +6,7 @@ import { AlertCircle, ChevronDown, Info, MessageSquare } from 'lucide-react-nati
 import { useMutation } from '@tanstack/react-query'
 import { reportIssue } from '../../services/api/social'
 import { useToast } from '../../contexts/ToastContext'
-import { APP_NAME } from '../../utils/constan'
+import { WhiteLabelConfig } from '../../Constants/WhiteLabelConfig'
 
 const issueTypes = [
   { value: 'bug', label: 'Bug' },
@@ -66,7 +66,7 @@ export default function ReportIssue() {
       description: formData.description,
       issue_type: formData.type,
       status: "pending",
-      reproduce_steps: formData.steps ,
+      reproduce_steps: formData.steps,
     }
 
     console.log(payload, 'payload')
@@ -99,15 +99,15 @@ export default function ReportIssue() {
           {/* <MessageSquare size={24} color={PrimaryBlue} /> */}
           <Text style={styles.title}>Report an Issue</Text>
         </View>
-        
+
         <Text style={styles.subtitle}>
-          Help us improve {APP_NAME} by reporting any issues you encounter or providing feedback.
+          Help us improve {WhiteLabelConfig.AppName} by reporting any issues you encounter or providing feedback.
         </Text>
-        
+
         <View style={styles.form}>
           <View style={styles.formGroup}>
             <Text style={styles.label}>Issue Type</Text>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.selectButton}
               onPress={() => setShowPicker(true)}
             >
@@ -116,14 +116,14 @@ export default function ReportIssue() {
               </Text>
               <ChevronDown size={20} color={PrimaryGrey} />
             </TouchableOpacity>
-            
+
             <Modal
               visible={showPicker}
               transparent={true}
               animationType="slide"
               onRequestClose={() => setShowPicker(false)}
             >
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.modalOverlay}
                 activeOpacity={1}
                 onPress={() => setShowPicker(false)}
@@ -162,7 +162,7 @@ export default function ReportIssue() {
               </TouchableOpacity>
             </Modal>
           </View>
-          
+
           <View style={styles.formGroup}>
             <Text style={styles.label}>Title</Text>
             <TextInput
@@ -173,7 +173,7 @@ export default function ReportIssue() {
               placeholderTextColor={PrimaryGrey}
             />
           </View>
-          
+
           <View style={styles.formGroup}>
             <Text style={styles.label}>Description</Text>
             <TextInput
@@ -187,7 +187,7 @@ export default function ReportIssue() {
               textAlignVertical="top"
             />
           </View>
-          
+
           <View style={styles.formGroup}>
             <Text style={styles.label}>Steps to Reproduce</Text>
             <TextInput
@@ -201,7 +201,7 @@ export default function ReportIssue() {
               textAlignVertical="top"
             />
           </View>
-          
+
           {/* <View style={styles.formGroup}>
             <Text style={styles.label}>Your Email</Text>
             <TextInput
@@ -214,9 +214,9 @@ export default function ReportIssue() {
               autoCapitalize="none"
             />
           </View> */}
-          
+
           <View style={styles.buttonContainer}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[
                 styles.submitButton,
                 reportIssueMutation.isPending && styles.submitButtonDisabled
@@ -230,8 +230,8 @@ export default function ReportIssue() {
                 <Text style={styles.submitButtonText}>Submit Report</Text>
               )}
             </TouchableOpacity>
-            
-            <TouchableOpacity 
+
+            <TouchableOpacity
               style={styles.clearButton}
               onPress={clearForm}
             >
@@ -239,7 +239,7 @@ export default function ReportIssue() {
             </TouchableOpacity>
           </View>
         </View>
-        
+
         <View style={styles.tipsContainer}>
           <Text style={styles.tipsTitle}>Tips for Submitting a Good Report</Text>
           <View style={styles.tipsList}>
@@ -250,7 +250,7 @@ export default function ReportIssue() {
             <Text style={styles.tipItem}>• Check if the issue has already been reported</Text>
           </View>
         </View>
-        
+
         <View style={styles.bottomPadding} />
       </ScrollView>
     </SafeAreaView>

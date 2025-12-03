@@ -11,7 +11,7 @@ import { createPost } from '../services/api/social'
 import { getCollectives } from '../services/api/crwd'
 import { useToast } from '../contexts/ToastContext'
 import { useAuthStore } from '../store/store'
-import { APP_NAME } from '../utils/constan'
+import { WhiteLabelConfig } from '../Constants/WhiteLabelConfig'
 
 export default function Post() {
   const navigation = useNavigation<any>();
@@ -199,86 +199,86 @@ export default function Post() {
   };
 
   if (!currentUser?.id) {
-            return (
-            <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }} edges={['top', 'left', 'right']}>
-                <MainHeaderNav title={'Create a Post'} show={true} />
-                <View style={{ 
-                    flex: 1, 
-                    justifyContent: 'center', 
-                    alignItems: 'center', 
-                    paddingHorizontal: 32,
-                    backgroundColor: 'white'
-                }}>
-                    {/* Icon */}
-                    <View style={{
-                        width: 80,
-                        height: 80,
-                        backgroundColor: '#dbeafe',
-                        borderRadius: 40,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        marginBottom: 24
-                    }}>
-                        <User size={40} color={PrimaryBlue} />
-                    </View>
-                    
-                    {/* Title */}
-                    <Text style={{
-                        fontSize: 24,
-                        fontWeight: 'bold',
-                        color: '#111827',
-                        marginBottom: 12,
-                        textAlign: 'center'
-                    }}>
-                        Sign in to create a post
-                    </Text>
-                    
-                    {/* Description */}
-                    <Text style={{
-                        fontSize: 16,
-                        color: '#6b7280',
-                        marginBottom: 32,
-                        textAlign: 'center',
-                        lineHeight: 24
-                    }}>
-                        Sign in to create a post, manage your causes, and connect with your community.
-                    </Text>
-                    
-                    {/* CTA Button */}
-                    <TouchableOpacity
-                        onPress={() => navigation.navigate('Login' as never)}
-                        style={{
-                            backgroundColor: '#2563eb',
-                            paddingHorizontal: 32,
-                            paddingVertical: 12,
-                            borderRadius: 8,
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            gap: 8
-                        }}
-                    >
-                        <Text style={{ color: 'white', fontSize: 16, fontWeight: '500' }}>
-                            Sign In to Continue
-                        </Text>
-                    </TouchableOpacity>
-                    
-                    {/* Additional Info */}
-                    <TouchableOpacity
-                        onPress={() => navigation.navigate('ClaimProfile' as never)}
-                      >
-                    <Text style={{
-                        fontSize: 14,
-                        color: '#6b7280',
-                        marginTop: 24,
-                        textAlign: 'center'
-                    }}>
-                        Don't have an account? 
-                        <Text style={{ color: '#2563eb', fontWeight: '500' }}> Create one here</Text>
-                    </Text>
-                    </TouchableOpacity>
-                </View>
-            </SafeAreaView>
-        );
+    return (
+      <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }} edges={['top', 'left', 'right']}>
+        <MainHeaderNav title={'Create a Post'} show={true} />
+        <View style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          paddingHorizontal: 32,
+          backgroundColor: 'white'
+        }}>
+          {/* Icon */}
+          <View style={{
+            width: 80,
+            height: 80,
+            backgroundColor: '#dbeafe',
+            borderRadius: 40,
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginBottom: 24
+          }}>
+            <User size={40} color={PrimaryBlue} />
+          </View>
+
+          {/* Title */}
+          <Text style={{
+            fontSize: 24,
+            fontWeight: 'bold',
+            color: '#111827',
+            marginBottom: 12,
+            textAlign: 'center'
+          }}>
+            Sign in to create a post
+          </Text>
+
+          {/* Description */}
+          <Text style={{
+            fontSize: 16,
+            color: '#6b7280',
+            marginBottom: 32,
+            textAlign: 'center',
+            lineHeight: 24
+          }}>
+            Sign in to create a post, manage your causes, and connect with your community.
+          </Text>
+
+          {/* CTA Button */}
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Login' as never)}
+            style={{
+              backgroundColor: '#2563eb',
+              paddingHorizontal: 32,
+              paddingVertical: 12,
+              borderRadius: 8,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 8
+            }}
+          >
+            <Text style={{ color: 'white', fontSize: 16, fontWeight: '500' }}>
+              Sign In to Continue
+            </Text>
+          </TouchableOpacity>
+
+          {/* Additional Info */}
+          <TouchableOpacity
+            onPress={() => navigation.navigate('ClaimProfile' as never)}
+          >
+            <Text style={{
+              fontSize: 14,
+              color: '#6b7280',
+              marginTop: 24,
+              textAlign: 'center'
+            }}>
+              Don't have an account?
+              <Text style={{ color: '#2563eb', fontWeight: '500' }}> Create one here</Text>
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
   }
 
   const renderCRWDDropdown = () => (
@@ -306,7 +306,7 @@ export default function Post() {
             alignItems: 'center',
             marginBottom: 20
           }}>
-            <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Select a {APP_NAME} Collective</Text>
+            <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Select a {WhiteLabelConfig.AppName} Collective</Text>
             <TouchableOpacity onPress={() => setShowCRWDDropdown(false)}>
               <X size={24} color={PrimaryGrey} />
             </TouchableOpacity>
@@ -354,26 +354,26 @@ export default function Post() {
   // Check if user is logged in
   if (!currentUser?.id) {
     return (
-      <SafeAreaView style={{backgroundColor: 'white', flex: 1}}>
-        <MainHeaderNav show title={'Create a Post'} menu={false}/>
-        <View style={{ 
-          flex: 1, 
-          justifyContent: 'center', 
-          alignItems: 'center', 
-          paddingHorizontal: 32 
+      <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }}>
+        <MainHeaderNav show title={'Create a Post'} menu={false} />
+        <View style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          paddingHorizontal: 32
         }}>
           <Text style={{ fontSize: 48, marginBottom: 16 }}>🔒</Text>
-          <Text style={{ 
-            fontSize: 20, 
-            fontWeight: '600', 
+          <Text style={{
+            fontSize: 20,
+            fontWeight: '600',
             color: '#111827',
             marginBottom: 8,
             textAlign: 'center'
           }}>
             Sign in to create posts
           </Text>
-          <Text style={{ 
-            fontSize: 14, 
+          <Text style={{
+            fontSize: 14,
             color: '#6b7280',
             textAlign: 'center',
             lineHeight: 20,
@@ -404,12 +404,12 @@ export default function Post() {
   }
 
   return (
-    <SafeAreaView style={{backgroundColor: 'white', flex: 1}}>
-      <MainHeaderNav show title={'Create a Post'} menu={false}/>
-      <ScrollView style={{paddingHorizontal: 20}}>
-      <View style={{marginTop: 20}}>
-          <Text style={{fontSize: 16, fontWeight: 'bold', marginBottom: 10}}>Post to a {APP_NAME} Collective</Text>
-          
+    <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }}>
+      <MainHeaderNav show title={'Create a Post'} menu={false} />
+      <ScrollView style={{ paddingHorizontal: 20 }}>
+        <View style={{ marginTop: 20 }}>
+          <Text style={{ fontSize: 16, fontWeight: 'bold', marginBottom: 10 }}>Post to a {WhiteLabelConfig.AppName} Collective</Text>
+
           {/* CRWD Selection */}
           {/* <TouchableOpacity
             style={{
@@ -469,7 +469,7 @@ export default function Post() {
             value={form.content}
             onChangeText={(value) => handleInputChange('content', value)}
           />
-          
+
           {/* Post Type Icons */}
           <View style={{
             flexDirection: 'row',
@@ -483,7 +483,7 @@ export default function Post() {
               <ImageIcon size={24} color={postType === 'image' ? PrimaryBlue : PrimaryGrey} />
             </TouchableOpacity>
           </View>
-          
+
           {/* Helper Text */}
           {/* <Text style={{
             fontSize: 12,
@@ -499,7 +499,7 @@ export default function Post() {
 
           {/* Link Form Fields - Shows inline when link icon is clicked */}
           {postType === 'link' && (
-            <View style={{marginBottom: 20}}>
+            <View style={{ marginBottom: 20 }}>
               <TextInput
                 style={{
                   borderWidth: 1,
@@ -516,14 +516,14 @@ export default function Post() {
                 onBlur={handleUrlBlur}
               />
               {urlError && (
-                <Text style={{color: 'red', fontSize: 12, marginBottom: 8}}>{urlError}</Text>
+                <Text style={{ color: 'red', fontSize: 12, marginBottom: 8 }}>{urlError}</Text>
               )}
             </View>
           )}
 
           {/* Image Form Fields - Shows inline when image icon is clicked */}
           {postType === 'image' && (
-            <View style={{marginBottom: 20}}>
+            <View style={{ marginBottom: 20 }}>
               {!selectedImage ? (
                 <TouchableOpacity
                   style={{
@@ -574,7 +574,7 @@ export default function Post() {
           )}
         </View>
       </ScrollView>
-        {/* } */}
+      {/* } */}
       {/* </ScrollView> */}
 
       {/* Post Button */}

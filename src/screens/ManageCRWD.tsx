@@ -1,13 +1,13 @@
 import React, { useState, useRef } from 'react'
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  Image, 
-  StyleSheet, 
-  ScrollView, 
-  KeyboardAvoidingView, 
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Image,
+  StyleSheet,
+  ScrollView,
+  KeyboardAvoidingView,
   Platform,
   Alert,
   Modal,
@@ -21,7 +21,7 @@ import MainHeaderNav from '../components/MainHeaderNav'
 import { useToast } from '../contexts/ToastContext'
 import { Edit2 } from 'lucide-react-native'
 import { X } from 'lucide-react-native'
-import { APP_NAME } from '../utils/constan'
+import { WhiteLabelConfig } from '../Constants/WhiteLabelConfig'
 
 // Define the Cause type
 type Cause = {
@@ -62,7 +62,7 @@ const allAvailableCauses: Cause[] = [
 export default function ManageCRWD() {
   const navigation = useNavigation()
   const { showToast } = useToast()
-  
+
   const [editingField, setEditingField] = useState<string | null>(null)
   const [currentModal, setCurrentModal] = useState<'current' | 'previous' | null>(null)
   const [currentlySupportingList, setCurrentlySupportingList] = useState(currentlySupporting)
@@ -76,7 +76,7 @@ export default function ManageCRWD() {
   })
   const [tempData, setTempData] = useState({
     name: "Feed the hungry",
-    username: "feedthehungry", 
+    username: "feedthehungry",
     location: "Atlanta, GA",
     description: "Supporting families experiencing food insecurity in the greater Atlanta area"
   })
@@ -93,7 +93,7 @@ export default function ManageCRWD() {
 
     // Basic validation
     if (field === 'name' && !value.trim()) {
-      Alert.alert('Error', `${APP_NAME} name cannot be empty`)
+      Alert.alert('Error', `${WhiteLabelConfig.AppName} name cannot be empty`)
       return
     }
 
@@ -104,7 +104,7 @@ export default function ManageCRWD() {
 
     setFormData(prev => ({ ...prev, [field]: value }))
     setEditingField(null)
-    Alert.alert('Success', `${APP_NAME} updated successfully!`)
+    Alert.alert('Success', `${WhiteLabelConfig.AppName} updated successfully!`)
   }
 
   const handleCancel = () => {
@@ -119,7 +119,7 @@ export default function ManageCRWD() {
 
   const handleImageChange = () => {
     Alert.alert(
-      `Change ${APP_NAME} Picture`,
+      `Change ${WhiteLabelConfig.AppName} Picture`,
       'Image picker functionality will be implemented with proper image library setup.',
       [{ text: 'OK' }]
     )
@@ -131,8 +131,8 @@ export default function ManageCRWD() {
       'Are you sure you want to delete this CRWD? This action cannot be undone.',
       [
         { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Delete', 
+        {
+          text: 'Delete',
           style: 'destructive',
           onPress: () => {
             Alert.alert('CRWD Deleted', 'Your CRWD has been deleted successfully.')
@@ -165,7 +165,7 @@ export default function ManageCRWD() {
     setShowAddCauses(false)
   }
 
-  const filteredCauses = allAvailableCauses.filter(cause => 
+  const filteredCauses = allAvailableCauses.filter(cause =>
     cause.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
     !currentlySupportingList.some(item => item.id === cause.id) &&
     !previouslySupportedList.some(item => item.id === cause.id)
@@ -258,14 +258,14 @@ export default function ManageCRWD() {
           <Text style={styles.causeSectionTitle}>{title}</Text>
           <View style={styles.headerButtons}>
             {!isPrevious && (
-              <TouchableOpacity 
+              <TouchableOpacity
                 onPress={() => setShowAddCauses(true)}
                 style={[styles.chevronButton, styles.addButtonStyle]}
               >
                 <Plus size={20} color={PrimaryGrey} />
               </TouchableOpacity>
             )}
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={() => setCurrentModal(isPrevious ? 'previous' : 'current')}
               style={styles.chevronButton}
             >
@@ -289,7 +289,7 @@ export default function ManageCRWD() {
     const isCurrentModal = currentModal === 'current'
     const data = isCurrentModal ? currentlySupportingList : previouslySupportedList
     const title = isCurrentModal ? 'Manage Currently Supporting' : 'Manage Previously Supported'
-    
+
     return (
       <Modal
         visible={currentModal !== null}
@@ -299,7 +299,7 @@ export default function ManageCRWD() {
       >
         <TouchableWithoutFeedback onPress={() => setCurrentModal(null)}>
           <View style={styles.modalOverlay}>
-            <TouchableWithoutFeedback onPress={() => {}}>
+            <TouchableWithoutFeedback onPress={() => { }}>
               <View style={styles.modalContent}>
                 <View style={styles.modalHeader}>
                   <Text style={styles.modalTitle}>{title}</Text>
@@ -346,7 +346,7 @@ export default function ManageCRWD() {
       >
         <TouchableWithoutFeedback onPress={() => setShowAddCauses(false)}>
           <View style={styles.modalOverlay}>
-            <TouchableWithoutFeedback onPress={() => {}}>
+            <TouchableWithoutFeedback onPress={() => { }}>
               <View style={styles.modalContent}>
                 <View style={styles.modalHeader}>
                   <Text style={styles.modalTitle}>Add New Causes</Text>
@@ -394,8 +394,8 @@ export default function ManageCRWD() {
   return (
     <SafeAreaView style={styles.container}>
       <MainHeaderNav show={true} menu={false} title={'Manage Collectives'} />
-      
-      <KeyboardAvoidingView 
+
+      <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
       >
@@ -403,8 +403,8 @@ export default function ManageCRWD() {
           {/* CRWD Picture Section */}
           <View style={styles.avatarSection}>
             <View style={styles.avatarContainer}>
-              <Image 
-                source={{ uri: formData.avatarUrl }} 
+              <Image
+                source={{ uri: formData.avatarUrl }}
                 style={styles.avatar}
               />
               <TouchableOpacity
@@ -415,13 +415,13 @@ export default function ManageCRWD() {
               </TouchableOpacity>
             </View>
             <TouchableOpacity onPress={handleImageChange}>
-              <Text style={styles.editPictureText}>Edit {APP_NAME} picture</Text>
+              <Text style={styles.editPictureText}>Edit {WhiteLabelConfig.AppName} picture</Text>
             </TouchableOpacity>
           </View>
 
           {/* Editable Fields */}
           <View style={styles.fieldsContainer}>
-            {renderField('name', `${APP_NAME} Name`, formData.name)}
+            {renderField('name', `${WhiteLabelConfig.AppName} Name`, formData.name)}
             {renderField('username', 'Username', formData.username)}
             {renderField('location', 'Location', formData.location)}
             {renderField('description', 'Description', formData.description, true)}
@@ -671,7 +671,7 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   addButtonStyle: {
-   // backgroundColor: '#dcfce7',
+    // backgroundColor: '#dcfce7',
   },
   causesContainer: {
     flexDirection: 'row',
@@ -735,8 +735,8 @@ const styles = StyleSheet.create({
   },
   modalList: {
     paddingHorizontal: 20,
-    paddingBottom:35,
-    paddingTop:15
+    paddingBottom: 35,
+    paddingTop: 15
   },
   modalItem: {
     flexDirection: 'row',

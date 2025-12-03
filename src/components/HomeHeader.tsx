@@ -17,6 +17,8 @@ type RootStackParamList = {
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
+import { WhiteLabelConfig } from '../Constants/WhiteLabelConfig';
+
 export default function HomeHeader({ show = false, menu = true, post = true }) {
     const navigation = useNavigation<NavigationProp>();
     const screenWidth = Dimensions.get('window').width;
@@ -40,19 +42,19 @@ export default function HomeHeader({ show = false, menu = true, post = true }) {
 
     return (
         <SafeAreaView style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 5, alignItems: 'center', marginHorizontal: 10, borderBottomWidth: 2, borderBottomColor: LightGrey, }}>
-            <Image source={require('../assets/logo/main.png')} style={{ resizeMode: 'contain', width: 70, height: 60 }} />
-            <TouchableOpacity onPress={() => navigation.navigate('Search')} style={{ flexDirection: 'row', alignItems: 'center', flex: 1, justifyContent: 'space-between', backgroundColor: LightGrey, paddingHorizontal: 10, paddingVertical:5, borderRadius: 16 }}>
+            <Image source={WhiteLabelConfig.AppLogo} style={{ resizeMode: 'contain', width: 70, height: 60 }} />
+            <TouchableOpacity onPress={() => navigation.navigate('Search')} style={{ flexDirection: 'row', alignItems: 'center', flex: 1, justifyContent: 'space-between', backgroundColor: LightGrey, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 16 }}>
                 <TextInput
                     placeholder='Find nonprofits'
                     placeholderTextColor={PrimaryGrey}
-                    style={{ fontSize: 12,  }}
+                    style={{ fontSize: 12, }}
                     editable={false}
                     onPress={() => navigation.navigate('Search')}
-                    />
-                    <Search size={20} color={PrimaryGrey} />
+                />
+                <Search size={20} color={PrimaryGrey} />
             </TouchableOpacity>
             <View style={{ flexDirection: 'row', gap: 10 }}>
-               {/* <TouchableOpacity onPress={handlePostPress} disabled={!post}>
+                {/* <TouchableOpacity onPress={handlePostPress} disabled={!post}>
                         <Plus color={post ? '#000' : '#fff'} />
                     </TouchableOpacity>  */}
 
@@ -60,9 +62,9 @@ export default function HomeHeader({ show = false, menu = true, post = true }) {
                     <Text style={{ color: 'white', fontSize: 14, fontWeight: 'bold' }}>Collectives</Text>
                 </TouchableOpacity> */}
 
-                
-            
-             <View style={{ position: 'relative' }}>
+
+
+                <View style={{ position: 'relative' }}>
                     <TouchableOpacity onPress={handleMenuPress} disabled={!menu}>
                         <AlignJustify color={menu ? '#000' : '#fff'} />
                     </TouchableOpacity>
@@ -70,7 +72,7 @@ export default function HomeHeader({ show = false, menu = true, post = true }) {
                         <View style={{ position: 'absolute', top: -2, right: -6, width: 8, height: 8, borderRadius: 4, backgroundColor: 'red' }} />
                     )}
                 </View>
-                
+
 
 
 

@@ -1,20 +1,20 @@
 import React, { useState } from 'react'
-import { 
-  View, 
-  Text, 
-  TouchableOpacity, 
-  ScrollView, 
-  StyleSheet, 
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  StyleSheet,
   Linking,
   Alert
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { 
-  ChevronLeft, 
-  ChevronDown, 
-  ChevronRight, 
-  Mail, 
-  Phone, 
+import {
+  ChevronLeft,
+  ChevronDown,
+  ChevronRight,
+  Mail,
+  Phone,
   MessageCircle,
   Users,
   Heart,
@@ -26,7 +26,7 @@ import {
 import { useNavigation } from '@react-navigation/native'
 import { PrimaryGrey, PrimaryBlue, LightGrey } from '../Constants/Colors'
 import MainHeaderNav from '../components/MainHeaderNav'
-import { APP_NAME } from '../utils/constan'
+import { WhiteLabelConfig } from '../Constants/WhiteLabelConfig'
 
 interface FAQItem {
   question: string
@@ -43,36 +43,36 @@ export default function HelpCenter() {
 
   const faqData: FAQItem[] = [
     {
-      question: `What is ${APP_NAME} and how does it work?`,
-      answer: `${APP_NAME} is a social platform that connects people with causes they care about. You can join or create ${APP_NAME} (communities) focused on specific charitable causes, participate in group donations, and track your collective impact.`
+      question: `What is ${WhiteLabelConfig.AppName} and how does it work?`,
+      answer: `${WhiteLabelConfig.AppName} is a social platform that connects people with causes they care about. You can join or create ${WhiteLabelConfig.AppName} (communities) focused on specific charitable causes, participate in group donations, and track your collective impact.`
     },
     {
-      question: `How do I join a ${APP_NAME}?`,
-      answer: `You can join a ${APP_NAME} by browsing our community directory, searching for causes you're interested in, or receiving an invitation from a friend. Simply click 'Join' on any ${APP_NAME} that interests you.`
+      question: `How do I join a ${WhiteLabelConfig.AppName}?`,
+      answer: `You can join a ${WhiteLabelConfig.AppName} by browsing our community directory, searching for causes you're interested in, or receiving an invitation from a friend. Simply click 'Join' on any ${WhiteLabelConfig.AppName} that interests you.`
     },
     {
       question: "How do donations work?",
-      answer: `${APP_NAME} facilitates group donations to verified non-profit organizations. When your ${APP_NAME} decides to support a cause, members can contribute any amount they're comfortable with. All donations are secure and go directly to the chosen organization.`
+      answer: `${WhiteLabelConfig.AppName} facilitates group donations to verified non-profit organizations. When your ${WhiteLabelConfig.AppName} decides to support a cause, members can contribute any amount they're comfortable with. All donations are secure and go directly to the chosen organization.`
     },
     {
       question: "Is my personal information safe?",
-      answer: `Yes, we take privacy seriously. Your personal information is encrypted and never shared with third parties without your consent. You control what information is visible to other ${APP_NAME} members.`
+      answer: `Yes, we take privacy seriously. Your personal information is encrypted and never shared with third parties without your consent. You control what information is visible to other ${WhiteLabelConfig.AppName} members.`
     },
     {
-      question: `How do I create my own ${APP_NAME}?`,
-      answer: `To create a ${APP_NAME}, go to 'Your ${APP_NAME}' and click 'Create New ${APP_NAME}'. Choose a cause, write a description, and invite friends to join your community.`
+      question: `How do I create my own ${WhiteLabelConfig.AppName}?`,
+      answer: `To create a ${WhiteLabelConfig.AppName}, go to 'Your ${WhiteLabelConfig.AppName}' and click 'Create New ${WhiteLabelConfig.AppName}'. Choose a cause, write a description, and invite friends to join your community.`
     },
     {
-      question: `Can I leave a ${APP_NAME} Collective?`,
-      answer: `Yes, you can leave any ${APP_NAME} at any time by going to the ${APP_NAME} page and selecting 'Leave ${APP_NAME}' from the menu.`
+      question: `Can I leave a ${WhiteLabelConfig.AppName} Collective?`,
+      answer: `Yes, you can leave any ${WhiteLabelConfig.AppName} at any time by going to the ${WhiteLabelConfig.AppName} page and selecting 'Leave ${WhiteLabelConfig.AppName}' from the menu.`
     },
     {
       question: "How are non-profits verified?",
       answer: "We verify all non-profit organizations through official databases and documentation to ensure they are legitimate 501(c)(3) organizations in good standing."
     },
     {
-      question: `What happens if a ${APP_NAME} becomes inactive?`,
-      answer: `Inactive ${APP_NAME} are archived after 90 days of no activity. Members are notified and can reactivate the ${APP_NAME} or join similar active communities.`
+      question: `What happens if a ${WhiteLabelConfig.AppName} becomes inactive?`,
+      answer: `Inactive ${WhiteLabelConfig.AppName} are archived after 90 days of no activity. Members are notified and can reactivate the ${WhiteLabelConfig.AppName} or join similar active communities.`
     }
   ]
 
@@ -80,12 +80,12 @@ export default function HelpCenter() {
     {
       icon: <Users size={24} color={PrimaryBlue} />,
       title: "Getting Started",
-      description: `Learn the basics of using ${APP_NAME}`
+      description: `Learn the basics of using ${WhiteLabelConfig.AppName}`
     },
     {
       icon: <Heart size={24} color={PrimaryBlue} />,
       title: "Joining Causes",
-      description: `How to find and join ${APP_NAME}`
+      description: `How to find and join ${WhiteLabelConfig.AppName}`
     },
     {
       icon: <DollarSign size={24} color={PrimaryBlue} />,
@@ -203,7 +203,7 @@ export default function HelpCenter() {
           <Text style={styles.contactSubtitle}>
             Can't find what you're looking for? Our support team is here to help.
           </Text>
-          
+
           <View style={styles.contactGrid}>
             <TouchableOpacity style={styles.contactCard} onPress={handleEmailPress}>
               <View style={styles.contactIcon}>

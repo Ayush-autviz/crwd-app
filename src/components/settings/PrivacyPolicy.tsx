@@ -2,24 +2,24 @@ import { View, Text, SafeAreaView, ScrollView, StyleSheet } from 'react-native'
 import React from 'react'
 import MainHeaderNav from '../MainHeaderNav'
 import { PrimaryBlue, PrimaryGrey, SecondaryGrey } from '../../Constants/Colors'
-import { APP_NAME } from '../../utils/constan'
+import { WhiteLabelConfig } from '../../Constants/WhiteLabelConfig'
 export default function PrivacyPolicy() {
   return (
     <SafeAreaView style={styles.container}>
       <MainHeaderNav show={true} title={'Privacy Policy'} menu={false} />
       <ScrollView style={styles.scrollView}>
         <Text style={styles.title}>Privacy Policy</Text>
-        
+
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>1. Introduction</Text>
           <Text style={styles.paragraph}>
-            At {APP_NAME}, we take your privacy seriously. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform.
+            At {WhiteLabelConfig.AppName}, we take your privacy seriously. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform.
           </Text>
         </View>
-        
+
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>2. Information We Collect</Text>
-          
+
           <Text style={styles.subSectionTitle}>2.1 Personal Information</Text>
           <View style={styles.bulletList}>
             <Text style={styles.bulletItem}>• Name and contact information</Text>
@@ -28,7 +28,7 @@ export default function PrivacyPolicy() {
             <Text style={styles.bulletItem}>• Profile information</Text>
             <Text style={styles.bulletItem}>• Communication preferences</Text>
           </View>
-          
+
           <Text style={styles.subSectionTitle}>2.2 Usage Information</Text>
           <View style={styles.bulletList}>
             <Text style={styles.bulletItem}>• Device information</Text>
@@ -38,7 +38,7 @@ export default function PrivacyPolicy() {
             <Text style={styles.bulletItem}>• Time spent on pages</Text>
           </View>
         </View>
-        
+
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>3. How We Use Your Information</Text>
           <Text style={styles.paragraph}>
@@ -52,7 +52,7 @@ export default function PrivacyPolicy() {
             <Text style={styles.bulletItem}>• Protect against fraud</Text>
           </View>
         </View>
-        
+
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>4. Information Sharing</Text>
           <Text style={styles.paragraph}>
@@ -64,7 +64,7 @@ export default function PrivacyPolicy() {
             <Text style={styles.bulletItem}>• Legal authorities when required</Text>
           </View>
         </View>
-        
+
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>5. Your Rights</Text>
           <Text style={styles.paragraph}>
@@ -77,21 +77,21 @@ export default function PrivacyPolicy() {
             <Text style={styles.bulletItem}>• Opt-out of marketing communications</Text>
           </View>
         </View>
-        
+
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>6. Security</Text>
           <Text style={styles.paragraph}>
             We implement appropriate security measures to protect your personal information. However, no method of transmission over the internet is 100% secure.
           </Text>
         </View>
-        
+
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>7. Changes to This Policy</Text>
           <Text style={styles.paragraph}>
             We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page.
           </Text>
         </View>
-        
+
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>8. Contact Us</Text>
           <Text style={styles.paragraph}>
@@ -102,9 +102,9 @@ export default function PrivacyPolicy() {
             Address: 123 Privacy Street, Security City, SC 12345
           </Text>
         </View>
-        
+
         <Text style={styles.lastUpdated}>Last updated: March 15, 2024</Text>
-        
+
         <View style={styles.bottomPadding} />
       </ScrollView>
     </SafeAreaView>

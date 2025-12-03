@@ -6,6 +6,7 @@ import { LightGrey, PrimaryBlue, PrimaryGrey } from '../Constants/Colors'
 import { useNavigation } from '@react-navigation/native'
 import SuggestdCauses from '../components/SuggestdCauses'
 import PopularPosts from '../components/PopularPosts'
+import { WhiteLabelConfig } from '../Constants/WhiteLabelConfig'
 
 export default function Search2() {
     const [search, setSearch] = useState("")
@@ -20,7 +21,7 @@ export default function Search2() {
         },
         {
             name: "St. Judes",
-            type: "CRWD",
+            type: WhiteLabelConfig.AppName,
             description: "The leading children's hea...",
             image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?auto=format&fit=crop&w=600&q=80",
         },
@@ -63,7 +64,7 @@ export default function Search2() {
 
     const categories = [
         "Animal Welfare",
-        "Environment", 
+        "Environment",
         "Food Insecurity",
         "Education",
         "Healthcare",
@@ -77,9 +78,9 @@ export default function Search2() {
             <ScrollView style={{ paddingHorizontal: 20 }}>
                 {/* Search Bar */}
                 <View style={{ marginVertical: 10, padding: 10, backgroundColor: LightGrey, borderRadius: 8 }}>
-                    <TextInput 
-                        placeholder='Search for non-profits, CRWDs, or posts' 
-                        placeholderTextColor={PrimaryGrey} 
+                    <TextInput
+                        placeholder={`Search for non-profits, ${WhiteLabelConfig.AppName}s, or posts`}
+                        placeholderTextColor={PrimaryGrey}
                         value={search}
                         onChangeText={setSearch}
                     />
@@ -94,7 +95,7 @@ export default function Search2() {
 
 
                 <SuggestdCauses />
-                <PopularPosts posts={popularPosts}/>
+                <PopularPosts posts={popularPosts} />
 
                 {/* Suggested Causes Section */}
                 {/* <View style={{ marginTop: 10 }}>

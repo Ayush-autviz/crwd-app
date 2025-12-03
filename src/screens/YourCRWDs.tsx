@@ -10,7 +10,7 @@ import { useNavigation } from '@react-navigation/native';
 import MainHeaderNav from '../components/MainHeaderNav';
 import { PrimaryBlue, PrimaryGrey, LightGrey } from '../Constants/Colors';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { APP_NAME } from '../utils/constan';
+import { WhiteLabelConfig } from '../Constants/WhiteLabelConfig';
 
 export default function YourCRWDs() {
   const navigation = useNavigation();
@@ -75,11 +75,11 @@ export default function YourCRWDs() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <MainHeaderNav show={true} menu={false} title={`Your ${APP_NAME} Collectives`}/>
+      <MainHeaderNav show={true} menu={false} title={`Your ${WhiteLabelConfig.AppName} Collectives`} />
 
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>Your {APP_NAME} Collectives</Text>
+        <Text style={styles.title}>Your {WhiteLabelConfig.AppName} Collectives</Text>
       </View>
 
       {/* CRWDs List */}

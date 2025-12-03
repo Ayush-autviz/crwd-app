@@ -15,7 +15,7 @@ import { useToast } from '../contexts/ToastContext';
 import { useAuthStore } from '../store/store';
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/Avatar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { APP_NAME } from '../utils/constan';
+import { WhiteLabelConfig } from '../Constants/WhiteLabelConfig';
 
 export default function CreateCRWD() {
   const navigation = useNavigation<any>();
@@ -143,21 +143,21 @@ export default function CreateCRWD() {
 
   const handleCauseToggle = (cause: any, isFavorite: boolean = false) => {
     const causeId = isFavorite ? cause.cause?.id : cause.id;
-    const causeData = isFavorite 
-      ? { ...cause.cause, id: cause.cause.id, image: cause.image, logo: cause.image } 
+    const causeData = isFavorite
+      ? { ...cause.cause, id: cause.cause.id, image: cause.image, logo: cause.image }
       : { ...cause, id: cause.id, image: cause.image || cause.logo, logo: cause.logo || cause.image };
-    
+
     setSelectedCauses((prev) => {
       const isSelected = prev.includes(causeId);
       const newSelection = isSelected
         ? prev.filter((id) => id !== causeId)
         : [...prev, causeId];
-      
+
       // Update cause data array
       setSelectedCausesData((prevData) => {
         if (isSelected) {
           return prevData.filter((c) => c.id !== causeId);
-    } else {
+        } else {
           // Check if cause already exists to avoid duplicates
           const exists = prevData.some((c) => c.id === causeId);
           if (!exists) {
@@ -166,7 +166,7 @@ export default function CreateCRWD() {
           return prevData;
         }
       });
-      
+
       return newSelection;
     });
   };
@@ -191,7 +191,7 @@ export default function CreateCRWD() {
 
   const handleSearchSubmit = () => {
     // Trigger API call with search query
-      setSearchTrigger(prev => prev + 1);
+    setSearchTrigger(prev => prev + 1);
   };
 
   const handleCreateCRWD = () => {
@@ -221,86 +221,86 @@ export default function CreateCRWD() {
   };
 
   if (!currentUser?.id) {
-            return (
-            <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }} edges={['top', 'left', 'right']}>
-                <MainHeaderNav title={'Create a CRWD'} show={true} />
-                <View style={{ 
-                    flex: 1, 
-                    justifyContent: 'center', 
-                    alignItems: 'center', 
-                    paddingHorizontal: 32,
-                    backgroundColor: 'white'
-                }}>
-                    {/* Icon */}
-                    <View style={{
-                        width: 80,
-                        height: 80,
-                        backgroundColor: '#dbeafe',
-                        borderRadius: 40,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        marginBottom: 24
-                    }}>
-                        <User size={40} color={PrimaryBlue} />
-                    </View>
-                    
-                    {/* Title */}
-                    <Text style={{
-                        fontSize: 24,
-                        fontWeight: 'bold',
-                        color: '#111827',
-                        marginBottom: 12,
-                        textAlign: 'center'
-                    }}>
-                        Sign in to create a {APP_NAME}
-                    </Text>
-                    
-                    {/* Description */}
-                    <Text style={{
-                        fontSize: 16,
-                        color: '#6b7280',
-                        marginBottom: 32,
-                        textAlign: 'center',
-                        lineHeight: 24
-                    }}>
-                        Sign in to create a {APP_NAME}, manage your causes, and connect with your community.
-                    </Text>
-                    
-                    {/* CTA Button */}
-                    <TouchableOpacity
-                        onPress={() => navigation.navigate('Login' as never)}
-                        style={{
-                            backgroundColor: '#2563eb',
-                            paddingHorizontal: 32,
-                            paddingVertical: 12,
-                            borderRadius: 8,
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            gap: 8
-                        }}
-                    >
-                        <Text style={{ color: 'white', fontSize: 16, fontWeight: '500' }}>
-                            Sign In to Continue
-                        </Text>
-                    </TouchableOpacity>
-                    
-                    {/* Additional Info */}
-                    <TouchableOpacity
-                        onPress={() => navigation.navigate('ClaimProfile' as never)}
-                      >
-                    <Text style={{
-                        fontSize: 14,
-                        color: '#6b7280',
-                        marginTop: 24,
-                        textAlign: 'center'
-                    }}>
-                        Don't have an account? 
-                        <Text style={{ color: '#2563eb', fontWeight: '500' }}> Create one here</Text>
-                    </Text>
-                    </TouchableOpacity>
-                </View>
-            </SafeAreaView>
-        );
+    return (
+      <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }} edges={['top', 'left', 'right']}>
+        <MainHeaderNav title={'Create a CRWD'} show={true} />
+        <View style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          paddingHorizontal: 32,
+          backgroundColor: 'white'
+        }}>
+          {/* Icon */}
+          <View style={{
+            width: 80,
+            height: 80,
+            backgroundColor: '#dbeafe',
+            borderRadius: 40,
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginBottom: 24
+          }}>
+            <User size={40} color={PrimaryBlue} />
+          </View>
+
+          {/* Title */}
+          <Text style={{
+            fontSize: 24,
+            fontWeight: 'bold',
+            color: '#111827',
+            marginBottom: 12,
+            textAlign: 'center'
+          }}>
+            Sign in to create a {WhiteLabelConfig.AppName}
+          </Text>
+
+          {/* Description */}
+          <Text style={{
+            fontSize: 16,
+            color: '#6b7280',
+            marginBottom: 32,
+            textAlign: 'center',
+            lineHeight: 24
+          }}>
+            Sign in to create a {WhiteLabelConfig.AppName}, manage your causes, and connect with your community.
+          </Text>
+
+          {/* CTA Button */}
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Login' as never)}
+            style={{
+              backgroundColor: '#2563eb',
+              paddingHorizontal: 32,
+              paddingVertical: 12,
+              borderRadius: 8,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 8
+            }}
+          >
+            <Text style={{ color: 'white', fontSize: 16, fontWeight: '500' }}>
+              Sign In to Continue
+            </Text>
+          </TouchableOpacity>
+
+          {/* Additional Info */}
+          <TouchableOpacity
+            onPress={() => navigation.navigate('ClaimProfile' as never)}
+          >
+            <Text style={{
+              fontSize: 14,
+              color: '#6b7280',
+              marginTop: 24,
+              textAlign: 'center'
+            }}>
+              Don't have an account?
+              <Text style={{ color: '#2563eb', fontWeight: '500' }}> Create one here</Text>
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
   }
 
 
@@ -308,14 +308,14 @@ export default function CreateCRWD() {
     return (
       <SafeAreaView style={styles.container}>
         <MainHeaderNav menu={false} title={'Create a CRWD'} show={true} />
-        
+
         <View style={styles.successContainer}>
-          <Image 
-            source={require('../assets/logo/CRWD.png')} 
+          <Image
+            source={require('../assets/logo/CRWD.png')}
             style={styles.successLogo}
             resizeMode="contain"
           />
-          <Text style={styles.successTitle}>You've started a {APP_NAME}!</Text>
+          <Text style={styles.successTitle}>You've started a {WhiteLabelConfig.AppName}!</Text>
           {createdCollective && (
             <View style={{ marginBottom: 20, alignItems: 'center' }}>
               <Text style={{ fontSize: 16, fontWeight: '600', color: PrimaryBlue, marginBottom: 5 }}>
@@ -332,9 +332,9 @@ export default function CreateCRWD() {
               onPress={async () => {
                 try {
                   await Share.share({
-                  message: `Join me in my new ${APP_NAME} "${name}"! We're working together to make a difference. Download the ${APP_NAME} app to get involved!`,
-                  title: `Join my ${APP_NAME}: ${name}`,
-                });
+                    message: `Join me in my new ${WhiteLabelConfig.AppName} "${name}"! We're working together to make a difference. Download the ${WhiteLabelConfig.AppName} app to get involved!`,
+                    title: `Join my ${WhiteLabelConfig.AppName}: ${name}`,
+                  });
                 } catch (error) {
                   console.error('Error sharing:', error);
                 }
@@ -375,7 +375,7 @@ export default function CreateCRWD() {
   return (
     <SafeAreaView style={styles.container}>
       <MainHeaderNav menu={false} title={'Create a CRWD'} show={true} />
-      
+
       {/* Toast Notification */}
       {toast && (
         <View style={styles.toastContainer}>
@@ -392,12 +392,12 @@ export default function CreateCRWD() {
       )}
 
       <ScrollView style={styles.content}>
-        <Text style={styles.title}>Create a {APP_NAME}</Text>
+        <Text style={styles.title}>Create a {WhiteLabelConfig.AppName}</Text>
         <Text style={styles.subtitle}>Be the inspiration to your community. Choose causes, invite friends, discuss and make an impact together</Text>
 
         <View style={{ position: 'relative', marginBottom: 10 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Text style={{ color: PrimaryGrey, fontSize: 16 }}>Name your {APP_NAME}</Text>
+            <Text style={{ color: PrimaryGrey, fontSize: 16 }}>Name your {WhiteLabelConfig.AppName}</Text>
             <TouchableOpacity
               onPress={() => setShowNameTooltip(!showNameTooltip)}
               style={{ padding: 8 }}
@@ -462,9 +462,9 @@ export default function CreateCRWD() {
           )}
         </View>
 
-        <TextInput 
-          style={{ borderColor: SecondaryGrey, borderWidth: 1, borderRadius: 10, padding: 15, marginBottom: 20 }} 
-          placeholder='e.g. Atlanta Food Friends' 
+        <TextInput
+          style={{ borderColor: SecondaryGrey, borderWidth: 1, borderRadius: 10, padding: 15, marginBottom: 20 }}
+          placeholder='e.g. Atlanta Food Friends'
           placeholderTextColor={SecondaryGrey}
           value={name}
           onChangeText={setName}
@@ -537,17 +537,17 @@ export default function CreateCRWD() {
           )}
         </View>
 
-        <TextInput 
-          style={{ borderColor: SecondaryGrey, borderWidth: 1, borderRadius: 10, padding: 15, marginBottom: 20 }} 
-          multiline={true} 
-          numberOfLines={2} 
-          placeholder='e.g., "We support shelters & meals programs in ATL."' 
+        <TextInput
+          style={{ borderColor: SecondaryGrey, borderWidth: 1, borderRadius: 10, padding: 15, marginBottom: 20 }}
+          multiline={true}
+          numberOfLines={2}
+          placeholder='e.g., "We support shelters & meals programs in ATL."'
           placeholderTextColor={SecondaryGrey}
           value={desc}
           onChangeText={setDesc}
         />
 
-        <Text style={{ color: PrimaryGrey, fontSize: 16, marginBottom: 10 }}>Choose one or more causes for your {APP_NAME}</Text>
+        <Text style={{ color: PrimaryGrey, fontSize: 16, marginBottom: 10 }}>Choose one or more causes for your {WhiteLabelConfig.AppName}</Text>
 
         {/* Selected Causes Section */}
         {selectedCausesData.length > 0 && (
@@ -628,7 +628,7 @@ export default function CreateCRWD() {
           )}
 
           <Text style={styles.sectionTitle}>Suggested Causes</Text>
-          
+
           {/* Search Bar */}
           <View style={styles.searchContainer}>
             <Search size={16} color="#9ca3af" style={{ position: 'absolute', left: 12, top: 12, zIndex: 1 }} />
@@ -656,7 +656,7 @@ export default function CreateCRWD() {
                 })
                 .filter((id: any) => id !== null)
             );
-            
+
             const filteredCauses = (causesData?.results || []).filter((cause: any) => {
               const causeId = cause?.id ? String(cause.id) : null;
               return causeId && !favoriteCauseIds.has(causeId);
@@ -664,9 +664,9 @@ export default function CreateCRWD() {
 
             if (filteredCauses.length === 0) {
               return (
-            <View style={styles.emptyState}>
-              <Text style={styles.emptyText}>No causes found</Text>
-            </View>
+                <View style={styles.emptyState}>
+                  <Text style={styles.emptyText}>No causes found</Text>
+                </View>
               );
             }
 
@@ -719,13 +719,13 @@ export default function CreateCRWD() {
           </View>
         ) : (
           <Text style={styles.donateButtonText}>
-            Create {APP_NAME}
+            Create {WhiteLabelConfig.AppName}
           </Text>
         )}
       </TouchableOpacity>
     </SafeAreaView>
   );
-} 
+}
 
 const styles = StyleSheet.create({
   container: {

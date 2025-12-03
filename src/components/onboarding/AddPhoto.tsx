@@ -5,7 +5,7 @@ import * as ImagePicker from 'react-native-image-picker'
 import OnboardingHeader from './OnboardingHeader'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useNavigation } from '@react-navigation/native'
-import { APP_NAME } from '../../utils/constan'
+import { WhiteLabelConfig } from '../../Constants/WhiteLabelConfig'
 
 export default function AddPhoto() {
     const navigation = useNavigation<any>()
@@ -122,25 +122,25 @@ export default function AddPhoto() {
                 </TouchableOpacity>
 
 
-                <Text style={{ fontSize: 14, fontWeight: '600', marginTop: 30, color: '#000000', textAlign: 'left' }}>Recently Joined {APP_NAME}...</Text>
+                <Text style={{ fontSize: 14, fontWeight: '600', marginTop: 30, color: '#000000', textAlign: 'left' }}>Recently Joined {WhiteLabelConfig.AppName}...</Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 10 }}>
-                                    <View style={{ flexDirection: 'row' }}>
-                                        {avatarImages.map((avatar: any, index: number) => (
-                                            <Image
-                                                key={index}
-                                                source={{ uri: avatar}}
-                                                style={{
-                                                    width: 40,
-                                                    height: 40,
-                                                    borderRadius: 15,
-                                                    borderWidth: 2,
-                                                    borderColor: 'white',
-                                                    marginLeft: index > 0 ? -8 : 0, // Create overlap with negative margin
-                                                }}
-                                            />
-                                        ))}
-                                    </View>
-                                </View>
+                    <View style={{ flexDirection: 'row' }}>
+                        {avatarImages.map((avatar: any, index: number) => (
+                            <Image
+                                key={index}
+                                source={{ uri: avatar }}
+                                style={{
+                                    width: 40,
+                                    height: 40,
+                                    borderRadius: 15,
+                                    borderWidth: 2,
+                                    borderColor: 'white',
+                                    marginLeft: index > 0 ? -8 : 0, // Create overlap with negative margin
+                                }}
+                            />
+                        ))}
+                    </View>
+                </View>
             </View>
 
             <TouchableOpacity style={{ backgroundColor: PrimaryBlue, padding: 15, borderRadius: 12, marginTop: 20 }} onPress={() => navigation.navigate('NonProfitInterests')}>

@@ -6,7 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useQuery } from '@tanstack/react-query';
 import { getSuggestedCrwds } from '../../services/api/crwd';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/Avatar';
-import { APP_NAME } from '../../utils/constan';
+import { WhiteLabelConfig } from '../../Constants/WhiteLabelConfig';
 
 interface GroupCRWDSuggestedProps {
   collectiveId?: string;
@@ -26,11 +26,11 @@ const GroupCRWDSuggested: React.FC<GroupCRWDSuggestedProps> = ({ collectiveId })
   // Handle both array and object with results property
   const suggestedCRWDs = React.useMemo(() => {
     if (!suggestedData) return [];
-    
+
     const dataArray = Array.isArray(suggestedData)
       ? suggestedData
       : (suggestedData?.results || suggestedData?.data || []);
-    
+
     return dataArray.map((collective: any) => ({
       id: collective.id,
       name: collective.name || 'Unknown Collective',
@@ -49,13 +49,13 @@ const GroupCRWDSuggested: React.FC<GroupCRWDSuggestedProps> = ({ collectiveId })
   if (isLoading) {
     return (
       <View style={{ marginTop: 16, paddingHorizontal: 16 }}>
-        <Text style={{ 
-          fontSize: 18, 
-          fontWeight: '600', 
+        <Text style={{
+          fontSize: 18,
+          fontWeight: '600',
           marginBottom: 16,
           color: '#111827'
         }}>
-          Suggested {APP_NAME}
+          Suggested {WhiteLabelConfig.AppName}
         </Text>
         <View style={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 24 }}>
           <ActivityIndicator size="small" color={PrimaryBlue} />
@@ -73,23 +73,23 @@ const GroupCRWDSuggested: React.FC<GroupCRWDSuggestedProps> = ({ collectiveId })
 
   return (
     <View style={{ marginTop: 16, paddingHorizontal: 16 }}>
-      <Text style={{ 
-        fontSize: 18, 
-        fontWeight: '600', 
+      <Text style={{
+        fontSize: 18,
+        fontWeight: '600',
         marginBottom: 16,
         color: '#111827'
       }}>
-        Suggested {APP_NAME}
+        Suggested {WhiteLabelConfig.AppName}
       </Text>
-      
-      <ScrollView 
-        horizontal 
+
+      <ScrollView
+        horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 8 }}
       >
         <View style={{ flexDirection: 'row', gap: 16 }}>
           {suggestedCRWDs.map((crwd) => (
-            <TouchableOpacity 
+            <TouchableOpacity
               key={crwd.id || crwd.name}
               onPress={() => handleVisit(crwd)}
               style={{
@@ -106,7 +106,7 @@ const GroupCRWDSuggested: React.FC<GroupCRWDSuggestedProps> = ({ collectiveId })
               {/* Image on top */}
               <Avatar size={64}>
                 <AvatarImage src={crwd.image} />
-                <AvatarFallback 
+                <AvatarFallback
                   style={{ backgroundColor: '#dcfce7' }}
                   textStyle={{ color: '#16a34a', fontSize: 24, fontWeight: '600' }}
                 >
@@ -116,24 +116,24 @@ const GroupCRWDSuggested: React.FC<GroupCRWDSuggestedProps> = ({ collectiveId })
 
               {/* Text content below image */}
               <View style={{ alignItems: 'center' }}>
-                <Text style={{ 
-                  fontSize: 14, 
-                  fontWeight: '500', 
+                <Text style={{
+                  fontSize: 14,
+                  fontWeight: '500',
                   color: '#111827',
                   marginBottom: 4,
                   textAlign: 'center'
                 }}>
                   {crwd.name}
                 </Text>
-                <Text style={{ 
-                  fontSize: 12, 
+                <Text style={{
+                  fontSize: 12,
                   color: '#6b7280',
                   marginBottom: 4
                 }}>
                   {crwd.members} {crwd.members === 1 ? 'Member' : 'Members'}
                 </Text>
-                <Text style={{ 
-                  fontSize: 12, 
+                <Text style={{
+                  fontSize: 12,
                   color: '#6b7280',
                   width: 144,
                   lineHeight: 16,
@@ -146,7 +146,7 @@ const GroupCRWDSuggested: React.FC<GroupCRWDSuggestedProps> = ({ collectiveId })
               </View>
 
               {/* Button at the bottom */}
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={{
                   backgroundColor: '#16a34a',
                   paddingHorizontal: 16,
@@ -154,10 +154,10 @@ const GroupCRWDSuggested: React.FC<GroupCRWDSuggestedProps> = ({ collectiveId })
                   borderRadius: 8,
                 }}
               >
-                <Text style={{ 
-                  color: 'white', 
-                  fontSize: 12, 
-                  fontWeight: '600' 
+                <Text style={{
+                  color: 'white',
+                  fontSize: 12,
+                  fontWeight: '600'
                 }}>
                   Learn More
                 </Text>
@@ -166,7 +166,7 @@ const GroupCRWDSuggested: React.FC<GroupCRWDSuggestedProps> = ({ collectiveId })
           ))}
         </View>
       </ScrollView>
-      
+
     </View>
   );
 };

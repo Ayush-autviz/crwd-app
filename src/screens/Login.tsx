@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react'
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  Image, 
-  StyleSheet, 
-  ScrollView, 
-  KeyboardAvoidingView, 
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Image,
+  StyleSheet,
+  ScrollView,
+  KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
   Alert,
@@ -24,6 +24,7 @@ import { useToast } from '../contexts/ToastContext'
 import { Eye } from 'lucide-react-native'
 import { EyeOff } from 'lucide-react-native'
 import InAppBrowser from 'react-native-inappbrowser-reborn'
+import { WhiteLabelConfig } from '../Constants/WhiteLabelConfig';
 
 const googleXml = `<svg className="w-4 h-4 mr-2" viewBox="0 0 24 24">
                     <path
@@ -48,11 +49,11 @@ export default function Login() {
   const navigation = useNavigation()
   const { showToast } = useToast()
   const { setUser, setToken } = useAuthStore()
-  
+
   const [showPassword, setShowPassword] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
-  
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -64,27 +65,27 @@ export default function Login() {
     mutationFn: login,
     onSuccess: (response) => {
       console.log('Login successful:', response)
-      
+
       // Store user data and token in the store
       if (response.user) {
         setUser(response.user)
       }
       if (response.access_token) {
-        setToken({ 
-          access_token: response.access_token, 
-          refresh_token: response.refresh_token 
+        setToken({
+          access_token: response.access_token,
+          refresh_token: response.refresh_token
         })
       }
-      
+
       // If last_login_at is null, navigate to nonprofit interests page (new user)
       if (response.user && !response.user.last_login_at) {
         (navigation as any).reset('NonProfitInterests', { fromAuth: true })
       } else {
         // Navigate to main app for existing users
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'DrawerNav' as never }],
-      })
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'DrawerNav' as never }],
+        })
       }
     },
     onError: (error: any) => {
@@ -106,13 +107,13 @@ export default function Login() {
         });
       }
       showToast('Google authentication successful!');
-      
+
       // If last_login_at is null, navigate to nonprofit interests page (new user)
       if (response.user && !response.user.last_login_at) {
         (navigation as any).navigate('NonProfitInterests', { fromAuth: true })
       } else {
         // Navigate to main app for existing users
-      navigation.navigate('DrawerNav' as never);
+        navigation.navigate('DrawerNav' as never);
       }
     },
     onError: (error: any) => {
@@ -150,17 +151,17 @@ export default function Login() {
   // const handleGoogleLogin = async () => {
   //   console.log('=== Google Login Started ===');
   //   setIsGoogleLoading(true)
-    
+
   //   try {
   //     // Call backend to get Google OAuth URL
   //     console.log('Calling googleLogin API...');
   //     const result = await googleLogin();
   //     console.log('Backend response:', result);
-      
+
   //     if (result && result.url) {
   //       console.log('Got OAuth URL:', result.url);
   //       console.log('Opening browser...');
-        
+
   //       // Open the OAuth URL in browser - redirect will come back to crwd-app://googleCallback?code=...
   //       await Linking.openURL(result.url);
   //       console.log('Browser opened - waiting for deep link');
@@ -177,15 +178,15 @@ export default function Login() {
   // }
 
 
-const handleGoogleLogin = async () => {
-  console.log('=== Google Login Started ===');
-  setIsGoogleLoading(true)
-  
+  const handleGoogleLogin = async () => {
+    console.log('=== Google Login Started ===');
+    setIsGoogleLoading(true)
+
     const result = await googleLogin();
-    
+
     if (result && result.url) {
       console.log('Got OAuth URL:', result.url);
-      
+
       // Use InAppBrowser instead of Linking
       if (await InAppBrowser.isAvailable()) {
         const authResult = await InAppBrowser.openAuth(
@@ -198,32 +199,32 @@ const handleGoogleLogin = async () => {
             enableDefaultShare: false,
           }
         )
-        
+
         console.log('Auth result:', authResult);
-        
+
         if (authResult.type === 'success' && authResult.url) {
           // Handle the callback URL directly here
           const codeMatch = authResult.url.match(/[?&]code=([^&]+)/);
           const code = codeMatch ? decodeURIComponent(codeMatch[1]) : null;
-          
+
           if (code) {
             googleCallbackMutation.mutateAsync(code);
-            
-          
+
+
+          }
+        } else {
+          // Fallback to regular Linking
+          await Linking.openURL(result.url);
         }
-      } else {
-        // Fallback to regular Linking
-        await Linking.openURL(result.url);
+
+        setIsGoogleLoading(false);
       }
-      
-      setIsGoogleLoading(false);
     }
-  } 
-}
+  }
 
   return (
     <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView 
+      <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
       >
@@ -235,11 +236,11 @@ const handleGoogleLogin = async () => {
               style={styles.logo}
               resizeMode="contain"
             /> */}
-            <Image source={require('../assets/logo/main.png')} style={{ resizeMode: 'contain', width: 100, height: 80 }} />
+            <Image source={WhiteLabelConfig.AppLogo} style={{ resizeMode: 'contain', width: 100, height: 80 }} />
             <Text style={styles.title}>Welcome back</Text>
             <Text style={styles.subtitle}>
               Don't have an account?{' '}
-              <Text 
+              <Text
                 style={styles.link}
                 onPress={() => navigation.navigate('ClaimProfile' as never)}
               >
@@ -316,7 +317,7 @@ const handleGoogleLogin = async () => {
 
             {/* Remember Me & Forgot Password */}
             <View style={styles.optionsRow}>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.rememberMe}
                 onPress={() => setRememberMe(!rememberMe)}
               >

@@ -19,7 +19,7 @@ import { googleLogin, googleCallback as googleCallbackApi } from '../../services
 import { useAuthStore } from '../../store/store';
 import { useToast } from '../../contexts/ToastContext';
 import InAppBrowser from 'react-native-inappbrowser-reborn';
-import { APP_NAME } from '../../utils/constan';
+import { WhiteLabelConfig } from '../../Constants/WhiteLabelConfig';
 
 const images = [
   require('../../assets/ngo/aspca.jpg'),
@@ -76,7 +76,7 @@ export default function OnBoard() {
   //         access_token: data.access_token,
   //         refresh_token: data.refresh_token
   //       });
-        
+
   //       // Navigate to main app
   //       navigation.navigate('DrawerNav' as never);
   //     } else {
@@ -104,13 +104,13 @@ export default function OnBoard() {
         });
       }
       showToast('Google authentication successful!');
-      
+
       // If last_login_at is null, navigate to nonprofit interests page (new user)
       if (response.user && !response.user.last_login_at) {
         (navigation as any).navigate('NonProfitInterests', { fromAuth: true })
       } else {
         // Navigate to main app for existing users
-      navigation.navigate('DrawerNav' as never);
+        navigation.navigate('DrawerNav' as never);
       }
     },
     onError: (error: any) => {
@@ -170,7 +170,7 @@ export default function OnBoard() {
   //   try {
   //     const result = await googleLoginQuery.refetch();
   //     console.log('Google login response:', result);
-      
+
   //     // Open the device browser with the Google login URL
   //     if (result.data?.url) {
   //       const supported = await Linking.canOpenURL(result.data.url);
@@ -196,45 +196,45 @@ export default function OnBoard() {
   const handleGoogleLogin = async () => {
     console.log('=== Google Login Started ===');
     setIsGoogleLoading(true)
-    
-      const result = await googleLogin();
-      
-      if (result && result.url) {
-        console.log('Got OAuth URL:', result.url);
-        
-        // Use InAppBrowser instead of Linking
-        if (await InAppBrowser.isAvailable()) {
-          const authResult = await InAppBrowser.openAuth(
-            result.url,
-            'crwd-app://googleCallback', // Your redirect URL
-            {
-              ephemeralWebSession: false,
-              showTitle: false,
-              enableUrlBarHiding: true,
-              enableDefaultShare: false,
-            }
-          )
-          
-          console.log('Auth result:', authResult);
-          
-          if (authResult.type === 'success' && authResult.url) {
-            // Handle the callback URL directly here
-            const codeMatch = authResult.url.match(/[?&]code=([^&]+)/);
-            const code = codeMatch ? decodeURIComponent(codeMatch[1]) : null;
-            
-            if (code) {
-              googleCallbackMutation.mutateAsync(code);
-              
-            
+
+    const result = await googleLogin();
+
+    if (result && result.url) {
+      console.log('Got OAuth URL:', result.url);
+
+      // Use InAppBrowser instead of Linking
+      if (await InAppBrowser.isAvailable()) {
+        const authResult = await InAppBrowser.openAuth(
+          result.url,
+          'crwd-app://googleCallback', // Your redirect URL
+          {
+            ephemeralWebSession: false,
+            showTitle: false,
+            enableUrlBarHiding: true,
+            enableDefaultShare: false,
+          }
+        )
+
+        console.log('Auth result:', authResult);
+
+        if (authResult.type === 'success' && authResult.url) {
+          // Handle the callback URL directly here
+          const codeMatch = authResult.url.match(/[?&]code=([^&]+)/);
+          const code = codeMatch ? decodeURIComponent(codeMatch[1]) : null;
+
+          if (code) {
+            googleCallbackMutation.mutateAsync(code);
+
+
           }
         } else {
           // Fallback to regular Linking
           await Linking.openURL(result.url);
         }
-        
+
         setIsGoogleLoading(false);
       }
-    } 
+    }
   }
 
   const renderRow = (rowImages: any[], animatedValue: Animated.Value, verticalOffsetPattern: number[]) => (
@@ -301,11 +301,11 @@ export default function OnBoard() {
     <View style={{ flex: 1, paddingTop: 60, justifyContent: 'space-between' }}>
       <View>
 
-      {/* Step Indicator */}
-      <View style={{ 
-          flexDirection: 'row', 
-          justifyContent: 'center', 
-          alignItems: 'center', 
+        {/* Step Indicator */}
+        <View style={{
+          flexDirection: 'row',
+          justifyContent: 'center',
+          alignItems: 'center',
           marginBottom: 30,
           gap: 8
         }}>
@@ -352,7 +352,7 @@ export default function OnBoard() {
             // marginTop: 20,
           }}
         >
-          Welcome to {APP_NAME}
+          Welcome to {WhiteLabelConfig.AppName}
         </Text>
 
         {/* Subtitle */}
@@ -379,10 +379,10 @@ export default function OnBoard() {
             marginBottom: 50,
           }}
         >
-          Discover nonprofits like these on {APP_NAME}
+          Discover nonprofits like these on {WhiteLabelConfig.AppName}
         </Text>
 
-      
+
 
         {/* Top row */}
         {renderRow(rowTop, scrollXTop, [0, 20])}
@@ -405,7 +405,7 @@ export default function OnBoard() {
             backgroundColor: '#e5e7eb',
             marginRight: 60,
           }} />
-          
+
           {/* Right line segment */}
           <View style={{
             position: 'absolute',
@@ -416,7 +416,7 @@ export default function OnBoard() {
             backgroundColor: '#e5e7eb',
             marginLeft: 60,
           }} />
-          
+
           {/* Center text */}
           <View style={{
             alignItems: 'center',
@@ -427,7 +427,7 @@ export default function OnBoard() {
               fontSize: 12,
               color: '#6b7280',
               textTransform: 'uppercase',
-              
+
               paddingHorizontal: 8,
             }}>
               continue with
@@ -506,4 +506,3 @@ export default function OnBoard() {
   );
 }
 
-  

@@ -1,13 +1,13 @@
 import React, { useState } from 'react'
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  Image, 
-  StyleSheet, 
-  ScrollView, 
-  KeyboardAvoidingView, 
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Image,
+  StyleSheet,
+  ScrollView,
+  KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
   Alert
@@ -16,13 +16,14 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react-native'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { PrimaryGrey, PrimaryBlue, LightGrey } from '../Constants/Colors'
+import { WhiteLabelConfig } from '../Constants/WhiteLabelConfig'
 
 export default function ResetPassword() {
   const navigation = useNavigation()
   const route = useRoute()
   const email = route.params?.email || ''
   const verificationCode = route.params?.verificationCode || ''
-  
+
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -83,11 +84,11 @@ export default function ResetPassword() {
       // Simulate API call to reset password
       await new Promise(resolve => setTimeout(resolve, 1500))
       Alert.alert(
-        'Success', 
+        'Success',
         'Your password has been reset successfully!',
         [
-          { 
-            text: 'OK', 
+          {
+            text: 'OK',
             onPress: () => navigation.navigate('Login' as never)
           }
         ]
@@ -101,7 +102,7 @@ export default function ResetPassword() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView 
+      <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
       >
@@ -113,7 +114,7 @@ export default function ResetPassword() {
               style={styles.logo}
               resizeMode="contain"
             /> */}
-            <Image source={require('../assets/logo/main.png')} style={{ resizeMode: 'contain', width: 100, height: 80 }} />
+            <Image source={WhiteLabelConfig.AppLogo} style={{ resizeMode: 'contain', width: 100, height: 80 }} />
             <Text style={styles.title}>Create new password</Text>
             <Text style={styles.subtitle}>
               Choose a strong password for your account{'\n'}
@@ -158,8 +159,8 @@ export default function ResetPassword() {
                         style={[
                           styles.strengthBar,
                           {
-                            backgroundColor: passwordStrength >= level 
-                              ? getPasswordStrengthColor() 
+                            backgroundColor: passwordStrength >= level
+                              ? getPasswordStrengthColor()
                               : '#e5e7eb'
                           }
                         ]}
@@ -219,7 +220,7 @@ export default function ResetPassword() {
           </View>
 
           {/* Back to Verification */}
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.backButton}
             onPress={() => navigation.navigate('VerificationCode', { email } as never)}
           >
@@ -253,7 +254,7 @@ const styles = StyleSheet.create({
   logo: {
     width: 100,
     height: 100,
-   // marginBottom: 24,
+    // marginBottom: 24,
   },
   title: {
     fontSize: 28,
@@ -357,4 +358,4 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     fontWeight: '500',
   },
-}) 
+})

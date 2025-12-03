@@ -10,7 +10,7 @@ import { useNavigation } from '@react-navigation/native';
 import MainHeaderNav from '../components/MainHeaderNav';
 import { PrimaryBlue, PrimaryGrey, LightGrey } from '../Constants/Colors';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { APP_NAME } from '../utils/constan';
+import { WhiteLabelConfig } from '../Constants/WhiteLabelConfig';
 
 export default function CRWDScreen() {
   const navigation = useNavigation();
@@ -79,7 +79,7 @@ export default function CRWDScreen() {
 
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>Your {APP_NAME} Collectives</Text>
+        <Text style={styles.title}>Your {WhiteLabelConfig.AppName} Collectives</Text>
       </View>
 
       {/* CRWDs List */}

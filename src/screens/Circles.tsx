@@ -9,7 +9,7 @@ import { useQuery } from '@tanstack/react-query'
 import { getCollectives, getJoinCollective } from '../services/api/crwd'
 import { useAuthStore } from '../store/store'
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/Avatar'
-import { APP_NAME } from '../utils/constan'
+import { WhiteLabelConfig } from '../Constants/WhiteLabelConfig'
 
 type TabKey = 'my-crwds' | 'discover'
 
@@ -129,7 +129,7 @@ const Circles = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-        <MainHeaderNav title={`${APP_NAME} Collectives`} show={true} menu={false} postButton={false} />
+      <MainHeaderNav title={`${WhiteLabelConfig.AppName} Collectives`} show={true} menu={false} postButton={false} />
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Discover Collectives</Text>
         <Text style={styles.headerSubtitle}>
@@ -137,10 +137,10 @@ const Circles = () => {
         </Text>
         <TouchableOpacity
           style={styles.createButton}
-          onPress={() => navigation.navigate('DrawerNav', { screen: 'CreateCRWD'})}
+          onPress={() => navigation.navigate('DrawerNav', { screen: 'CreateCRWD' })}
           activeOpacity={0.8}
         >
-            <Plus color='#ffffff' size={18}  />
+          <Plus color='#ffffff' size={18} />
           <Text style={styles.createButtonText}>Start a Collective</Text>
         </TouchableOpacity>
       </View>
@@ -151,7 +151,7 @@ const Circles = () => {
           onPress={() => setActiveTab('my-crwds')}
           activeOpacity={0.7}
         >
-            <Users size={18} color={activeTab === 'my-crwds' ? '#000' : '#6B7280'}/>
+          <Users size={18} color={activeTab === 'my-crwds' ? '#000' : '#6B7280'} />
           <Text style={[styles.tabText, activeTab === 'my-crwds' && styles.tabTextActive]}>
             My Collectives ({joinCollectiveData?.data?.length || 0})
           </Text>
@@ -161,7 +161,7 @@ const Circles = () => {
           onPress={() => setActiveTab('discover')}
           activeOpacity={0.7}
         >
-            <Search color={activeTab === 'discover' ? '#000' : '#6B7280'} size={18} />
+          <Search color={activeTab === 'discover' ? '#000' : '#6B7280'} size={18} />
           <Text style={[styles.tabText, activeTab === 'discover' && styles.tabTextActive]}>Discover</Text>
         </TouchableOpacity>
       </View>

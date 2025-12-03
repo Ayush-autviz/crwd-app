@@ -21,7 +21,7 @@ import { categories } from '../Constants/categories'
 import Geolocation, { GeoPosition } from 'react-native-geolocation-service'
 import messaging from '@react-native-firebase/messaging'
 import { registerNotificationToken } from '../services/api/notification'
-import { APP_NAME } from '../utils/constan'
+import { WhiteLabelConfig } from '../Constants/WhiteLabelConfig'
 
 
 export default function Home() {
@@ -46,41 +46,41 @@ export default function Home() {
 
     const requestNotificationPermission = async () => {
         if (Platform.OS === 'android') {
-          const granted = await PermissionsAndroid.request(
-            PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
-          );
-          if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-            console.log('Notification permission granted');
-            return true;
-          } else {
-            console.log('Notification permission denied');
-            return false;
-          }
+            const granted = await PermissionsAndroid.request(
+                PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+            );
+            if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+                console.log('Notification permission granted');
+                return true;
+            } else {
+                console.log('Notification permission denied');
+                return false;
+            }
         }
         return true; // iOS doesn't need explicit permission request here
-      };
+    };
 
-      const getFcmTokenAndSendToBackend = async () => {
+    const getFcmTokenAndSendToBackend = async () => {
         try {
-          // Request permission first
-          const hasPermission = await requestNotificationPermission();
-          if (!hasPermission) {
-            console.log('Cannot get FCM token: permission denied');
-            return;
-          }
-    
-          // Get FCM token from Firebase
-          await messaging().registerDeviceForRemoteMessages()
-          const token = await messaging().getToken();
-          console.log(' FCM TOKEN in Home:', token);
-        //   setFcmToken(token);
-    if(token) {
-        sendFcmTokenToBackend.mutate({ token, device_type: 'ios' });
-    }
+            // Request permission first
+            const hasPermission = await requestNotificationPermission();
+            if (!hasPermission) {
+                console.log('Cannot get FCM token: permission denied');
+                return;
+            }
+
+            // Get FCM token from Firebase
+            await messaging().registerDeviceForRemoteMessages()
+            const token = await messaging().getToken();
+            console.log(' FCM TOKEN in Home:', token);
+            //   setFcmToken(token);
+            if (token) {
+                sendFcmTokenToBackend.mutate({ token, device_type: 'ios' });
+            }
         } catch (error) {
-          console.error('❌ Error getting FCM token:', error);
+            console.error('❌ Error getting FCM token:', error);
         }
-      };
+    };
 
     // Fetch posts from API
     const { data: postsData, isLoading: isLoadingPosts, error: postsError } = useQuery({
@@ -105,47 +105,47 @@ export default function Home() {
 
     const requestPermission = async (): Promise<boolean> => {
         if (Platform.OS === 'ios') {
-          await Geolocation.requestAuthorization('whenInUse');
-          return true; // iOS handles permission automatically
+            await Geolocation.requestAuthorization('whenInUse');
+            return true; // iOS handles permission automatically
         }
-    
+
         try {
-          const granted = await PermissionsAndroid.request(
-            PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-            {
-              title: 'Location Permission',
-              message: 'App needs access to your location.',
-              buttonNeutral: 'Ask Me Later',
-              buttonNegative: 'Cancel',
-              buttonPositive: 'OK',
-            },
-          );
-          return granted === PermissionsAndroid.RESULTS.GRANTED;
+            const granted = await PermissionsAndroid.request(
+                PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+                {
+                    title: 'Location Permission',
+                    message: 'App needs access to your location.',
+                    buttonNeutral: 'Ask Me Later',
+                    buttonNegative: 'Cancel',
+                    buttonPositive: 'OK',
+                },
+            );
+            return granted === PermissionsAndroid.RESULTS.GRANTED;
         } catch (error) {
-          console.warn('Permission error:', error);
-          return false;
+            console.warn('Permission error:', error);
+            return false;
         }
-      };
-    
-      const getCurrentLocation = async (): Promise<void> => {
+    };
+
+    const getCurrentLocation = async (): Promise<void> => {
         const hasPermission = await requestPermission();
         if (!hasPermission) {
-          Alert.alert('Permission Denied', 'Location permission is required.');
-          return;
+            Alert.alert('Permission Denied', 'Location permission is required.');
+            return;
         }
-    
+
         Geolocation.getCurrentPosition(
-          (position: GeoPosition) => {
-            setCoords(position.coords);
-          },
-          error => {
-            console.error('Error getting location:', error.message);
-            // Alert.alert('Error', 'Failed to get location: ' + error.message);
-          },
-        //   {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
+            (position: GeoPosition) => {
+                setCoords(position.coords);
+            },
+            error => {
+                console.error('Error getting location:', error.message);
+                // Alert.alert('Error', 'Failed to get location: ' + error.message);
+            },
+            //   {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
         );
-      };
-    
+    };
+
 
 
     // Fetch causes by location (if location is available)
@@ -235,28 +235,28 @@ export default function Home() {
     }, []);
 
     return (
-        <SafeAreaView style={{backgroundColor: 'white', flex: 1}} edges={['top', 'left', 'right']}>
+        <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }} edges={['top', 'left', 'right']}>
             <HomeHeader />
             <ScrollView style={{ paddingHorizontal: 20 }}>
 
                 {/* Main Message */}
-                <View style={{ 
-                    padding: 24, 
-                    alignItems: 'center', 
+                <View style={{
+                    padding: 24,
+                    alignItems: 'center',
                     marginTop: 15,
                     marginBottom: 12,
                 }}>
-                    <Text style={{ 
-                        fontSize: 20, 
-                        fontWeight: '800', 
-                        textAlign: 'center', 
+                    <Text style={{
+                        fontSize: 20,
+                        fontWeight: '800',
+                        textAlign: 'center',
                         marginBottom: 10,
                         lineHeight: 26,
                     }}
                     >
                         The easiest way to <Text style={{ color: PrimaryGreen, fontStyle: 'italic' }}>give</Text> to everything you care about, at once.
                     </Text>
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         onPress={() => {
                             if (currentUser?.id) {
                                 // Navigate to "My Giving" tab (DonationScreen) in the bottom tabs
@@ -271,16 +271,16 @@ export default function Home() {
                                 navigation.navigate('SplashScreen' as never);
                             }
                         }}
-                        style={{ 
-                            backgroundColor: PrimaryBlue, 
-                            paddingVertical: 12, 
-                            paddingHorizontal: 20, 
-                            borderRadius: 10, 
+                        style={{
+                            backgroundColor: PrimaryBlue,
+                            paddingVertical: 12,
+                            paddingHorizontal: 20,
+                            borderRadius: 10,
                         }}
                     >
-                        <Text style={{ 
-                                fontSize: 16, 
-                            color: 'white', 
+                        <Text style={{
+                            fontSize: 16,
+                            color: 'white',
                             fontWeight: '600',
                             textAlign: 'center',
                         }}>
@@ -315,29 +315,29 @@ export default function Home() {
 
                 {/* Suggested CRWDs Section */}
                 <View>
-                        <SuggestedCrwd 
-                            collectives={collectives}
-                            isLoading={isLoadingCollectives}
-                            error={collectivesError}
-                        />
+                    <SuggestedCrwd
+                        collectives={collectives}
+                        isLoading={isLoadingCollectives}
+                        error={collectivesError}
+                    />
                 </View>
 
                 {/* Categories Section */}
                 <View style={{ marginTop: 32 }}>
                     <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 16, color: '#111827' }}>Explore Categories</Text>
-                    <ScrollView 
+                    <ScrollView
                         horizontal={true}
                         showsHorizontalScrollIndicator={false}
                         contentContainerStyle={{ paddingRight: 16 }}
                     >
                         <View style={{ flexDirection: 'row', gap: 8 }}>
                             {categories.map((category, index) => (
-                                <TouchableOpacity 
+                                <TouchableOpacity
                                     key={index}
-                                    onPress={() => (navigation as any).navigate('Search', { 
-                                        categoryId: category.id, 
-                                        categoryName: category.name 
-                                    })} 
+                                    onPress={() => (navigation as any).navigate('Search', {
+                                        categoryId: category.id,
+                                        categoryName: category.name
+                                    })}
                                     style={{
                                         backgroundColor: category.background,
                                         paddingHorizontal: 16,
@@ -347,10 +347,10 @@ export default function Home() {
                                         borderColor: '#E5E7EB',
                                     }}
                                 >
-                                    <Text style={{ 
-                                        fontSize: 14, 
-                                        color: category.text, 
-                                        fontWeight: '500' 
+                                    <Text style={{
+                                        fontSize: 14,
+                                        color: category.text,
+                                        fontWeight: '500'
                                     }}>
                                         {category.name}
                                     </Text>
@@ -358,16 +358,16 @@ export default function Home() {
                             ))}
                         </View>
                     </ScrollView>
-                    
+
                     {/* Discover More Button */}
                     <View style={{ alignItems: 'flex-end', marginTop: 16 }}>
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             onPress={() => (navigation as any).navigate('Search', { discover: true })}
                             style={{ flexDirection: 'row', alignItems: 'center' }}
                         >
-                            <Text style={{ 
-                                fontSize: 14, 
-                                color: '#2563eb', 
+                            <Text style={{
+                                fontSize: 14,
+                                color: '#2563eb',
                                 fontWeight: '500',
                                 marginRight: 4
                             }}>
@@ -380,11 +380,11 @@ export default function Home() {
 
                 {/* Suggested Causes Section */}
                 <View>
-                        <SuggestdCauses 
-                            causes={causes}
-                            isLoading={isLoadingCauses}
-                            error={causesError}
-                        />
+                    <SuggestdCauses
+                        causes={causes}
+                        isLoading={isLoadingCauses}
+                        error={causesError}
+                    />
                 </View>
 
                 {/* Why CRWDs Section */}
@@ -412,13 +412,13 @@ export default function Home() {
                                 marginBottom: 8,
                                 textAlign: 'center'
                             }}>
-                                Why {APP_NAME}?
+                                Why {WhiteLabelConfig.AppName}?
                             </Text>
                             <Text style={{
                                 fontSize: 18,
                                 fontWeight: '600',
                                 color: '#6c757d',
-                                
+
                                 textAlign: 'center'
                             }}>
                                 Giving should be simple
@@ -430,7 +430,7 @@ export default function Home() {
                             lineHeight: 24,
                             fontSize: 16
                         }}>
-                            On {APP_NAME}, one donation supports all the causes you care about. You're not just donating, you're joining others who care about the same things, creating bigger impact together.
+                            On {WhiteLabelConfig.AppName}, one donation supports all the causes you care about. You're not just donating, you're joining others who care about the same things, creating bigger impact together.
                         </Text>
                     </View>
                 </View>
@@ -439,7 +439,7 @@ export default function Home() {
                 <View style={{ marginTop: 32, marginBottom: 24 }}>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                         <Text style={{ fontSize: 18, fontWeight: '600', color: '#111827' }}>Nearby Causes</Text>
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             onPress={() => (navigation as any).navigate('Search')}
                             style={{ flexDirection: 'row', alignItems: 'center' }}
                         >
@@ -451,28 +451,28 @@ export default function Home() {
                     </View>
 
                     {!coords ? (
-                        <View style={{ 
-                            padding: 24, 
-                            alignItems: 'center', 
+                        <View style={{
+                            padding: 24,
+                            alignItems: 'center',
                             backgroundColor: '#f8f9fa',
                             borderRadius: 12,
                             borderWidth: 1,
                             borderColor: '#e9ecef',
                         }}>
-                            <View style={{ 
-                                width: 64, 
-                                height: 64, 
-                                backgroundColor: '#e3f2fd', 
-                                borderRadius: 32, 
-                                justifyContent: 'center', 
+                            <View style={{
+                                width: 64,
+                                height: 64,
+                                backgroundColor: '#e3f2fd',
+                                borderRadius: 32,
+                                justifyContent: 'center',
                                 alignItems: 'center',
                                 marginBottom: 16
                             }}>
                                 {/* <Text style={{ fontSize: 32 }}>📍</Text> */}
                                 <MapPin size={32} color={PrimaryBlue} />
                             </View>
-                            <Text style={{ 
-                                color: '#374151', 
+                            <Text style={{
+                                color: '#374151',
                                 textAlign: 'center',
                                 fontSize: 14,
                                 lineHeight: 20,
@@ -480,7 +480,7 @@ export default function Home() {
                             }}>
                                 Enable location services to see causes and organizations near you
                             </Text>
-                            <TouchableOpacity 
+                            <TouchableOpacity
                                 onPress={() => getCurrentLocation()}
                                 style={{
                                     backgroundColor: PrimaryBlue,
@@ -512,7 +512,7 @@ export default function Home() {
                             </Text>
                         </View>
                     ) : (
-                        <NearbyCauses 
+                        <NearbyCauses
                             causes={nearbyCauses}
                             isLoading={isLoadingLocationCauses}
                             error={locationCausesError}
@@ -522,7 +522,7 @@ export default function Home() {
 
                 {/* Popular Posts Section */}
                 <View >
-                    
+
 
                     {isLoadingPosts ? (
                         <View style={{ padding: 20, alignItems: 'center' }}>
@@ -536,7 +536,7 @@ export default function Home() {
                             </Text>
                         </View>
                     ) : posts.length === 0 ? (
-                       <></>
+                        <></>
                     ) : (
                         <PopularPosts
                             posts={posts}

@@ -11,7 +11,8 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import { PrimaryBlue } from '../../Constants/Colors';
-import { APP_NAME } from '../../utils/constan';
+import { WhiteLabelConfig } from '../../Constants/WhiteLabelConfig';
+
 
 const { width, height } = Dimensions.get('window');
 
@@ -42,12 +43,14 @@ export default function CompleteOnboard() {
   const handleGoToDonationBox = () => {
     navigation.reset({
       index: 0,
-      routes: [{ name: 'DrawerNav' as never, params: {
-        screen: 'MainTabs',
-        params: {
-          screen: 'My Giving'
+      routes: [{
+        name: 'DrawerNav' as never, params: {
+          screen: 'MainTabs',
+          params: {
+            screen: 'My Giving'
+          }
         }
-      } }],
+      }],
     });
   };
 
@@ -87,12 +90,12 @@ export default function CompleteOnboard() {
               style={styles.logo}
               resizeMode="contain"
             /> */}
-            <Image source={require('../../assets/logo/main.png')} style={{ resizeMode: 'contain', width: 120, height: 60 }} />
+            <Image source={WhiteLabelConfig.AppLogo} style={{ resizeMode: 'contain', width: 120, height: 60 }} />
           </View>
 
           {/* Welcome Message */}
           <View style={styles.welcomeContainer}>
-            <Text style={styles.welcomeTitle}>Welcome to {APP_NAME}!</Text>
+            <Text style={styles.welcomeTitle}>Welcome to {WhiteLabelConfig.AppName}!</Text>
             <Text style={styles.welcomeSubtitle}>
               Start giving now, or explore causes and Circles first.
             </Text>
@@ -113,7 +116,7 @@ export default function CompleteOnboard() {
               onPress={handleBrowseCrwd}
               activeOpacity={0.8}
             >
-              <Text style={styles.secondaryButtonText}>Browse {APP_NAME}</Text>
+              <Text style={styles.secondaryButtonText}>Browse {WhiteLabelConfig.AppName}</Text>
             </TouchableOpacity>
           </View>
         </View>

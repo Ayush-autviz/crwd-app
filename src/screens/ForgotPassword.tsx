@@ -1,13 +1,13 @@
 import React, { useState } from 'react'
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  Image, 
-  StyleSheet, 
-  ScrollView, 
-  KeyboardAvoidingView, 
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Image,
+  StyleSheet,
+  ScrollView,
+  KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
   Alert
@@ -19,6 +19,7 @@ import { PrimaryGrey, PrimaryBlue, LightGrey } from '../Constants/Colors'
 import { useMutation } from '@tanstack/react-query'
 import { forgotPassword } from '../services/api/auth'
 import { useToast } from '../contexts/ToastContext'
+import { WhiteLabelConfig } from '../Constants/WhiteLabelConfig';
 
 export default function ForgotPassword() {
   const navigation = useNavigation()
@@ -58,7 +59,7 @@ export default function ForgotPassword() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView 
+      <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
       >
@@ -70,7 +71,7 @@ export default function ForgotPassword() {
               style={styles.logo}
               resizeMode="contain"
             /> */}
-            <Image source={require('../assets/logo/main.png')} style={{ resizeMode: 'contain', width: 90, height: 60 }} />
+            <Image source={WhiteLabelConfig.AppLogo} style={{ resizeMode: 'contain', width: 90, height: 60 }} />
             <Text style={styles.title}>Forgot your password?</Text>
             <Text style={styles.subtitle}>
               No worries! Enter your email address and we'll send you a verification code to reset your password.
@@ -114,7 +115,7 @@ export default function ForgotPassword() {
           </View>
 
           {/* Back to Login */}
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.backToLogin}
             onPress={() => navigation.navigate('Login' as never)}
           >
@@ -125,7 +126,7 @@ export default function ForgotPassword() {
           {/* Help Text */}
           <Text style={styles.helpText}>
             Don't have an account?{' '}
-            <Text 
+            <Text
               style={styles.helpLink}
               onPress={() => navigation.navigate('Signup' as never)}
             >

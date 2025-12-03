@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  Image, 
-  StyleSheet, 
-  ScrollView, 
-  KeyboardAvoidingView, 
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Image,
+  StyleSheet,
+  ScrollView,
+  KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
   Alert
@@ -21,13 +21,14 @@ import { resetPassword, forgotPassword } from '../services/api/auth'
 import { useToast } from '../contexts/ToastContext'
 import { Eye } from 'lucide-react-native'
 import { EyeOff } from 'lucide-react-native'
+import { WhiteLabelConfig } from '../Constants/WhiteLabelConfig'
 
 export default function VerificationCode() {
   const navigation = useNavigation()
   const route = useRoute()
   const email = (route.params as any)?.email || ''
   const { showToast } = useToast()
-  
+
   const [timeLeft, setTimeLeft] = useState(300) // 5 minutes
   const [verificationCode, setVerificationCode] = useState(['', '', '', '', '', ''])
   const [showNewPassword, setShowNewPassword] = useState(false)
@@ -83,13 +84,13 @@ export default function VerificationCode() {
 
   const handleCodeChange = (index: number, value: string) => {
     console.log(`handleCodeChange - index: ${index}, value: "${value}"`)
-    
+
     // Only allow numbers
     if (!/^\d*$/.test(value)) {
       console.log('Rejected non-numeric input:', value)
       return
     }
-    
+
     if (value.length > 1) {
       console.log('Rejected multi-character input:', value)
       return // Prevent multiple characters
@@ -114,7 +115,7 @@ export default function VerificationCode() {
 
   const handleSubmit = async () => {
     const code = verificationCode.join('')
-    
+
     if (code.length !== 6) {
       showToast('Please enter the complete verification code', 'error' as any)
       return
@@ -157,7 +158,7 @@ export default function VerificationCode() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView 
+      <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
       >
@@ -169,7 +170,7 @@ export default function VerificationCode() {
               style={styles.logo}
               resizeMode="contain"
             /> */}
-            <Image source={require('../assets/logo/main.png')} style={{ resizeMode: 'contain', width: 100, height: 80 }} />
+            <Image source={WhiteLabelConfig.AppLogo} style={{ resizeMode: 'contain', width: 100, height: 80 }} />
             <Text style={styles.title}>Enter verification code</Text>
             <Text style={styles.subtitle}>
               We've sent a 6-digit verification code to{'\n'}
@@ -200,7 +201,7 @@ export default function VerificationCode() {
                   />
                 ))}
               </View>
-              
+
               {/* Timer and Resend */}
               <View style={styles.resendContainer}>
                 <Text style={styles.resendText}>Didn't receive the code? </Text>
@@ -236,7 +237,7 @@ export default function VerificationCode() {
                     style={styles.eyeButton}
                     onPress={() => setShowNewPassword(!showNewPassword)}
                   >
-                        {showNewPassword ? <EyeOff size={16} color={PrimaryGrey} /> : <Eye size={16} color={PrimaryGrey} />}
+                    {showNewPassword ? <EyeOff size={16} color={PrimaryGrey} /> : <Eye size={16} color={PrimaryGrey} />}
                   </TouchableOpacity>
                 </View>
               </View>
@@ -284,7 +285,7 @@ export default function VerificationCode() {
           </View>
 
           {/* Back to Forgot Password */}
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.backButton}
             onPress={() => navigation.navigate('ForgotPassword' as never)}
           >
@@ -294,7 +295,7 @@ export default function VerificationCode() {
           {/* Help Text */}
           <Text style={styles.helpText}>
             Wrong email address?{' '}
-            <Text 
+            <Text
               style={styles.helpLink}
               onPress={() => navigation.navigate('ForgotPassword' as never)}
             >
@@ -465,4 +466,4 @@ const styles = StyleSheet.create({
     color: '#111827',
     fontWeight: '500',
   },
-}) 
+})

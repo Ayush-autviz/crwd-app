@@ -20,7 +20,7 @@ import { useAuthStore } from '../store/store';
 import { getDonationBox, addCollectiveToDonation } from '../services/api/donation';
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/Avatar';
 import { WEB_BASE_URL } from '../Constants/url';
-import { APP_NAME } from '../utils/constan';
+import { WhiteLabelConfig } from '../Constants/WhiteLabelConfig';
 
 
 const { width, height } = Dimensions.get('window');
@@ -31,10 +31,10 @@ export default function GroupCRWD() {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
   const { user: currentUser } = useAuthStore();
-  
+
   // Get collective ID from route params
   const collectiveId = (route.params as any)?.collectiveId || "1";
-  
+
   const [hasJoined, setHasJoined] = useState(false);
   const [showToastState, setShowToastState] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
@@ -99,17 +99,17 @@ export default function GroupCRWD() {
       setHasJoined(true);
       setShowJoinModal(false);
       showToast('Successfully joined the collective!', 3000);
-      
+
       // Invalidate queries to refresh data
       queryClient.invalidateQueries({ queryKey: ['collective', collectiveId] });
       queryClient.invalidateQueries({ queryKey: ['joined-collectives'] });
       queryClient.invalidateQueries({ queryKey: ['joined-collectives', currentUser?.id] });
       queryClient.invalidateQueries({ queryKey: ['donationBox', currentUser?.id] });
-      
+
       // Check if donation box exists
       try {
         const donationBoxData = await getDonationBox();
-        
+
         // If donation box doesn't exist or has no ID, redirect to setup
         if (!donationBoxData || !donationBoxData.id) {
           // Navigate to donation screen with setup tab and collective preselected
@@ -137,14 +137,14 @@ export default function GroupCRWD() {
             }
             await addCollectiveToDonation(collectiveId);
             console.log('Collective added to donation box successfully');
-            
+
             // Invalidate and refetch donation box query to refresh data
             // Note: Mobile app uses ['donationBox'] without user ID
             await queryClient.invalidateQueries({ queryKey: ['donationBox'] });
             await queryClient.invalidateQueries({ queryKey: ['donationBox', currentUser?.id] });
             await queryClient.refetchQueries({ queryKey: ['donationBox'] });
             await queryClient.refetchQueries({ queryKey: ['donationBox', currentUser?.id] });
-            
+
             // Navigate to donation screen with setup tab and collective preselected
             // Navigate through MainTabs -> My Giving to show bottom tabs
             (navigation as any).navigate('DrawerNav', {
@@ -219,7 +219,7 @@ export default function GroupCRWD() {
       setHasJoined(false);
       setShowConfirmDialog(false);
       showToast('Successfully left the collective', 3000);
-      
+
       // Invalidate queries to refresh data
       queryClient.invalidateQueries({ queryKey: ['collective', collectiveId] });
       queryClient.invalidateQueries({ queryKey: ['joined-collectives'] });
@@ -241,14 +241,14 @@ export default function GroupCRWD() {
   const handleShare = async () => {
     try {
       const webUrl = `${WEB_BASE_URL}/groupcrwd/${collectiveId}`;
-      const shareMessage = `Check out this ${APP_NAME} Collective: ${collectiveData?.name || 'Collective'}\n${webUrl}`;
-      
+      const shareMessage = `Check out this ${WhiteLabelConfig.AppName} Collective: ${collectiveData?.name || 'Collective'}\n${webUrl}`;
+
       const result = await Share.share({
         message: shareMessage,
         title: `${collectiveData?.name || 'Feed the hungry'} - CRWD`,
         url: webUrl, // iOS only
       });
-      
+
       // Copy link to clipboard when sharing
       if (result.action === Share.sharedAction) {
         try {
@@ -268,7 +268,7 @@ export default function GroupCRWD() {
   if (isLoadingCollective) {
     return (
       <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }}>
-        <MainHeaderNav show menu={false} title={'Collective'}/>
+        <MainHeaderNav show menu={false} title={'Collective'} />
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <ActivityIndicator size="large" color={PrimaryBlue} />
           <Text style={{ marginTop: 16, color: PrimaryGrey }}>Loading collective...</Text>
@@ -279,8 +279,8 @@ export default function GroupCRWD() {
 
   return (
     <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }}>
-      <MainHeaderNav show menu={false} title={'Collective'}/>
-      
+      <MainHeaderNav show menu={false} title={'Collective'} />
+
       {/* Action Buttons Header */}
       <View style={styles.actionHeader}>
         <View style={styles.crwdBadge}>
@@ -291,7 +291,7 @@ export default function GroupCRWD() {
             <TouchableOpacity style={styles.donateButton} onPress={() => {
               (navigation as any).navigate('DrawerNav', {
                 screen: 'Donation',
-                params: { 
+                params: {
                   initialTab: 'onetime',
                   preselectedItem: collectiveData ? {
                     id: collectiveData.id.toString(),
@@ -310,35 +310,35 @@ export default function GroupCRWD() {
             <Text style={styles.shareButtonText}>Share</Text>
           </TouchableOpacity>
           {(currentUser?.id && collectiveData?.created_by?.id !== currentUser?.id) && (
-          <TouchableOpacity
-            style={[
-              styles.joinButton,
-              hasJoined && styles.joinedButton
-            ]}
-            onPress={handleJoin}
-          >
-            {hasJoined ? (
-              <>
-                <Check size={16} color="#6b7280" />
-                <Text style={styles.joinedButtonText}>Joined</Text>
-              </>
-            ) : (
-              <Text style={styles.joinButtonText}>Join This Collective</Text>
-            )}
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.joinButton,
+                hasJoined && styles.joinedButton
+              ]}
+              onPress={handleJoin}
+            >
+              {hasJoined ? (
+                <>
+                  <Check size={16} color="#6b7280" />
+                  <Text style={styles.joinedButtonText}>Joined</Text>
+                </>
+              ) : (
+                <Text style={styles.joinButtonText}>Join This Collective</Text>
+              )}
+            </TouchableOpacity>
           )}
         </View>
       </View>
 
       <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-        <GroupCRWDHeader 
-          hasJoined={hasJoined} 
-          onJoin={handleJoin} 
-          id={collectiveId} 
-          crwdData={collectiveData} 
+        <GroupCRWDHeader
+          hasJoined={hasJoined}
+          onJoin={handleJoin}
+          id={collectiveId}
+          crwdData={collectiveData}
         />
-        <GroupCRWDUpdates 
-          joined={hasJoined} 
+        <GroupCRWDUpdates
+          joined={hasJoined}
           collectiveData={collectiveData}
           posts={posts?.results || []}
           isLoading={isLoadingPosts}
@@ -371,15 +371,15 @@ export default function GroupCRWD() {
       >
         <TouchableWithoutFeedback onPress={handleCloseModal}>
           <View style={styles.modalOverlay}>
-            <TouchableWithoutFeedback onPress={() => {}}>
+            <TouchableWithoutFeedback onPress={() => { }}>
               <View style={styles.modalContent}>
                 <TouchableOpacity
                   style={styles.closeButton}
                   onPress={handleCloseModal}
                 >
-                  <Text style={{fontSize: 24, color: '#9ca3af', lineHeight: 24}}>×</Text>
+                  <Text style={{ fontSize: 24, color: '#9ca3af', lineHeight: 24 }}>×</Text>
                 </TouchableOpacity>
-                
+
                 <View style={styles.modalBody}>
                   <Text style={styles.modalTitle}>
                     Join {collectiveData?.name}?
@@ -387,7 +387,7 @@ export default function GroupCRWD() {
                   <Text style={styles.modalDescription}>
                     This Collective includes {collectiveData?.causes?.length || 0} nonprofits.
                   </Text>
-                  
+
                   <View style={styles.modalActions}>
                     <TouchableOpacity style={styles.learnMoreButton} onPress={handleCloseModal}>
                       <Text style={styles.learnMoreButtonText}>Learn More</Text>
@@ -423,16 +423,16 @@ export default function GroupCRWD() {
                 fadeOut
               />
             </View>
-            
-            <TouchableWithoutFeedback onPress={() => {}}>
+
+            <TouchableWithoutFeedback onPress={() => { }}>
               <View style={styles.modalContent}>
                 <TouchableOpacity
                   style={styles.closeButton}
                   onPress={handleCloseSuccessModal}
                 >
-                  <Text style={{fontSize: 24, color: '#9ca3af', lineHeight: 24}}>×</Text>
+                  <Text style={{ fontSize: 24, color: '#9ca3af', lineHeight: 24 }}>×</Text>
                 </TouchableOpacity>
-                
+
                 <View style={styles.modalBody}>
                   <Text style={styles.modalTitle}>
                     You've joined {collectiveData?.name}!
@@ -441,9 +441,9 @@ export default function GroupCRWD() {
                     Welcome to the community.
                   </Text>
                   <Text style={styles.modalDescription}>
-                    Here's what's inside your {APP_NAME}:
+                    Here's what's inside your {WhiteLabelConfig.AppName}:
                   </Text>
-                  
+
                   {/* Community Info Card */}
                   <View style={styles.communityCard}>
                     <View style={styles.communityInfo}>
@@ -467,15 +467,15 @@ export default function GroupCRWD() {
                       </View>
                     </View>
                   </View>
-                  
+
                   <View style={styles.successActions}>
-                    <TouchableOpacity 
-                      style={styles.manageDonationsButton} 
+                    <TouchableOpacity
+                      style={styles.manageDonationsButton}
                       onPress={() => {
                         handleCloseSuccessModal();
                         (navigation as any).navigate('DrawerNav', {
                           screen: 'Donation',
-                          params: { 
+                          params: {
                             initialTab: 'onetime',
                             preselectedItem: collectiveData ? {
                               id: collectiveData.id.toString(),
@@ -506,7 +506,7 @@ export default function GroupCRWD() {
       >
         <TouchableWithoutFeedback onPress={() => setShowConfirmDialog(false)}>
           <View style={styles.modalOverlay}>
-            <TouchableWithoutFeedback onPress={() => {}}>
+            <TouchableWithoutFeedback onPress={() => { }}>
               <View style={styles.modalContent}>
                 <View style={styles.modalBody}>
                   <Text style={styles.modalTitle}>Leave Group</Text>
@@ -514,16 +514,16 @@ export default function GroupCRWD() {
                     Are you sure you want to leave this group? You can always join
                     back later.
                   </Text>
-                  
+
                   <View style={styles.dialogActions}>
-                    <TouchableOpacity 
-                      style={styles.cancelButton} 
+                    <TouchableOpacity
+                      style={styles.cancelButton}
                       onPress={() => setShowConfirmDialog(false)}
                     >
                       <Text style={styles.cancelButtonText}>Cancel</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity 
-                      style={styles.leaveButton} 
+                    <TouchableOpacity
+                      style={styles.leaveButton}
                       onPress={handleConfirmUnjoin}
                     >
                       <Text style={styles.leaveButtonText}>Leave Group</Text>

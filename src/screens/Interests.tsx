@@ -12,6 +12,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import * as Colors from '../Constants/Colors';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { WhiteLabelConfig } from '../Constants/WhiteLabelConfig';
 
 type RootStackParamList = {
   Home: undefined;
@@ -75,8 +76,8 @@ const InterestsScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView 
-        style={styles.content} 
+      <ScrollView
+        style={styles.content}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.contentContainer}
       >
@@ -86,7 +87,7 @@ const InterestsScreen = () => {
             style={styles.logo}
             resizeMode="contain"
           /> */}
-          <Image source={require('../assets/logo/main.png')} style={{ resizeMode: 'contain', width: 100, height: 80 }} />
+          <Image source={WhiteLabelConfig.AppLogo} style={{ resizeMode: 'contain', width: 100, height: 80 }} />
           <Text style={styles.title}>What interests you?</Text>
           <Text style={styles.subtitle}>
             Select topics you'd like to see in your feed.
@@ -284,4 +285,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default InterestsScreen; 
+export default InterestsScreen;

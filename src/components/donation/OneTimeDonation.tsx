@@ -24,6 +24,7 @@ import { getCausesBySearch, getJoinCollective } from '../../services/api/crwd';
 import { useAuthStore } from '../../store/store';
 import { useStripe } from '@stripe/stripe-react-native';
 import ConfettiCannon from 'react-native-confetti-cannon';
+import { WhiteLabelConfig } from '../../Constants/WhiteLabelConfig';
 
 const { width, height } = Dimensions.get('window');
 
@@ -52,7 +53,7 @@ export default function OneTimeDonation({
   setSelectedOrganizations,
   preselectedItem,
   activeTab,
-  show=true
+  show = true
 }: OneTimeDonationProps) {
   const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
   const [donationAmount, setDonationAmount] = useState(7);
@@ -107,7 +108,7 @@ export default function OneTimeDonation({
         const merchantDisplayName = getMerchantDisplayName();
         const init = await initPaymentSheet({
           paymentIntentClientSecret: clientSecret,
-          merchantDisplayName: `${merchantDisplayName} via CRWD`,
+          merchantDisplayName: `${merchantDisplayName} via ${WhiteLabelConfig.AppName}`,
           allowsDelayedPaymentMethods: false,
           applePay: {
             merchantCountryCode: 'US',
@@ -180,10 +181,10 @@ export default function OneTimeDonation({
 
   const handleSelectItem = (item: SelectedItem) => {
     // Check if item is already selected to prevent duplicates
-    const isAlreadySelected = selectedItems.some(selectedItem => 
+    const isAlreadySelected = selectedItems.some(selectedItem =>
       selectedItem.id === item.id && selectedItem.type === item.type
     );
-    
+
     if (!isAlreadySelected) {
       setSelectedItems((prev: SelectedItem[]) => [...prev, item]);
       // Also update the legacy selectedOrganizations for backward compatibility
@@ -206,33 +207,33 @@ export default function OneTimeDonation({
   // Generate merchant display name from selected items (Apple guideline requirement)
   const getMerchantDisplayName = (): string => {
     if (selectedItems.length === 0) {
-      return 'CRWD';
+      return WhiteLabelConfig.AppName;
     }
-    
+
     if (selectedItems.length === 1) {
       // Single organization: show its name
-      return selectedItems[0].data?.name || 'CRWD';
+      return selectedItems[0].data?.name || WhiteLabelConfig.AppName;
     }
-    
+
     // Multiple organizations: show them in a readable format
     // Apple Pay has display limits, so we'll show up to 2-3 names or use a summary
     const names = selectedItems
       .map(item => item.data?.name)
       .filter(Boolean)
       .slice(0, 3); // Limit to first 3 to avoid truncation
-    
+
     if (names.length === 0) {
-      return 'CRWD';
+      return WhiteLabelConfig.AppName;
     }
-    
+
     if (names.length === 2) {
       return `${names[0]} & ${names[1]}`;
     }
-    
+
     if (names.length === 3 && selectedItems.length === 3) {
       return `${names[0]}, ${names[1]} & ${names[2]}`;
     }
-    
+
     // More than 3 selected, show first 2 and count
     const remainingCount = selectedItems.length - 2;
     return `${names[0]} & ${names[1]} +${remainingCount} more`;
@@ -276,205 +277,205 @@ export default function OneTimeDonation({
   return (
     <View style={styles.containerWrapper}>
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
-      {/* Selected Items Display */}
-      {selectedItems.length > 0 && (
-        <View style={styles.selectedSection}>
-          {/* Separate nonprofits and collectives */}
-          {selectedItems.filter(item => item.type === 'cause').length > 0 && (
-            <View style={styles.selectedCard}>
-              <Text style={styles.selectedCardTitle}>Nonprofits</Text>
-              {selectedItems.filter(item => item.type === 'cause').map((item) => (
-                <View key={`${item.type}-${item.id}`} style={styles.selectedItemRow}>
-                  <View style={[styles.orgAvatar, { backgroundColor: '#dbeafe', marginRight: 12 }]}>
-                    <Text style={[styles.orgAvatarText, { color: '#2563eb' }]}>
-                      {item.data?.name?.charAt(0)?.toUpperCase() || 'N'}
-                    </Text>
-                  </View>
-                  <View style={styles.selectedItemInfo}>
-                    <Text numberOfLines={1} style={styles.selectedItemName}>{item.data?.name || 'Unknown'}</Text>
-                    {!!item.data?.description && (
-                      <Text style={styles.selectedItemDescription} numberOfLines={1}>
-                        {item.data.description}
+        {/* Selected Items Display */}
+        {selectedItems.length > 0 && (
+          <View style={styles.selectedSection}>
+            {/* Separate nonprofits and collectives */}
+            {selectedItems.filter(item => item.type === 'cause').length > 0 && (
+              <View style={styles.selectedCard}>
+                <Text style={styles.selectedCardTitle}>Nonprofits</Text>
+                {selectedItems.filter(item => item.type === 'cause').map((item) => (
+                  <View key={`${item.type}-${item.id}`} style={styles.selectedItemRow}>
+                    <View style={[styles.orgAvatar, { backgroundColor: '#dbeafe', marginRight: 12 }]}>
+                      <Text style={[styles.orgAvatarText, { color: '#2563eb' }]}>
+                        {item.data?.name?.charAt(0)?.toUpperCase() || 'N'}
                       </Text>
-                    )}
+                    </View>
+                    <View style={styles.selectedItemInfo}>
+                      <Text numberOfLines={1} style={styles.selectedItemName}>{item.data?.name || 'Unknown'}</Text>
+                      {!!item.data?.description && (
+                        <Text style={styles.selectedItemDescription} numberOfLines={1}>
+                          {item.data.description}
+                        </Text>
+                      )}
+                    </View>
+                    <TouchableOpacity
+                      onPress={() => handleRemoveItem(`${item.type}-${item.id}`)}
+                      style={styles.removeIconButton}
+                    >
+                      <Trash2 size={18} color="#ef4444" />
+                    </TouchableOpacity>
                   </View>
-                  <TouchableOpacity
-                    onPress={() => handleRemoveItem(`${item.type}-${item.id}`)}
-                    style={styles.removeIconButton}
-                  >
-                    <Trash2 size={18} color="#ef4444" />
-                  </TouchableOpacity>
-                </View>
-              ))}
-            </View>
-          )}
+                ))}
+              </View>
+            )}
 
-          {selectedItems.filter(item => item.type === 'collective').length > 0 && (
-            <View style={styles.selectedCard}>
-              <Text style={styles.selectedCardTitle}>Collectives</Text>
-              {selectedItems.filter(item => item.type === 'collective').map((item) => (
-                <View key={`${item.type}-${item.id}`} style={styles.selectedItemRow}>
-                  <View style={[styles.orgAvatar, { backgroundColor: '#dcfce7', marginRight: 12 }]}>
-                    <Text style={[styles.orgAvatarText, { color: '#16a34a' }]}>
-                      {item.data?.name?.charAt(0)?.toUpperCase() || 'C'}
-                    </Text>
-                  </View>
-                  <View style={styles.selectedItemInfo}>
-                    <Text numberOfLines={1} style={styles.selectedItemName}>{item.data?.name || 'Unknown'}</Text>
-                    {!!item.data?.description && (
-                      <Text style={styles.selectedItemDescription} numberOfLines={1}>
-                        {item.data.description}
+            {selectedItems.filter(item => item.type === 'collective').length > 0 && (
+              <View style={styles.selectedCard}>
+                <Text style={styles.selectedCardTitle}>Collectives</Text>
+                {selectedItems.filter(item => item.type === 'collective').map((item) => (
+                  <View key={`${item.type}-${item.id}`} style={styles.selectedItemRow}>
+                    <View style={[styles.orgAvatar, { backgroundColor: '#dcfce7', marginRight: 12 }]}>
+                      <Text style={[styles.orgAvatarText, { color: '#16a34a' }]}>
+                        {item.data?.name?.charAt(0)?.toUpperCase() || 'C'}
                       </Text>
-                    )}
+                    </View>
+                    <View style={styles.selectedItemInfo}>
+                      <Text numberOfLines={1} style={styles.selectedItemName}>{item.data?.name || 'Unknown'}</Text>
+                      {!!item.data?.description && (
+                        <Text style={styles.selectedItemDescription} numberOfLines={1}>
+                          {item.data.description}
+                        </Text>
+                      )}
+                    </View>
+                    <TouchableOpacity
+                      onPress={() => handleRemoveItem(`${item.type}-${item.id}`)}
+                      style={styles.removeIconButton}
+                    >
+                      <Trash2 size={18} color="#ef4444" />
+                    </TouchableOpacity>
                   </View>
-                  <TouchableOpacity
-                    onPress={() => handleRemoveItem(`${item.type}-${item.id}`)}
-                    style={styles.removeIconButton}
-                  >
-                    <Trash2 size={18} color="#ef4444" />
-                  </TouchableOpacity>
-                </View>
-              ))}
+                ))}
+              </View>
+            )}
+          </View>
+        )}
+
+        {selectedItems.length === 0 && (
+          <View style={styles.emptyStateCard}>
+            <Text style={styles.emptyStateText}>No organizations selected</Text>
+            <Text style={styles.emptyStateSubtext}>Search and select causes or collectives below</Text>
+          </View>
+        )}
+
+        {/* Donation Amount Section */}
+        <View style={styles.amountSection}>
+          <Text style={styles.amountTitle}>Enter donation amount</Text>
+
+          <View style={styles.amountSelector}>
+            <TouchableOpacity
+              onPress={decrementDonation}
+              style={styles.amountButton}
+            >
+              <Minus size={18} color="#374151" />
+            </TouchableOpacity>
+
+            <View style={styles.amountInput}>
+              <Text style={styles.dollarSign}>$</Text>
+              <TextInput
+                value={inputValue}
+                onChangeText={handleInputChange}
+                onBlur={handleInputBlur}
+                style={styles.amountText}
+                keyboardType="numeric"
+              />
             </View>
-          )}
-        </View>
-      )}
 
-      {selectedItems.length === 0 && (
-        <View style={styles.emptyStateCard}>
-          <Text style={styles.emptyStateText}>No organizations selected</Text>
-          <Text style={styles.emptyStateSubtext}>Search and select causes or collectives below</Text>
-        </View>
-      )}
-
-      {/* Donation Amount Section */}
-      <View style={styles.amountSection}>
-        <Text style={styles.amountTitle}>Enter donation amount</Text>
-
-        <View style={styles.amountSelector}>
-          <TouchableOpacity
-            onPress={decrementDonation}
-            style={styles.amountButton}
-          >
-            <Minus size={18} color="#374151" />
-          </TouchableOpacity>
-
-          <View style={styles.amountInput}>
-            <Text style={styles.dollarSign}>$</Text>
-            <TextInput
-              value={inputValue}
-              onChangeText={handleInputChange}
-              onBlur={handleInputBlur}
-              style={styles.amountText}
-              keyboardType="numeric"
-            />
+            <TouchableOpacity
+              onPress={incrementDonation}
+              style={styles.amountButton}
+            >
+              <Plus size={18} color="#374151" />
+            </TouchableOpacity>
           </View>
 
+          <Text style={styles.amountHint}>
+            Input amount over $5
+          </Text>
+
+          {/* Total Section */}
+          <View style={styles.totalSection}>
+            <Text style={styles.totalLabel}>TOTAL:</Text>
+            <Text style={styles.totalAmount}>${donationAmount.toFixed(2)}</Text>
+          </View>
+        </View>
+
+        {/* Tabs */}
+        <View style={styles.tabContainer}>
           <TouchableOpacity
-            onPress={incrementDonation}
-            style={styles.amountButton}
+            onPress={() => setActiveTabState('nonprofits')}
+            style={[styles.tabButton, activeTabState === 'nonprofits' && styles.tabButtonActive]}
           >
-            <Plus size={18} color="#374151" />
+            <Text style={[styles.tabButtonText, activeTabState === 'nonprofits' && styles.tabButtonTextActive]}>Nonprofits</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => setActiveTabState('collectives')}
+            style={[styles.tabButton, activeTabState === 'collectives' && styles.tabButtonActive]}
+          >
+            <Text style={[styles.tabButtonText, activeTabState === 'collectives' && styles.tabButtonTextActive]}>Collectives</Text>
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.amountHint}>
-          Input amount over $5
-        </Text>
+        {/* Search for nonprofits */}
+        {activeTabState === 'nonprofits' && (
+          <View style={styles.searchContainer}>
+            <TextInput
+              placeholder="Search nonprofits..."
+              placeholderTextColor={PrimaryGrey}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              style={styles.searchInput}
+            />
+          </View>
+        )}
 
-        {/* Total Section */}
-        <View style={styles.totalSection}>
-          <Text style={styles.totalLabel}>TOTAL:</Text>
-          <Text style={styles.totalAmount}>${donationAmount.toFixed(2)}</Text>
-        </View>
-      </View>
+        {/* List for active tab */}
+        {activeTabState === 'nonprofits' ? (
+          <View style={styles.listContainer}>
+            {causesLoading ? (
+              <ActivityIndicator />
+            ) : (causesData?.results || []).slice(0, 10).map((cause: any) => {
+              const isSelected = selectedItems.some(i => i.type === 'cause' && i.id === String(cause.id));
+              return (
+                <TouchableOpacity
+                  key={cause.id}
+                  style={[styles.organizationItem, isSelected && styles.selectedOrganizationItem]}
+                  onPress={() => handleSelectItem({ id: String(cause.id), type: 'cause', data: { name: cause.name, image: '', description: cause.mission } })}
+                >
+                  <View style={[styles.orgAvatar, { backgroundColor: '#dbeafe' }]}>
+                    <Text style={[styles.orgAvatarText, { color: '#2563eb' }]}>{cause.name?.charAt(0)?.toUpperCase() || 'N'}</Text>
+                  </View>
+                  <View style={styles.orgInfo}>
+                    <Text style={styles.orgName}>{cause.name}</Text>
+                    {!!cause.mission && <Text style={styles.orgDescription} numberOfLines={1}>{cause.mission}</Text>}
+                  </View>
+                  <View style={[styles.checkbox, isSelected && styles.checkedBox]}>
+                    {isSelected && <Text style={styles.checkmark}>✓</Text>}
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        ) : (
+          <View style={styles.listContainer}>
+            {collectivesLoading ? (
+              <ActivityIndicator />
+            ) : (joinedCollectivesData?.data || []).map((item: any) => {
+              const collective = item.collective;
+              const isSelected = selectedItems.some(i => i.type === 'collective' && i.id === String(collective.id));
+              return (
+                <TouchableOpacity
+                  key={collective.id}
+                  style={[styles.organizationItem, isSelected && styles.selectedOrganizationItem]}
+                  onPress={() => handleSelectItem({ id: String(collective.id), type: 'collective', data: { name: collective.name, created_by: { profile_picture: '' }, member_count: collective.member_count, description: collective.description } })}
+                >
+                  <View style={[styles.orgAvatar, { backgroundColor: '#dcfce7' }]}>
+                    <Text style={[styles.orgAvatarText, { color: '#16a34a' }]}>{collective.name?.charAt(0)?.toUpperCase() || 'C'}</Text>
+                  </View>
+                  <View style={styles.orgInfo}>
+                    <Text style={styles.orgName}>{collective.name}</Text>
+                    {!!collective.description && <Text style={styles.orgDescription} numberOfLines={1}>{collective.description}</Text>}
+                  </View>
+                  <View style={[styles.checkbox, isSelected && styles.checkedBox]}>
+                    {isSelected && <Text style={styles.checkmark}>✓</Text>}
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        )}
+      </ScrollView>
 
-      {/* Tabs */}
-      <View style={styles.tabContainer}>
-        <TouchableOpacity
-          onPress={() => setActiveTabState('nonprofits')}
-          style={[styles.tabButton, activeTabState === 'nonprofits' && styles.tabButtonActive]}
-        >
-          <Text style={[styles.tabButtonText, activeTabState === 'nonprofits' && styles.tabButtonTextActive]}>Nonprofits</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => setActiveTabState('collectives')}
-          style={[styles.tabButton, activeTabState === 'collectives' && styles.tabButtonActive]}
-        >
-          <Text style={[styles.tabButtonText, activeTabState === 'collectives' && styles.tabButtonTextActive]}>Collectives</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Search for nonprofits */}
-      {activeTabState === 'nonprofits' && (
-        <View style={styles.searchContainer}>
-          <TextInput
-            placeholder="Search nonprofits..."
-            placeholderTextColor={PrimaryGrey}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            style={styles.searchInput}
-          />
-        </View>
-      )}
-
-      {/* List for active tab */}
-      {activeTabState === 'nonprofits' ? (
-        <View style={styles.listContainer}>
-          {causesLoading ? (
-            <ActivityIndicator />
-          ) : (causesData?.results || []).slice(0, 10).map((cause: any) => {
-            const isSelected = selectedItems.some(i => i.type === 'cause' && i.id === String(cause.id));
-            return (
-              <TouchableOpacity
-                key={cause.id}
-                style={[styles.organizationItem, isSelected && styles.selectedOrganizationItem]}
-                onPress={() => handleSelectItem({ id: String(cause.id), type: 'cause', data: { name: cause.name, image: '', description: cause.mission } })}
-              >
-                <View style={[styles.orgAvatar, { backgroundColor: '#dbeafe' }]}>
-                  <Text style={[styles.orgAvatarText, { color: '#2563eb' }]}>{cause.name?.charAt(0)?.toUpperCase() || 'N'}</Text>
-                </View>
-                <View style={styles.orgInfo}>
-                  <Text style={styles.orgName}>{cause.name}</Text>
-                  {!!cause.mission && <Text style={styles.orgDescription} numberOfLines={1}>{cause.mission}</Text>}
-                </View>
-                <View style={[styles.checkbox, isSelected && styles.checkedBox]}>
-                  {isSelected && <Text style={styles.checkmark}>✓</Text>}
-                </View>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-      ) : (
-        <View style={styles.listContainer}>
-          {collectivesLoading ? (
-            <ActivityIndicator />
-          ) : (joinedCollectivesData?.data || []).map((item: any) => {
-            const collective = item.collective;
-            const isSelected = selectedItems.some(i => i.type === 'collective' && i.id === String(collective.id));
-            return (
-              <TouchableOpacity
-                key={collective.id}
-                style={[styles.organizationItem, isSelected && styles.selectedOrganizationItem]}
-                onPress={() => handleSelectItem({ id: String(collective.id), type: 'collective', data: { name: collective.name, created_by: { profile_picture: '' }, member_count: collective.member_count, description: collective.description } })}
-              >
-                <View style={[styles.orgAvatar, { backgroundColor: '#dcfce7' }]}>
-                  <Text style={[styles.orgAvatarText, { color: '#16a34a' }]}>{collective.name?.charAt(0)?.toUpperCase() || 'C'}</Text>
-                </View>
-                <View style={styles.orgInfo}>
-                  <Text style={styles.orgName}>{collective.name}</Text>
-                  {!!collective.description && <Text style={styles.orgDescription} numberOfLines={1}>{collective.description}</Text>}
-                </View>
-                <View style={[styles.checkbox, isSelected && styles.checkedBox]}>
-                  {isSelected && <Text style={styles.checkmark}>✓</Text>}
-                </View>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-      )}
-        </ScrollView>
-      
       {/* Checkout Button Footer - Always visible at bottom */}
       <View style={styles.footer}>
         <TouchableOpacity
@@ -513,8 +514,8 @@ export default function OneTimeDonation({
                 fadeOut
               />
             </View>
-            
-            <TouchableWithoutFeedback onPress={() => {}}>
+
+            <TouchableWithoutFeedback onPress={() => { }}>
               <View style={styles.modalContent}>
                 <TouchableOpacity
                   style={styles.closeButton}
@@ -522,7 +523,7 @@ export default function OneTimeDonation({
                 >
                   <Text style={styles.closeButtonText}>×</Text>
                 </TouchableOpacity>
-                
+
                 <View style={styles.modalBody}>
                   <Text style={styles.modalTitle}>Donation Successful! 🎉</Text>
                   <Text style={styles.modalDescription}>

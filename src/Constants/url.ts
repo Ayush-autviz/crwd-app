@@ -1,1 +1,3 @@
-export const WEB_BASE_URL = 'https://crwdfund.org';
+import { WhiteLabelConfig } from './WhiteLabelConfig';
+
+export const WEB_BASE_URL = WhiteLabelConfig.BaseUrl;

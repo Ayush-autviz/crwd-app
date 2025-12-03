@@ -5,7 +5,7 @@ import PopularPosts from '../PopularPosts';
 import { MessageSquare } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
-import { APP_NAME } from '../../utils/constan';
+import { WhiteLabelConfig } from '../../Constants/WhiteLabelConfig';
 
 interface GroupCRWDUpdatesProps {
   showEmpty?: boolean;
@@ -51,17 +51,17 @@ const GroupCRWDUpdates: React.FC<GroupCRWDUpdatesProps> = ({
   return (
     <View style={{ paddingHorizontal: 16, paddingTop: 8, paddingBottom: 8 }}>
       {isLoading ? (
-        <View style={{ 
-          flexDirection: 'row', 
-          alignItems: 'center', 
-          justifyContent: 'center', 
-          paddingVertical: 32 
+        <View style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'center',
+          paddingVertical: 32
         }}>
           <ActivityIndicator size="small" color="#6b7280" />
-          <Text style={{ 
-            marginLeft: 8, 
-            fontSize: 14, 
-            color: '#6b7280' 
+          <Text style={{
+            marginLeft: 8,
+            fontSize: 14,
+            color: '#6b7280'
           }}>
             Loading posts...
           </Text>
@@ -78,9 +78,9 @@ const GroupCRWDUpdates: React.FC<GroupCRWDUpdatesProps> = ({
           }}>
             {/* <Text style={{ fontSize: 48, color: '#9ca3af' }}>💬</Text> */}
             <MessageSquare size={48} color="#9ca3af" />
-            <Text style={{ 
-              fontSize: 18, 
-              fontWeight: '600', 
+            <Text style={{
+              fontSize: 18,
+              fontWeight: '600',
               color: '#111827',
               marginTop: 16,
               marginBottom: 8,
@@ -88,8 +88,8 @@ const GroupCRWDUpdates: React.FC<GroupCRWDUpdatesProps> = ({
             }}>
               Be the first one to share
             </Text>
-            <Text style={{ 
-              fontSize: 14, 
+            <Text style={{
+              fontSize: 14,
               color: '#6b7280',
               textAlign: 'center',
               lineHeight: 20,
@@ -98,19 +98,19 @@ const GroupCRWDUpdates: React.FC<GroupCRWDUpdatesProps> = ({
               Start the conversation by sharing an update with your group. Your post will help keep everyone engaged and informed.
             </Text>
             <TouchableOpacity
-            onPress={() => navigation.navigate('Post', { collectiveId: collectiveData?.id })}
-            style={{
-              backgroundColor: '#3b82f6',
-              paddingHorizontal: 16,
-              paddingVertical: 8,
-              borderRadius: 6,
-            }}>
+              onPress={() => navigation.navigate('Post', { collectiveId: collectiveData?.id })}
+              style={{
+                backgroundColor: '#3b82f6',
+                paddingHorizontal: 16,
+                paddingVertical: 8,
+                borderRadius: 6,
+              }}>
               <Text style={{ color: 'white', fontSize: 14, fontWeight: '500' }}>
                 Create Post
               </Text>
             </TouchableOpacity>
           </View>
-          
+
           {/* Recent Activities - Show even when posts are empty */}
           {recentActivities && recentActivities.length > 0 && (
             <View style={{ maxWidth: 600, marginTop: 16 }}>
@@ -118,20 +118,20 @@ const GroupCRWDUpdates: React.FC<GroupCRWDUpdatesProps> = ({
                 const isCommunityType = activity.type === "community";
                 const isDonationType = activity.type === "donation" || activity.type === "donation_activity";
                 const isMilestoneType = activity.type === "milestone";
-                
+
                 // Extract username from activity body (e.g., "@jake_long" -> "jake_long")
                 const usernameMatch = activity.body?.match(/@(\w+)/);
                 const username = usernameMatch ? usernameMatch[1] : null;
-                
+
                 // Try to get user ID from various possible fields in activity.data
-                const userId = 
-                  activity.data?.new_member_id || 
-                  activity.data?.user_id || 
-                  activity.data?.donor_id || 
+                const userId =
+                  activity.data?.new_member_id ||
+                  activity.data?.user_id ||
+                  activity.data?.donor_id ||
                   activity.data?.member_id ||
                   activity.data?.creator_id ||
                   null;
-                
+
                 // Get initials for fallback
                 const getInitials = () => {
                   if (username) {
@@ -141,10 +141,10 @@ const GroupCRWDUpdates: React.FC<GroupCRWDUpdatesProps> = ({
                   const firstChar = activity.body?.charAt(0);
                   return firstChar ? firstChar.toUpperCase() : '?';
                 };
-                
+
                 // Determine if we should show avatar (show for all activities with user info)
                 const shouldShowAvatar = !!userId || !!username;
-                
+
                 // Get profile link - use userId if available, otherwise use username
                 const handleProfilePress = () => {
                   if (userId) {
@@ -153,10 +153,10 @@ const GroupCRWDUpdates: React.FC<GroupCRWDUpdatesProps> = ({
                     navigation.navigate('UserProfile' as never, { userId: username } as never);
                   }
                 };
-                
+
                 // Check if we should make username clickable (has userId or username)
                 const canNavigateToProfile = !!userId || !!username;
-                
+
                 return (
                   <View
                     key={activity.id}
@@ -195,7 +195,7 @@ const GroupCRWDUpdates: React.FC<GroupCRWDUpdatesProps> = ({
                           </Avatar>
                         )
                       ) : null}
-                      
+
                       <View style={{ flex: 1, minWidth: 0 }}>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                           {isCommunityType && (
@@ -226,7 +226,7 @@ const GroupCRWDUpdates: React.FC<GroupCRWDUpdatesProps> = ({
                                 </TouchableOpacity>
                               ) : (
                                 <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827' }}>
-                                  {APP_NAME} Updates
+                                  {WhiteLabelConfig.AppName} Updates
                                 </Text>
                               )}
                             </>
@@ -241,12 +241,12 @@ const GroupCRWDUpdates: React.FC<GroupCRWDUpdatesProps> = ({
                                     </Text>
                                   </TouchableOpacity>
                                   <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827' }}>
-                                    {' '}· {APP_NAME} Milestones
+                                    {' '}· {WhiteLabelConfig.AppName} Milestones
                                   </Text>
                                 </>
                               ) : (
                                 <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827' }}>
-                                  {APP_NAME} Milestones
+                                  {WhiteLabelConfig.AppName} Milestones
                                 </Text>
                               )}
                             </>
@@ -279,14 +279,14 @@ const GroupCRWDUpdates: React.FC<GroupCRWDUpdatesProps> = ({
         </>
       ) : (
         <View style={{ paddingTop: 8 }}>
-          <PopularPosts 
-            posts={transformedPosts} 
-            hasMore={false} 
-            title="Conversations" 
-            postButton={joined} 
+          <PopularPosts
+            posts={transformedPosts}
+            hasMore={false}
+            title="Conversations"
+            postButton={joined}
             subheading
             collectiveId={collectiveData?.id}
-          />  
+          />
           {/* Recent Activities - Always shown under posts */}
           {recentActivities && recentActivities.length > 0 && (
             <View style={{ maxWidth: 600, marginTop: 16 }}>
@@ -294,20 +294,20 @@ const GroupCRWDUpdates: React.FC<GroupCRWDUpdatesProps> = ({
                 const isCommunityType = activity.type === "community";
                 const isDonationType = activity.type === "donation" || activity.type === "donation_activity";
                 const isMilestoneType = activity.type === "milestone";
-                
+
                 // Extract username from activity body (e.g., "@jake_long" -> "jake_long")
                 const usernameMatch = activity.body?.match(/@(\w+)/);
                 const username = usernameMatch ? usernameMatch[1] : null;
-                
+
                 // Try to get user ID from various possible fields in activity.data
-                const userId = 
-                  activity.data?.new_member_id || 
-                  activity.data?.user_id || 
-                  activity.data?.donor_id || 
+                const userId =
+                  activity.data?.new_member_id ||
+                  activity.data?.user_id ||
+                  activity.data?.donor_id ||
                   activity.data?.member_id ||
                   activity.data?.creator_id ||
                   null;
-                
+
                 // Get initials for fallback
                 const getInitials = () => {
                   if (username) {
@@ -317,10 +317,10 @@ const GroupCRWDUpdates: React.FC<GroupCRWDUpdatesProps> = ({
                   const firstChar = activity.body?.charAt(0);
                   return firstChar ? firstChar.toUpperCase() : '?';
                 };
-                
+
                 // Determine if we should show avatar (show for all activities with user info)
                 const shouldShowAvatar = !!userId || !!username;
-                
+
                 // Get profile link - use userId if available, otherwise use username
                 const handleProfilePress = () => {
                   if (userId) {
@@ -329,10 +329,10 @@ const GroupCRWDUpdates: React.FC<GroupCRWDUpdatesProps> = ({
                     navigation.navigate('UserProfile' as never, { userId: username } as never);
                   }
                 };
-                
+
                 // Check if we should make username clickable (has userId or username)
                 const canNavigateToProfile = !!userId || !!username;
-                
+
                 return (
                   <View
                     key={activity.id}
@@ -371,7 +371,7 @@ const GroupCRWDUpdates: React.FC<GroupCRWDUpdatesProps> = ({
                           </Avatar>
                         )
                       ) : null}
-                      
+
                       <View style={{ flex: 1, minWidth: 0 }}>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                           {isCommunityType && (
@@ -402,7 +402,7 @@ const GroupCRWDUpdates: React.FC<GroupCRWDUpdatesProps> = ({
                                 </TouchableOpacity>
                               ) : (
                                 <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827' }}>
-                                  {APP_NAME} Updates
+                                  {WhiteLabelConfig.AppName} Updates
                                 </Text>
                               )}
                             </>
@@ -417,12 +417,12 @@ const GroupCRWDUpdates: React.FC<GroupCRWDUpdatesProps> = ({
                                     </Text>
                                   </TouchableOpacity>
                                   <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827' }}>
-                                    {' '}· {APP_NAME} Milestones
+                                    {' '}· {WhiteLabelConfig.AppName} Milestones
                                   </Text>
                                 </>
                               ) : (
                                 <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827' }}>
-                                  {APP_NAME} Milestones
+                                  {WhiteLabelConfig.AppName} Milestones
                                 </Text>
                               )}
                             </>

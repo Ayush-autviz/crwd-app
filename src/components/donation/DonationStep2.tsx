@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { CROWDS, RECENTS, SUGGESTED, Organization } from '../../Constants/organizations';
 import { ChevronRight } from 'lucide-react-native';
-import { APP_NAME } from '../../utils/constan';
+import { WhiteLabelConfig } from '../../Constants/WhiteLabelConfig';
 
 interface DonationStep2Props {
   selectedOrganizations: string[];
@@ -74,7 +74,7 @@ export default function DonationStep2({
       <View style={styles.orgSection}>
         <Text style={styles.sectionTitle}>Choose Organizations</Text>
 
-        <Text style={styles.subsectionTitle}>{APP_NAME}</Text>
+        <Text style={styles.subsectionTitle}>{WhiteLabelConfig.AppName}</Text>
         {CROWDS.map(renderOrganizationCard)}
 
         <Text style={styles.subsectionTitle}>RECENT</Text>
@@ -84,7 +84,7 @@ export default function DonationStep2({
         {SUGGESTED.map(renderOrganizationCard)}
       </View>
 
-      <View style={{flexDirection:"row",alignItems:"center",justifyContent:'flex-end',gap:4}}>
+      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: 'flex-end', gap: 4 }}>
         <Text style={styles.DiscoverMore}>Discover More</Text>
         <ChevronRight size={16} strokeWidth={2.5} color="#2563eb" />
       </View>

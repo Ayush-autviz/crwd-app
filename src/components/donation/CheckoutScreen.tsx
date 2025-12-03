@@ -22,7 +22,7 @@ import { Settings } from 'lucide-react-native';
 import { getCollectiveById } from '../../services/api/crwd';
 import { PrimaryBlue } from '../../Constants/Colors';
 import { useQueryClient } from '@tanstack/react-query';
-import { APP_NAME } from '../../utils/constan';
+import { WhiteLabelConfig } from '../../Constants/WhiteLabelConfig';
 
 const { width, height } = Dimensions.get('window');
 
@@ -61,7 +61,7 @@ export default function CheckoutScreen({
   const manualCauses = donationBox?.manual_causes || [];
   const attributingCollectives = donationBox?.attributing_collectives || [];
   const actualDonationAmount = parseFloat(donationBox?.monthly_amount || donationAmount.toString());
-  
+
   // Use API data if available, otherwise fall back to selectedOrganizations
   const hasApiData = manualCauses.length > 0 || attributingCollectives.length > 0;
   const totalCauses = manualCauses.length;
@@ -88,16 +88,16 @@ export default function CheckoutScreen({
       // Show confetti modal
       setShowCongratulationsModal(true);
       confettiShownRef.current = true;
-      
+
       // Refetch donation box data
       queryClient.invalidateQueries({ queryKey: ['donationBox'] });
       queryClient.refetchQueries({ queryKey: ['donationBox'] });
-      
+
       // Fire confetti after modal appears
       setTimeout(() => {
         confettiRef.current?.start();
       }, 300);
-      
+
       // Notify parent that confetti has been shown (to clear the flag)
       if (onConfettiShown) {
         onConfettiShown();
@@ -112,7 +112,7 @@ export default function CheckoutScreen({
   const handleToggleCollectiveDropdown = async (collectiveId: number) => {
     const isExpanded = expandedCollectives.has(collectiveId);
     const newExpanded = new Set(expandedCollectives);
-    
+
     if (isExpanded) {
       newExpanded.delete(collectiveId);
     } else {
@@ -144,7 +144,7 @@ export default function CheckoutScreen({
   const selectedOrganizationsList = hasApiData ? [] : selectedOrganizations;
 
   // Calculate equal distribution percentage
-  const totalItems = hasApiData 
+  const totalItems = hasApiData
     ? (totalCauses + totalCollectives)
     : selectedOrganizationsList.length;
   const distributionPercentage =
@@ -155,193 +155,193 @@ export default function CheckoutScreen({
 
   return (
     <>
-    <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Blue Summary Card */}
-        <View style={styles.blueSummaryCard}>
-          <View style={styles.amountSection}>
-            <Text style={styles.amountText}>${actualDonationAmount.toFixed(0)}</Text>
-            <View style={styles.perMonthSection}>
-              <Text style={styles.perMonthText}>per month</Text>
-              <HelpCircle size={16} color="#ffffff" />
+      <SafeAreaView style={styles.container}>
+        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+          {/* Blue Summary Card */}
+          <View style={styles.blueSummaryCard}>
+            <View style={styles.amountSection}>
+              <Text style={styles.amountText}>${actualDonationAmount.toFixed(0)}</Text>
+              <View style={styles.perMonthSection}>
+                <Text style={styles.perMonthText}>per month</Text>
+                <HelpCircle size={16} color="#ffffff" />
+              </View>
+            </View>
+
+            <View style={styles.statsSection}>
+              <View style={styles.statItem}>
+                <Text style={styles.statNumber}>{totalCauses}</Text>
+                <Text style={styles.statLabel}>Causes</Text>
+              </View>
+              <View style={styles.statDivider} />
+              <View style={styles.statItem}>
+                <Text style={styles.statNumber}>{totalCollectives}</Text>
+                <Text style={styles.statLabel}>{WhiteLabelConfig.AppName}</Text>
+              </View>
+              <View style={styles.statDivider} />
+
+              <View style={styles.manageSection}>
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('ManageDonationBox' as never)}
+                  style={styles.manageButton}
+                >
+                  <Settings size={16} color="#ffffff" />
+                  <Text style={styles.manageText}>Manage</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
 
-          <View style={styles.statsSection}>
-            <View style={styles.statItem}>
-              <Text style={styles.statNumber}>{totalCauses}</Text>
-              <Text style={styles.statLabel}>Causes</Text>
-            </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-              <Text style={styles.statNumber}>{totalCollectives}</Text>
-              <Text style={styles.statLabel}>{APP_NAME}</Text>
-            </View>
-            <View style={styles.statDivider} />
+          <Text style={{ fontSize: 14, color: '#6b7280', marginBottom: 16, marginHorizontal: 20 }}>Donation amount is equally distributed across all the nonprofits</Text>
 
-            <View style={styles.manageSection}>
-              <TouchableOpacity
-                onPress={() => navigation.navigate('ManageDonationBox' as never)}
-                style={styles.manageButton}
-              >
-                <Settings size={16} color="#ffffff" />
-                <Text style={styles.manageText}>Manage</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-
-        <Text style={{fontSize: 14, color: '#6b7280', marginBottom: 16, marginHorizontal: 20}}>Donation amount is equally distributed across all the nonprofits</Text>
-
-        {/* Nonprofits Section */}
-        {manualCauses.length > 0 && (
-          <View style={styles.causesSection}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>NONPROFITS</Text>
-            </View>
-            <View style={styles.causesList}>
-              {manualCauses.map((cause: any, index: number) => (
-                <View key={`cause-${cause.id}-${index}`} style={styles.causeItem}>
-                  <Avatar size={48}>
-                    <AvatarImage src={cause.logo} />
-                    <AvatarFallback style={{ backgroundColor: '#dbeafe' }} textStyle={{ color: '#2563eb', fontWeight: '600' }}>
-                      {cause.name?.charAt(0).toUpperCase() || 'C'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <View style={[styles.causeInfo, { marginLeft: 12 }]}>
-                    <View style={styles.causeInfoRow}>
-                      <View style={styles.causeInfoContent}>
-                        <Text style={styles.causeName}>{cause.name}</Text>
-                        <Text style={styles.causeDescription} numberOfLines={2}>
-                          {cause.mission || cause.description || 'Making a positive impact in the community'}
-                        </Text>
+          {/* Nonprofits Section */}
+          {manualCauses.length > 0 && (
+            <View style={styles.causesSection}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>NONPROFITS</Text>
+              </View>
+              <View style={styles.causesList}>
+                {manualCauses.map((cause: any, index: number) => (
+                  <View key={`cause-${cause.id}-${index}`} style={styles.causeItem}>
+                    <Avatar size={48}>
+                      <AvatarImage src={cause.logo} />
+                      <AvatarFallback style={{ backgroundColor: '#dbeafe' }} textStyle={{ color: '#2563eb', fontWeight: '600' }}>
+                        {cause.name?.charAt(0).toUpperCase() || 'C'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <View style={[styles.causeInfo, { marginLeft: 12 }]}>
+                      <View style={styles.causeInfoRow}>
+                        <View style={styles.causeInfoContent}>
+                          <Text style={styles.causeName}>{cause.name}</Text>
+                          <Text style={styles.causeDescription} numberOfLines={2}>
+                            {cause.mission || cause.description || 'Making a positive impact in the community'}
+                          </Text>
+                        </View>
+                        {/* <Text style={styles.causePercentage}>{distributionPercentage}%</Text> */}
                       </View>
-                      {/* <Text style={styles.causePercentage}>{distributionPercentage}%</Text> */}
                     </View>
                   </View>
-                </View>
-              ))}
+                ))}
+              </View>
             </View>
-          </View>
-        )}
+          )}
 
-        {/* Collectives Section */}
-        {attributingCollectives.length > 0 && (
-          <View style={styles.causesSection}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>COLLECTIVES</Text>
-            </View>
-            <View style={styles.causesList}>
-              {attributingCollectives.map((collective: any, index: number) => {
-                const isExpanded = expandedCollectives.has(collective.id);
-                const details = collectiveDetails[collective.id];
-                const isLoading = isExpanded && !details;
-                
-                return (
-                  <View key={`collective-${collective.id}-${index}`}>
-                    <TouchableOpacity 
-                      style={styles.causeItem}
-                      onPress={() => handleToggleCollectiveDropdown(collective.id)}
-                    >
-                      <Avatar size={48}>
-                        <AvatarImage src={collective.cover_image} />
-                        <AvatarFallback style={{ backgroundColor: '#dcfce7' }} textStyle={{ color: '#16a34a', fontWeight: '600' }}>
-                          {collective.name?.charAt(0).toUpperCase() || 'C'}
-                        </AvatarFallback>
-                      </Avatar>
-                      <View style={[styles.causeInfo, { marginLeft: 12, flex: 1 }]}>
-                        <View style={styles.causeInfoRow}>
-                          <View style={styles.causeInfoContent}>
-                            <Text style={styles.causeName}>{collective.name}</Text>
-                            <Text style={styles.causeDescription} numberOfLines={2}>
-                              {collective.description || 'Community collective'}
-                            </Text>
-                          </View>
-                          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                            {/* <Text style={styles.causePercentage}>{distributionPercentage}%</Text> */}
-                            {isLoading ? (
-                              <ActivityIndicator size="small" color={PrimaryBlue} style={{ marginLeft: 8 }} />
-                            ) : (
-                              isExpanded ? (
-                                <ChevronUp size={20} color="#6b7280" style={{ marginLeft: 8 }} />
-                              ) : (
-                                <ChevronDown size={20} color="#6b7280" style={{ marginLeft: 8 }} />
-                              )
-                            )}
-                          </View>
-                        </View>
-                      </View>
-                    </TouchableOpacity>
-                    {isExpanded && details && details.causes && details.causes.length > 0 && (
-                      <View style={{ paddingLeft: 60, paddingTop: 8, paddingBottom: 8, backgroundColor: '#f9fafb' }}>
-                        <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827', marginBottom: 8 }}>Nonprofits ({details.causes.length})</Text>
-                        {details.causes.map((causeItem: any) => (
-                          <View key={causeItem.id} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#e5e7eb' }}>
-                            <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: '#dbeafe', justifyContent: 'center', alignItems: 'center', marginRight: 12 }}>
-                              <Text style={{ color: '#2563eb', fontSize: 12, fontWeight: '600' }}>{causeItem.cause?.name?.charAt(0).toUpperCase() || 'N'}</Text>
+          {/* Collectives Section */}
+          {attributingCollectives.length > 0 && (
+            <View style={styles.causesSection}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>COLLECTIVES</Text>
+              </View>
+              <View style={styles.causesList}>
+                {attributingCollectives.map((collective: any, index: number) => {
+                  const isExpanded = expandedCollectives.has(collective.id);
+                  const details = collectiveDetails[collective.id];
+                  const isLoading = isExpanded && !details;
+
+                  return (
+                    <View key={`collective-${collective.id}-${index}`}>
+                      <TouchableOpacity
+                        style={styles.causeItem}
+                        onPress={() => handleToggleCollectiveDropdown(collective.id)}
+                      >
+                        <Avatar size={48}>
+                          <AvatarImage src={collective.cover_image} />
+                          <AvatarFallback style={{ backgroundColor: '#dcfce7' }} textStyle={{ color: '#16a34a', fontWeight: '600' }}>
+                            {collective.name?.charAt(0).toUpperCase() || 'C'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <View style={[styles.causeInfo, { marginLeft: 12, flex: 1 }]}>
+                          <View style={styles.causeInfoRow}>
+                            <View style={styles.causeInfoContent}>
+                              <Text style={styles.causeName}>{collective.name}</Text>
+                              <Text style={styles.causeDescription} numberOfLines={2}>
+                                {collective.description || 'Community collective'}
+                              </Text>
                             </View>
-                            <View style={{ flex: 1 }}>
-                              <Text style={{ fontWeight: '600', color: '#111827', fontSize: 14 }}>{causeItem.cause?.name}</Text>
-                              {!!causeItem.cause?.description && (
-                                <Text style={{ color: '#6b7280', fontSize: 12 }} numberOfLines={2}>{causeItem.cause.description}</Text>
+                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                              {/* <Text style={styles.causePercentage}>{distributionPercentage}%</Text> */}
+                              {isLoading ? (
+                                <ActivityIndicator size="small" color={PrimaryBlue} style={{ marginLeft: 8 }} />
+                              ) : (
+                                isExpanded ? (
+                                  <ChevronUp size={20} color="#6b7280" style={{ marginLeft: 8 }} />
+                                ) : (
+                                  <ChevronDown size={20} color="#6b7280" style={{ marginLeft: 8 }} />
+                                )
                               )}
                             </View>
                           </View>
-                        ))}
-                      </View>
-                    )}
-                  </View>
-                );
-              })}
+                        </View>
+                      </TouchableOpacity>
+                      {isExpanded && details && details.causes && details.causes.length > 0 && (
+                        <View style={{ paddingLeft: 60, paddingTop: 8, paddingBottom: 8, backgroundColor: '#f9fafb' }}>
+                          <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827', marginBottom: 8 }}>Nonprofits ({details.causes.length})</Text>
+                          {details.causes.map((causeItem: any) => (
+                            <View key={causeItem.id} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#e5e7eb' }}>
+                              <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: '#dbeafe', justifyContent: 'center', alignItems: 'center', marginRight: 12 }}>
+                                <Text style={{ color: '#2563eb', fontSize: 12, fontWeight: '600' }}>{causeItem.cause?.name?.charAt(0).toUpperCase() || 'N'}</Text>
+                              </View>
+                              <View style={{ flex: 1 }}>
+                                <Text style={{ fontWeight: '600', color: '#111827', fontSize: 14 }}>{causeItem.cause?.name}</Text>
+                                {!!causeItem.cause?.description && (
+                                  <Text style={{ color: '#6b7280', fontSize: 12 }} numberOfLines={2}>{causeItem.cause.description}</Text>
+                                )}
+                              </View>
+                            </View>
+                          ))}
+                        </View>
+                      )}
+                    </View>
+                  );
+                })}
+              </View>
             </View>
-          </View>
-        )}
+          )}
 
-        {/* Fallback to selectedOrganizations if no API data */}
-        {!hasApiData && selectedOrganizationsList.length > 0 && (
-          <View style={styles.causesSection}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>CAUSES</Text>
-              <Text style={[styles.helpIconGray, { marginLeft: 8 }]}>?</Text>
-            </View>
-            <View style={styles.causesList}>
-              {selectedOrganizationsList.map((orgName: string, index: number) => (
-                <View key={`${orgName}-${index}`} style={styles.causeItem}>
-                  <Avatar size={48}>
-                    <AvatarImage src="" />
-                    <AvatarFallback style={{ backgroundColor: '#dbeafe' }} textStyle={{ color: '#2563eb', fontWeight: '600' }}>
-                      {orgName.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <View style={[styles.causeInfo, { marginLeft: 12 }]}>
-                    <View style={styles.causeInfoRow}>
-                      <View style={styles.causeInfoContent}>
-                        <Text style={styles.causeName}>{orgName}</Text>
-                        <Text style={styles.causeDescription} numberOfLines={2}>
-                          {getOrganizationDescription(orgName)}
-                        </Text>
+          {/* Fallback to selectedOrganizations if no API data */}
+          {!hasApiData && selectedOrganizationsList.length > 0 && (
+            <View style={styles.causesSection}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>CAUSES</Text>
+                <Text style={[styles.helpIconGray, { marginLeft: 8 }]}>?</Text>
+              </View>
+              <View style={styles.causesList}>
+                {selectedOrganizationsList.map((orgName: string, index: number) => (
+                  <View key={`${orgName}-${index}`} style={styles.causeItem}>
+                    <Avatar size={48}>
+                      <AvatarImage src="" />
+                      <AvatarFallback style={{ backgroundColor: '#dbeafe' }} textStyle={{ color: '#2563eb', fontWeight: '600' }}>
+                        {orgName.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <View style={[styles.causeInfo, { marginLeft: 12 }]}>
+                      <View style={styles.causeInfoRow}>
+                        <View style={styles.causeInfoContent}>
+                          <Text style={styles.causeName}>{orgName}</Text>
+                          <Text style={styles.causeDescription} numberOfLines={2}>
+                            {getOrganizationDescription(orgName)}
+                          </Text>
+                        </View>
+                        <Text style={styles.causePercentage}>{distributionPercentage}%</Text>
                       </View>
-                      <Text style={styles.causePercentage}>{distributionPercentage}%</Text>
                     </View>
                   </View>
-                </View>
-              ))}
+                ))}
+              </View>
             </View>
+          )}
+
+          {/* Give Together Section */}
+          <View style={styles.giveTogetherCard}>
+            <Text style={styles.giveTogetherText}>Want to give together? Turn this into a {WhiteLabelConfig.AppName} Collective</Text>
+            <TouchableOpacity>
+              <Text style={styles.learnMoreLink}>Learn more</Text>
+            </TouchableOpacity>
           </View>
-        )}
+        </ScrollView>
 
-        {/* Give Together Section */}
-        <View style={styles.giveTogetherCard}>
-          <Text style={styles.giveTogetherText}>Want to give together? Turn this into a {APP_NAME} Collective</Text>
-          <TouchableOpacity>
-            <Text style={styles.learnMoreLink}>Learn more</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
+      </SafeAreaView>
 
-    </SafeAreaView>
-
-          {/* <View style={styles.footer}>
+      {/* <View style={styles.footer}>
           <TouchableOpacity style={styles.confirmButton}>
             <Text style={styles.confirmButtonText}>
               Confirm ${donationAmount}/month
@@ -349,61 +349,61 @@ export default function CheckoutScreen({
           </TouchableOpacity>
           </View> */}
 
-    {/* Congratulations Modal */}
-    <Modal
-      visible={showCongratulationsModal}
-      transparent={true}
-      animationType="fade"
-      onRequestClose={handleCloseCongratulationsModal}
-    >
-      <TouchableWithoutFeedback onPress={handleCloseCongratulationsModal}>
-        <View style={styles.modalOverlay}>
-          {/* Confetti */}
-          <View style={styles.confettiContainer}>
-            <ConfettiCannon
-              ref={confettiRef}
-              count={200}
-              origin={{ x: width / 2, y: 0 }}
-              autoStart={false}
-              colors={['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8']}
-              fadeOut
-            />
-          </View>
-          
-          <TouchableWithoutFeedback onPress={() => {}}>
-            <View style={styles.modalContent}>
-              <TouchableOpacity
-                style={styles.closeButton}
-                onPress={handleCloseCongratulationsModal}
-              >
-                <Text style={styles.closeButtonText}>x</Text>
-              </TouchableOpacity>
-              
+      {/* Congratulations Modal */}
+      <Modal
+        visible={showCongratulationsModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={handleCloseCongratulationsModal}
+      >
+        <TouchableWithoutFeedback onPress={handleCloseCongratulationsModal}>
+          <View style={styles.modalOverlay}>
+            {/* Confetti */}
+            <View style={styles.confettiContainer}>
+              <ConfettiCannon
+                ref={confettiRef}
+                count={200}
+                origin={{ x: width / 2, y: 0 }}
+                autoStart={false}
+                colors={['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8']}
+                fadeOut
+              />
+            </View>
+
+            <TouchableWithoutFeedback onPress={() => { }}>
+              <View style={styles.modalContent}>
+                <TouchableOpacity
+                  style={styles.closeButton}
+                  onPress={handleCloseCongratulationsModal}
+                >
+                  <Text style={styles.closeButtonText}>x</Text>
+                </TouchableOpacity>
+
                 <View style={styles.modalBody}>
                   <Text style={styles.modalTitle}>Welcome to Checkout!</Text>
-                <Text style={styles.modalDescription}>
-                  Here's your donation summary:
-                </Text>
+                  <Text style={styles.modalDescription}>
+                    Here's your donation summary:
+                  </Text>
 
-                {/* Donation Summary Card */}
-                <View style={styles.summaryCard}>
-                  <View style={styles.summaryCardContent}>
-                    <View style={styles.summaryIcon}>
-                      <Text style={styles.heartEmoji}>💝</Text>
-                    </View>
-                    <View style={styles.summaryTextContainer}>
-                      <Text style={styles.summaryCardTitle}>Monthly Donation Box</Text>
-                      <Text style={styles.summaryCardAmount}>${actualDonationAmount}/month</Text>
+                  {/* Donation Summary Card */}
+                  <View style={styles.summaryCard}>
+                    <View style={styles.summaryCardContent}>
+                      <View style={styles.summaryIcon}>
+                        <Text style={styles.heartEmoji}>💝</Text>
+                      </View>
+                      <View style={styles.summaryTextContainer}>
+                        <Text style={styles.summaryCardTitle}>Monthly Donation Box</Text>
+                        <Text style={styles.summaryCardAmount}>${actualDonationAmount}/month</Text>
+                      </View>
                     </View>
                   </View>
-                </View>
 
-                <Text style={styles.supportingText}>
-                  Supporting {totalItems} {totalItems === 1 ? 'organization' : 'organizations'} with your monthly donation.
-                </Text>
+                  <Text style={styles.supportingText}>
+                    Supporting {totalItems} {totalItems === 1 ? 'organization' : 'organizations'} with your monthly donation.
+                  </Text>
 
-                {/* Explore CRWD Button */}
-                {/* <TouchableOpacity
+                  {/* Explore CRWD Button */}
+                  {/* <TouchableOpacity
                   style={styles.exploreButton}
                   onPress={() => navigation.navigate('Home' as never)}
                 >
@@ -412,16 +412,16 @@ export default function CheckoutScreen({
                   </Text>
                 </TouchableOpacity> */}
 
-                {/* Download App Text */}
-                {/* <Text style={styles.downloadText}>
+                  {/* Download App Text */}
+                  {/* <Text style={styles.downloadText}>
                   Download the app to track and update anytime.
                 </Text> */}
+                </View>
               </View>
-            </View>
-          </TouchableWithoutFeedback>
-        </View>
-      </TouchableWithoutFeedback>
-    </Modal>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
 
     </>
   );
@@ -801,7 +801,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     paddingHorizontal: 16,
     paddingVertical: 20,
-    paddingBottom:30,
+    paddingBottom: 30,
     borderTopWidth: 1,
     borderTopColor: '#f3f4f6',
     shadowColor: '#000',

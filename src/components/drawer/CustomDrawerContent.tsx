@@ -16,7 +16,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/Avatar';
 import { useAuthStore } from '../../store/store';
 import { getUnreadCount } from '../../services/api/notification';
 import { useQuery } from '@tanstack/react-query';
-import { APP_NAME } from '../../utils/constan';
+import { WhiteLabelConfig } from '../../Constants/WhiteLabelConfig';
 
 export default function CustomDrawerContent(props: DrawerContentComponentProps) {
   const { user: currentUser } = useAuthStore();
@@ -41,63 +41,63 @@ export default function CustomDrawerContent(props: DrawerContentComponentProps) 
     <SafeAreaView style={styles.container}>
       {/* Profile Section */}
       {/* <View style={styles.profileSection}> */}
-        {/* <Image
+      {/* <Image
           source={{ uri: 'https://randomuser.me/api/portraits/women/44.jpg' }}
           style={styles.profileImage}
         /> */}
-        {currentUser?.id ? (
-                <View style={styles.profileSection}>
-        <Avatar>
-          <AvatarImage src={currentUser?.profile_picture} />
-          <AvatarFallback>
-            {currentUser?.first_name ? currentUser?.first_name?.charAt(0).toUpperCase() : 'U'}
-          </AvatarFallback>
-        </Avatar>
-        <View style={styles.profileInfo}>
-          <Text style={styles.profileName}>My Name is {currentUser?.first_name}</Text>
-          {/* <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
+      {currentUser?.id ? (
+        <View style={styles.profileSection}>
+          <Avatar>
+            <AvatarImage src={currentUser?.profile_picture} />
+            <AvatarFallback>
+              {currentUser?.first_name ? currentUser?.first_name?.charAt(0).toUpperCase() : 'U'}
+            </AvatarFallback>
+          </Avatar>
+          <View style={styles.profileInfo}>
+            <Text style={styles.profileName}>My Name is {currentUser?.first_name}</Text>
+            {/* <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
             <Text style={styles.profileLink}>Go to your profile</Text>
           </TouchableOpacity> */}
-        </View>
-        <TouchableOpacity
-          onPress={() => navigation.navigate('Activity')}
-          activeOpacity={0.8}
-          style={{ padding: 6, position: 'relative', marginRight: 15 }}
-        >
-          <Bell size={22} color="#111827" />
-          {unreadCount?.data > 0 && currentUser?.id && (
-          <View
-            style={{
-              position: 'absolute',
-              top: -2,
-              right: -4,
-              backgroundColor: 'red',
-              borderRadius: 8,
-              minWidth: 16,
-              height: 16,
-              alignItems: 'center',
-              justifyContent: 'center',
-              paddingHorizontal: 3,
-            }}
-          >
-            <Text style={{ color: 'white', fontSize: 10, fontWeight: '700' }}>{unreadCount?.data}</Text>
           </View>
-          )}
-        </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Activity')}
+            activeOpacity={0.8}
+            style={{ padding: 6, position: 'relative', marginRight: 15 }}
+          >
+            <Bell size={22} color="#111827" />
+            {unreadCount?.data > 0 && currentUser?.id && (
+              <View
+                style={{
+                  position: 'absolute',
+                  top: -2,
+                  right: -4,
+                  backgroundColor: 'red',
+                  borderRadius: 8,
+                  minWidth: 16,
+                  height: 16,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  paddingHorizontal: 3,
+                }}
+              >
+                <Text style={{ color: 'white', fontSize: 10, fontWeight: '700' }}>{unreadCount?.data}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
         </View>
-        ):(
-          <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, width: '95%', gap: 6}}>
+      ) : (
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, width: '95%', gap: 6 }}>
           <Avatar>
             <AvatarFallback>U</AvatarFallback>
           </Avatar>
           <View style={styles.profileInfo}>
-          <Text style={styles.profileName}>Guest</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Login' as never)}>
-            <Text style={styles.profileLink}>Login</Text>
-          </TouchableOpacity>
+            <Text style={styles.profileName}>Guest</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Login' as never)}>
+              <Text style={styles.profileLink}>Login</Text>
+            </TouchableOpacity>
           </View>
-          </View>
-        )}
+        </View>
+      )}
       {/* </View> */}
 
       {/* Navigation Items */}
@@ -111,10 +111,10 @@ export default function CustomDrawerContent(props: DrawerContentComponentProps) 
         >
           <View style={styles.menuItemContent}>
             <Text style={styles.plusIcon}>+</Text>
-            <Text style={styles.menuLabel}>{APP_NAME} Collectives</Text>
+            <Text style={styles.menuLabel}>{WhiteLabelConfig.AppName} Collectives</Text>
           </View>
         </TouchableOpacity>
-        
+
         {navigationGroups.map((group) => (
           <View key={group.heading || 'no-heading'}>
             {group.heading && (
@@ -150,7 +150,7 @@ export default function CustomDrawerContent(props: DrawerContentComponentProps) 
             <Text style={styles.footerLink}>Terms of Service</Text>
           </TouchableOpacity>
         </View>
-        <Text style={{fontSize: 12, color: PrimaryGrey, textAlign: 'center', marginTop: 8}}>{APP_NAME} ©2025</Text>
+        <Text style={{ fontSize: 12, color: PrimaryGrey, textAlign: 'center', marginTop: 8 }}>{WhiteLabelConfig.AppName} ©2025</Text>
 
       </View>
     </SafeAreaView>

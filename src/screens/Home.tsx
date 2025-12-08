@@ -1,9 +1,7 @@
-import { View, Text, TextInput, FlatList, ScrollView, TouchableOpacity, ActivityIndicator, Alert, PermissionsAndroid, Platform } from 'react-native'
-import React, { useState, useEffect } from 'react'
-import MainHeaderNav from '../components/MainHeaderNav'
-import { LightGrey, PrimaryBlue, PrimaryGreen, PrimaryGrey, SecondaryBlue } from '../Constants/Colors'
-import { MapPin, Search } from 'lucide-react-native'
-import TopicList from '../components/TopicList'
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, PermissionsAndroid, Platform, Image, Dimensions } from 'react-native'
+import React, { useState, useEffect, useRef } from 'react'
+import { PrimaryBlue, PrimaryGreen, PrimaryGrey } from '../Constants/Colors'
+import { MapPin } from 'lucide-react-native'
 import SuggestedCrwd from '../components/SuggestedCrwd'
 import SuggestdCauses from '../components/SuggestdCauses'
 import NearbyCauses from '../components/NearbyCauses'
@@ -12,12 +10,11 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import HomeHeader from '../components/HomeHeader'
 import CausesCarousel from '../components/CausesCarousel'
 import { useNavigation } from '@react-navigation/native'
-import { setDiscoverMode } from '../utils/discoverMode'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { getPosts } from '../services/api/social'
 import { getCauses, getCollectives, getCausesByLocation } from '../services/api/crwd'
 import { useAuthStore } from '../store/store'
-import { categories } from '../Constants/categories'
+import { categoriesList } from '../Constants/categories'
 import Geolocation, { GeoPosition } from 'react-native-geolocation-service'
 import messaging from '@react-native-firebase/messaging'
 import { registerNotificationToken } from '../services/api/notification'
@@ -31,6 +28,28 @@ export default function Home() {
     const navigation = useNavigation();
     const { user: currentUser } = useAuthStore();
 
+
+    const BANNER_WIDTH = Dimensions.get('window').width / 2 - 30;
+    const BANNER_HEIGHT = 150;
+    const categoriesScrollRef = useRef<ScrollView>(null);
+    const [categoriesContentWidth, setCategoriesContentWidth] = useState(0);
+    const [categoriesContainerWidth, setCategoriesContainerWidth] = useState(0);
+
+    useEffect(() => {
+        if (categoriesContentWidth <= 0 || categoriesContainerWidth <= 0) return;
+        let currentX = 0;
+        const step = 40;
+        const interval = setInterval(() => {
+            currentX += step;
+            const maxX = Math.max(categoriesContentWidth - categoriesContainerWidth, 0);
+            if (currentX >= maxX) {
+                currentX = 0;
+            }
+            categoriesScrollRef.current?.scrollTo({ x: currentX, animated: true });
+        }, 2000);
+        return () => clearInterval(interval);
+    }, [categoriesContentWidth, categoriesContainerWidth]);
+
     // fcm token send to backend
     const sendFcmTokenToBackend = useMutation({
         mutationFn: registerNotificationToken,
@@ -41,8 +60,6 @@ export default function Home() {
             console.error('Error sending FCM token to backend:', error);
         },
     });
-
-
 
     const requestNotificationPermission = async () => {
         if (Platform.OS === 'android') {
@@ -140,13 +157,9 @@ export default function Home() {
             },
             error => {
                 console.error('Error getting location:', error.message);
-                // Alert.alert('Error', 'Failed to get location: ' + error.message);
             },
-            //   {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
         );
     };
-
-
 
     // Fetch causes by location (if location is available)
     const { data: causesByLocationData, isLoading: isLoadingLocationCauses, error: locationCausesError } = useQuery({
@@ -294,26 +307,6 @@ export default function Home() {
                     <CausesCarousel />
                 </View>
 
-
-                {/* <View style={{ 
-                    marginVertical: 10, 
-                    padding: 10, 
-                    backgroundColor: LightGrey, 
-                    borderRadius: 8,
-                    flexDirection: 'row',
-                    alignItems: 'center'
-                }}>
-                    <Search size={20} color={PrimaryGrey} style={{ marginRight: 8 }} />
-                    <TextInput 
-                        placeholder='Search' 
-                        clearButtonMode="while-editing"
-                        style={{ flex: 1 }}
-                    />
-                </View> */}
-
-                {/* <TopicList /> */}
-
-                {/* Suggested CRWDs Section */}
                 <View>
                     <SuggestedCrwd
                         collectives={collectives}
@@ -322,61 +315,101 @@ export default function Home() {
                     />
                 </View>
 
-                {/* Categories Section */}
+                {/* Categories Section Test */}
                 <View style={{ marginTop: 32 }}>
-                    <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 16, color: '#111827' }}>Explore Categories</Text>
+                    <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 16, color: '#111827' }}>
+                        Explore Categories
+                    </Text>
+
                     <ScrollView
-                        horizontal={true}
+                        ref={categoriesScrollRef}
+                        horizontal
                         showsHorizontalScrollIndicator={false}
                         contentContainerStyle={{ paddingRight: 16 }}
+                        onContentSizeChange={(w) => setCategoriesContentWidth(w)}
+                        onLayout={(e) => setCategoriesContainerWidth(e.nativeEvent.layout.width)}
                     >
-                        <View style={{ flexDirection: 'row', gap: 8 }}>
-                            {categories.map((category, index) => (
+                        <View style={{ flexDirection: 'row', gap: 12 }}>
+                            {categoriesList.map((category, index) => (
                                 <TouchableOpacity
                                     key={index}
-                                    onPress={() => (navigation as any).navigate('Search', {
-                                        categoryId: category.id,
-                                        categoryName: category.name
-                                    })}
+                                    onPress={() =>
+                                        (navigation as any).navigate('Search', {
+                                            categoryId: category.id,
+                                            categoryName: category.name,
+                                        })
+                                    }
                                     style={{
-                                        backgroundColor: category.background,
-                                        paddingHorizontal: 16,
-                                        paddingVertical: 8,
-                                        borderRadius: 8,
+                                        width: BANNER_WIDTH,
+                                        height: BANNER_HEIGHT,
+                                        borderRadius: 14,
+                                        overflow: 'hidden',
+                                        backgroundColor: '#F3F4F6',
                                         borderWidth: 1,
                                         borderColor: '#E5E7EB',
                                     }}
                                 >
-                                    <Text style={{
-                                        fontSize: 14,
-                                        color: category.text,
-                                        fontWeight: '500'
-                                    }}>
-                                        {category.name}
-                                    </Text>
+                                    {!!category.image && (
+                                        <Image
+                                            source={category.image}
+                                            style={{
+                                                width: '100%',
+                                                height: '100%',
+                                            }}
+                                            resizeMode="cover"
+                                        />
+                                    )}
+
+                                    {/* TEXT OVERLAY */}
+                                    <View
+                                        style={{
+                                            position: 'absolute',
+                                            bottom: 0,
+                                            left: 0,
+                                            right: 0,
+                                            paddingVertical: 6,
+                                            paddingHorizontal: 10,
+                                            backgroundColor: 'rgba(0,0,0,0.45)',
+                                        }}
+                                    >
+                                        <Text
+                                            style={{
+                                                fontSize: 14,
+                                                color: '#fff',
+                                                fontWeight: '600',
+                                            }}
+                                            numberOfLines={1}
+                                        >
+                                            {category.name}
+                                        </Text>
+                                    </View>
                                 </TouchableOpacity>
                             ))}
                         </View>
                     </ScrollView>
 
-                    {/* Discover More Button */}
+                    {/* DISCOVER MORE BUTTON */}
                     <View style={{ alignItems: 'flex-end', marginTop: 16 }}>
                         <TouchableOpacity
                             onPress={() => (navigation as any).navigate('Search', { discover: true })}
                             style={{ flexDirection: 'row', alignItems: 'center' }}
                         >
-                            <Text style={{
-                                fontSize: 14,
-                                color: '#2563eb',
-                                fontWeight: '500',
-                                marginRight: 4
-                            }}>
+                            <Text
+                                style={{
+                                    fontSize: 14,
+                                    color: '#2563eb',
+                                    fontWeight: '500',
+                                    marginRight: 4,
+                                }}
+                            >
                                 Discover More
                             </Text>
                             <Text style={{ fontSize: 16, color: '#2563eb' }}>›</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
+
+
 
                 {/* Suggested Causes Section */}
                 <View>
@@ -522,8 +555,6 @@ export default function Home() {
 
                 {/* Popular Posts Section */}
                 <View >
-
-
                     {isLoadingPosts ? (
                         <View style={{ padding: 20, alignItems: 'center' }}>
                             <ActivityIndicator size="large" color={PrimaryBlue} />
@@ -547,7 +578,6 @@ export default function Home() {
                         />
                     )}
                 </View>
-
             </ScrollView>
         </SafeAreaView>
     )

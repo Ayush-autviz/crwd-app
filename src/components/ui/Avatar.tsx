@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Image, Text, StyleSheet, ViewStyle, TextStyle } from 'react-native';
+import { View, Image, Text, StyleSheet, ViewStyle, TextStyle, ImageStyle } from 'react-native';
 
 interface AvatarProps {
   size?: number;
@@ -11,7 +11,7 @@ interface AvatarProps {
 interface AvatarImageProps {
   src?: string;
   alt?: string;
-  style?: ViewStyle;
+  style?: ImageStyle;
   onError?: () => void;
 }
 

@@ -3,7 +3,7 @@ import { ImageSourcePropType } from "react-native";
 export const WhiteLabelConfig = {
     AppName: "Autviz",
     AppLogo: require("../assets/logo/main.png") as ImageSourcePropType,
-    BaseUrl: "https://crwdfund.org",
+    BaseUrl: "http://ec2-65-0-54-143.ap-south-1.compute.amazonaws.com:8200",
 
     // Colors: {
     //     LightGrey: "#f6f6f6",
@@ -17,13 +17,13 @@ export const WhiteLabelConfig = {
     // },
 
     Colors: {
-        LightGrey: "#f8fafc",
-        PrimaryGrey: "#475569",
-        SecondaryGrey: "#94a3b8",
-        PrimaryBlue: "#0891b2",
-        SecondaryBlue: "#ecfeff",
-        TertiaryBlue: "#a5f3fc",
-        PrimaryGreen: "#059669",
-        SecondaryGreen: "#ecfdf5",
+        LightGrey: "#F4F6FB",
+        PrimaryGrey: "#2B2F3A",
+        SecondaryGrey: "#9AA0AB",
+        PrimaryBlue: "#3B1F9E",
+        SecondaryBlue: "#F2ECFF",
+        TertiaryBlue: "#C7B8FF",
+        PrimaryGreen: "#FF7A59",
+        SecondaryGreen: "#FFF2EE",
     },
 };

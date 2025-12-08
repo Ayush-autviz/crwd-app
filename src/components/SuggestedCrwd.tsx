@@ -1,5 +1,5 @@
-import { View, Text, FlatList, Image, TouchableOpacity, ActivityIndicator } from 'react-native'
-import React from 'react'
+import { View, Text, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native'
+import React, { useRef, useEffect } from 'react'
 import { useNavigation } from '@react-navigation/native'
 import { PrimaryBlue, PrimaryGreen, PrimaryGrey } from '../Constants/Colors'
 import { ChevronRight } from 'lucide-react-native';
@@ -13,101 +13,87 @@ interface SuggestedCrwdProps {
 
 export default function SuggestedCrwd({ collectives = [], isLoading = false, error = null }: SuggestedCrwdProps) {
   const navigation = useNavigation();
+  const flatListRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (!collectives || collectives.length === 0) return;
+
+    let index = 0;
+    const timer = setInterval(() => {
+      index = (index + 1) % collectives.slice(0, 10).length;
+      flatListRef.current?.scrollToIndex({
+        index,
+        animated: true,
+      });
+    }, 2500);
+    return () => clearInterval(timer);
+  }, [collectives]);
 
   const handleVisitCrwd = (collectiveId: string) => {
     navigation.navigate('GroupCRWD' as never, { collectiveId });
   };
 
-  // Use API data or fallback to sample data
-  // const suggestedCRWDs = collectives.length > 0 ? collectives.slice(0, 3) : [
-  //   {
-  //     id: "1",
-  //     name: "Grocery Spot",
-  //     members: "303 Members",
-  //     description: "Community lunches every Saturday",
-  //     image: require("../assets/images/grocery.jpg"),
-  //   },
-  //   {
-  //     id: "2", 
-  //     name: "Food for Thought",
-  //     members: "78 Members",
-  //     description: "Solving world hunger. One meal at a time.",
-  //     image: require("../assets/images/grocery.jpg"),
-  //   },
-  //   {
-  //     id: "3",
-  //     name: "Community Care",
-  //     members: "156 Members", 
-  //     description: "Supporting local families in need",
-  //     image: require("../assets/images/grocery.jpg"),
-  //   },
-  // ];
-
-    return (
+  return (
     <>
-    <View style={{marginVertical: 20, flexDirection: 'row', alignItems: 'center', gap: 5}}>
-      <Text style={{fontSize: 17, fontWeight: 'bold'}}>Discover giving in action</Text>
-      <TouchableOpacity onPress={() => navigation.navigate('CreateCRWD')}>
-      <ChevronRight color={PrimaryBlue} size={19} style={{marginTop: 1}}/>
-      </TouchableOpacity>
-    </View>
-    
-    {isLoading ? (
-      <View style={{ padding: 20, alignItems: 'center' }}>
-        <ActivityIndicator size="large" color={PrimaryBlue} />
-        <Text style={{ marginTop: 10, color: PrimaryGrey }}>Loading collectives...</Text>
+      <View style={{ marginVertical: 20, flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+        <Text style={{ fontSize: 17, fontWeight: 'bold' }}>Discover giving in action</Text>
+        <TouchableOpacity onPress={() => navigation.navigate('CreateCRWD' as never)}>
+          <ChevronRight color={PrimaryBlue} size={19} style={{ marginTop: 1 }} />
+        </TouchableOpacity>
       </View>
-    ) : error ? (
-      <View style={{ padding: 20, alignItems: 'center' }}>
-        <Text style={{ color: 'red', textAlign: 'center' }}>
-          Failed to load collectives. Please try again.
-        </Text>
-      </View>
-    )
-    :
-    collectives.length === 0 ? (
-      <View style={{ padding: 20, alignItems: 'center' }}>
-        <Text style={{ color: 'grey', textAlign: 'center' }}>
-          No collectives found.
-        </Text>
-      </View>
-    ) : (
-      <FlatList 
-        data={collectives.slice(0, 10)}
-        horizontal={true}
-        showsHorizontalScrollIndicator={false}
-        renderItem={({item}) => (
-          <TouchableOpacity 
-            onPress={() => handleVisitCrwd(item.id)}  
-            style={{marginHorizontal: 10, marginBottom:10, alignItems: 'center', gap: 10, backgroundColor: '#f9fafb', borderRadius: 16, padding: 16,}}
-          >
-            {/* <Image 
-              source={typeof item.image === 'string' ? { uri: item.image } : item.image} 
-              style={{width: 40, height:40, borderRadius: 20,}} 
-            /> */}
-            <Avatar size={40}>
-              <AvatarImage src={item.image} />
-            <AvatarFallback>
-              {item.name.split(' ')[0][0].toUpperCase()}
-            </AvatarFallback>
-            </Avatar>
-            <View style={{alignItems: 'center', marginBottom: 10}}>
-              <Text style={{fontSize: 14, fontWeight: 500}}>{item.name}</Text>
-              <Text style={{fontSize: 12, color: 'grey'}}>{item.members}</Text>
-              <Text style={{fontSize: 12, color: 'grey', width: 150, textAlign: 'center'}}>
-                {item.description?.slice(0, 21)}..
-              </Text>
-            </View>
-            <TouchableOpacity
-              onPress={() => handleVisitCrwd(item.id)}
-              style={{backgroundColor: PrimaryGreen, paddingVertical: 10, paddingHorizontal: 15 , borderRadius: 10}}
-            >
-              <Text style={{color: 'white'}}>Learn More</Text>
-            </TouchableOpacity>
-          </TouchableOpacity>
+
+      {isLoading ? (
+        <View style={{ padding: 20, alignItems: 'center' }}>
+          <ActivityIndicator size="large" color={PrimaryBlue} />
+          <Text style={{ marginTop: 10, color: PrimaryGrey }}>Loading collectives...</Text>
+        </View>
+      ) : error ? (
+        <View style={{ padding: 20, alignItems: 'center' }}>
+          <Text style={{ color: 'red', textAlign: 'center' }}>
+            Failed to load collectives. Please try again.
+          </Text>
+        </View>
+      )
+        :
+        collectives.length === 0 ? (
+          <View style={{ padding: 20, alignItems: 'center' }}>
+            <Text style={{ color: 'grey', textAlign: 'center' }}>
+              No collectives found.
+            </Text>
+          </View>
+        ) : (
+          <FlatList ref={flatListRef} data={collectives.slice(0, 10)} horizontal={true} pagingEnabled={true} showsHorizontalScrollIndicator={false}
+            getItemLayout={(data, index) => ({ length: 200, offset: 200 * index, index,
+            })} renderItem={({ item }) => ( <TouchableOpacity
+                onPress={() => handleVisitCrwd(item.id)} style={{
+                  marginHorizontal: 10, marginBottom: 10, alignItems: 'center', gap: 10, backgroundColor: '#f9fafb',
+                  borderRadius: 16, padding: 16,}} >
+
+                <Avatar size={40}>
+                  <AvatarImage src={item.image} />
+                  <AvatarFallback>
+                    {item?.name?.split(' ')[0][0]?.toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+
+                <View style={{ alignItems: 'center', marginBottom: 10 }}>
+                  <Text style={{ fontSize: 14, fontWeight: '500' }}>{item.name}</Text>
+                  <Text style={{ fontSize: 12, color: 'grey' }}>{item.members}</Text>
+                  <Text style={{ fontSize: 12, color: 'grey', width: 150, textAlign: 'center' }}>
+                    {item.description?.slice(0, 21)}..
+                  </Text>
+                </View>
+
+                <TouchableOpacity
+                  onPress={() => handleVisitCrwd(item.id)}
+                  style={{ backgroundColor: PrimaryGreen, paddingVertical: 10, paddingHorizontal: 15, borderRadius: 10 }}
+                >
+                  <Text style={{ color: 'white' }}>Learn More</Text>
+                </TouchableOpacity>
+              </TouchableOpacity>
+            )}
+          />
         )}
-      />
-    )}
     </>
   )
 }

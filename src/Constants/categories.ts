@@ -1,29 +1,60 @@
 export const categories = [
-    { id: "", name: "All", text: "#000000", background: "#f5f5f5" }, // no match in CATEGORIES
-    { id: "D", name: "Animals", text: "#E36414", background: "#FFE9DC" }, // "Animal" -> "Animals"
-    { id: "A", name: "Arts", text: "#FF6B6B", background: "#FFECEC" }, // "Arts & Culture"
-    { id: "S", name: "Community", text: "#06D6A0", background: "#D6FAF0" },
-    { id: "B", name: "Education", text: "#FFB84D", background: "#FFF3E0" },
-    { id: "C", name: "Environment", text: "#6A994E", background: "#E8F4E4" },
-    { id: "K", name: "Food", text: "#FF9F1C", background: "#FFF0D9" }, // "Food & Agriculture" shortened
-    { id: "Z", name: "General", text: "#ADB5BD", background: "#F3F4F6" }, // no clear match — possibly "Unknown" (Z)
-    { id: "Q", name: "Global", text: "#48CAE4", background: "#D7F0FB" },
-    { id: "E", name: "Health", text: "#D62828", background: "#FFE5E5" }, // "Health Care" shortened
-    { id: "L", name: "Housing", text: "#8D6E63", background: "#F5E9E3" }, // "Housing & Shelter"
-    { id: "J", name: "Jobs", text: "#6C757D", background: "#ECEFF1" }, // "Employment" shortened
-    { id: "I", name: "Legal", text: "#FFBE0B", background: "#FFF7D6" }, // "Legal & Reform"
-    { id: "Y", name: "Membership", text: "#5E6472", background: "#EBEDF1" }, // "Mutual & Membership Benefit"
-    { id: "F", name: "Mental", text: "#9D4EDD", background: "#F3E8FA" }, // "Mental Health"
-    { id: "T", name: "Philanthropy", text: "#FF006E", background: "#FFE0ED" },
-    { id: "W", name: "Public", text: "#2A9D8F", background: "#D6F4F1" }, // ambiguous — maybe "Human Services (P)" or "Community (S)"
-    { id: "M", name: "Relief", text: "#F94144", background: "#FFE3E3" },
-    { id: "X", name: "Religion", text: "#E9C46A", background: "#FFF7E0" },
-    { id: "H", name: "Research", text: "#3A86FF", background: "#DDE8FF" }, // "Medical Research"
-    { id: "R", name: "Rights", text: "#780000", background: "#FFDADA" }, // "Civil Rights & Advocacy"
-    { id: "U", name: "Science", text: "#023E8A", background: "#D7E3FF" }, // "Science & Technology"
-    { id: "P", name: "Services", text: "#3F37C9", background: "#E2E0FA" }, // "Human Services"
-    { id: "V", name: "Society", text: "#577590", background: "#EAF0F5" }, // "Social Science" loosely matches
-    { id: "N", name: "Sports", text: "#90BE6D", background: "#EBF6E2" }, // "Recreation and Sports"
-    { id: "G", name: "Wellness", text: "#F28482", background: "#FFEAEA" },
-    { id: "O", name: "Youth", text: "#4CC9F0", background: "#E0F7FF" }, // "Youth Development"
+    { id: "", name: "All", text: "#000000", background: "#f5f5f5", image: require('../assets/icons/search.png') },
+    { id: "D", name: "Animals", text: "#E36414", background: "#FFE9DC", image: require('../assets/icons/home.png') },
+    { id: "A", name: "Arts", text: "#FF6B6B", background: "#FFECEC", image: require('../assets/icons/user.png') },
+    { id: "S", name: "Community", text: "#06D6A0", background: "#D6FAF0", image: require('../assets/icons/box.png') },
+    { id: "B", name: "Education", text: "#FFB84D", background: "#FFF3E0", image: require('../assets/icons/home-fill.png') },
+    { id: "C", name: "Environment", text: "#6A994E", background: "#E8F4E4", image: require('../assets/icons/bell.png') },
+    { id: "K", name: "Food", text: "#FF9F1C", background: "#FFF0D9", image: require('../assets/icons/forward.png') },
+    { id: "Z", name: "General", text: "#ADB5BD", background: "#F3F4F6", image: require('../assets/icons/search-fill.png') },
+    { id: "Q", name: "Global", text: "#48CAE4", background: "#D7F0FB", image: require('../assets/icons/bell-fill.png') },
+    { id: "E", name: "Health", text: "#D62828", background: "#FFE5E5", image: require('../assets/icons/user-fill.png') },
+    { id: "L", name: "Housing", text: "#8D6E63", background: "#F5E9E3", image: require('../assets/icons/home.png') },
+    { id: "J", name: "Jobs", text: "#6C757D", background: "#ECEFF1", image: require('../assets/icons/search.png') },
+    { id: "I", name: "Legal", text: "#FFBE0B", background: "#FFF7D6", image: require('../assets/icons/box.png') },
+    { id: "Y", name: "Membership", text: "#5E6472", background: "#EBEDF1", image: require('../assets/icons/user.png') },
+    { id: "F", name: "Mental", text: "#9D4EDD", background: "#F3E8FA", image: require('../assets/icons/home-fill.png') },
+    { id: "T", name: "Philanthropy", text: "#FF006E", background: "#FFE0ED", image: require('../assets/icons/forward.png') },
+    { id: "W", name: "Public", text: "#2A9D8F", background: "#D6F4F1", image: require('../assets/icons/bell.png') },
+    { id: "M", name: "Relief", text: "#F94144", background: "#FFE3E3", image: require('../assets/icons/search-fill.png') },
+    { id: "X", name: "Religion", text: "#E9C46A", background: "#FFF7E0", image: require('../assets/icons/bell-fill.png') },
+    { id: "H", name: "Research", text: "#3A86FF", background: "#DDE8FF", image: require('../assets/icons/user-fill.png') },
+    { id: "R", name: "Rights", text: "#780000", background: "#FFDADA", image: require('../assets/icons/home.png') },
+    { id: "U", name: "Science", text: "#023E8A", background: "#D7E3FF", image: require('../assets/icons/search.png') },
+    { id: "P", name: "Services", text: "#3F37C9", background: "#E2E0FA", image: require('../assets/icons/box.png') },
+    { id: "V", name: "Society", text: "#577590", background: "#EAF0F5", image: require('../assets/icons/user.png') },
+    { id: "N", name: "Sports", text: "#90BE6D", background: "#EBF6E2", image: require('../assets/icons/home-fill.png') },
+    { id: "G", name: "Wellness", text: "#F28482", background: "#FFEAEA", image: require('../assets/icons/forward.png') },
+    { id: "O", name: "Youth", text: "#4CC9F0", background: "#E0F7FF", image: require('../assets/icons/bell.png') },
+  ];
+
+
+export const categoriesList = [
+    // { id: "", name: "All", text: "#000000", background: "#f5f5f5", image: require('../assets/icons/search.png') },
+    { id: "D", name: "Animals", text: "#E36414", background: "#FFE9DC", image: require('../assets/categories/animal.jpg') },
+    { id: "A", name: "Arts", text: "#FF6B6B", background: "#FFECEC", image: require('../assets/categories/Arts.jpg') },
+    { id: "S", name: "Community", text: "#06D6A0", background: "#D6FAF0", image: require('../assets/categories/Community.jpg') },
+    { id: "B", name: "Education", text: "#FFB84D", background: "#FFF3E0", image: require('../assets/categories/Education.png') },
+    { id: "C", name: "Environment", text: "#6A994E", background: "#E8F4E4", image: require('../assets/categories/Environment.jpg') },
+    { id: "K", name: "Food", text: "#FF9F1C", background: "#FFF0D9", image: require('../assets/categories/Food.jpg') },
+    { id: "Z", name: "General", text: "#ADB5BD", background: "#F3F4F6", image: require('../assets/categories/General.jpg') },
+    { id: "Q", name: "Global", text: "#48CAE4", background: "#D7F0FB", image: require('../assets/categories/Global.png') },
+    { id: "E", name: "Health", text: "#D62828", background: "#FFE5E5", image: require('../assets/categories/Health.jpg') },
+    { id: "L", name: "Housing", text: "#8D6E63", background: "#F5E9E3", image: require('../assets/categories/Housing.jpg') },
+    { id: "J", name: "Jobs", text: "#6C757D", background: "#ECEFF1", image: require('../assets/categories/Jobs.jpeg') },
+    { id: "I", name: "Legal", text: "#FFBE0B", background: "#FFF7D6", image: require('../assets/categories/Legal.jpeg') },
+    { id: "Y", name: "Membership", text: "#5E6472", background: "#EBEDF1", image: require('../assets/categories/Membership.jpg') },
+    { id: "F", name: "Mental", text: "#9D4EDD", background: "#F3E8FA", image: require('../assets/categories/Mental.jpg') },
+    // { id: "T", name: "Philanthropy", text: "#FF006E", background: "#FFE0ED", image: require('../assets/icons/forward.png') },
+    // { id: "W", name: "Public", text: "#2A9D8F", background: "#D6F4F1", image: require('../assets/icons/bell.png') },
+    // { id: "M", name: "Relief", text: "#F94144", background: "#FFE3E3", image: require('../assets/icons/search-fill.png') },
+    // { id: "X", name: "Religion", text: "#E9C46A", background: "#FFF7E0", image: require('../assets/icons/bell-fill.png') },
+    // { id: "H", name: "Research", text: "#3A86FF", background: "#DDE8FF", image: require('../assets/icons/user-fill.png') },
+    // { id: "R", name: "Rights", text: "#780000", background: "#FFDADA", image: require('../assets/icons/home.png') },
+    // { id: "U", name: "Science", text: "#023E8A", background: "#D7E3FF", image: require('../assets/icons/search.png') },
+    // { id: "P", name: "Services", text: "#3F37C9", background: "#E2E0FA", image: require('../assets/icons/box.png') },
+    // { id: "V", name: "Society", text: "#577590", background: "#EAF0F5", image: require('../assets/icons/user.png') },
+    // { id: "N", name: "Sports", text: "#90BE6D", background: "#EBF6E2", image: require('../assets/icons/home-fill.png') },
+    // { id: "G", name: "Wellness", text: "#F28482", background: "#FFEAEA", image: require('../assets/icons/forward.png') },
+    // { id: "O", name: "Youth", text: "#4CC9F0", background: "#E0F7FF", image: require('../assets/icons/bell.png') },
   ];

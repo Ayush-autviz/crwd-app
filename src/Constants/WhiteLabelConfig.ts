@@ -1,7 +1,7 @@
 import { ImageSourcePropType } from "react-native";
 
 export const WhiteLabelConfig = {
-    AppName: "Autviz",
+    AppName: "Donorly",
     AppLogo: require("../assets/logo/main.png") as ImageSourcePropType,
     BaseUrl: "http://ec2-65-0-54-143.ap-south-1.compute.amazonaws.com:8200",
 

@@ -311,7 +311,7 @@ export default function CreateCRWD() {
 
         <View style={styles.successContainer}>
           <Image
-            source={require('../assets/logo/CRWD.png')}
+            source={require('../assets/logo/Donorly.png')}
             style={styles.successLogo}
             resizeMode="contain"
           />

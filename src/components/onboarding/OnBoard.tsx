@@ -331,7 +331,7 @@ export default function OnBoard() {
 
         {/* Logo */}
         {/* <Image
-          source={require('../../assets/logo/CRWD.png')}
+          source={require('../../assets/logo/Donorly.png')}
           style={{
             width: '50%',
             height: 60,

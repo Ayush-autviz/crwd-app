@@ -9,7 +9,7 @@ interface AvatarProps {
 }
 
 interface AvatarImageProps {
-  src?: string;
+  src?: string | number;
   alt?: string;
   style?: ImageStyle;
   onError?: () => void;
@@ -50,6 +50,16 @@ export function AvatarImage({ src, alt, style, onError, ...props }: AvatarImageP
 
   if (!src || imageError) {
     return null;
+  }
+
+  if (typeof src === 'number') {
+    return (
+      <Image
+        source={src}
+        style={[styles.avatarImage, style]}
+        {...props}
+      />
+    );
   }
 
   return (

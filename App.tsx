@@ -18,7 +18,7 @@ import CreateCRWD from './src/screens/CreateCRWD'
 import YourCRWDs from './src/screens/YourCRWDs'
 import Saved from './src/screens/Saved'
 import CustomDrawerContent from './src/components/drawer/CustomDrawerContent'
-import { LightGrey, PrimaryGrey } from './src/Constants/Colors'
+import { LightGrey, PrimaryGrey, PrimaryDark } from './src/Constants/Colors'
 import Settings from './src/screens/Settings'
 import TransactionHistory from './src/screens/TransactionHistory'
 import GroupCRWD from './src/screens/GroupCRWD'
@@ -163,8 +163,8 @@ useEffect(() => {
     return (
       <Tab.Navigator screenOptions={({route}) => ({
         headerShown: false,
-        tabBarActiveTintColor: '#000',
-        tabBarInactiveTintColor: '#000',
+        tabBarActiveTintColor: PrimaryDark,
+        tabBarInactiveTintColor: PrimaryGrey,
        // tabBarStyle: route.name === 'Donation' ? { display: 'none' } : undefined,
         tabBarIcon: ({focused}) => {
           if (route.name === 'Home') {

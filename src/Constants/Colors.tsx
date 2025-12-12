@@ -16,3 +16,4 @@ export const TertiaryBlue = WhiteLabelConfig.Colors.TertiaryBlue;
 
 export const PrimaryGreen = WhiteLabelConfig.Colors.PrimaryGreen;
 export const SecondaryGreen = WhiteLabelConfig.Colors.SecondaryGreen;
+export const PrimaryDark = WhiteLabelConfig.Colors.PrimaryDark;

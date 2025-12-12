@@ -16,14 +16,33 @@ export const WhiteLabelConfig = {
     //     SecondaryGreen: "#e6f7e6",
     // },
 
+    // Colors: {
+    //     LightGrey: "#F4F6FB",
+    //     PrimaryGrey: "#2B2F3A",
+    //     SecondaryGrey: "#9AA0AB",
+    //     PrimaryBlue: "#3B1F9E",
+    //     SecondaryBlue: "#F2ECFF",
+    //     TertiaryBlue: "#C7B8FF",
+    //     PrimaryGreen: "#FF7A59",
+    //     SecondaryGreen: "#FFF2EE",
+    // },
+
     Colors: {
-        LightGrey: "#F4F6FB",
+        // Backgrounds & neutrals
+        LightGrey: "#F5F7FA",
         PrimaryGrey: "#2B2F3A",
-        SecondaryGrey: "#9AA0AB",
-        PrimaryBlue: "#3B1F9E",
-        SecondaryBlue: "#F2ECFF",
-        TertiaryBlue: "#C7B8FF",
-        PrimaryGreen: "#FF7A59",
-        SecondaryGreen: "#FFF2EE",
-    },
+        SecondaryGrey: "#9BA1AC",
+
+        // Brand colors extracted from logo
+        PrimaryBlue: "#0095C7",
+        SecondaryBlue: "#D8F4FF",
+        TertiaryBlue: "#BEE8F8",
+
+        PrimaryGreen: "#5CC14A",
+        SecondaryGreen: "#E6F8E9",
+
+        // Text color from "Donorly" wordmark
+        PrimaryDark: "#093A53",
+    }
+
 };

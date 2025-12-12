@@ -1,7 +1,7 @@
 import { View, Text, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native'
 import React, { useRef, useEffect } from 'react'
 import { useNavigation } from '@react-navigation/native'
-import { PrimaryBlue, PrimaryGreen, PrimaryGrey } from '../Constants/Colors'
+import { PrimaryBlue, PrimaryGreen, PrimaryGrey, LightGrey, PrimaryDark } from '../Constants/Colors'
 import { ChevronRight } from 'lucide-react-native';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/Avatar';
 
@@ -36,7 +36,7 @@ export default function SuggestedCrwd({ collectives = [], isLoading = false, err
   return (
     <>
       <View style={{ marginVertical: 20, flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-        <Text style={{ fontSize: 17, fontWeight: 'bold' }}>Discover giving in action</Text>
+        <Text style={{ fontSize: 17, fontWeight: 'bold', color: PrimaryDark }}>Discover giving in action</Text>
         <TouchableOpacity onPress={() => navigation.navigate('CreateCRWD' as never)}>
           <ChevronRight color={PrimaryBlue} size={19} style={{ marginTop: 1 }} />
         </TouchableOpacity>
@@ -57,7 +57,7 @@ export default function SuggestedCrwd({ collectives = [], isLoading = false, err
         :
         collectives.length === 0 ? (
           <View style={{ padding: 20, alignItems: 'center' }}>
-            <Text style={{ color: 'grey', textAlign: 'center' }}>
+            <Text style={{ color: PrimaryGrey, textAlign: 'center' }}>
               No collectives found.
             </Text>
           </View>
@@ -66,7 +66,7 @@ export default function SuggestedCrwd({ collectives = [], isLoading = false, err
             getItemLayout={(data, index) => ({ length: 200, offset: 200 * index, index,
             })} renderItem={({ item }) => ( <TouchableOpacity
                 onPress={() => handleVisitCrwd(item.id)} style={{
-                  marginHorizontal: 10, marginBottom: 10, alignItems: 'center', gap: 10, backgroundColor: '#f9fafb',
+                  marginHorizontal: 10, marginBottom: 10, alignItems: 'center', gap: 10, backgroundColor: LightGrey,
                   borderRadius: 16, padding: 16,}} >
 
                 <Avatar size={40}>
@@ -78,8 +78,8 @@ export default function SuggestedCrwd({ collectives = [], isLoading = false, err
 
                 <View style={{ alignItems: 'center', marginBottom: 10 }}>
                   <Text style={{ fontSize: 14, fontWeight: '500' }}>{item.name}</Text>
-                  <Text style={{ fontSize: 12, color: 'grey' }}>{item.members}</Text>
-                  <Text style={{ fontSize: 12, color: 'grey', width: 150, textAlign: 'center' }}>
+                  <Text style={{ fontSize: 12, color: PrimaryGrey }}>{item.members}</Text>
+                  <Text style={{ fontSize: 12, color: PrimaryGrey, width: 150, textAlign: 'center' }}>
                     {item.description?.slice(0, 21)}..
                   </Text>
                 </View>

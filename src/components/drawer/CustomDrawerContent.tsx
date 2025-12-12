@@ -1,12 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  StyleSheet,
-  Image,
-} from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Image, } from 'react-native';
 import { DrawerContentScrollView, DrawerContentComponentProps } from '@react-navigation/drawer';
 import { navigationGroups } from '../../Constants/navigationItems';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -39,12 +32,6 @@ export default function CustomDrawerContent(props: DrawerContentComponentProps) 
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Profile Section */}
-      {/* <View style={styles.profileSection}> */}
-      {/* <Image
-          source={{ uri: 'https://randomuser.me/api/portraits/women/44.jpg' }}
-          style={styles.profileImage}
-        /> */}
       {currentUser?.id ? (
         <View style={styles.profileSection}>
           <Avatar>
@@ -55,9 +42,6 @@ export default function CustomDrawerContent(props: DrawerContentComponentProps) 
           </Avatar>
           <View style={styles.profileInfo}>
             <Text style={styles.profileName}>My Name is {currentUser?.first_name}</Text>
-            {/* <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
-            <Text style={styles.profileLink}>Go to your profile</Text>
-          </TouchableOpacity> */}
           </View>
           <TouchableOpacity
             onPress={() => navigation.navigate('Activity')}

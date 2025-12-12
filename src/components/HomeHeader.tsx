@@ -11,7 +11,6 @@ import { useAuthStore } from '../store/store';
 type RootStackParamList = {
     Post: undefined;
     Donation: undefined;
-    // ... other screens
     Circles: undefined;
 };
 
@@ -54,16 +53,6 @@ export default function HomeHeader({ show = false, menu = true, post = true }) {
                 <Search size={20} color={PrimaryGrey} />
             </TouchableOpacity>
             <View style={{ flexDirection: 'row', gap: 10 }}>
-                {/* <TouchableOpacity onPress={handlePostPress} disabled={!post}>
-                        <Plus color={post ? '#000' : '#fff'} />
-                    </TouchableOpacity>  */}
-
-                {/* <TouchableOpacity style={{ backgroundColor: PrimaryGreen, padding: 5, borderRadius: 8 }} onPress={() => navigation.navigate('Circles')}>
-                    <Text style={{ color: 'white', fontSize: 14, fontWeight: 'bold' }}>Collectives</Text>
-                </TouchableOpacity> */}
-
-
-
                 <View style={{ position: 'relative' }}>
                     <TouchableOpacity onPress={handleMenuPress} disabled={!menu}>
                         <AlignJustify color={menu ? '#000' : '#fff'} />
@@ -72,12 +61,6 @@ export default function HomeHeader({ show = false, menu = true, post = true }) {
                         <View style={{ position: 'absolute', top: -2, right: -6, width: 8, height: 8, borderRadius: 4, backgroundColor: 'red' }} />
                     )}
                 </View>
-
-
-
-
-
-
             </View>
         </SafeAreaView>
     )

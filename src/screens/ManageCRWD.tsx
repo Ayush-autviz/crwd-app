@@ -16,7 +16,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { ChevronLeft, Users, ChevronRight, Trash2, Plus, Menu, Share2, Search } from 'lucide-react-native'
 import { useNavigation } from '@react-navigation/native'
-import { PrimaryGrey, PrimaryBlue, LightGrey } from '../Constants/Colors'
+import { PrimaryGrey, PrimaryBlue, LightGrey, PrimaryDark } from '../Constants/Colors'
 import MainHeaderNav from '../components/MainHeaderNav'
 import { useToast } from '../contexts/ToastContext'
 import { Edit2 } from 'lucide-react-native'
@@ -550,7 +550,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     fontSize: 16,
-    color: '#111827',
+    color: PrimaryDark,
     backgroundColor: '#f9fafb',
   },
   textareaInput: {
@@ -692,7 +692,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   previousCauseItem: {
-    backgroundColor: '#f3f4f6',
+    backgroundColor: LightGrey,
   },
   causeAvatar: {
     width: 24,
@@ -731,7 +731,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#111827',
+    color: PrimaryDark,
   },
   modalList: {
     paddingHorizontal: 20,

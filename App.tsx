@@ -16,6 +16,8 @@ import Search2 from './src/screens/Search2'
 import DonationScreen from './src/screens/DonationScreen'
 import ManageDonationBoxScreen from './src/components/donation/ManageDonationBox'
 import CreateCRWD from './src/screens/CreateCRWD'
+import NewCreateCollective from './src/screens/NewCreateCollective'
+import NewEditCollective from './src/screens/NewEditCollective'
 import YourCRWDs from './src/screens/YourCRWDs'
 import Saved from './src/screens/Saved'
 import CustomDrawerContent from './src/components/drawer/CustomDrawerContent'
@@ -27,6 +29,8 @@ import NewGroupCrwd from './src/screens/NewGroupCrwd'
 import CauseScreen from './src/screens/CauseScreen'
 import NewCause from './src/screens/NewCause'
 import NewSearch from './src/screens/NewSearch'
+import Articles from './src/screens/Articles'
+import ArticleDetail from './src/screens/ArticleDetail'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import Email from './src/components/settings/Email'
 import Password from './src/components/settings/Password'
@@ -246,7 +250,7 @@ useEffect(() => {
         }}
       >
         <Drawer.Screen name="MainTabs" component={BottomTabs} />
-        <Drawer.Screen name="CreateCRWD" component={CreateCRWD} />
+        <Drawer.Screen name="CreateCRWD" component={NewCreateCollective} />
         <Drawer.Screen name="YourCRWDs" component={YourCRWDs} />
         <Drawer.Screen name="Saved" component={Saved} />
         <Drawer.Screen name="Donation" component={DonationScreen} />
@@ -290,7 +294,7 @@ useEffect(() => {
         <Stack.Screen name="Statistics" component={Statistics} />
         <Stack.Screen name="Members" component={Members} />
         <Stack.Screen name="CRWDScreen" component={CRWDScreen} />
-        <Stack.Screen name="ManageCRWD" component={ManageCRWD} />
+        <Stack.Screen name="ManageCRWD" component={NewEditCollective} />
         <Stack.Screen name="Interests" component={Interests} />
         <Stack.Screen name="UserProfile" component={UserProfile} />
         <Stack.Screen name="Circles" component={Circles} />
@@ -299,6 +303,8 @@ useEffect(() => {
         <Stack.Screen name='Activity' component={Activity} />
         <Stack.Screen name="Post" component={Post} />
         <Stack.Screen name="ManageDonationBox" component={ManageDonationBoxScreen} />
+        <Stack.Screen name="Articles" component={Articles} />
+        <Stack.Screen name="ArticleDetail" component={ArticleDetail} />
       </Stack.Navigator>
     )
   }

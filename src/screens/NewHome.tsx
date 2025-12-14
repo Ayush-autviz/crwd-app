@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,15 +6,18 @@ import {
   StyleSheet,
   ActivityIndicator,
   TouchableOpacity,
+  Platform,
+  PermissionsAndroid,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useQuery, useQueries } from '@tanstack/react-query';
+import { useQuery, useQueries, useMutation } from '@tanstack/react-query';
 import { useNavigation } from '@react-navigation/native';
 import { useAuthStore } from '../store/store';
 import { getCollectives, getCauses } from '../services/api/crwd';
 import { getDonationBox } from '../services/api/donation';
-import { getNotifications } from '../services/api/notification';
+import { getNotifications, registerNotificationToken } from '../services/api/notification';
 import { getUserProfileById } from '../services/api/social';
+import messaging from '@react-native-firebase/messaging';
 import HomeHeader from '../components/HomeHeader';
 import HelloGreeting from '../components/newHome/HelloGreeting';
 import MyDonationBoxCard from '../components/newHome/MyDonationBoxCard';
@@ -25,10 +28,73 @@ import NewFeaturedNonprofits from '../components/newHome/NewFeaturedNonprofits';
 import CommunityUpdates from '../components/newHome/CommunityUpdates';
 import ExploreCards from '../components/newHome/ExploreCards';
 import Footer from '../components/Footer';
+import GuestHome from '../components/GuestHome';
 
 export default function NewHome() {
   const { user, token } = useAuthStore();
   const navigation = useNavigation();
+
+  // FCM token send to backend
+  const sendFcmTokenToBackend = useMutation({
+    mutationFn: registerNotificationToken,
+    onSuccess: (data) => {
+      console.log('FCM token sent to backend successfully:', data);
+    },
+    onError: (error: any) => {
+      console.error('Error sending FCM token to backend:', error);
+    },
+  });
+
+  const requestNotificationPermission = async () => {
+    if (Platform.OS === 'android') {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+      );
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        console.log('Notification permission granted');
+        return true;
+      } else {
+        console.log('Notification permission denied');
+        return false;
+      }
+    }
+    return true; // iOS doesn't need explicit permission request here
+  };
+
+  const getFcmTokenAndSendToBackend = async () => {
+    try {
+      // Only proceed if user is logged in
+      if (!user?.id || !token?.access_token) {
+        console.log('User not logged in, skipping FCM token registration');
+        return;
+      }
+
+      // Request permission first
+      const hasPermission = await requestNotificationPermission();
+      if (!hasPermission) {
+        console.log('Cannot get FCM token: permission denied');
+        return;
+      }
+
+      // Get FCM token from Firebase
+      await messaging().registerDeviceForRemoteMessages();
+      const fcmToken = await messaging().getToken();
+      console.log('FCM TOKEN in NewHome:', fcmToken);
+      
+      // Only send to backend if token exists and is not empty
+      if (fcmToken && fcmToken.trim().length > 0) {
+        sendFcmTokenToBackend.mutate({ token: fcmToken, device_type: Platform.OS === 'ios' ? 'ios' : 'android' });
+      } else {
+        console.log('FCM token is empty, skipping API call');
+      }
+    } catch (error) {
+      console.error('❌ Error getting FCM token:', error);
+    }
+  };
+
+  useEffect(() => {
+    getFcmTokenAndSendToBackend();
+  }, [user?.id, token?.access_token]);
 
   // Fetch collectives data using React Query
   const { data: collectivesData, isLoading: collectivesLoading } = useQuery({
@@ -334,8 +400,7 @@ export default function NewHome() {
   const remainingUpdates = transformedCommunityUpdates.slice(4);
 
   if (!user?.id) {
-    // TODO: Show guest home or redirect
-    return null;
+    return <GuestHome />;
   }
 
   return (
@@ -449,7 +514,9 @@ export default function NewHome() {
           <ExploreCards />
 
           {/* Footer */}
-          <Footer />
+          <Footer>
+            <View />
+          </Footer>
         </View>
       </ScrollView>
     </SafeAreaView>

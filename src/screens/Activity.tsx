@@ -40,7 +40,7 @@ const formatTimeAgo = (dateString: string): string => {
 export default function Activity() {
     const route = useRoute()
     const {tab}: any = route.params ?? 'community'
-    const [activeTab, setActiveTab] = useState<'community' | 'notifications'>(tab ?? 'community')
+    const [activeTab, setActiveTab] = useState<'community' | 'notifications'>(tab ?? 'notifications')
     const navigation = useNavigation()
     const { user: currentUser } = useAuthStore();
     const queryClient = useQueryClient();
@@ -615,7 +615,7 @@ export default function Activity() {
             <MainHeaderNav show menu={false} title={'Notifications'}  />
             
             {/* Tab Headers */}
-            <View style={{ flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: LightGrey }}>
+            {/* <View style={{ flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: LightGrey }}>
                 <TouchableOpacity
                     onPress={() => setActiveTab('community')}
                     style={{
@@ -650,10 +650,6 @@ export default function Activity() {
                         gap: 8
                     }}
                 >
-                    {/* Red dot notification indicator - show only if there are unread notifications */}
-                    {/* {hasUnreadNotifications && (
-                        <View style={{ width: 8, height: 8, backgroundColor: '#EF4444', borderRadius: 4 }} />
-                    )} */}
                     <Text style={{
                         fontSize: 14,
                         fontWeight: '500',
@@ -662,7 +658,7 @@ export default function Activity() {
                         Notifications
                     </Text>
                 </TouchableOpacity>
-            </View>
+            </View> */}
 
             {/* Tab Content */}
             <View style={{ flex: 1 }}>

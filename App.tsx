@@ -5,6 +5,7 @@ import { NavigationContainer } from '@react-navigation/native'
 import { navigationRef } from './src/navigation/navigationRef'
 import { createDrawerNavigator } from '@react-navigation/drawer'
 import Home from './src/screens/Home'
+import NewHome from './src/screens/NewHome'
 import { ToastProvider } from './src/contexts/ToastContext'
 import Post from './src/screens/Post'
 import Activity from './src/screens/Activity'
@@ -22,7 +23,10 @@ import { LightGrey, PrimaryGrey, PrimaryBlue } from './src/Constants/Colors'
 import Settings from './src/screens/Settings'
 import TransactionHistory from './src/screens/TransactionHistory'
 import GroupCRWD from './src/screens/GroupCRWD'
+import NewGroupCrwd from './src/screens/NewGroupCrwd'
 import CauseScreen from './src/screens/CauseScreen'
+import NewCause from './src/screens/NewCause'
+import NewSearch from './src/screens/NewSearch'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import Email from './src/components/settings/Email'
 import Password from './src/components/settings/Password'
@@ -216,8 +220,8 @@ useEffect(() => {
           }
         }
       })}>
-        <Tab.Screen name="Home" component={Home} options={{ tabBarLabel: 'Home' }} />
-        <Tab.Screen name="Search" component={SearchScreen} options={{ tabBarLabel: 'Search' }} />
+        <Tab.Screen name="Home" component={NewHome} options={{ tabBarLabel: 'Home' }} />
+        <Tab.Screen name="Search" component={NewSearch} options={{ tabBarLabel: 'Search' }} />
         <Tab.Screen name="Donate" component={DonationScreen} options={{ tabBarLabel: 'Donate' }} />
         <Tab.Screen name="Collectives" component={Circles} options={{ tabBarLabel: 'Collectives' }} />
         <Tab.Screen name="Profile" component={Profile} options={{ tabBarLabel: 'Profile' }} />
@@ -269,8 +273,9 @@ useEffect(() => {
         <Stack.Screen name="VerificationCode" component={VerificationCode} />
         <Stack.Screen name="ResetPassword" component={ResetPassword} />
         {/* <Stack.Screen name="DrawerNav" component={DrawerNavigator} /> */}
-        <Stack.Screen name="GroupCRWD" component={GroupCRWD} />
-        <Stack.Screen name="CauseScreen" component={CauseScreen} />
+        <Stack.Screen name="GroupCRWD" component={NewGroupCrwd} />
+        <Stack.Screen name="CauseScreen" component={NewCause} />
+        <Stack.Screen name="NewSearch" component={NewSearch} />
         <Stack.Screen name="Search2" component={Search2} />
         <Stack.Screen name="Email" component={Email} />
         <Stack.Screen name="Password" component={Password} />
@@ -289,7 +294,7 @@ useEffect(() => {
         <Stack.Screen name="Interests" component={Interests} />
         <Stack.Screen name="UserProfile" component={UserProfile} />
         <Stack.Screen name="Circles" component={Circles} />
-        <Stack.Screen name='Search' component={SearchScreen} />
+        <Stack.Screen name='Search' component={NewSearch} />
         <Stack.Screen name="NewSettings" component={NewSettings} />
         <Stack.Screen name='Activity' component={Activity} />
         <Stack.Screen name="Post" component={Post} />

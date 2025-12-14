@@ -53,7 +53,7 @@ export default function HomeHeader({ show = false, menu = true, post = true }) {
                     <Search size={20} color={PrimaryGrey} />
             </TouchableOpacity> */}
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-               {/* <TouchableOpacity onPress={handlePostPress} disabled={!post}>
+                {/* <TouchableOpacity onPress={handlePostPress} disabled={!post}>
                         <Plus color={post ? '#000' : '#fff'} />
                     </TouchableOpacity>  */}
 
@@ -61,47 +61,51 @@ export default function HomeHeader({ show = false, menu = true, post = true }) {
                     <Text style={{ color: 'white', fontSize: 14, fontWeight: 'bold' }}>Collectives</Text>
                 </TouchableOpacity> */}
 
-                
-<TouchableOpacity
-          onPress={() => navigation.navigate('Activity' as never)}
-          activeOpacity={0.8}
-          style={{ padding: 6, position: 'relative', backgroundColor: '#FFE6E6', borderRadius: 100}}
-        >
-          <Bell size={20} color="#111827" />
-          {unreadCount?.data > 0 && currentUser?.id && (
-          <View
-            style={{
-              position: 'absolute',
-              top: -2,
-              right: -4,
-              backgroundColor: 'red',
-              borderRadius: 8,
-              minWidth: 16,
-              height: 16,
-              alignItems: 'center',
-              justifyContent: 'center',
-              paddingHorizontal: 3,
-            }}
-          >
-            <Text style={{ color: 'white', fontSize: 10, fontWeight: '700' }}>{unreadCount?.data}</Text>
-          </View>
-          )}
-        </TouchableOpacity>
-            
-             {/* <View style={{ position: 'relative' }}>
-                    <TouchableOpacity onPress={handleMenuPress} disabled={!menu}>
+                {currentUser?.id && (
+                    <>
+                        <TouchableOpacity
+                            onPress={() => navigation.navigate('Activity' as never)}
+                            activeOpacity={0.8}
+                            style={{ padding: 6, position: 'relative', backgroundColor: '#FFE6E6', borderRadius: 100 }}
+                        >
+                            <Bell size={20} color="#111827" />
+                            {unreadCount?.data > 0 && currentUser?.id && (
+                                <View
+                                    style={{
+                                        position: 'absolute',
+                                        top: -2,
+                                        right: -6,
+                                        backgroundColor: 'red',
+                                        borderRadius: 8,
+                                        minWidth: 16,
+                                        height: 16,
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        paddingHorizontal: 3,
+                                    }}
+                                >
+                                    <Text style={{ color: 'white', fontSize: 10, fontWeight: '700' }}>{unreadCount?.data}</Text>
+                                </View>
+                            )}
+                        </TouchableOpacity>
+
+                        {/* <View style={{ position: 'relative' }}>
+                        <TouchableOpacity onPress={handleMenuPress} disabled={!menu}>
                         <AlignJustify color={menu ? '#000' : '#fff'} />
-                    </TouchableOpacity>
-                    {unreadCount?.data > 0 && currentUser?.id && (
-                        <View style={{ position: 'absolute', top: -2, right: -6, width: 8, height: 8, borderRadius: 4, backgroundColor: 'red' }} />
-                    )}
-                </View> */}
+                         </TouchableOpacity>
+                         {unreadCount?.data > 0 && currentUser?.id && (
+                            <View style={{ position: 'absolute', top: -2, right: -6, width: 8, height: 8, borderRadius: 4, backgroundColor: 'red' }} />
+                        )}
+                        </>
+                        </View> */}
 
 
-                <TouchableOpacity onPress={() => navigation.navigate('NewSettings' as never)} >
-                    <Settings size={24} color="#111827" />
-                </TouchableOpacity>
+                        <TouchableOpacity onPress={() => navigation.navigate('NewSettings' as never)} >
+                            <Settings size={24} color="#111827" />
+                        </TouchableOpacity>
 
+                    </>
+                )}
 
 
 

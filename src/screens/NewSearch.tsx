@@ -1,0 +1,531 @@
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  ActivityIndicator,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { ArrowLeft, Search as SearchIcon, Sparkles, Plus } from 'lucide-react-native';
+import { useQuery } from '@tanstack/react-query';
+import { getCausesBySearch, getCollectives } from '../services/api/crwd';
+import { getPosts, newSearch } from '../services/api/social';
+import SearchResultsHeader from '../components/newsearch/SearchResultsHeader';
+import SearchTabs from '../components/newsearch/SearchTabs';
+import CauseResultCard from '../components/newsearch/CauseResultCard';
+import CollectiveResultCard from '../components/newsearch/CollectiveResultCard';
+import UserResultCard from '../components/newsearch/UserResultCard';
+import PostResultCard from '../components/newsearch/PostResultCard';
+import RequestNonprofitModal from '../components/newsearch/RequestNonprofitModal';
+
+type TabType = 'Causes' | 'Collectives' | 'Users' | 'Posts';
+
+// Map tab names to API tab values
+const getTabValue = (tab: TabType): 'cause' | 'collective' | 'user' | 'post' => {
+  switch (tab) {
+    case 'Causes':
+      return 'cause';
+    case 'Collectives':
+      return 'collective';
+    case 'Users':
+      return 'user';
+    case 'Posts':
+      return 'post';
+    default:
+      return 'cause';
+  }
+};
+
+export default function NewSearchPage() {
+  const navigation = useNavigation();
+  const route = useRoute();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState<TabType>('Causes');
+  const [hasSearched, setHasSearched] = useState(false);
+  const [showRequestModal, setShowRequestModal] = useState(false);
+
+  // Initialize search query from route params if available
+  useEffect(() => {
+    const params = route.params as any;
+    if (params?.searchQuery) {
+      setSearchQuery(params.searchQuery);
+      setHasSearched(true);
+    }
+  }, [route.params]);
+
+  // Fetch search results using the new unified search API
+  const { data: searchData, isLoading: isLoadingSearch } = useQuery({
+    queryKey: ['new-search', activeTab, searchQuery],
+    queryFn: () => newSearch(getTabValue(activeTab), searchQuery),
+    enabled: hasSearched && searchQuery.trim().length > 0,
+  });
+
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      setHasSearched(true);
+    }
+  };
+
+  const handleClearSearch = () => {
+    setSearchQuery('');
+    setHasSearched(false);
+    setActiveTab('Causes');
+  };
+
+  const handleSurpriseMe = () => {
+    navigation.navigate('Search2' as never, { discover: true } as never);
+  };
+
+  // Get results based on active tab from the unified search API response
+  const getResults = () => {
+    if (!searchData) return [];
+    
+    // The API response structure may vary, but typically it returns results in a results array
+    // or directly as an array. Let's handle both cases.
+    if (Array.isArray(searchData)) {
+      return searchData;
+    }
+    
+    // If it's an object with a results property
+    if (searchData.results) {
+      return searchData.results;
+    }
+    
+    // If it's an object with tab-specific properties
+    switch (activeTab) {
+      case 'Causes':
+        return searchData.causes || searchData.cause || [];
+      case 'Collectives':
+        return searchData.collectives || searchData.collective || [];
+      case 'Users':
+        return searchData.users || searchData.user || [];
+      case 'Posts':
+        return searchData.posts || searchData.post || [];
+      default:
+        return [];
+    }
+  };
+
+  const results = getResults();
+  const isLoading = isLoadingSearch;
+  const resultsCount = results.length;
+
+  return (
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+      {/* Search Header */}
+      {hasSearched ? (
+        <SearchResultsHeader
+          searchQuery={searchQuery}
+          onClearSearch={handleClearSearch}
+          onSearchChange={setSearchQuery}
+          onSearch={handleSearch}
+        />
+      ) : (
+        <View style={styles.header}>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.backButton}
+            activeOpacity={0.7}
+          >
+            <ArrowLeft size={20} color="#374151" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Search</Text>
+        </View>
+      )}
+
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {!hasSearched ? (
+          <>
+            {/* Search Input */}
+            <View style={styles.searchSection}>
+              <View style={styles.inputContainer}>
+                <SearchIcon size={20} color="#9CA3AF" style={styles.searchIcon} />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Search..."
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  onSubmitEditing={handleSearch}
+                  returnKeyType="search"
+                />
+              </View>
+            </View>
+
+            {/* Not Sure Where to Start Section */}
+            <View style={styles.surpriseSection}>
+              <Text style={styles.sectionTitle}>NOT SURE WHERE TO START?</Text>
+              <TouchableOpacity
+                onPress={handleSurpriseMe}
+                style={styles.surpriseCard}
+                activeOpacity={0.7}
+              >
+                <View style={styles.surpriseContent}>
+                  {/* Purple Gradient Icon with Star and Plus */}
+                  <View style={styles.iconContainer}>
+                    <Sparkles size={20} color="#FFFFFF" />
+                    <View style={styles.plusBadge}>
+                      <Plus size={8} color="#A855F7" strokeWidth={3} />
+                    </View>
+                  </View>
+
+                  <View style={styles.surpriseText}>
+                    <Text style={styles.surpriseTitle}>Surprise Me</Text>
+                    <Text style={styles.surpriseSubtitle}>
+                      We'll pick 5 amazing nonprofits for you
+                    </Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            </View>
+          </>
+        ) : (
+          <>
+            {/* Results Header */}
+            <View style={styles.resultsHeader}>
+              <Text style={styles.resultsTitle}>Results for '{searchQuery}'</Text>
+            </View>
+
+            {/* Tabs */}
+            <SearchTabs activeTab={activeTab} onTabChange={setActiveTab} />
+
+            {/* Results Section */}
+            <View style={styles.resultsSection}>
+              {/* Section Header */}
+              <Text style={styles.sectionHeader}>
+                {activeTab.toUpperCase()} ({resultsCount})
+              </Text>
+
+              {/* Results List */}
+              {isLoading ? (
+                <View style={styles.loadingContainer}>
+                  <ActivityIndicator size="large" color="#9CA3AF" />
+                </View>
+              ) : resultsCount > 0 ? (
+                <View style={styles.resultsList}>
+                  {activeTab === 'Causes' &&
+                    results.map((cause: any) => (
+                      <CauseResultCard key={cause.id} cause={cause} />
+                    ))}
+                  {activeTab === 'Collectives' &&
+                    results.map((collective: any) => (
+                      <CollectiveResultCard key={collective.id} collective={collective} />
+                    ))}
+                  {activeTab === 'Users' &&
+                    results.map((user: any) => (
+                      <UserResultCard key={user.id} user={user} />
+                    ))}
+                  {activeTab === 'Posts' &&
+                    results.map((post: any) => (
+                      <PostResultCard key={post.id} post={post} />
+                    ))}
+                </View>
+              ) : activeTab === 'Causes' ? (
+                <>
+                  {/* Causes Empty State */}
+                  <View style={styles.emptyState}>
+                    <Text style={styles.emptyText}>
+                      No organizations found matching your search.
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => setShowRequestModal(true)}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={styles.requestLink}>
+                        Can't find your nonprofit? Request it here
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  {/* Try searching for section */}
+                  <View style={styles.categoriesSection}>
+                    <Text style={styles.categoriesTitle}>Try searching for:</Text>
+                    {['Animals', 'Homelessness', 'Mental Health', 'Health & Medical', 'Education', 'Environment'].map(
+                      (category) => (
+                        <Text key={category} style={styles.categoryItem}>
+                          • {category}
+                        </Text>
+                      )
+                    )}
+                  </View>
+
+                  {/* Browse All Nonprofits Button */}
+                  <View style={styles.browseButtonContainer}>
+                    <TouchableOpacity
+                      onPress={() => {
+                        setSearchQuery('');
+                        setHasSearched(false);
+                      }}
+                      style={styles.browseButton}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={styles.browseButtonText}>Browse All Nonprofits</Text>
+                    </TouchableOpacity>
+                  </View>
+                </>
+              ) : activeTab === 'Collectives' ? (
+                <>
+                  {/* Collectives Empty State */}
+                  <View style={styles.emptyState}>
+                    <SearchIcon size={64} color="#9CA3AF" />
+                    <Text style={styles.emptyTitle}>
+                      No "{searchQuery}" collective found
+                    </Text>
+                    <Text style={styles.emptySubtitle}>Want to start one?</Text>
+                  </View>
+
+                  {/* Create Collective Button */}
+                  <View style={styles.browseButtonContainer}>
+                    <TouchableOpacity
+                      onPress={() => {
+                        // TODO: Store searchQuery in AsyncStorage or pass as param
+                        navigation.navigate('CreateCRWD' as never);
+                      }}
+                      style={[styles.browseButton, styles.createButton]}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={[styles.browseButtonText, styles.createButtonText]}>
+                        Create "{searchQuery}" Collective
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </>
+              ) : (
+                <View style={styles.emptyState}>
+                  <SearchIcon size={64} color="#D1D5DB" />
+                  <Text style={styles.emptyTitle}>
+                    No {activeTab.toLowerCase()} found for "{searchQuery}"
+                  </Text>
+                  <Text style={styles.emptySubtitle}>Try another search or switch tabs.</Text>
+                </View>
+              )}
+            </View>
+          </>
+        )}
+      </ScrollView>
+
+      {/* Request Nonprofit Modal */}
+      <RequestNonprofitModal
+        isOpen={showRequestModal}
+        onClose={() => setShowRequestModal(false)}
+      />
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  backButton: {
+    padding: 8,
+    marginRight: 8,
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#111827',
+    flex: 1,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 20,
+  },
+  searchSection: {
+    paddingHorizontal: 12,
+    paddingVertical: 16,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  searchIcon: {
+    position: 'absolute',
+    left: 12,
+    zIndex: 1,
+  },
+  input: {
+    flex: 1,
+    paddingLeft: 40,
+    paddingVertical: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#3B82F6',
+    backgroundColor: '#F9FAFB',
+    fontSize: 14,
+  },
+  surpriseSection: {
+    paddingHorizontal: 12,
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#111827',
+    marginBottom: 12,
+    textTransform: 'uppercase',
+  },
+  surpriseCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  surpriseContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: 12,
+  },
+  iconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#A855F7',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  plusBadge: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  surpriseText: {
+    flex: 1,
+  },
+  surpriseTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#111827',
+    marginBottom: 4,
+  },
+  surpriseSubtitle: {
+    fontSize: 12,
+    color: '#4B5563',
+  },
+  resultsHeader: {
+    paddingHorizontal: 12,
+    paddingVertical: 16,
+  },
+  resultsTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#111827',
+  },
+  resultsSection: {
+    paddingHorizontal: 12,
+    paddingTop: 16,
+  },
+  sectionHeader: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#6B7280',
+    marginBottom: 12,
+    textTransform: 'uppercase',
+  },
+  loadingContainer: {
+    paddingVertical: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  resultsList: {
+    gap: 12,
+  },
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 32,
+    borderWidth: 2,
+    borderStyle: 'dashed',
+    borderColor: '#D1D5DB',
+    borderRadius: 12,
+    marginBottom: 24,
+  },
+  emptyText: {
+    fontSize: 14,
+    color: '#374151',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  requestLink: {
+    fontSize: 12,
+    color: '#1600ff',
+    textDecorationLine: 'underline',
+  },
+  emptyTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+    marginTop: 16,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  emptySubtitle: {
+    fontSize: 14,
+    color: '#6B7280',
+    textAlign: 'center',
+  },
+  categoriesSection: {
+    marginBottom: 24,
+  },
+  categoriesTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#111827',
+    marginBottom: 12,
+  },
+  categoryItem: {
+    fontSize: 14,
+    color: '#374151',
+    marginBottom: 8,
+  },
+  browseButtonContainer: {
+    alignItems: 'center',
+  },
+  browseButton: {
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    backgroundColor: '#FFFFFF',
+  },
+  browseButtonText: {
+    fontSize: 14,
+    color: '#111827',
+  },
+  createButton: {
+    backgroundColor: '#2c7fff',
+    borderColor: '#2c7fff',
+  },
+  createButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+  },
+});
+

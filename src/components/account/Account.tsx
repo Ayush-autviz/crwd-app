@@ -265,20 +265,6 @@ export default function Account() {
             </View>
 
 
-            {/* Email */}
-            <View style={styles.fieldContainer}>
-              <Text style={styles.fieldLabel}>Email</Text>
-              <TextInput
-                style={styles.input}
-                value={formData.email}
-                onChangeText={(text) => setFormData(prev => ({ ...prev, email: text }))}
-                editable={isEditMode}
-                placeholderTextColor={PrimaryGrey}
-                placeholder='Email'
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
-            </View>
 
 
             {/* Location */}

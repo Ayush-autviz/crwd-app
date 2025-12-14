@@ -1,0 +1,182 @@
+import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
+
+interface CollectiveProfileProps {
+  name: string;
+  image?: string;
+  logo?: string | null;
+  color?: string | null;
+  founder?: {
+    id?: number;
+    first_name?: string;
+    last_name?: string;
+    username?: string;
+    profile_picture?: string;
+  };
+  description?: string;
+  isJoined?: boolean;
+}
+
+export default function CollectiveProfile({
+  name,
+  image,
+  logo,
+  color,
+  founder,
+  description,
+  isJoined = false,
+}: CollectiveProfileProps) {
+  const navigation = useNavigation();
+
+  const founderName = founder
+    ? `${founder.first_name || ''} ${founder.last_name || ''}`.trim() || founder.username
+    : 'Unknown';
+
+  const handleFounderClick = () => {
+    if (founder?.id) {
+      navigation.navigate('UserProfile' as never, { userId: founder.id } as never);
+    }
+  };
+
+  // Generate color for icon if not provided
+  const getIconColor = (name: string): string => {
+    const colors = [
+      '#1600ff', // Blue
+      '#10B981', // Green
+      '#EC4899', // Pink
+      '#F59E0B', // Amber
+      '#8B5CF6', // Purple
+      '#EF4444', // Red
+    ];
+    const hash = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return colors[hash % colors.length];
+  };
+
+  // Get first letter of name for icon
+  const getIconLetter = (name: string): string => {
+    return name.charAt(0).toUpperCase();
+  };
+
+  // Priority: 1. Use color (with white text), 2. Use logo (image), 3. Fallback to generated color with letter
+  const hasColor = color;
+  const hasLogo = logo && (logo.startsWith('http') || logo.startsWith('/') || logo.startsWith('data:'));
+  const iconColor = hasColor || (!hasLogo ? getIconColor(name) : undefined);
+  const iconLetter = getIconLetter(name);
+  // Fallback to image prop if logo is not available (for backward compatibility)
+  const imageUrl = hasLogo ? logo : image || undefined;
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Avatar size={80} style={styles.avatar}>
+          {imageUrl ? (
+            <AvatarImage src={imageUrl} />
+          ) : null}
+          <AvatarFallback
+            style={iconColor ? { backgroundColor: iconColor } : {}}
+            textStyle={{ color: '#FFFFFF', fontSize: 32, fontWeight: '700' }}
+          >
+            {iconLetter}
+          </AvatarFallback>
+        </Avatar>
+        <View style={styles.titleContainer}>
+          <View style={styles.titleRow}>
+            <Text style={styles.title}>{name}</Text>
+            {isJoined && (
+              <View style={styles.joinedBadge}>
+                <Text style={styles.joinedText}>Joined</Text>
+              </View>
+            )}
+          </View>
+        </View>
+      </View>
+      {founder && (
+        <View style={styles.founderRow}>
+          <Avatar size={24}>
+            <AvatarImage src={founder?.profile_picture || undefined} />
+            <AvatarFallback
+              style={{ backgroundColor: '#E5E7EB' }}
+              textStyle={{ color: '#4B5563', fontSize: 12, fontWeight: '600' }}
+            >
+              {(founderName || 'F').charAt(0).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+          <Text style={styles.founderText}>
+            Founded by{' '}
+            <Text style={styles.founderLink} onPress={handleFounderClick}>
+              {founderName}
+            </Text>
+          </Text>
+        </View>
+      )}
+      {description && (
+        <Text style={styles.description}>{description}</Text>
+      )}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    paddingHorizontal: 12,
+    paddingVertical: 16,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+    marginBottom: 10,
+  },
+  avatar: {
+    borderRadius: 12,
+    flexShrink: 0,
+  },
+  titleContainer: {
+    flex: 1,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flexWrap: 'wrap',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#111827',
+  },
+  joinedBadge: {
+    backgroundColor: '#D1FAE5',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  joinedText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#065F46',
+  },
+  founderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 16,
+  },
+  founderText: {
+    fontSize: 12,
+    color: '#6B7280',
+  },
+  founderLink: {
+    color: '#1600ff',
+    fontWeight: '500',
+  },
+  description: {
+    fontSize: 14,
+    color: '#111827',
+    lineHeight: 20,
+    marginTop: 16,
+  },
+});
+

@@ -49,3 +49,5 @@ export function getNonprofitColor(id: string | number): { bgColor: string; textC
   return { bgColor, textColor };
 }
 
+
+

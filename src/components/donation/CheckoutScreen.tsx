@@ -12,13 +12,9 @@ import {
   TouchableWithoutFeedback,
   ActivityIndicator,
 } from 'react-native';
-import { ChevronLeft, Check, ChevronDown, Trash2 } from 'lucide-react-native';
-import { CROWDS, RECENTS, SUGGESTED, Organization } from '../../Constants/organizations';
+import { X } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import ConfettiCannon from 'react-native-confetti-cannon';
-import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
-import { HelpCircle } from 'lucide-react-native';
-import { Settings } from 'lucide-react-native';
 import { getCollectiveById } from '../../services/api/crwd';
 import { PrimaryBlue, SecondaryGrey } from '../../Constants/Colors';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
@@ -60,21 +56,41 @@ export default function CheckoutScreen({
   const [collectiveDetails, setCollectiveDetails] = useState<Record<number, any>>({});
   const [loadingCollectives, setLoadingCollectives] = useState<Set<number>>(new Set());
 
-  // Get manual causes and attributing collectives from donation box API
+  // Get box_causes from donation box API (main source)
+  const boxCauses = donationBox?.box_causes || [];
+  // Extract cause objects from box_causes
+  const causes = boxCauses.map((boxCause: any) => boxCause.cause).filter((cause: any) => cause != null);
+
+  // Also get manual_causes for backward compatibility
   const manualCauses = donationBox?.manual_causes || [];
   const attributingCollectives = donationBox?.attributing_collectives || [];
   const actualDonationAmount = parseFloat(donationBox?.monthly_amount || donationAmount.toString());
   
   // Use API data if available, otherwise fall back to selectedOrganizations
-  const hasApiData = manualCauses.length > 0 || attributingCollectives.length > 0;
-  const totalCauses = manualCauses.length;
-  const totalCollectives = attributingCollectives.length;
+  const hasApiData = causes.length > 0 || manualCauses.length > 0 || attributingCollectives.length > 0;
+  const totalCauses = causes.length || manualCauses.length;
+  const totalCollectives = 0; // No longer showing collectives
 
-  // Calculate capacity from donation box - count unique causes
-  const boxCauses = donationBox?.box_causes || [];
+  // Calculate fees and capacity using the provided formula
+  const calculateFees = (grossAmount: number) => {
+    const gross = grossAmount;
+    const stripeFee = (gross * 0.029) + 0.30;
+    const crwdFee = (gross - stripeFee) * 0.07;
+    const net = gross - stripeFee - crwdFee;
+    return {
+      stripeFee: Math.round(stripeFee * 100) / 100,
+      crwdFee: Math.round(crwdFee * 100) / 100,
+      net: Math.round(net * 100) / 100,
+    };
+  };
+
+  const fees = calculateFees(actualDonationAmount);
+  const net = fees.net;
+  const maxCapacity = Math.floor(net / 0.20);
+  
+  // Get current capacity from box_causes only
   const uniqueCauseIds = new Set(boxCauses.map((bc: any) => bc.cause?.id).filter(Boolean));
-  const currentCapacity = uniqueCauseIds.size || totalCauses;
-  const maxCapacity = donationBox?.capacity || 30;
+  const currentCapacity = uniqueCauseIds.size;
 
   // Fetch donation history for lifetime amount
   const { data: donationHistoryData } = useQuery({
@@ -87,13 +103,25 @@ export default function CheckoutScreen({
     return sum + parseFloat(transaction.gross_amount || '0');
   }, 0) || 0;
 
-  // Debug logging
-  useEffect(() => {
-    console.log('CheckoutScreen - donationBox:', donationBox);
-    console.log('CheckoutScreen - manualCauses:', manualCauses);
-    console.log('CheckoutScreen - attributingCollectives:', attributingCollectives);
-    console.log('CheckoutScreen - hasApiData:', hasApiData);
-  }, [donationBox, manualCauses, attributingCollectives, hasApiData]);
+  // Helper for consistent avatar colors
+  const avatarColors = [
+    '#3B82F6', '#EC4899', '#8B5CF6', '#10B981', '#F59E0B', '#EF4444', '#06B6D4',
+    '#F97316', '#84CC16', '#A855F7', '#14B8A6', '#F43F5E', '#6366F1', '#22C55E', '#EAB308',
+  ];
+
+  const getConsistentColor = (id: number | string, colors: string[]) => {
+    const hash = typeof id === 'number' ? id : id.toString().split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
+    return colors[hash % colors.length];
+  };
+
+  const getInitials = (name: string) => {
+    if (!name) return 'N';
+    const words = name.trim().split(' ');
+    if (words.length >= 2) {
+      return (words[0].charAt(0) + words[1].charAt(0)).toUpperCase();
+    }
+    return name.charAt(0).toUpperCase();
+  };
 
   // Reset confetti ref when fromPaymentResult becomes false
   useEffect(() => {
@@ -201,31 +229,40 @@ export default function CheckoutScreen({
           onEditAmount={() => navigation.navigate('ManageDonationBox' as never)}
         />
 
-        <Text style={{fontSize: 14, color: '#6b7280', marginBottom: 16, marginHorizontal: 20}}>Donation amount is equally distributed across all the nonprofits</Text>
-
-        {/* Nonprofits Section */}
-        {manualCauses.length > 0 && (
+        {/* Currently Supporting Section */}
+        {causes.length > 0 && (
           <View style={styles.causesSection}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>NONPROFITS</Text>
+              <Text style={styles.sectionTitle}>Currently Supporting</Text>
             </View>
+            <Text style={styles.sectionSubtitle}>
+              Supporting {causes.length} nonprofit{causes.length !== 1 ? 's' : ''}
+            </Text>
+
+            {/* Causes List from box_causes */}
             <View style={styles.causesList}>
-              {manualCauses.map((cause: any, index: number) => {
-                const colors = getNonprofitColor(cause.id || cause.name);
+              {causes.map((cause: any) => {
+                const avatarBgColor = getConsistentColor(cause.id, avatarColors);
+                const initials = getInitials(cause.name || 'N');
                 return (
-                  <View key={`cause-${cause.id}-${index}`} style={styles.causeCard}>
+                  <View key={cause.id} style={styles.causeCard}>
                     <View style={styles.causeCardContent}>
-                      <View style={[styles.causeIcon, { backgroundColor: colors.bgColor }]}>
-                        <Text style={[styles.causeIconText, { color: colors.textColor }]}>
-                          {cause.name?.charAt(0)?.toUpperCase() || 'C'}
+                      {/* Avatar */}
+                      <View style={[styles.causeIcon, { backgroundColor: avatarBgColor }]}>
+                        <Text style={styles.causeIconText}>
+                          {initials}
                         </Text>
                       </View>
+
+                      {/* Cause Info */}
                       <View style={styles.causeInfo}>
                         <Text style={styles.causeName}>{cause.name}</Text>
                         <Text style={styles.causeDescription} numberOfLines={1}>
                           {cause.mission || cause.description || 'Making a positive impact in the community'}
                         </Text>
                       </View>
+
+                      {/* Donation Info */}
                       <View style={styles.causeActions}>
                         <View style={styles.amountInfo}>
                           <Text style={styles.amountPercentage}>{distributionPercentage}%</Text>
@@ -240,115 +277,25 @@ export default function CheckoutScreen({
           </View>
         )}
 
-        {/* Collectives Section */}
-        {attributingCollectives.length > 0 && (
-          <View style={styles.causesSection}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>COLLECTIVES</Text>
-            </View>
-            <View style={styles.causesList}>
-              {attributingCollectives.map((collective: any, index: number) => {
-                const isExpanded = expandedCollectives.has(collective.id);
-                const details = collectiveDetails[collective.id];
-                const isLoading = loadingCollectives.has(collective.id);
-                
-                // Generate consistent color for collective
-                const collectiveColors = [
-                  { bg: '#dbeafe', text: '#1e40af' }, // blue
-                  { bg: '#fce7f3', text: '#831843' }, // pink
-                  { bg: '#e9d5ff', text: '#6b21a8' }, // purple
-                  { bg: '#d1fae5', text: '#065f46' }, // green
-                  { bg: '#fed7aa', text: '#9a3412' }, // orange
-                ];
-                const colorIndex = (collective.name?.charCodeAt(0) || 0) % collectiveColors.length;
-                const collectiveColor = collectiveColors[colorIndex];
-                
-                return (
-                  <View key={`collective-${collective.id}-${index}`}>
-                    <TouchableOpacity 
-                      style={styles.causeCard}
-                      onPress={() => handleToggleCollectiveDropdown(collective.id)}
-                    >
-                      <View style={styles.causeCardContent}>
-                        <View style={styles.collectiveHeader}>
-                          <View style={[styles.causeIcon, { backgroundColor: collectiveColor.bg }]}>
-                            <Text style={[styles.causeIconText, { color: collectiveColor.text }]}>
-                              {collective.name?.charAt(0)?.toUpperCase() || 'C'}
-                            </Text>
-                          </View>
-                          <View style={styles.causeInfo}>
-                            <Text style={styles.causeName}>{collective.name}</Text>
-                            <Text style={styles.causeDescription} numberOfLines={1}>
-                              {collective.description || 'Community collective'}
-                            </Text>
-                          </View>
-                        </View>
-                        <View style={styles.causeActions}>
-                          <View style={styles.amountInfo}>
-                            <Text style={styles.amountPercentage}>{distributionPercentage}%</Text>
-                            <Text style={styles.amountPerMonth}>${amountPerItem.toFixed(2)}/mo</Text>
-                          </View>
-                          <View style={styles.collectiveActions}>
-                            {isLoading ? (
-                              <ActivityIndicator size="small" color={PrimaryBlue} />
-                            ) : (
-                              isExpanded ? (
-                                <ChevronDown size={20} color="#6b7280" style={{ transform: [{ rotate: '180deg' }] }} />
-                              ) : (
-                                <ChevronDown size={20} color="#6b7280" />
-                              )
-                            )}
-                          </View>
-                        </View>
-                      </View>
-                    </TouchableOpacity>
-                    {isExpanded && details && details.causes && details.causes.length > 0 && (
-                      <View style={styles.collectiveExpandedContent}>
-                        <Text style={styles.collectiveExpandedTitle}>Nonprofits ({details.causes.length})</Text>
-                        <View style={styles.collectiveCausesList}>
-                          {details.causes.map((causeItem: any) => (
-                            <View key={causeItem.id} style={styles.collectiveCauseItem}>
-                              <View style={styles.collectiveCauseIcon}>
-                                <Text style={styles.collectiveCauseIconText}>
-                                  {causeItem.cause?.name?.charAt(0).toUpperCase() || 'N'}
-                                </Text>
-                              </View>
-                              <View style={styles.collectiveCauseInfo}>
-                                <Text style={styles.collectiveCauseName}>{causeItem.cause?.name}</Text>
-                                {causeItem.cause?.description && (
-                                  <Text style={styles.collectiveCauseDescription} numberOfLines={2}>
-                                    {causeItem.cause.description}
-                                  </Text>
-                                )}
-                              </View>
-                            </View>
-                          ))}
-                        </View>
-                      </View>
-                    )}
-                  </View>
-                );
-              })}
-            </View>
-          </View>
-        )}
-
         {/* Fallback to selectedOrganizations if no API data */}
         {!hasApiData && selectedOrganizationsList.length > 0 && (
           <View style={styles.causesSection}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>CAUSES</Text>
-              <Text style={[styles.helpIconGray, { marginLeft: 8 }]}>?</Text>
+              <Text style={styles.sectionTitle}>Currently Supporting</Text>
             </View>
+            <Text style={styles.sectionSubtitle}>
+              Supporting {selectedOrganizationsList.length} nonprofit{selectedOrganizationsList.length !== 1 ? 's' : ''}
+            </Text>
             <View style={styles.causesList}>
               {selectedOrganizationsList.map((orgName: string, index: number) => {
-                const colors = getNonprofitColor(orgName);
+                const avatarBgColor = getConsistentColor(orgName, avatarColors);
+                const initials = getInitials(orgName);
                 return (
                   <View key={`${orgName}-${index}`} style={styles.causeCard}>
                     <View style={styles.causeCardContent}>
-                      <View style={[styles.causeIcon, { backgroundColor: colors.bgColor }]}>
-                        <Text style={[styles.causeIconText, { color: colors.textColor }]}>
-                          {orgName.charAt(0).toUpperCase()}
+                      <View style={[styles.causeIcon, { backgroundColor: avatarBgColor }]}>
+                        <Text style={styles.causeIconText}>
+                          {initials}
                         </Text>
                       </View>
                       <View style={styles.causeInfo}>
@@ -370,14 +317,6 @@ export default function CheckoutScreen({
             </View>
           </View>
         )}
-
-        {/* Give Together Section */}
-        <View style={styles.giveTogetherCard}>
-          <Text style={styles.giveTogetherText}>Want to give together? Turn this into a CRWD Collective</Text>
-          <TouchableOpacity>
-            <Text style={styles.learnMoreLink}>Learn more</Text>
-          </TouchableOpacity>
-        </View>
       </ScrollView>
 
     </SafeAreaView>
@@ -422,9 +361,9 @@ export default function CheckoutScreen({
               
                 <View style={styles.modalBody}>
                   <Text style={styles.modalTitle}>Welcome to Checkout!</Text>
-                <Text style={styles.modalDescription}>
-                  Here's your donation summary:
-                </Text>
+                  <Text style={styles.modalDescription}>
+                    Here's your donation summary:
+                  </Text>
 
                 {/* Donation Summary Card */}
                 <View style={styles.summaryCard}>
@@ -439,9 +378,9 @@ export default function CheckoutScreen({
                   </View>
                 </View>
 
-                <Text style={styles.supportingText}>
-                  Supporting {totalItems} {totalItems === 1 ? 'organization' : 'organizations'} with your monthly donation.
-                </Text>
+                  <Text style={styles.supportingText}>
+                    Supporting {totalItems} {totalItems === 1 ? 'organization' : 'organizations'} with your monthly donation.
+                  </Text>
 
                 {/* Explore CRWD Button */}
                 {/* <TouchableOpacity
@@ -614,16 +553,18 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#374151',
-    letterSpacing: 0.5,
-    marginRight: 8,
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#111827',
+    marginBottom: 4,
+  },
+  sectionSubtitle: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginBottom: 16,
   },
   causesList: {
     marginBottom: 32,
@@ -655,8 +596,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   causeIconText: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700',
+    color: '#ffffff',
   },
   causeItem: {
     flexDirection: 'row',
@@ -993,7 +935,7 @@ const styles = StyleSheet.create({
     zIndex: 1000,
   },
   closeButtonText: {
-    fontSize: 18,
+    fontSize: 24,
     color: '#9ca3af',
     fontWeight: 'bold',
   },

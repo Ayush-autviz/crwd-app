@@ -23,6 +23,7 @@ import { useAuthStore } from '../../store/store';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
 import { getDonationHistory } from '../../services/api/donation';
 import { getNonprofitColor } from '../../lib/getNonprofitColor';
+import DonationBoxSummaryCard from './DonationBoxSummaryCard';
 
 export default function ManageDonationBoxScreen() {
   const navigation = useNavigation();
@@ -38,17 +39,37 @@ export default function ManageDonationBoxScreen() {
   const donationBox = donationBoxQuery.data;
   const amount = donationBox?.monthly_amount || 7;
   
-  // Prepare causes from donation box data
+  // Get box_causes from donation box API (main source)
+  const boxCauses = donationBox?.box_causes || [];
+  // Extract cause objects from box_causes
+  const causesFromBox = boxCauses.map((boxCause: any) => boxCause.cause).filter((cause: any) => cause != null);
+
+  // Also get manual_causes for backward compatibility
+  const manualCauses = donationBox?.manual_causes || [];
+  const attributingCollectives = donationBox?.attributing_collectives || [];
+  
+  // Prepare causes from donation box data - use box_causes as primary source
   const causes: Organization[] = [
-    ...(donationBox?.manual_causes || []).map((cause: any) => ({
+    ...causesFromBox.map((cause: any) => ({
       id: `cause-${cause.id}`,
       name: cause.name,
-      imageUrl: cause.logo || '',
+      imageUrl: cause.image || cause.logo || '',
       color: '#4F46E5',
       description: cause.mission || cause.description || '',
       type: 'cause' as const,
     })),
-    ...(donationBox?.attributing_collectives || []).map((collective: any) => ({
+    // Also include manual_causes if not already in box_causes (for backward compatibility)
+    ...manualCauses
+      .filter((manualCause: any) => !causesFromBox.some((c: any) => c.id === manualCause.id))
+      .map((cause: any) => ({
+        id: `cause-${cause.id}`,
+        name: cause.name,
+        imageUrl: cause.logo || '',
+        color: '#4F46E5',
+        description: cause.mission || cause.description || '',
+        type: 'cause' as const,
+      })),
+    ...(attributingCollectives || []).map((collective: any) => ({
       id: `collective-${collective.id}`,
       name: collective.name,
       imageUrl: collective.cover_image || '',
@@ -446,9 +467,26 @@ export default function ManageDonationBoxScreen() {
   // Check if there are any items selected (either nonprofits or collectives)
   const hasItems = totalCauseIds.length > 0 || totalCollectiveIds.length > 0;
 
+  // Calculate fees and capacity using the provided formula
+  const calculateFees = (grossAmount: number) => {
+    const gross = grossAmount;
+    const stripeFee = (gross * 0.029) + 0.30;
+    const crwdFee = (gross - stripeFee) * 0.07;
+    const net = gross - stripeFee - crwdFee;
+    return {
+      stripeFee: Math.round(stripeFee * 100) / 100,
+      crwdFee: Math.round(crwdFee * 100) / 100,
+      net: Math.round(net * 100) / 100,
+    };
+  };
+
+  const actualDonationAmount = parseFloat(editableAmount.toString());
+  const fees = calculateFees(actualDonationAmount);
+  const net = fees.net;
+  const maxCapacity = Math.floor(net / 0.20);
+  
   // Calculate capacity for summary card
   const currentCapacity = totalCauseIds.length;
-  const maxCapacity = donationBox?.capacity || 30;
   const totalCausesCount = totalCauseIds.length;
   const totalCollectivesCount = totalCollectiveIds.length;
 

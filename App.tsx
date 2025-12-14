@@ -69,6 +69,8 @@ import { StripeProvider } from '@stripe/stripe-react-native'
 import { STRIPE_PUBLISHABLE_KEY } from './src/config/stripe'
 import messaging from '@react-native-firebase/messaging'
 import notifee, { AndroidImportance } from '@notifee/react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 
 export default function App() {
 
@@ -310,15 +312,19 @@ useEffect(() => {
   }
 
   return (
-    <NavigationContainer ref={navigationRef}>
-      <StripeProvider publishableKey={STRIPE_PUBLISHABLE_KEY} merchantIdentifier='merchant.com.react.crwd'>
-        <QueryClientProvider client={queryClient}>
-          <ToastProvider>
-            <StackNavigator />
-          </ToastProvider>
-        </QueryClientProvider>
-      </StripeProvider>
-    </NavigationContainer>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <NavigationContainer ref={navigationRef}>
+        <StripeProvider publishableKey={STRIPE_PUBLISHABLE_KEY} merchantIdentifier='merchant.com.react.crwd'>
+          <QueryClientProvider client={queryClient}>
+            <BottomSheetModalProvider>
+              <ToastProvider>
+                <StackNavigator />
+              </ToastProvider>
+            </BottomSheetModalProvider>
+          </QueryClientProvider>
+        </StripeProvider>
+      </NavigationContainer>
+    </GestureHandlerRootView>
   )
 
 }

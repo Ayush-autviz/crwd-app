@@ -54,11 +54,7 @@ export default function LearnAndGetInspired({ articles }: LearnAndGetInspiredPro
         {/* Header with Title and Link */}
         <View style={styles.header}>
           <Text style={styles.title}>Learn & Get Inspired</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Articles' as never)}>
-            <Text style={styles.seeAllLink}>
-              All articles <Text>→</Text>
-            </Text>
-          </TouchableOpacity>
+      
         </View>
 
         {/* Article Cards Grid */}

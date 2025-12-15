@@ -6,19 +6,13 @@ import {
   ScrollView,
   Image,
   StyleSheet,
-  useWindowDimensions,
+  Dimensions,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import * as Colors from '../Constants/Colors';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { ArrowRight } from 'lucide-react-native';
 
-type RootStackParamList = {
-  Home: undefined;
-  Interests: undefined;
-};
-
-type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Interests'>;
+const { width } = Dimensions.get('window');
 
 // Define categories and their interests
 const CATEGORIES = [
@@ -55,11 +49,8 @@ const CATEGORIES = [
 ];
 
 const InterestsScreen = () => {
-  const navigation = useNavigation<NavigationProp>();
-  const { width } = useWindowDimensions();
+  const navigation = useNavigation();
   const [selected, setSelected] = useState<string[]>([]);
-
-  const buttonWidth = (width - 48 - 16 - 32 - 16) / 2;
 
   const toggleInterest = (interest: string) => {
     setSelected((prev) =>
@@ -70,84 +61,66 @@ const InterestsScreen = () => {
   };
 
   const handleContinue = () => {
-    navigation.navigate('DrawerNav' as never);
+    // Save interests and navigate to home
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'DrawerNav' as never }],
+    });
   };
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <View style={styles.headerContent}>
+          <Image 
+            source={require('../assets/logo/logo3.webp')} 
+            style={styles.logo}
+            resizeMode="contain"
+          />
+          <Text style={styles.title}>What interests you?</Text>
+          <Text style={styles.subtitle}>
+            Select topics you'd like to see in your feed. You can always change these later.
+          </Text>
+        </View>
+      </View>
+
+      {/* Content */}
       <ScrollView 
         style={styles.content} 
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.contentContainer}
       >
-        <View style={styles.header}>
-          {/* <Image
-            source={require('../assets/logo/logo3.webp')}
-            style={styles.logo}
-            resizeMode="contain"
-          /> */}
-          <Image source={require('../assets/logo/main.png')} style={{ resizeMode: 'contain', width: 100, height: 80 }} />
-          <Text style={styles.title}>What interests you?</Text>
-          <Text style={styles.subtitle}>
-            Select topics you'd like to see in your feed.
-          </Text>
-        </View>
-
         {CATEGORIES.map((category) => (
-          <View key={category.label} style={styles.categoryContainer}>
+          <View key={category.label} style={styles.categoryCard}>
             <Text style={styles.categoryLabel}>{category.label}</Text>
             <View style={styles.interestsGrid}>
-              {category.interests.map((interest, index) => (
-                index % 2 === 0 ? (
-                  <View key={interest} style={styles.interestRow}>
-                    <TouchableOpacity
-                      onPress={() => toggleInterest(interest)}
-                      style={[
-                        styles.interestButton,
-                        selected.includes(interest) && styles.interestButtonSelected,
-                        { width: buttonWidth }
-                      ]}
-                      activeOpacity={0.7}
-                    >
-                      <Text
-                        style={[
-                          styles.interestButtonText,
-                          selected.includes(interest) && styles.interestButtonTextSelected
-                        ]}
-                        numberOfLines={1}
-                      >
-                        {interest}
-                      </Text>
-                    </TouchableOpacity>
-                    {index + 1 < category.interests.length && (
-                      <TouchableOpacity
-                        onPress={() => toggleInterest(category.interests[index + 1])}
-                        style={[
-                          styles.interestButton,
-                          selected.includes(category.interests[index + 1]) && styles.interestButtonSelected,
-                          { width: buttonWidth }
-                        ]}
-                        activeOpacity={0.7}
-                      >
-                        <Text
-                          style={[
-                            styles.interestButtonText,
-                            selected.includes(category.interests[index + 1]) && styles.interestButtonTextSelected
-                          ]}
-                          numberOfLines={1}
-                        >
-                          {category.interests[index + 1]}
-                        </Text>
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                ) : null
+              {category.interests.map((interest) => (
+                <TouchableOpacity
+                  key={interest}
+                  onPress={() => toggleInterest(interest)}
+                  style={[
+                    styles.interestButton,
+                    selected.includes(interest) && styles.interestButtonSelected
+                  ]}
+                  activeOpacity={0.7}
+                >
+                  <Text
+                    style={[
+                      styles.interestButtonText,
+                      selected.includes(interest) && styles.interestButtonTextSelected
+                    ]}
+                  >
+                    {interest}
+                  </Text>
+                </TouchableOpacity>
               ))}
             </View>
           </View>
         ))}
       </ScrollView>
 
+      {/* Footer */}
       <View style={styles.footer}>
         <Text style={styles.selectedCount}>
           {selected.length} interest{selected.length !== 1 ? 's' : ''} selected
@@ -162,6 +135,7 @@ const InterestsScreen = () => {
           activeOpacity={0.8}
         >
           <Text style={styles.continueButtonText}>Continue</Text>
+          <ArrowRight size={16} color="white" style={{ marginLeft: 8 }} />
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -171,78 +145,77 @@ const InterestsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: '#f9fafb',
   },
   header: {
-    paddingHorizontal: 16,
-    alignItems: 'center',
     backgroundColor: 'white',
-    marginBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
+    paddingHorizontal: 16,
+    paddingVertical: 24,
+  },
+  headerContent: {
+    maxWidth: 672,
+    alignSelf: 'center',
+    width: '100%',
+    alignItems: 'center',
+    gap: 8,
   },
   logo: {
-    width: 100,
-    height: 100,
-    marginBottom: 0,
+    width: 60,
+    height: 60,
+    marginBottom: 8,
   },
   title: {
-    fontSize: 28,
-    fontWeight: '700',
+    fontSize: 20,
+    fontWeight: '600',
     color: '#111827',
-    marginBottom: 12,
     textAlign: 'center',
   },
   subtitle: {
-    fontSize: 16,
-    color: Colors.PrimaryGrey,
+    fontSize: 14,
+    color: '#6b7280',
     textAlign: 'center',
-    marginBottom: 16,
-    lineHeight: 24,
   },
   content: {
     flex: 1,
   },
   contentContainer: {
-    paddingHorizontal: 24,
-    paddingVertical: 32,
+    paddingHorizontal: 16,
+    paddingVertical: 24,
+    maxWidth: 672,
+    alignSelf: 'center',
+    width: '100%',
+    gap: 24,
   },
-  categoryContainer: {
-    marginBottom: 24,
+  categoryCard: {
     backgroundColor: 'white',
-    borderRadius: 12,
-    borderWidth: 1.5,
+    borderRadius: 8,
+    borderWidth: 1,
     borderColor: '#e5e7eb',
-    padding: 16,
+    padding: 24,
   },
   categoryLabel: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
-    color: '#374151',
+    color: '#111827',
     marginBottom: 16,
   },
   interestsGrid: {
-    width: '100%',
-  },
-  interestRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-    gap: 16,
+    flexWrap: 'wrap',
+    gap: 12,
   },
   interestButton: {
-    flex: 1,
-    borderRadius: 12,
-    backgroundColor: '#f9fafb',
-    paddingVertical: 12,
+    paddingVertical: 8,
     paddingHorizontal: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1.5,
-    borderColor: '#e5e7eb',
-    minHeight: 44,
+    borderRadius: 8,
+    backgroundColor: '#f3f4f6',
+    minWidth: (width - 64 - 24) / 3, // 3 columns with gaps
+    maxWidth: (width - 64 - 24) / 3,
   },
   interestButtonSelected: {
     backgroundColor: '#111827',
-    borderColor: '#111827',
   },
   interestButtonText: {
     fontSize: 14,
@@ -252,36 +225,37 @@ const styles = StyleSheet.create({
   },
   interestButtonTextSelected: {
     color: 'white',
-    fontWeight: '600',
   },
   footer: {
     backgroundColor: 'white',
-    padding: 24,
     borderTopWidth: 1,
     borderTopColor: '#e5e7eb',
+    paddingHorizontal: 16,
+    paddingVertical: 24,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
   selectedCount: {
     fontSize: 14,
-    color: Colors.PrimaryGrey,
-    fontWeight: '500',
+    color: '#6b7280',
   },
   continueButton: {
     backgroundColor: '#111827',
-    paddingVertical: 18,
+    paddingVertical: 8,
     paddingHorizontal: 24,
-    borderRadius: 12,
+    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   continueButtonDisabled: {
     opacity: 0.5,
   },
   continueButtonText: {
     color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 14,
+    fontWeight: '500',
   },
 });
 
-export default InterestsScreen; 
+export default InterestsScreen;

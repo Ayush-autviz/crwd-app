@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { 
   View, 
   Text, 
@@ -10,39 +10,25 @@ import {
   KeyboardAvoidingView, 
   Platform,
   ActivityIndicator,
-  Alert,
-  Linking
 } from 'react-native'
+import LinearGradient from 'react-native-linear-gradient'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useNavigation } from '@react-navigation/native'
 import { PrimaryGrey, PrimaryBlue, LightGrey } from '../Constants/Colors'
 import { SvgXml } from 'react-native-svg'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { login, googleLogin, googleCallback as googleCallbackApi } from '../services/api/auth'
 import { useAuthStore } from '../store/store'
 import { useToast } from '../contexts/ToastContext'
-import { Eye } from 'lucide-react-native'
-import { EyeOff } from 'lucide-react-native'
+import { Eye, EyeOff } from 'lucide-react-native'
 import InAppBrowser from 'react-native-inappbrowser-reborn'
 
-const googleXml = `<svg className="w-4 h-4 mr-2" viewBox="0 0 24 24">
-                    <path
-                      fill="#4285F4"
-                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                    />
-                    <path
-                      fill="#34A853"
-                      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                    />
-                    <path
-                      fill="#FBBC05"
-                      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                    />
-                    <path
-                      fill="#EA4335"
-                      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                    />
-                  </svg>`
+const googleXml = `<svg viewBox="0 0 24 24">
+  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+</svg>`
 
 export default function Login() {
   const navigation = useNavigation()
@@ -52,48 +38,8 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
-  
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  })
 
-
-  // React Query hooks
-  const loginMutation = useMutation({
-    mutationFn: login,
-    onSuccess: (response) => {
-      console.log('Login successful:', response)
-      
-      // Store user data and token in the store
-      if (response.user) {
-        setUser(response.user)
-      }
-      if (response.access_token) {
-        setToken({ 
-          access_token: response.access_token, 
-          refresh_token: response.refresh_token 
-        })
-      }
-      
-      // If last_login_at is null, navigate to nonprofit interests page (new user)
-      if (response.user && !response.user.last_login_at) {
-        (navigation as any).reset('NonProfitInterests', { fromAuth: true })
-      } else {
-        // Navigate to main app for existing users
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'DrawerNav' as never }],
-      })
-      }
-    },
-    onError: (error: any) => {
-      console.error('Login error:', error)
-      const errorMessage = error?.response?.data?.message || error.message || 'Login failed'
-      showToast(errorMessage)
-    },
-  })
-
+  // Google callback mutation
   const googleCallbackMutation = useMutation({
     mutationFn: googleCallbackApi,
     onSuccess: (response) => {
@@ -107,12 +53,10 @@ export default function Login() {
       }
       showToast('Google authentication successful!');
       
-      // If last_login_at is null, navigate to nonprofit interests page (new user)
       if (response.user && !response.user.last_login_at) {
         (navigation as any).navigate('NonProfitInterests', { fromAuth: true })
       } else {
-        // Navigate to main app for existing users
-      navigation.navigate('DrawerNav' as never);
+        navigation.navigate('DrawerNav' as never);
       }
     },
     onError: (error: any) => {
@@ -121,12 +65,50 @@ export default function Login() {
       showToast(errorMessage)
     },
   })
+  
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+  })
 
-  // const googleCallback = async (code: string) => {
-  //   const response = await googleCallbackMutation.mutateAsync(code)
-  //   return response
-  // }
+  // Login mutation
+  const loginMutation = useMutation({
+    mutationFn: login,
+    onSuccess: (response) => {
+      console.log('Login successful:', response)
+      
+      if (response.user) {
+        setUser(response.user)
+      }
+      if (response.access_token) {
+        setToken({ 
+          access_token: response.access_token, 
+          refresh_token: response.refresh_token 
+        })
+      }
+      
+      if (response.user && !response.user.last_login_at) {
+        (navigation as any).reset('NonProfitInterests', { fromAuth: true })
+      } else {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'DrawerNav' as never }],
+        })
+      }
+    },
+    onError: (error: any) => {
+      console.error('Login error:', error)
+      const errorMessage = error?.response?.data?.message || error.message || 'Login failed'
+      showToast(errorMessage)
+    },
+  })
 
+  // Google login query
+  const googleLoginQuery = useQuery({
+    queryKey: ['googleLogin'],
+    queryFn: googleLogin,
+    enabled: false,
+  })
 
   const handleInputChange = (name: string, value: string) => {
     setFormData(prev => ({
@@ -147,220 +129,184 @@ export default function Login() {
     })
   }
 
-  // const handleGoogleLogin = async () => {
-  //   console.log('=== Google Login Started ===');
-  //   setIsGoogleLoading(true)
-    
-  //   try {
-  //     // Call backend to get Google OAuth URL
-  //     console.log('Calling googleLogin API...');
-  //     const result = await googleLogin();
-  //     console.log('Backend response:', result);
-      
-  //     if (result && result.url) {
-  //       console.log('Got OAuth URL:', result.url);
-  //       console.log('Opening browser...');
-        
-  //       // Open the OAuth URL in browser - redirect will come back to crwd-app://googleCallback?code=...
-  //       await Linking.openURL(result.url);
-  //       console.log('Browser opened - waiting for deep link');
-  //     } else {
-  //       throw new Error('No URL received from backend');
-  //     }
-  //   } catch (error: any) {
-  //     console.error('Google login error:', error);
-  //     const errorMessage = error?.response?.data?.message || error.message || 'Google login failed';
-  //     showToast(errorMessage);
-  //     setIsGoogleLoading(false);
-  //   }
-  //   // Don't set loading to false here - deep link handler will do it
-  // }
-
-
-const handleGoogleLogin = async () => {
-  console.log('=== Google Login Started ===');
-  setIsGoogleLoading(true)
-  
-    const result = await googleLogin();
-    
-    if (result && result.url) {
-      console.log('Got OAuth URL:', result.url);
-      
-      // Use InAppBrowser instead of Linking
-      if (await InAppBrowser.isAvailable()) {
-        const authResult = await InAppBrowser.openAuth(
-          result.url,
-          'crwd-app://googleCallback', // Your redirect URL
-          {
-            ephemeralWebSession: false,
-            showTitle: false,
-            enableUrlBarHiding: true,
-            enableDefaultShare: false,
+  const handleGoogleLogin = async () => {
+    setIsGoogleLoading(true)
+    try {
+      const result = await googleLoginQuery.refetch()
+      if (result.data && result.data.url) {
+        if (await InAppBrowser.isAvailable()) {
+          const authResult = await InAppBrowser.openAuth(
+            result.data.url,
+            'crwd-app://googleCallback',
+            {
+              ephemeralWebSession: false,
+              showTitle: false,
+              enableUrlBarHiding: true,
+              enableDefaultShare: false,
+            }
+          )
+          
+          if (authResult.type === 'success' && authResult.url) {
+            const codeMatch = authResult.url.match(/[?&]code=([^&]+)/);
+            const code = codeMatch ? decodeURIComponent(codeMatch[1]) : null;
+            if (code) {
+              googleCallbackMutation.mutate(code);
+            }
           }
-        )
-        
-        console.log('Auth result:', authResult);
-        
-        if (authResult.type === 'success' && authResult.url) {
-          // Handle the callback URL directly here
-          const codeMatch = authResult.url.match(/[?&]code=([^&]+)/);
-          const code = codeMatch ? decodeURIComponent(codeMatch[1]) : null;
-          
-          if (code) {
-            googleCallbackMutation.mutateAsync(code);
-            
-          
         }
-      } else {
-        // Fallback to regular Linking
-        await Linking.openURL(result.url);
       }
-      
-      setIsGoogleLoading(false);
+    } catch (error: any) {
+      console.error('Google login error:', error)
+      showToast('Google login failed. Please try again.')
+    } finally {
+      setIsGoogleLoading(false)
     }
-  } 
-}
+  }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardView}
+    <View style={styles.container}>
+      <LinearGradient
+        colors={['#DBEAFE', '#F3E8FF', '#FCE7F3']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.gradient}
       >
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          {/* Logo and Header */}
-          <View style={styles.header}>
-            {/* <Image 
-              source={require('../assets/logo/logo3.webp')} 
-              style={styles.logo}
-              resizeMode="contain"
-            /> */}
-            <Image source={require('../assets/logo/main.png')} style={{ resizeMode: 'contain', width: 100, height: 80 }} />
-            <Text style={styles.title}>Welcome back</Text>
-            <Text style={styles.subtitle}>
-              Don't have an account?{' '}
-              <Text 
-                style={styles.link}
-                onPress={() => navigation.navigate('ClaimProfile' as never)}
-              >
-                Sign up
-              </Text>
-            </Text>
-          </View>
-
-          {/* Google Login Button */}
-          {/* <TouchableOpacity 
-            style={styles.googleButton}
-            onPress={handleGoogleLogin}
-            disabled={isGoogleLoading}
-          >
-            {isGoogleLoading ? (
-              <ActivityIndicator size="small" color={PrimaryGrey} />
-            ) : (
-                <View style={styles.googleIconPlaceholder}>
-                <SvgXml xml={googleXml} />
-                </View>
-            )}
-            <Text style={styles.googleButtonText}>
-              {isGoogleLoading ? 'Signing in...' : 'Continue with Google'}
-            </Text>
-          </TouchableOpacity> */}
-
-          {/* Divider */}
-          {/* <View style={styles.divider}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>Or continue with email</Text>
-            <View style={styles.dividerLine} />
-          </View> */}
-
-          {/* Form */}
-          <View style={styles.form}>
-            {/* Email */}
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Email address</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="john.doe@example.com"
-                placeholderTextColor={PrimaryGrey}
-                value={formData.email}
-                onChangeText={(value) => handleInputChange('email', value)}
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
-            </View>
-
-            {/* Password */}
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Password</Text>
-              <View style={styles.passwordContainer}>
-                <TextInput
-                  style={styles.passwordInput}
-                  placeholder="••••••••"
-                  placeholderTextColor={PrimaryGrey}
-                  value={formData.password}
-                  onChangeText={(value) => handleInputChange('password', value)}
-                  secureTextEntry={!showPassword}
-                />
-                <TouchableOpacity
-                  style={styles.eyeButton}
-                  onPress={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? (
-                    <EyeOff size={18} color={PrimaryGrey} />
-                  ) : (
-                    <Eye size={18} color={PrimaryGrey} />
-                  )}
-                </TouchableOpacity>
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.keyboardView}
+        >
+          <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+            <View style={styles.card}>
+              {/* Title and Subtitle */}
+              <View style={styles.header}>
+                <Text style={styles.title}>Welcome back</Text>
+                <Text style={styles.subtitle}>
+                  Don't have an account?{' '}
+                  <Text 
+                    style={styles.link}
+                    onPress={() => navigation.navigate('ClaimProfile' as never)}
+                  >
+                    Sign up
+                  </Text>
+                </Text>
               </View>
-            </View>
 
-            {/* Remember Me & Forgot Password */}
-            <View style={styles.optionsRow}>
+              {/* Google Login Button */}
               <TouchableOpacity 
-                style={styles.rememberMe}
-                onPress={() => setRememberMe(!rememberMe)}
+                style={[styles.googleButton, (isGoogleLoading || googleCallbackMutation.isPending) && styles.googleButtonDisabled]}
+                onPress={handleGoogleLogin}
+                disabled={isGoogleLoading || googleCallbackMutation.isPending}
               >
-                {/* <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
-                  {rememberMe && <Text style={styles.checkmark}>✓</Text>}
-                </View>
-                <Text style={styles.rememberText}>Remember me</Text> */}
+                {(isGoogleLoading || googleCallbackMutation.isPending) ? (
+                  <ActivityIndicator size="small" color={PrimaryGrey} />
+                ) : (
+                  <View style={styles.googleIconPlaceholder}>
+                    <SvgXml xml={googleXml} width={16} height={16} />
+                  </View>
+                )}
+                <Text style={styles.googleButtonText}>
+                  {(isGoogleLoading || googleCallbackMutation.isPending) ? 'Signing in...' : 'Continue with Google'}
+                </Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword' as never)}>
-                <Text style={styles.forgotPassword}>Forgot password?</Text>
+
+              {/* Divider */}
+              <View style={styles.divider}>
+                <View style={styles.dividerLine} />
+                <Text style={styles.dividerText}>Or continue with email</Text>
+                <View style={styles.dividerLine} />
+              </View>
+
+              {/* Form Fields */}
+              <View style={styles.form}>
+                {/* Email */}
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>
+                    Email <Text style={styles.required}>*</Text>
+                  </Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="janedoe@example.com"
+                    placeholderTextColor={PrimaryGrey}
+                    value={formData.email}
+                    onChangeText={(value) => handleInputChange('email', value)}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                  />
+                </View>
+
+                {/* Password */}
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>
+                    Password <Text style={styles.required}>*</Text>
+                  </Text>
+                  <View style={styles.passwordContainer}>
+                    <TextInput
+                      style={styles.passwordInput}
+                      placeholder="Enter your password"
+                      placeholderTextColor={PrimaryGrey}
+                      value={formData.password}
+                      onChangeText={(value) => handleInputChange('password', value)}
+                      secureTextEntry={!showPassword}
+                    />
+                    <TouchableOpacity
+                      style={styles.eyeButton}
+                      onPress={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? (
+                        <EyeOff size={20} color={PrimaryGrey} />
+                      ) : (
+                        <Eye size={20} color={PrimaryGrey} />
+                      )}
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                {/* Remember Me & Forgot Password */}
+                <View style={styles.optionsRow}>
+                  <TouchableOpacity 
+                    style={styles.rememberMe}
+                    onPress={() => setRememberMe(!rememberMe)}
+                  >
+                    <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
+                      {rememberMe && <Text style={styles.checkmark}>✓</Text>}
+                    </View>
+                    <Text style={styles.rememberText}>Remember me</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword' as never)}>
+                    <Text style={styles.forgotPassword}>Forgot password?</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Submit Button */}
+              <TouchableOpacity
+                style={[styles.submitButton, loginMutation.isPending && styles.submitButtonDisabled]}
+                onPress={handleSubmit}
+                disabled={loginMutation.isPending}
+              >
+                {loginMutation.isPending ? (
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="small" color="white" />
+                    <Text style={styles.loadingText}>Signing in...</Text>
+                  </View>
+                ) : (
+                  <Text style={styles.submitButtonText}>Sign in</Text>
+                )}
               </TouchableOpacity>
             </View>
-
-            {/* Submit Button */}
-            <TouchableOpacity
-              style={styles.submitButton}
-              onPress={handleSubmit}
-              disabled={loginMutation.isPending}
-            >
-              {loginMutation.isPending ? (
-                <View style={styles.loadingContainer}>
-                  <ActivityIndicator size="small" color="white" />
-                  <Text style={styles.loadingText}>Signing in...</Text>
-                </View>
-              ) : (
-                <Text style={styles.submitButtonText}>Sign in</Text>
-              )}
-            </TouchableOpacity>
-          </View>
-
-          {/* Security Notice */}
-          {/* <Text style={styles.securityNotice}>
-            Protected by industry-standard encryption
-          </Text> */}
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </LinearGradient>
+    </View>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
+  },
+  gradient: {
+    flex: 1,
   },
   keyboardView: {
     flex: 1,
@@ -368,33 +314,34 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     justifyContent: 'center',
-    paddingHorizontal: 24,
+    paddingHorizontal: 16,
     paddingVertical: 32,
   },
-  header: {
-    alignItems: 'center',
-    marginBottom: 20,
+  card: {
+    width: '100%',
+    maxWidth: 400,
+    alignSelf: 'center',
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 24,
   },
-  logo: {
-    width: 100,
-    height: 100,
-    marginBottom: 0,
+  header: {
+    marginBottom: 32,
   },
   title: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: '700',
     color: '#111827',
-    marginBottom: 12,
+    marginBottom: 8,
     textAlign: 'center',
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 14,
     color: PrimaryGrey,
     textAlign: 'center',
-    lineHeight: 24,
   },
   link: {
-    color: '#111827',
+    color: '#1600ff',
     fontWeight: '600',
   },
   googleButton: {
@@ -402,36 +349,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'white',
-    borderWidth: 1.5,
-    borderColor: '#e5e7eb',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 32,
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+  },
+  googleButtonDisabled: {
+    opacity: 0.5,
   },
   googleIconPlaceholder: {
-    width: 20,
-    height: 20,
-    // borderWidth: 1,
-    // borderColor: '#d1d5db',
-    // borderRadius: 4,
+    width: 16,
+    height: 16,
+    marginRight: 8,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
-  },
-  googleIconText: {
-    fontSize: 12,
-    color: '#374151',
-    fontWeight: '600',
   },
   googleButtonText: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#374151',
     fontWeight: '500',
   },
   divider: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: 24,
   },
   dividerLine: {
     flex: 1,
@@ -440,66 +382,71 @@ const styles = StyleSheet.create({
   },
   dividerText: {
     paddingHorizontal: 16,
-    fontSize: 14,
-    color: PrimaryGrey,
+    fontSize: 12,
+    color: '#6b7280',
     textTransform: 'uppercase',
-    fontWeight: '500',
   },
   form: {
-    marginBottom: 32,
+    marginBottom: 24,
   },
   inputGroup: {
-    marginBottom: 20,
+    marginBottom: 16,
   },
   label: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
-    color: '#374151',
+    color: '#111827',
     marginBottom: 8,
   },
+  required: {
+    color: '#ef4444',
+  },
   input: {
-    borderWidth: 1.5,
-    borderColor: '#e5e7eb',
-    borderRadius: 12,
-    padding: 16,
-    fontSize: 16,
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 14,
     color: '#111827',
     backgroundColor: '#f9fafb',
   },
   passwordContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1.5,
-    borderColor: '#e5e7eb',
-    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    borderRadius: 8,
     backgroundColor: '#f9fafb',
   },
   passwordInput: {
     flex: 1,
-    padding: 16,
-    fontSize: 16,
+    padding: 12,
+    fontSize: 14,
     color: '#111827',
+    paddingRight: 48,
   },
   eyeButton: {
-    padding: 16,
+    padding: 12,
+    position: 'absolute',
+    right: 0,
   },
   optionsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 32,
+    marginTop: 16,
   },
   rememberMe: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   checkbox: {
-    width: 18,
-    height: 18,
-    borderWidth: 1.5,
+    width: 16,
+    height: 16,
+    borderWidth: 1,
     borderColor: '#d1d5db',
     borderRadius: 4,
-    marginRight: 10,
+    marginRight: 8,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -509,27 +456,31 @@ const styles = StyleSheet.create({
   },
   checkmark: {
     color: 'white',
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: 'bold',
   },
   rememberText: {
-    fontSize: 15,
-    color: '#374151',
+    fontSize: 14,
+    color: '#111827',
   },
   forgotPassword: {
-    fontSize: 15,
+    fontSize: 14,
     color: '#111827',
     fontWeight: '500',
   },
   submitButton: {
-    backgroundColor: '#111827',
-    borderRadius: 12,
-    padding: 18,
+    backgroundColor: '#6366f1',
+    borderRadius: 8,
+    padding: 12,
     alignItems: 'center',
+    marginBottom: 24,
+  },
+  submitButtonDisabled: {
+    opacity: 0.5,
   },
   submitButtonText: {
     color: 'white',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
   },
   loadingContainer: {
@@ -538,14 +489,8 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     color: 'white',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
     marginLeft: 8,
   },
-  securityNotice: {
-    fontSize: 14,
-    color: PrimaryGrey,
-    textAlign: 'center',
-    marginTop: 16,
-  },
-}) 
+})

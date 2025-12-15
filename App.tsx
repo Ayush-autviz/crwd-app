@@ -52,6 +52,7 @@ import Members from './src/screens/Members'
 import CRWDScreen from './src/screens/CRWDScreen'
 import ManageCRWD from './src/screens/ManageCRWD'
 import Interests from './src/screens/Interests'
+import GoogleCallback from './src/screens/GoogleCallback'
 import UserProfile from './src/screens/UserProfile'
 import SplashScreen from './src/screens/SplashScreen'
 import ClaimProfile from './src/components/onboarding/ClaimProfile'
@@ -278,6 +279,7 @@ useEffect(() => {
         <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
         <Stack.Screen name="VerificationCode" component={VerificationCode} />
         <Stack.Screen name="ResetPassword" component={ResetPassword} />
+        <Stack.Screen name="GoogleCallback" component={GoogleCallback} />
         {/* <Stack.Screen name="DrawerNav" component={DrawerNavigator} /> */}
         <Stack.Screen name="GroupCRWD" component={NewGroupCrwd} />
         <Stack.Screen name="CauseScreen" component={NewCause} />

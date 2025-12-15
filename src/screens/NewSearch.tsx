@@ -77,7 +77,7 @@ export default function NewSearchPage() {
   };
 
   const handleSurpriseMe = () => {
-    navigation.navigate('Search2' as never, { discover: true } as never);
+    navigation.navigate('SurpriseMe' as never);
   };
 
   // Get results based on active tab from the unified search API response

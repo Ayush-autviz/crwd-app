@@ -323,6 +323,22 @@ export default function DonationScreen() {
       setActiveTab('setup');
     }
     
+    // Handle preselected causes (array) for setup tab - only once
+    if (maybeParams?.preselectedCauses && Array.isArray(maybeParams.preselectedCauses) && maybeParams?.initialTab === 'setup' && !preselectedItemAdded) {
+      const preselectedCauseIds = maybeParams.preselectedCauses;
+      const preselectedCausesData = maybeParams.preselectedCausesData || [];
+      
+      // Set selected cause IDs
+      setSelectedCauseIds(preselectedCauseIds);
+      
+      // Set selected causes data if provided
+      if (preselectedCausesData.length > 0) {
+        setSelectedCausesData(preselectedCausesData);
+      }
+      
+      setPreselectedItemAdded(true);
+    }
+    
     // Handle preselected item for setup tab (collectives) - only once
     if (maybeParams?.preselectedItem && maybeParams?.initialTab === 'setup' && !preselectedItemAdded) {
       const preselectedItem = maybeParams.preselectedItem;

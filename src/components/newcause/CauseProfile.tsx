@@ -7,8 +7,28 @@ interface CauseProfileProps {
   causeData: any;
 }
 
+// Get category info - handles combined category IDs like "MK"
+const getCategoryInfo = (categoryId: string) => {
+  // If categoryId is a combination like "MK", split it and return multiple categories
+  if (categoryId && categoryId.length > 1) {
+    const categoryIds = categoryId.split('');
+    const foundCategories = categoryIds
+      .map((id) => categories.find((cat) => cat.id === id))
+      .filter((cat: any) => cat !== undefined);
+    
+    // If we found multiple categories, return them as an array
+    if (foundCategories.length > 0) {
+      return foundCategories;
+    }
+  }
+  
+  // Single category or default - return as array for consistency
+  const category = categories.find((cat) => cat.id === categoryId) || categories[0];
+  return [category];
+};
+
 export default function CauseProfile({ causeData }: CauseProfileProps) {
-  const category = categories.find((cat) => cat.id === causeData?.category);
+  const categoryInfo = getCategoryInfo(causeData?.category || '');
 
   // Get first letter for avatar fallback
   const firstLetter = causeData?.name?.charAt(0).toUpperCase() || 'C';
@@ -69,15 +89,20 @@ export default function CauseProfile({ causeData }: CauseProfileProps) {
           {causeData?.mission || causeData?.description}
         </Text>
 
-        {/* Category Tag */}
-        {category && (
-          <View
-            style={[
-              styles.categoryBadge,
-              { backgroundColor: category.background },
-            ]}
-          >
-            <Text style={styles.categoryText}>{category.name}</Text>
+        {/* Category Tags */}
+        {categoryInfo.length > 0 && (
+          <View style={styles.categoriesContainer}>
+            {categoryInfo.map((cat: any, index: number) => (
+              <View
+                key={index}
+                style={[
+                  styles.categoryBadge,
+                  { backgroundColor: cat.background },
+                ]}
+              >
+                <Text style={styles.categoryText}>{cat.name}</Text>
+              </View>
+            ))}
           </View>
         )}
       </View>
@@ -121,6 +146,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#111827',
     lineHeight: 20,
+  },
+  categoriesContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
   },
   categoryBadge: {
     alignSelf: 'flex-start',

@@ -10,6 +10,7 @@ import {
   PermissionsAndroid,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import LinearGradient from 'react-native-linear-gradient';
 import { useQuery, useQueries, useMutation } from '@tanstack/react-query';
 import { useNavigation } from '@react-navigation/native';
 import { useAuthStore } from '../store/store';
@@ -406,16 +407,24 @@ export default function NewHome() {
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <HomeHeader />
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Main Content */}
-        <View style={styles.mainContent}>
+     
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Main Content */}
+          <View style={styles.mainContent}>
           {/* Personalized Greeting */}
 
           {/* My Donation Box Card or Prompt */}
+          <LinearGradient
+        colors={['#DBEAFE', '#F3E8FF', '#FCE7F3']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.gradientContainer}
+      >
+        <View style={styles.gradientContent}>
           {token?.access_token && (
             <>
               {donationBoxLoading ? (
@@ -441,6 +450,8 @@ export default function NewHome() {
               )}
             </>
           )}
+          </View>
+          </LinearGradient>
 
           {/* Collective Carousel Card - Only show when donation box is active */}
           {token?.access_token && isDonationBoxActive && (
@@ -528,6 +539,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
   },
+  gradientContainer: {
+    flex: 1,
+  },
+  gradientContent: {
+    paddingHorizontal: 16
+  },
   scrollView: {
     flex: 1,
   },
@@ -535,9 +552,8 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   mainContent: {
-    backgroundColor: '#F0F9FF', // Gradient equivalent: from-blue-50 via-purple-50 to-pink-50
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    // paddingHorizontal: 16,
+    paddingBottom: 16,
   },
   loadingCard: {
     padding: 20,

@@ -70,13 +70,10 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
     gap: 12,
   },
   card: {
-    flex: 1,
-    minWidth: '30%',
+    width: '100%',
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 16,

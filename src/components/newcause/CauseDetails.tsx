@@ -7,8 +7,29 @@ interface CauseDetailsProps {
   causeData: any;
 }
 
+// Get category info - handles combined category IDs like "MK"
+const getCategoryInfo = (categoryId: string) => {
+  // If categoryId is a combination like "MK", split it and return multiple categories
+  if (categoryId && categoryId.length > 1) {
+    const categoryIds = categoryId.split('');
+    const foundCategories = categoryIds
+      .map((id) => categories.find((cat) => cat.id === id))
+      .filter((cat: any) => cat !== undefined);
+    
+    // If we found multiple categories, return them as an array
+    if (foundCategories.length > 0) {
+      return foundCategories;
+    }
+  }
+  
+  // Single category or default - return as array for consistency
+  const category = categories.find((cat) => cat.id === categoryId) || categories[0];
+  return [category];
+};
+
 export default function CauseDetails({ causeData }: CauseDetailsProps) {
-  const category = categories.find((cat) => cat.id === causeData?.category);
+  const categoryInfo = getCategoryInfo(causeData?.category || '');
+  const category = categoryInfo[0]; // Use first category for related categories logic
 
   // Get related categories - show related categories based on the main category
   const getRelatedCategories = () => {
@@ -68,10 +89,22 @@ export default function CauseDetails({ causeData }: CauseDetailsProps) {
       )}
 
       {/* Main Focus */}
-      {category && (
+      {categoryInfo.length > 0 && (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>MAIN FOCUS</Text>
-          <Text style={styles.mainFocus}>{category.name}</Text>
+          <View style={styles.mainFocusContainer}>
+            {categoryInfo.map((cat: any, index: number) => (
+              <View
+                key={index}
+                style={[
+                  styles.mainFocusBadge,
+                //   { backgroundColor: cat.background },
+                ]}
+              >
+                <Text style={styles.mainFocusText}>{cat.name}</Text>
+              </View>
+            ))}
+          </View>
         </View>
       )}
 
@@ -133,11 +166,21 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#FFFFFF',
   },
-  mainFocus: {
+  mainFocusContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginTop: 4,
+  },
+  mainFocusBadge: {
+    paddingEnd: 5,
+    paddingVertical: 4,
+    borderRadius: 20,
+  },
+  mainFocusText: {
     fontSize: 12,
     fontWeight: '500',
     color: '#1600ff',
-    marginTop: 4,
   },
   taxId: {
     fontSize: 12,

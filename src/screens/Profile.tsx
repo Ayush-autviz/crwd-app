@@ -550,7 +550,7 @@ export default function Profile() {
     if (profileLoading) {
         return (
             <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }} edges={['top', 'left', 'right']}>
-                <MainHeaderNav title={'Me'} show />
+                <MainHeaderNav title={'Me'} show menu={false} />
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                     <ActivityIndicator size="large" color={PrimaryBlue} />
                     <Text style={{ marginTop: 16, fontSize: 16, color: '#6b7280' }}>
@@ -565,7 +565,7 @@ export default function Profile() {
     if (profileError) {
         return (
             <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }} edges={['top', 'left', 'right']}>
-                <MainHeaderNav title={'Me'} show />
+                <MainHeaderNav title={'Me'} show menu={false} />
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                     <Text style={{ fontSize: 16, color: '#ef4444' }}>
                         Error loading profile
@@ -589,7 +589,7 @@ export default function Profile() {
 
     return (
         <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }} edges={['top', 'left', 'right']}>
-            <MainHeaderNav title={'Me'}  />
+            <MainHeaderNav title={'Me'} menu={false} />
 
             {/* Top right buttons */}
             <View style={{ flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingTop: 24, paddingBottom: 8 }}>
@@ -915,10 +915,13 @@ export default function Profile() {
                                 </TouchableOpacity>
                             </View>
                         )}
+
+                    <View style={{ height: 1, backgroundColor: '#e5e7eb', marginTop: 16 }}></View>
+
                     </View>
                     )}
 
-                    <View style={{ height: 1, backgroundColor: '#e5e7eb', marginHorizontal: 8, marginTop: 16 }}></View>
+                    {/* <View style={{ height: 1, backgroundColor: '#e5e7eb', marginHorizontal: 8, marginTop: 16 }}></View> */}
 
                     {/* Profile Bio */}
                     {profileData?.bio && <ProfileBio bio={profileData.bio} />}

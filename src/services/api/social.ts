@@ -69,8 +69,9 @@ export const deleteLike = async (id: string) => {
 };
 
 // Posts API endpoints
-export const getPosts = async (user_id?: string, collective_id?: string) => {
-    const response = await axiosClient.get(`/social/posts/?user_id=${user_id}&collective_id=${collective_id}`);
+export const getPosts = async (user_id?: string, collective_id?: string, page?: number) => {
+    const pageParam = page ? `&page=${page}` : '';
+    const response = await axiosClient.get(`/social/posts/?user_id=${user_id}&collective_id=${collective_id}${pageParam}`);
     return response.data;
 };
 

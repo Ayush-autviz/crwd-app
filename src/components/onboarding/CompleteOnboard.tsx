@@ -14,7 +14,7 @@ import {
   FlatList,
 } from 'react-native';
 import { Heart, Search, Check, Loader2, ArrowRight } from 'lucide-react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute, CommonActions } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getSurpriseMe, getCausesBySearch } from '../../services/api/crwd';
@@ -81,7 +81,7 @@ export default function CompleteOnboard() {
     refetchOnMount: true,
   });
 
-  // Add causes to donation box mutation
+  // Add causes to donation box mutation (not used in handleStartWithNonprofits, but kept for potential future use)
   const addToBoxMutation = useMutation({
     mutationFn: async (causeIds: number[]) => {
       return await addCausesToBox({ cause_ids: causeIds });
@@ -166,13 +166,43 @@ export default function CompleteOnboard() {
         );
       }
       
-      // Navigate to donation box setup with preselected causes
-      navigation.navigate('Donation', {
-        tab: 'setup',
-        preselectedCauses: selectedCauses,
-        preselectedCausesData: selectedCausesData,
+      // Navigate to bottom tab "Donate" with preselected causes
+      // Use reset to show bottom tabs and navigate to Donate tab
+      navigation.reset({
+        index: 0,
+        routes: [
+          {
+            name: 'DrawerNav' as never,
+            state: {
+              routes: [
+                {
+                  name: 'MainTabs' as never,
+                  state: {
+                    routes: [
+                      { name: 'Home' as never },
+                      { name: 'Search' as never },
+                      {
+                        name: 'Donate' as never,
+                        params: {
+                          initialTab: 'setup',
+                          preselectedCauses: selectedCauses, // IDs
+                          preselectedCausesData: selectedCausesData, // Full cause objects
+                        },
+                      },
+                      { name: 'Collectives' as never },
+                      { name: 'Profile' as never },
+                    ],
+                    index: 2, // Donate tab index
+                  },
+                },
+              ],
+              index: 0,
+            },
+          },
+        ],
       });
     } else {
+      // If no causes selected, navigate to home
       navigation.reset({
         index: 0,
         routes: [{ name: 'DrawerNav' as never }],
@@ -197,7 +227,22 @@ export default function CompleteOnboard() {
   };
 
   const getCategoryInfo = (categoryId: string) => {
-    return categories.find((cat) => cat.id === categoryId) || categories[0];
+    // If categoryId is a combination like "MK", split it and return multiple categories
+    if (categoryId && categoryId.length > 1) {
+      const categoryIds = categoryId.split('');
+      const foundCategories = categoryIds
+        .map((id) => categories.find((cat) => cat.id === id))
+        .filter((cat) => cat !== undefined);
+      
+      // If we found multiple categories, return them as an array
+      if (foundCategories.length > 0) {
+        return foundCategories;
+      }
+    }
+    
+    // Single category or default - return as array for consistency
+    const category = categories.find((cat) => cat.id === categoryId) || categories[0];
+    return [category];
   };
 
   // Get surprise causes
@@ -377,13 +422,14 @@ export default function CompleteOnboard() {
               <View style={styles.section}>
                 <View style={styles.sectionHeader}>
                   <Text style={styles.sectionTitle}>Your Random Selection</Text>
-                  <TouchableOpacity
-                    onPress={handleChangeMethod}
-                    style={styles.changeMethodButton}
-                  >
-                    <Text style={styles.changeMethodText}>Change Method</Text>
-                  </TouchableOpacity>
+                  
                 </View>
+                <TouchableOpacity
+                    onPress={handleChangeMethod}
+                    style={[styles.changeMethodButton, { marginBottom: 16, width: '50%', }]}
+                  >
+                    <Text style={[styles.changeMethodText, { textAlign: 'center' }]}>Change Method</Text>
+                  </TouchableOpacity>
 
                 {isLoadingSurprise ? (
                   <View style={styles.loadingContainer}>
@@ -423,15 +469,20 @@ export default function CompleteOnboard() {
                                 <Text style={styles.causeName} numberOfLines={2}>
                                   {cause.name}
                                 </Text>
-                                <View
-                                  style={[
-                                    styles.causeCategoryBadge,
-                                    { backgroundColor: categoryInfo.background }
-                                  ]}
-                                >
-                                  <Text style={styles.causeCategoryText}>
-                                    {categoryInfo.name}
-                                  </Text>
+                                <View style={styles.causeCategoriesContainer}>
+                                  {categoryInfo.map((cat: any, index: number) => (
+                                    <View
+                                      key={index}
+                                      style={[
+                                        styles.causeCategoryBadge,
+                                        { backgroundColor: cat.background }
+                                      ]}
+                                    >
+                                      <Text style={styles.causeCategoryText}>
+                                        {cat.name}
+                                      </Text>
+                                    </View>
+                                  ))}
                                 </View>
                               </View>
                               {isSelected && (
@@ -466,22 +517,15 @@ export default function CompleteOnboard() {
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={handleStartWithNonprofits}
-                  disabled={selectedCauses.length === 0 || addToBoxMutation.isPending}
+                  disabled={selectedCauses.length === 0}
                   style={[
                     styles.startButton,
-                    (selectedCauses.length === 0 || addToBoxMutation.isPending) && styles.startButtonDisabled
+                    selectedCauses.length === 0 && styles.startButtonDisabled
                   ]}
                 >
-                  {addToBoxMutation.isPending ? (
-                    <View style={styles.loadingContainer}>
-                      <Loader2 size={16} color="white" />
-                      <Text style={styles.startButtonText}>Adding...</Text>
-                    </View>
-                  ) : (
-                    <Text style={styles.startButtonText}>
-                      Start with {selectedCauses.length} Nonprofit{selectedCauses.length !== 1 ? 's' : ''} →
-                    </Text>
-                  )}
+                  <Text style={styles.startButtonText}>
+                    Start with {selectedCauses.length} Nonprofit{selectedCauses.length !== 1 ? 's' : ''} →
+                  </Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -603,15 +647,20 @@ export default function CompleteOnboard() {
                                 <Text style={styles.causeName}>
                                   {cause.name}
                                 </Text>
-                                <View
-                                  style={[
-                                    styles.causeCategoryBadge,
-                                    { backgroundColor: categoryInfo.background }
-                                  ]}
-                                >
-                                  <Text style={styles.causeCategoryText}>
-                                    {categoryInfo.name}
-                                  </Text>
+                                <View style={styles.causeCategoriesContainer}>
+                                  {categoryInfo.map((cat: any, index: number) => (
+                                    <View
+                                      key={index}
+                                      style={[
+                                        styles.causeCategoryBadge,
+                                        { backgroundColor: cat.background }
+                                      ]}
+                                    >
+                                      <Text style={styles.causeCategoryText}>
+                                        {cat.name}
+                                      </Text>
+                                    </View>
+                                  ))}
                                 </View>
                               </View>
                               {isSelected && (
@@ -640,22 +689,15 @@ export default function CompleteOnboard() {
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={handleStartWithNonprofits}
-                  disabled={selectedCauses.length === 0 || addToBoxMutation.isPending}
+                  disabled={selectedCauses.length === 0}
                   style={[
                     styles.startButton,
-                    (selectedCauses.length === 0 || addToBoxMutation.isPending) && styles.startButtonDisabled
+                    selectedCauses.length === 0 && styles.startButtonDisabled
                   ]}
                 >
-                  {addToBoxMutation.isPending ? (
-                    <View style={styles.loadingContainer}>
-                      <Loader2 size={16} color="white" />
-                      <Text style={styles.startButtonText}>Adding...</Text>
-                    </View>
-                  ) : (
-                    <Text style={styles.startButtonText}>
-                      Start with {selectedCauses.length} Nonprofit{selectedCauses.length !== 1 ? 's' : ''} →
-                    </Text>
-                  )}
+                  <Text style={styles.startButtonText}>
+                    Start with {selectedCauses.length} Nonprofit{selectedCauses.length !== 1 ? 's' : ''} →
+                  </Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -940,11 +982,16 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     flexShrink: 1,
   },
+  causeCategoriesContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginTop: 4,
+  },
   causeCategoryBadge: {
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 999,
-    alignSelf: 'flex-start',
   },
   causeCategoryText: {
     fontSize: 10,

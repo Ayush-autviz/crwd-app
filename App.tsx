@@ -29,6 +29,7 @@ import NewGroupCrwd from './src/screens/NewGroupCrwd'
 import CauseScreen from './src/screens/CauseScreen'
 import NewCause from './src/screens/NewCause'
 import NewSearch from './src/screens/NewSearch'
+import SurpriseMe from './src/screens/SurpriseMe'
 import Articles from './src/screens/Articles'
 import ArticleDetail from './src/screens/ArticleDetail'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
@@ -211,11 +212,16 @@ useEffect(() => {
                 width: 50,
                 height: 50,
                 borderRadius: 100,
-                backgroundColor: '#F3F4F6',
+                backgroundColor: '#fff',
                 justifyContent: 'center',
                 alignItems: 'center',
                 marginTop: -30,
                 marginBottom: -8,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.25,
+                shadowRadius: 3.84,
+                elevation: 5,
               }}>
                 <Heart size={28} color={color} />
               </View>
@@ -284,6 +290,7 @@ useEffect(() => {
         <Stack.Screen name="GroupCRWD" component={NewGroupCrwd} />
         <Stack.Screen name="CauseScreen" component={NewCause} />
         <Stack.Screen name="NewSearch" component={NewSearch} />
+        <Stack.Screen name="SurpriseMe" component={SurpriseMe} />
         <Stack.Screen name="Search2" component={Search2} />
         <Stack.Screen name="Email" component={Email} />
         <Stack.Screen name="Password" component={Password} />

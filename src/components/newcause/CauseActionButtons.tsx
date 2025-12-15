@@ -44,7 +44,7 @@ const styles = StyleSheet.create({
   donateButton: {
     width: '100%',
     backgroundColor: '#1600ff',
-    paddingVertical: 16,
+    paddingVertical: 12,
     borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',

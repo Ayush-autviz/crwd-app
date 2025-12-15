@@ -26,7 +26,6 @@ import VerifiedNonprofitInfo from '../components/newcause/VerifiedNonprofitInfo'
 import CauseDetails from '../components/newcause/CauseDetails';
 import OrganizationMission from '../components/newcause/OrganizationMission';
 import SimilarNonprofits from '../components/newcause/SimilarNonprofits';
-import Footer from '../components/Footer';
 import { Share } from 'react-native';
 
 export default function NewCausePage() {
@@ -219,7 +218,6 @@ export default function NewCausePage() {
           <SimilarNonprofits similarCauses={similarCauses} isLoading={isLoadingSimilar} />
         </View>
 
-        <Footer />
       </ScrollView>
 
       {/* Add to Donation Box Confirmation Modal */}

@@ -24,6 +24,7 @@ import { getCausesBySearch, getJoinCollective } from '../../services/api/crwd';
 import { useAuthStore } from '../../store/store';
 import { useStripe } from '@stripe/stripe-react-native';
 import ConfettiCannon from 'react-native-confetti-cannon';
+import RequestNonprofitModal from '../newsearch/RequestNonprofitModal';
 
 const { width, height } = Dimensions.get('window');
 
@@ -64,6 +65,7 @@ export default function OneTimeDonation({
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const [isPresenting, setIsPresenting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showRequestModal, setShowRequestModal] = useState(false);
   const confettiRef = useRef<ConfettiCannon>(null);
 
   // Handle preselected item from navigation
@@ -513,11 +515,9 @@ export default function OneTimeDonation({
           </View>
           
           <TouchableOpacity
-            onPress={() => {
-              // Handle request nonprofit
-              Alert.alert('Request Nonprofit', 'This feature will be available soon.');
-            }}
+            onPress={() => setShowRequestModal(true)}
             style={styles.requestLinkContainer}
+            activeOpacity={0.7}
           >
             <Text style={styles.requestLink}>Can't find your nonprofit? Request it here</Text>
           </TouchableOpacity>
@@ -681,6 +681,12 @@ export default function OneTimeDonation({
           </View>
         </TouchableWithoutFeedback>
       </Modal>
+
+      {/* Request Nonprofit Modal */}
+      <RequestNonprofitModal
+        isOpen={showRequestModal}
+        onClose={() => setShowRequestModal(false)}
+      />
     </View>
   );
 }

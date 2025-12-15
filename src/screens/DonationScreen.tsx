@@ -27,6 +27,7 @@ import { Alert, ActivityIndicator, Modal } from 'react-native';
 import { useStripe } from '@stripe/stripe-react-native';
 import MainHeaderNav from '../components/MainHeaderNav';
 import DonationReviewBottomSheet from '../components/donation/DonationReviewBottomSheet';
+import RequestNonprofitModal from '../components/newsearch/RequestNonprofitModal';
 
 
 export default function DonationScreen() {
@@ -52,6 +53,7 @@ export default function DonationScreen() {
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [showReviewBottomSheet, setShowReviewBottomSheet] = useState(false);
   const [justCreatedBox, setJustCreatedBox] = useState(false);
+  const [showRequestModal, setShowRequestModal] = useState(false);
   const reviewBottomSheetRef = useRef<any>(null);
   const { user: currentUser } = useAuthStore();
   const queryClient = useQueryClient();
@@ -749,10 +751,9 @@ export default function DonationScreen() {
 
                     {/* Request Nonprofit Link */}
                     <TouchableOpacity
-                      onPress={() => {
-                        // TODO: Open request modal
-                      }}
+                      onPress={() => setShowRequestModal(true)}
                       style={styles.requestLinkContainer}
+                      activeOpacity={0.7}
                     >
                       <Text style={styles.requestLink}>
                         Can't find your nonprofit? Request it here
@@ -1147,6 +1148,12 @@ export default function DonationScreen() {
         onClose={() => {
           setJustCreatedBox(false); // Reset flag when closing
         }}
+      />
+
+      {/* Request Nonprofit Modal */}
+      <RequestNonprofitModal
+        isOpen={showRequestModal}
+        onClose={() => setShowRequestModal(false)}
       />
     </SafeAreaView>
     </>

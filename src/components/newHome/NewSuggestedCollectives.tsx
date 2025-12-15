@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, CommonActions } from '@react-navigation/native';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
 
 interface Collective {
@@ -54,7 +54,31 @@ export default function NewSuggestedCollectives({
       <View style={styles.header}>
         <Text style={styles.title}>Suggested Collectives</Text>
         <TouchableOpacity
-          onPress={() => navigation.navigate('Search' as never)}
+          onPress={() => {
+            // Navigate to bottom tabs "Collectives" tab
+            navigation.dispatch(
+              CommonActions.reset({
+                index: 0,
+                routes: [
+                  {
+                    name: 'DrawerNav' as never,
+                    state: {
+                      routes: [
+                        {
+                          name: 'MainTabs' as never,
+                          state: {
+                            routes: [{ name: 'Collectives' as never }] as never[],
+                            index: 0,
+                          },
+                        },
+                      ] as never[],
+                      index: 0,
+                    },
+                  },
+                ] as never[],
+              })
+            );
+          }}
           activeOpacity={0.7}
         >
           <Text style={styles.seeAll}>See all</Text>
@@ -82,7 +106,7 @@ export default function NewSuggestedCollectives({
               style={styles.card}
               activeOpacity={0.7}
               onPress={() =>
-                navigation.navigate('GroupCRWD' as never, { id: collective.id } as never)
+                (navigation as any).navigate('GroupCRWD', { id: collective.id })
               }
             >
               {/* Icon */}

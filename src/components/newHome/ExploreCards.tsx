@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Search, Star, Users } from 'lucide-react-native';
-import { useNavigation } from '@react-navigation/native';
+import { Search, Heart, Users } from 'lucide-react-native';
+import { useNavigation, CommonActions } from '@react-navigation/native';
 
 export default function ExploreCards() {
   const navigation = useNavigation();
@@ -18,7 +18,7 @@ export default function ExploreCards() {
     },
     {
       id: 'favorites',
-      icon: Star,
+      icon: Heart,
       iconColor: '#F59E0B',
       bgColor: '#FEF3C7',
       title: 'Your Favorites',
@@ -32,7 +32,37 @@ export default function ExploreCards() {
       bgColor: '#F3E8FF',
       title: 'Browse CRWDs',
       subtitle: 'Discover communities you can join',
-      onPress: () => navigation.navigate('Circles' as never),
+      onPress: () => {
+        // Navigate to bottom tabs "Collectives" tab
+        navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [
+              {
+                name: 'DrawerNav' as never,
+                state: {
+                  routes: [
+                    {
+                      name: 'MainTabs' as never,
+                      state: {
+                        routes: [
+                          { name: 'Home' as never },
+                          { name: 'Search' as never },
+                          { name: 'Donate' as never },
+                          { name: 'Collectives' as never },
+                          { name: 'Profile' as never },
+                        ],
+                        index: 3, // Collectives tab index
+                      },
+                    },
+                  ],
+                  index: 0,
+                },
+              },
+            ],
+          })
+        );
+      },
     },
   ];
 
@@ -49,7 +79,7 @@ export default function ExploreCards() {
               activeOpacity={0.7}
             >
               <View style={[styles.iconWrapper, { backgroundColor: card.bgColor }]}>
-                <IconComponent size={32} color={card.iconColor} strokeWidth={2} />
+                <IconComponent size={32} color={card.iconColor} />
               </View>
               <View style={styles.textContainer}>
                 <Text style={styles.title}>{card.title}</Text>

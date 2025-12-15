@@ -28,7 +28,7 @@ import NewSuggestedCollectives from '../components/newHome/NewSuggestedCollectiv
 import NewFeaturedNonprofits from '../components/newHome/NewFeaturedNonprofits';
 import CommunityUpdates from '../components/newHome/CommunityUpdates';
 import ExploreCards from '../components/newHome/ExploreCards';
-import Footer from '../components/Footer';
+
 import GuestHome from '../components/GuestHome';
 
 export default function NewHome() {
@@ -525,9 +525,9 @@ export default function NewHome() {
           <ExploreCards />
 
           {/* Footer */}
-          <Footer>
+          
             <View />
-          </Footer>
+          
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -549,7 +549,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 20,
+    paddingBottom: 60,
   },
   mainContent: {
     // paddingHorizontal: 16,

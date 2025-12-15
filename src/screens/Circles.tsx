@@ -173,7 +173,7 @@ const Circles = () => {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'right', 'left']}>
-        <MainHeaderNav title={'CRWD Collectives'} show={true} menu={false} postButton={false} />
+        <MainHeaderNav title={'CRWD Collectives'} menu={false} postButton={false} />
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Discover Collectives</Text>
         <Text style={styles.headerSubtitle}>

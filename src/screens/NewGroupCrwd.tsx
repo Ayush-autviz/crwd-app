@@ -30,7 +30,6 @@ import CollectiveStats from '../components/newgroupcrwd/CollectiveStats';
 import DonationInfoBox from '../components/newgroupcrwd/DonationInfoBox';
 import SupportedNonprofits from '../components/newgroupcrwd/SupportedNonprofits';
 import CommunityActivity from '../components/newgroupcrwd/CommunityActivity';
-import Footer from '../components/Footer';
 import { Share } from 'react-native';
 
 export default function NewGroupCrwdPage() {
@@ -390,7 +389,6 @@ export default function NewGroupCrwdPage() {
           </View>
         </View>
 
-        <Footer />
       </ScrollView>
 
       {/* Unjoin Confirmation Dialog */}

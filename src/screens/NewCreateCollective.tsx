@@ -15,7 +15,7 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, CommonActions } from '@react-navigation/native';
 import { 
   ArrowLeft, 
   HelpCircle, 
@@ -46,6 +46,7 @@ import * as ImagePicker from 'react-native-image-picker';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import CrwdAnimation from '../components/ui/CrwdAnimation';
 import { WEB_BASE_URL } from '../Constants/url';
+import LinearGradient from 'react-native-linear-gradient';
 
 const getCategoryById = (categoryId: string | undefined) => {
   return categories.find(cat => cat.id === categoryId) || null;
@@ -410,7 +411,7 @@ export default function NewCreateCollective() {
               <Avatar size={80} style={styles.reviewAvatar}>
                 {logoType === 'upload' ? (
                   uploadedLogoPreview ? (
-                    <AvatarImage source={{ uri: uploadedLogoPreview }} alt={name} />
+                    <AvatarImage src={uploadedLogoPreview} alt={name} />
                   ) : (
                     <AvatarFallback
                       style={{ backgroundColor: '#f3f4f6' }}
@@ -454,7 +455,7 @@ export default function NewCreateCollective() {
                     <View key={cause.id} style={styles.reviewCauseCard}>
                       <View style={styles.reviewCauseContent}>
                         <Avatar size={48} style={styles.reviewCauseAvatar}>
-                          <AvatarImage source={{ uri: causeData.image }} alt={causeData.name} />
+                          <AvatarImage src={causeData.image} alt={causeData.name} />
                           <AvatarFallback
                             style={{ backgroundColor: avatarBgColor }}
                             textStyle={styles.reviewCauseAvatarFallback}
@@ -514,10 +515,17 @@ export default function NewCreateCollective() {
   if (createCollectiveMutation.isPending || (createdCollective && !showAnimationComplete)) {
     return (
       <SafeAreaView style={styles.animationContainer} edges={['top', 'left', 'right', 'bottom']}>
-        <View style={styles.animationContent}>
-          <CrwdAnimation size="lg" />
-          <Text style={styles.animationText}>Creating collective{'.'.repeat(dotCount)}</Text>
-        </View>
+        <LinearGradient
+          colors={['#EFF6FF', '#FDF2F8', '#F3E8FF']} // from-blue-50 via-pink-50 to-purple-50
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.animationGradient}
+        >
+          <View style={styles.animationContent}>
+            <CrwdAnimation size="lg" />
+            {/* Text commented out to match vite version */}
+          </View>
+        </LinearGradient>
       </SafeAreaView>
     );
   }
@@ -558,7 +566,40 @@ export default function NewCreateCollective() {
             {/* Action Buttons */}
             <View style={styles.successButtons}>
               <TouchableOpacity
-                onPress={() => navigation.navigate('Donation' as never, { tab: 'setup' } as never)}
+                onPress={() => {
+                  // Navigate to bottom tab "Donate" with setup tab
+                  (navigation as any).reset({
+                    index: 0,
+                    routes: [
+                      {
+                        name: 'DrawerNav' as never,
+                        state: {
+                          routes: [
+                            {
+                              name: 'MainTabs' as never,
+                              state: {
+                                routes: [
+                                  { name: 'Home' as never },
+                                  { name: 'Search' as never },
+                                  {
+                                    name: 'Donate' as never,
+                                    params: {
+                                      initialTab: 'setup',
+                                    },
+                                  },
+                                  { name: 'Collectives' as never },
+                                  { name: 'Profile' as never },
+                                ],
+                                index: 2, // Donate tab index
+                              },
+                            },
+                          ],
+                          index: 0,
+                        },
+                      },
+                    ],
+                  });
+                }}
                 style={styles.successPrimaryButton}
               >
                 <Heart size={20} color="white" />
@@ -566,7 +607,7 @@ export default function NewCreateCollective() {
               </TouchableOpacity>
               
               <TouchableOpacity
-                onPress={() => navigation.navigate('NewGroupCrwd' as never, { collectiveId: createdCollective.id.toString() } as never)}
+                onPress={() => (navigation as any).navigate('GroupCRWD', { id: createdCollective.id })}
                 style={styles.successSecondaryButton}
               >
                 <Eye size={20} color="#111827" />
@@ -679,7 +720,7 @@ export default function NewCreateCollective() {
               <Avatar size={64} style={styles.logoAvatar}>
                 {logoType === 'upload' ? (
                   uploadedLogoPreview ? (
-                    <AvatarImage source={{ uri: uploadedLogoPreview }} alt={name} />
+                    <AvatarImage src={uploadedLogoPreview} alt={name} />
                   ) : (
                     <AvatarFallback
                       style={{ backgroundColor: '#f3f4f6' }}
@@ -809,7 +850,7 @@ export default function NewCreateCollective() {
                       <View key={cause.id} style={styles.selectedCauseCard}>
                         <View style={styles.selectedCauseContent}>
                           <Avatar size={48} style={styles.selectedCauseAvatar}>
-                            <AvatarImage source={{ uri: causeData.image }} alt={causeData.name} />
+                            <AvatarImage src={causeData.image} alt={causeData.name} />
                             <AvatarFallback
                               style={{ backgroundColor: avatarBgColor }}
                               textStyle={styles.selectedCauseAvatarFallback}
@@ -909,7 +950,7 @@ export default function NewCreateCollective() {
                               ]}
                             >
                               <Avatar size={48} style={styles.causeAvatar}>
-                                <AvatarImage source={{ uri: cause.image }} alt={cause.name} />
+                                <AvatarImage src={cause.image} alt={cause.name} />
                                 <AvatarFallback
                                   style={{ backgroundColor: avatarBgColor }}
                                   textStyle={styles.causeAvatarFallback}
@@ -1038,7 +1079,7 @@ export default function NewCreateCollective() {
                             ]}
                           >
                             <Avatar size={48} style={styles.causeAvatar}>
-                              <AvatarImage source={{ uri: cause.image }} alt={cause.name} />
+                              <AvatarImage src={cause.image} alt={cause.name} />
                               <AvatarFallback
                                 style={{ backgroundColor: avatarBgColor }}
                                 textStyle={styles.causeAvatarFallback}
@@ -1612,6 +1653,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom:  10,
   },
   footerButtonText: {
     color: 'white',
@@ -1624,6 +1666,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom:  10,
   },
   footerButtonTextDisabled: {
     color: 'white',
@@ -1759,6 +1802,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom:  10,
   },
   reviewCreateButtonDisabled: {
     opacity: 0.5,
@@ -1771,13 +1815,16 @@ const styles = StyleSheet.create({
   // Animation styles
   animationContainer: {
     flex: 1,
-    backgroundColor: '#EFF6FF',
+  },
+  animationGradient: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: 12,
   },
   animationContent: {
     alignItems: 'center',
-    gap: 24,
+    gap: 32, // gap-6 md:gap-8 (24px to 32px)
   },
   animationText: {
     fontSize: 16,

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, ScrollView } from 'react-native'
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, ScrollView, Image } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import { PrimaryGreen, SecondaryGreen, PrimaryGrey } from '../Constants/Colors'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -48,7 +48,11 @@ const Circles = () => {
 
   const renderJoinedCollectiveItem = ({ item }: { item: any }) => {
     const circle = item.collective || item;
-    // Generate consistent color based on collective name
+    // Priority: 1. Use color (with white text), 2. Use logo (image), 3. Fallback to generated color with letter
+    const hasColor = circle.color;
+    const hasLogo = circle.logo && 
+      (circle.logo.startsWith('http') || circle.logo.startsWith('/') || circle.logo.startsWith('data:'));
+    // Generate consistent color based on collective name if no color/logo
     const colors = [
       '#f97316', // orange
       '#ec4899', // pink
@@ -59,7 +63,9 @@ const Circles = () => {
       '#ef4444', // red
     ];
     const colorIndex = (circle.name?.charCodeAt(0) || 0) % colors.length;
-    const circleBgColor = colors[colorIndex];
+    const circleBgColor = hasColor || (!hasLogo ? colors[colorIndex] : undefined);
+    const showImage = hasLogo && !hasColor;
+    const iconLetter = circle.name?.charAt(0)?.toUpperCase() || 'C';
     const founderName = circle.created_by 
       ? `${circle.created_by.first_name || ''} ${circle.created_by.last_name || ''}`.trim() || circle.created_by.username
       : 'Unknown';
@@ -72,11 +78,19 @@ const Circles = () => {
       >
         {/* Collective Icon */}
         <View
-          style={[styles.collectiveIcon, { backgroundColor: circleBgColor }]}
+          style={[styles.collectiveIcon, circleBgColor ? { backgroundColor: circleBgColor } : {}]}
         >
-          <Text style={styles.collectiveIconText}>
-            {circle.name?.charAt(0)?.toUpperCase() || 'C'}
-          </Text>
+          {showImage ? (
+            <Image
+              source={{ uri: circle.logo }}
+              style={styles.collectiveIconImage}
+              resizeMode="cover"
+            />
+          ) : (
+            <Text style={styles.collectiveIconText}>
+              {iconLetter}
+            </Text>
+          )}
         </View>
 
         <Text style={styles.cardTitle} numberOfLines={1}>
@@ -110,7 +124,11 @@ const Circles = () => {
   };
 
   const renderDiscoverItem = ({ item }: { item: any }) => {
-    // Generate consistent color based on collective name
+    // Priority: 1. Use color (with white text), 2. Use logo (image), 3. Fallback to generated color with letter
+    const hasColor = item.color;
+    const hasLogo = item.logo && 
+      (item.logo.startsWith('http') || item.logo.startsWith('/') || item.logo.startsWith('data:'));
+    // Generate consistent color based on collective name if no color/logo
     const colors = [
       '#f97316', // orange
       '#ec4899', // pink
@@ -121,7 +139,9 @@ const Circles = () => {
       '#ef4444', // red
     ];
     const colorIndex = (item.name?.charCodeAt(0) || 0) % colors.length;
-    const circleBgColor = colors[colorIndex];
+    const circleBgColor = hasColor || (!hasLogo ? colors[colorIndex] : undefined);
+    const showImage = hasLogo && !hasColor;
+    const iconLetter = item.name?.charAt(0)?.toUpperCase() || 'C';
     const founderName = item.created_by 
       ? `${item.created_by.first_name || ''} ${item.created_by.last_name || ''}`.trim() || item.created_by.username
       : 'Unknown';
@@ -134,11 +154,19 @@ const Circles = () => {
       >
         {/* Collective Icon */}
         <View
-          style={[styles.collectiveIcon, { backgroundColor: circleBgColor }]}
+          style={[styles.collectiveIcon, circleBgColor ? { backgroundColor: circleBgColor } : {}]}
         >
-          <Text style={styles.collectiveIconText}>
-            {item.name?.charAt(0)?.toUpperCase() || 'C'}
-          </Text>
+          {showImage ? (
+            <Image
+              source={{ uri: item.logo }}
+              style={styles.collectiveIconImage}
+              resizeMode="cover"
+            />
+          ) : (
+            <Text style={styles.collectiveIconText}>
+              {iconLetter}
+            </Text>
+          )}
         </View>
 
         <Text style={styles.cardTitle} numberOfLines={1}>
@@ -361,6 +389,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 6,
+    overflow: 'hidden',
+  },
+  collectiveIconImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 24,
   },
   collectiveIconText: {
     fontSize: 20,

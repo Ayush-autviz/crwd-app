@@ -43,9 +43,14 @@ export default function CollectiveCarouselCard({
   // Get first letter of collective name for icon
   const iconLetter = currentCollective.name?.charAt(0).toUpperCase() || 'C';
 
-  // Determine icon display: color first, then logo, then default
-  const iconColor = currentCollective.color || '#14B8A6'; // Default color
-  const showImage = !currentCollective.color && (currentCollective.logo || currentCollective.image);
+  // Priority: 1. Use color (with white text), 2. Use logo (image), 3. Fallback to generated color with letter
+  const hasColor = currentCollective.color;
+  const hasLogo = (currentCollective.logo || currentCollective.image) && 
+    ((currentCollective.logo || currentCollective.image || '').startsWith('http') ||
+     (currentCollective.logo || currentCollective.image || '').startsWith('/') ||
+     (currentCollective.logo || currentCollective.image || '').startsWith('data:'));
+  const iconColor = hasColor || (!hasLogo ? '#14B8A6' : undefined); // Default color if no color/logo
+  const showImage = hasLogo && !hasColor; // Show logo only if no color is available
 
   // Check if user is founder/admin
   const isFounder = currentCollective.role === 'Admin' || currentCollective.role === 'Founder';
@@ -101,28 +106,27 @@ export default function CollectiveCarouselCard({
 
           {/* Content */}
           <View style={styles.textContent}>
-            <View style={styles.titleRow}>
-              <Text style={styles.title}>{currentCollective.name}</Text>
-              {currentCollective.role && (
-                <View
+            <Text style={styles.title}>{currentCollective.name}</Text>
+            {currentCollective.role && (
+              <View
+                style={[
+                  styles.badge,
+                  currentCollective.role === 'Admin'
+                    ? styles.founderBadge
+                    : styles.memberBadge,
+                ]}
+              >
+                <Text
                   style={[
-                    styles.badge,
-                    currentCollective.role === 'Admin'
-                      ? styles.founderBadge
-                      : styles.memberBadge,
+                    styles.badgeText,
+                    currentCollective.role === 'Admin' && styles.founderBadgeText,
+                    currentCollective.role !== 'Admin' && styles.memberBadgeText,
                   ]}
                 >
-                  <Text
-                    style={[
-                      styles.badgeText,
-                      currentCollective.role === 'Admin' && styles.founderBadgeText,
-                    ]}
-                  >
-                    {currentCollective.role === 'Admin' ? 'Founder' : currentCollective.role}
-                  </Text>
-                </View>
-              )}
-            </View>
+                  {currentCollective.role === 'Admin' ? 'Founder' : currentCollective.role}
+                </Text>
+              </View>
+            )}
             <Text style={styles.description}>
               <Text style={styles.bold}>{currentCollective.memberCount}</Text> members are
               currently donating to{' '}
@@ -207,8 +211,8 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   iconContainer: {
-    width: 56,
-    height: 56,
+    width: 40,
+    height: 40,
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
@@ -229,22 +233,18 @@ const styles = StyleSheet.create({
     minWidth: 0,
     paddingRight: 60,
   },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    flexWrap: 'wrap',
-    marginBottom: 8,
-  },
   title: {
     fontSize: 16,
     fontWeight: '700',
     color: '#111827',
+    marginBottom: 8,
   },
   badge: {
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
+    alignSelf: 'flex-start',
+    marginBottom: 8,
   },
   founderBadge: {
     backgroundColor: '#FCE7F3',
@@ -259,6 +259,9 @@ const styles = StyleSheet.create({
   },
   founderBadgeText: {
     color: '#DC2626',
+  },
+  memberBadgeText: {
+    color: '#FFFFFF',
   },
   description: {
     fontSize: 14,

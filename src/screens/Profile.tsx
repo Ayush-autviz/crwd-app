@@ -288,6 +288,8 @@ export default function Profile() {
         return {
             name: collective.name || 'Unknown Collective',
             avatar: collective.created_by?.profile_picture || collective.avatar || collective.image || '',
+            logo: collective.logo || undefined,
+            color: collective.color || undefined,
             role: item.role || 'Member',
             id: collective.id,
             description: collective.description || '',
@@ -421,13 +423,24 @@ export default function Profile() {
             }
             return (
                 <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-                    {statsCrwds.length > 0 ? statsCrwds.map((crwd: any, index: number) => (
+                    {statsCrwds.length > 0 ? statsCrwds.map((crwd: any, index: number) => {
+                        // Priority: 1. Use color (with white text), 2. Use logo (image), 3. Fallback to generated color with letter
+                        const hasColor = crwd.color;
+                        const hasLogo = crwd.logo && 
+                            (crwd.logo.startsWith('http') || crwd.logo.startsWith('/') || crwd.logo.startsWith('data:'));
+                        const iconColor = hasColor || (!hasLogo ? '#10B981' : undefined);
+                        const showImage = hasLogo && !hasColor;
+                        const iconLetter = crwd.name.charAt(0).toUpperCase();
+                        
+                        return (
                         <View key={crwd.id || index} style={styles.statsItem}>
                             <View style={styles.statsItemLeft}>
                                 <Avatar size={40}>
-                                    <AvatarImage src={crwd.avatar} />
-                                    <AvatarFallback style={{ backgroundColor: '#dcfce7' }} textStyle={{ color: '#16a34a', fontWeight: '600' }}>
-                                        {crwd.name.charAt(0).toUpperCase()}
+                                    {showImage ? (
+                                        <AvatarImage src={crwd.logo} />
+                                    ) : null}
+                                    <AvatarFallback style={{ backgroundColor: iconColor || '#10B981' }} textStyle={{ color: '#FFFFFF', fontWeight: '600' }}>
+                                        {iconLetter}
                                     </AvatarFallback>
                                 </Avatar>
                                 <View style={styles.statsItemInfo}>
@@ -448,7 +461,8 @@ export default function Profile() {
                                 <Text style={styles.viewButtonText}>View Details</Text>
                             </TouchableOpacity>
                         </View>
-                    )) : (
+                        );
+                    }) : (
                         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 40 }}>
                             <Text style={{ fontSize: 16, color: PrimaryGrey }}>No collectives found</Text>
                         </View>

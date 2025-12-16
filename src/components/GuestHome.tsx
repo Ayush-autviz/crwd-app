@@ -190,7 +190,7 @@ export default function GuestHome() {
       {/* Navbar */}
       <View style={styles.navbar}>
         <TouchableOpacity onPress={() => navigation.navigate('Waitlist' as never)}>
-          <NewLogo size="md" />
+          <Image source={require('../assets/newLogo/FullLogo.png')} style={{ resizeMode: 'contain', width: 100, height: 50 }} />
         </TouchableOpacity>
 
         {/* Right side buttons */}
@@ -213,7 +213,7 @@ export default function GuestHome() {
             onPress={() => setMenuOpen(!menuOpen)}
             style={styles.menuButton}
           >
-            <Menu size={36} color="#374151" />
+            <Menu size={30} color="#374151" />
           </TouchableOpacity>
         </View>
       </View>
@@ -450,7 +450,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 4,
     borderBottomWidth: 1,
     borderBottomColor: '#E5E7EB',
     backgroundColor: 'white',
@@ -474,7 +474,7 @@ const styles = StyleSheet.create({
   navbarRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 6,
   },
   navbarButton: {
     padding: 8,
@@ -483,7 +483,7 @@ const styles = StyleSheet.create({
   signInButton: {
     backgroundColor: '#FF3366',
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 6,
     borderRadius: 9999,
   },
   signInButtonText: {

@@ -41,7 +41,7 @@ export default function HomeHeader({ show = false, menu = true, post = true }) {
 
     return (
         <SafeAreaView style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 5, alignItems: 'center', marginHorizontal: 10, borderBottomWidth: 2, borderBottomColor: LightGrey, }}>
-            <Image source={require('../assets/logo/main.png')} style={{ resizeMode: 'contain', width: 70, height: 60 }} />
+            <Image source={require('../assets/newLogo/FullLogo.png')} style={{ resizeMode: 'contain', width: 100, height: 50 }} />
             {/* <TouchableOpacity onPress={() => navigation.navigate('Search')} style={{ flexDirection: 'row', alignItems: 'center', flex: 1, justifyContent: 'space-between', backgroundColor: LightGrey, paddingHorizontal: 10, paddingVertical:5, borderRadius: 16 }}>
                 <TextInput
                     placeholder='Find nonprofits'

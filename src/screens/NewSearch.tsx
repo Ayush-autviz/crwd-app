@@ -126,13 +126,13 @@ export default function NewSearchPage() {
         />
       ) : (
         <View style={styles.header}>
-          <TouchableOpacity
+          {/* <TouchableOpacity
             onPress={() => navigation.goBack()}
             style={styles.backButton}
             activeOpacity={0.7}
           >
             <ArrowLeft size={20} color="#374151" />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
           <Text style={styles.headerTitle}>Search</Text>
         </View>
       )}

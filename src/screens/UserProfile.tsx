@@ -383,13 +383,23 @@ export default function UserProfile() {
                     {statsCollectivesData?.data?.length > 0 ? (
                         statsCollectivesData.data.map((item: any, index: number) => {
                             const collective = item.collective || item;
+                            // Priority: 1. Use color (with white text), 2. Use logo (image), 3. Fallback to generated color with letter
+                            const hasColor = collective.color;
+                            const hasLogo = collective.logo && 
+                                (collective.logo.startsWith('http') || collective.logo.startsWith('/') || collective.logo.startsWith('data:'));
+                            const iconColor = hasColor || (!hasLogo ? '#10B981' : undefined);
+                            const showImage = hasLogo && !hasColor;
+                            const iconLetter = collective.name?.charAt(0)?.toUpperCase() || 'N';
+                            
                             return (
                                 <View key={collective.id || index} style={styles.statsItem}>
                                     <View style={styles.statsItemLeft}>
                                         <Avatar size={40}>
-                                            <AvatarImage src={collective.created_by?.profile_picture || collective.avatar || collective.image} />
-                                            <AvatarFallback style={{ backgroundColor: '#dcfce7' }} textStyle={{ color: '#16a34a', fontWeight: '600' }}>
-                                                {collective.name?.charAt(0)?.toUpperCase() || 'N'}
+                                            {showImage ? (
+                                                <AvatarImage src={collective.logo} />
+                                            ) : null}
+                                            <AvatarFallback style={{ backgroundColor: iconColor || '#10B981' }} textStyle={{ color: '#FFFFFF', fontWeight: '600' }}>
+                                                {iconLetter}
                                             </AvatarFallback>
                                         </Avatar>
                                         <View style={styles.statsItemContent}>

@@ -99,6 +99,7 @@ export default function NewSuggestedCollectives({
               collective.icon.startsWith('data:'));
           const iconColor = hasColor || (!hasLogo ? getIconColor(index) : undefined);
           const iconLetter = getIconLetter(collective.name);
+          const showImage = hasLogo && !hasColor; // Show logo only if no color is available
 
           return (
             <TouchableOpacity
@@ -116,7 +117,7 @@ export default function NewSuggestedCollectives({
                   iconColor ? { backgroundColor: iconColor } : {},
                 ]}
               >
-                {hasLogo ? (
+                {showImage ? (
                   <Image
                     source={{ uri: collective.icon }}
                     style={styles.iconImage}

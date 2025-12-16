@@ -25,7 +25,7 @@ import {
   Save 
 } from 'lucide-react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getCollectiveById, updateCollective, getCollectiveCauses } from '../services/api/crwd';
+import { getCollectiveById, patchCollective, getCollectiveCauses } from '../services/api/crwd';
 import { getCausesBySearch } from '../services/api/crwd';
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/Avatar';
 import { useToast } from '../contexts/ToastContext';
@@ -76,6 +76,9 @@ export default function NewEditCollective() {
   // Store default values from API
   const [defaultColor, setDefaultColor] = useState<string>('');
   const [defaultLogo, setDefaultLogo] = useState<string | null>(null);
+  const [initialName, setInitialName] = useState<string>('');
+  const [initialDescription, setInitialDescription] = useState<string>('');
+  const [initialCauseIds, setInitialCauseIds] = useState<number[]>([]);
   const [initialCauseCount, setInitialCauseCount] = useState(0);
   
   // Causes management state
@@ -118,8 +121,15 @@ export default function NewEditCollective() {
   // Initialize form data when collective data loads
   useEffect(() => {
     if (crwdData) {
-      setName(crwdData.name || '');
-      setDescription(crwdData.description || '');
+      const apiName = crwdData.name || '';
+      const apiDescription = crwdData.description || '';
+      
+      setName(apiName);
+      setDescription(apiDescription);
+      
+      // Store initial values
+      setInitialName(apiName);
+      setInitialDescription(apiDescription);
       
       // Store default values from API
       setDefaultColor(crwdData.color || '');
@@ -146,15 +156,21 @@ export default function NewEditCollective() {
       const mappedCauses = causes.map((item: any) => item.cause || item);
       setSelectedCauses(mappedCauses);
       setInitialCauseCount(mappedCauses.length);
+      // Store initial cause IDs
+      const initialIds = mappedCauses.map((cause: any) => cause.id);
+      setInitialCauseIds(initialIds);
     }
   }, [collectiveCausesData]);
 
   // Update collective mutation
   const updateMutation = useMutation({
-    mutationFn: (data: any) => updateCollective(crwdId, data),
+    mutationFn: (data: any) => patchCollective(crwdId, data),
     onSuccess: async () => {
+      // Invalidate and refetch queries to ensure fresh data
       await queryClient.invalidateQueries({ queryKey: ['crwd', crwdId] });
       await queryClient.invalidateQueries({ queryKey: ['collective-causes', crwdId] });
+      await queryClient.refetchQueries({ queryKey: ['crwd', crwdId] });
+      await queryClient.refetchQueries({ queryKey: ['collective-causes', crwdId] });
       showToast('Collective updated successfully!', 3000);
       navigation.goBack();
     },
@@ -179,31 +195,58 @@ export default function NewEditCollective() {
     // Prepare cause_ids array
     const causeIds = selectedCauses.map(cause => cause.id);
 
+    // Check what has changed
+    const nameChanged = name.trim() !== initialName;
+    const descriptionChanged = description.trim() !== initialDescription;
+    const causeIdsChanged = JSON.stringify(causeIds.sort()) !== JSON.stringify(initialCauseIds.sort());
+    const hasNewLogo = logoType === 'upload' && uploadedLogo !== null;
+    const colorChanged = logoType === 'letter' && letterLogoColor !== defaultColor;
+
     // Use FormData if there's a file upload, otherwise use JSON
-    if (logoType === 'upload' && uploadedLogo) {
+    if (hasNewLogo) {
+      // New file uploaded - use FormData
       const formData = new FormData();
-      formData.append('name', name.trim());
-      formData.append('description', description.trim() || '');
-      causeIds.forEach(causeId => {
-        formData.append('cause_ids', causeId.toString());
-      });
+      
+      // Only add changed fields
+      if (nameChanged) {
+        formData.append('name', name.trim());
+      }
+      if (descriptionChanged) {
+        formData.append('description', description.trim());
+      }
+      if (causeIdsChanged) {
+        // Append each cause_id separately (backend should handle this as an array)
+        causeIds.forEach(causeId => {
+          formData.append('cause_ids', causeId.toString());
+        });
+      }
       formData.append('logo_file', {
         uri: uploadedLogo,
         type: 'image/jpeg',
         name: 'logo.jpg',
       } as any);
+      // Only send color if it changed
+      if (colorChanged) {
+        formData.append('color', letterLogoColor);
+      }
+      
       updateMutation.mutate(formData);
     } else {
-      const updateData: any = {
-        name: name.trim(),
-        description: description.trim() || '',
-        cause_ids: causeIds,
-      };
+      // Use JSON - no file upload
+      const updateData: any = {};
       
-      if (logoType === 'letter') {
-        updateData.color = letterLogoColor || defaultColor || '';
-      } else if (logoType === 'upload' && defaultLogo) {
-        updateData.logo_file = defaultLogo;
+      // Only add changed fields
+      if (nameChanged) {
+        updateData.name = name.trim();
+      }
+      if (descriptionChanged) {
+        updateData.description = description.trim();
+      }
+      if (causeIdsChanged) {
+        updateData.cause_ids = causeIds;
+      }
+      if (colorChanged) {
+        updateData.color = letterLogoColor;
       }
 
       updateMutation.mutate(updateData);

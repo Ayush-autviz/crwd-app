@@ -11,6 +11,8 @@ interface Collective {
   causeCount: number;
   role?: string; // "Member", "Admin", etc.
   image?: string; // Collective cover image or avatar
+  logo?: string; // Collective logo
+  color?: string; // Collective color
 }
 
 interface CollectiveCarouselCardProps {
@@ -40,6 +42,10 @@ export default function CollectiveCarouselCard({
 
   // Get first letter of collective name for icon
   const iconLetter = currentCollective.name?.charAt(0).toUpperCase() || 'C';
+
+  // Determine icon display: color first, then logo, then default
+  const iconColor = currentCollective.color || '#14B8A6'; // Default color
+  const showImage = !currentCollective.color && (currentCollective.logo || currentCollective.image);
 
   // Check if user is founder/admin
   const isFounder = currentCollective.role === 'Admin' || currentCollective.role === 'Founder';
@@ -81,10 +87,10 @@ export default function CollectiveCarouselCard({
 
         <View style={styles.content}>
           {/* Circular Icon */}
-          <View style={styles.iconContainer}>
-            {currentCollective.image ? (
+          <View style={[styles.iconContainer, { backgroundColor: iconColor }]}>
+            {showImage ? (
               <Image
-                source={{ uri: currentCollective.image }}
+                source={{ uri: currentCollective.logo || currentCollective.image }}
                 style={styles.iconImage}
                 resizeMode="cover"
               />
@@ -163,13 +169,13 @@ export default function CollectiveCarouselCard({
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    marginTop: 16,
-    maxWidth: '95%',
+    marginBottom: 16,
+    // maxWidth: '95%',
     alignSelf: 'center',
   },
   card: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    borderRadius: 10,
     padding: 16,
     borderWidth: 1,
     borderColor: '#F3E8FF',
@@ -203,7 +209,6 @@ const styles = StyleSheet.create({
   iconContainer: {
     width: 56,
     height: 56,
-    backgroundColor: '#14B8A6',
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',

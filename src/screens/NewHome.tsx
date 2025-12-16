@@ -14,7 +14,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import { useQuery, useQueries, useMutation } from '@tanstack/react-query';
 import { useNavigation } from '@react-navigation/native';
 import { useAuthStore } from '../store/store';
-import { getCollectives, getCauses } from '../services/api/crwd';
+import { getCollectives, getCauses, getJoinCollective } from '../services/api/crwd';
 import { getDonationBox } from '../services/api/donation';
 import { getNotifications, registerNotificationToken } from '../services/api/notification';
 import { getUserProfileById } from '../services/api/social';
@@ -27,6 +27,7 @@ import CollectiveCarouselCard from '../components/newHome/CollectiveCarouselCard
 import NewSuggestedCollectives from '../components/newHome/NewSuggestedCollectives';
 import NewFeaturedNonprofits from '../components/newHome/NewFeaturedNonprofits';
 import CommunityUpdates from '../components/newHome/CommunityUpdates';
+import CommunityPosts from '../components/newHome/CommunityPosts';
 import ExploreCards from '../components/newHome/ExploreCards';
 
 import GuestHome from '../components/GuestHome';
@@ -115,6 +116,13 @@ export default function NewHome() {
   const { data: donationBoxData, isLoading: donationBoxLoading } = useQuery({
     queryKey: ['donationBox', user?.id],
     queryFn: getDonationBox,
+    enabled: !!user?.id && !!token?.access_token,
+  });
+
+  // Fetch joined collectives
+  const { data: joinedCollectivesData, isLoading: joinedCollectivesLoading } = useQuery({
+    queryKey: ['joinedCollectives', user?.id],
+    queryFn: () => getJoinCollective(user?.id?.toString() || ''),
     enabled: !!user?.id && !!token?.access_token,
   });
 
@@ -212,6 +220,36 @@ export default function NewHome() {
       mission: nonprofit.mission || '',
     })) || [];
 
+  // Get list of joined collective IDs to filter them out from suggested collectives
+  const joinedCollectiveIds = useMemo(() => {
+    if (joinedCollectivesData?.data) {
+      return new Set(joinedCollectivesData.data.map((item: any) => item.collective.id));
+    }
+    return new Set();
+  }, [joinedCollectivesData]);
+
+  // Filter out collectives that user has already joined
+  const filteredSuggestedCollectives = useMemo(() => {
+    return transformedCollectives.filter((collective: any) => !joinedCollectiveIds.has(collective.id));
+  }, [transformedCollectives, joinedCollectiveIds]);
+
+  // Get list of cause IDs from donation box to filter them out from featured nonprofits
+  const donationBoxCauseIds = useMemo(() => {
+    if (donationBoxData && !isDonationBoxNotFound && donationBoxData.box_causes) {
+      return new Set(
+        donationBoxData.box_causes
+          .map((boxCause: any) => boxCause.cause?.id)
+          .filter((id: any) => id != null)
+      );
+    }
+    return new Set();
+  }, [donationBoxData, isDonationBoxNotFound]);
+
+  // Filter out nonprofits that are already in the donation box
+  const filteredFeaturedNonprofits = useMemo(() => {
+    return transformedNonprofits.filter((nonprofit: any) => !donationBoxCauseIds.has(nonprofit.id));
+  }, [transformedNonprofits, donationBoxCauseIds]);
+
   // Check if donation box exists
   // API returns {"status_code":200,"message":"Donation box not found"} when not set up
   const isDonationBoxNotFound = donationBoxData?.message === 'Donation box not found';
@@ -240,46 +278,41 @@ export default function NewHome() {
         })()
       : 0;
 
-  // Transform attributing collectives from donation box for carousel (priority)
+  // Transform joined collectives for carousel
   const transformedAttributingCollectives = useMemo(() => {
-    if (
-      donationBoxData &&
-      !isDonationBoxNotFound &&
-      donationBoxData.attributing_collectives
-    ) {
-      return donationBoxData.attributing_collectives.map((collective: any) => {
-        // Calculate cause count from box_causes that have this collective in attributed_collectives
-        const attributedCauseCount =
-          donationBoxData.box_causes?.filter(
-            (boxCause: any) =>
-              boxCause.attributed_collectives?.includes(collective.id) ||
-              boxCause.attributed_collectives?.includes(collective.id.toString())
-          ).length || 0;
-
-        // Check if current user is the creator
-        const isAdmin = collective.creator?.id === user?.id;
+    if (joinedCollectivesData?.data) {
+      return joinedCollectivesData.data.map((item: any) => {
+        const collective = item.collective;
+        // Check if user is admin (role is "admin" from API)
+        const isAdmin = item.role === 'admin';
 
         return {
           id: collective.id,
           name: collective.name || 'Unknown Collective',
           memberCount: collective.member_count || 0,
           yearlyAmount: parseFloat(collective.total_donated || '0') * 12, // Convert monthly to yearly estimate
-          causeCount: attributedCauseCount || 0,
+          causeCount: collective.causes_count || 0,
           role: isAdmin ? 'Admin' : 'Member',
-          image: collective.logo || collective.creator?.profile_picture || '',
+          image: collective.logo || collective.created_by?.profile_picture || '',
+          logo: collective.logo || undefined,
+          color: collective.color || undefined,
         };
       });
     }
     return [];
-  }, [donationBoxData, isDonationBoxNotFound, user?.id]);
+  }, [joinedCollectivesData]);
 
   // Transform notifications data for community updates
   // Only show type "community" (not "community_post")
+  // Filter out items with postId (post type items)
   // Use useMemo to make it reactive to userProfilesMap changes
   const transformedCommunityUpdates = useMemo(() => {
     return (
       notificationsData?.results
-        ?.filter((notification: any) => notification.type === 'community')
+        ?.filter((notification: any) => 
+          notification.type === 'community' && 
+          !notification.data?.post_id // Filter out post type items
+        )
         .map((notification: any) => {
           // Extract username from body if it contains @username pattern
           let username = '';
@@ -395,10 +428,8 @@ export default function NewHome() {
     );
   }, [notificationsData, userProfilesMap]);
 
-  // Split community updates into three sections
-  const firstTwoUpdates = transformedCommunityUpdates.slice(0, 2);
-  const nextTwoUpdates = transformedCommunityUpdates.slice(2, 4);
-  const remainingUpdates = transformedCommunityUpdates.slice(4);
+  // All community updates (no splitting needed - show all below suggested collectives)
+  const allCommunityUpdates = transformedCommunityUpdates;
 
   if (!user?.id) {
     return <GuestHome />;
@@ -444,19 +475,19 @@ export default function NewHome() {
                 !isDonationBoxActive &&
                 inactiveBoxCauseCount > 0 ? (
                 // Donation box exists but is not active - show prompt with cause count
-                <DonationBoxPrompt causeCount={inactiveBoxCauseCount} />
+                <DonationBoxPrompt 
+                  causeCount={inactiveBoxCauseCount}
+                  hasJoinedCollectives={transformedAttributingCollectives.length > 0}
+                />
               ) : (
-                <DonationBoxPrompt />
+                <DonationBoxPrompt 
+                  hasJoinedCollectives={transformedAttributingCollectives.length > 0}
+                />
               )}
-            </>
-          )}
-          </View>
-          </LinearGradient>
-
-          {/* Collective Carousel Card - Only show when donation box is active */}
-          {token?.access_token && isDonationBoxActive && (
+               {/* Collective Carousel Card - Show joined collectives */}
+          {token?.access_token && (
             <>
-              {donationBoxLoading ? (
+              {joinedCollectivesLoading ? (
                 <View style={styles.loadingCard}>
                   <ActivityIndicator size="large" color="#1600ff" />
                 </View>
@@ -465,18 +496,16 @@ export default function NewHome() {
               ) : null}
             </>
           )}
-
-          {/* First 2 Community Updates - Above Featured Nonprofits */}
-          {token?.access_token && (
-            <>
-              {notificationsLoading ? (
-                <View style={styles.loadingCard}>
-                  <ActivityIndicator size="large" color="#1600ff" />
-                </View>
-              ) : firstTwoUpdates.length > 0 ? (
-                <CommunityUpdates updates={firstTwoUpdates} showHeading={true} />
-              ) : null}
             </>
+          )}
+          </View>
+          </LinearGradient>
+
+         
+
+          {/* 2 Posts - Above Featured Nonprofits */}
+          {token?.access_token && (
+            <CommunityPosts limit={2} startIndex={0} showHeading={true} />
           )}
 
           {/* Featured Nonprofits Section */}
@@ -486,18 +515,14 @@ export default function NewHome() {
             </View>
           ) : (
             <NewFeaturedNonprofits
-              nonprofits={transformedNonprofits}
+              nonprofits={filteredFeaturedNonprofits}
               seeAllLink="/search"
             />
           )}
 
-          {/* Next 2 Community Updates - Above Suggested Collectives */}
+          {/* 1 Post - After Featured Nonprofits */}
           {token?.access_token && (
-            <>
-              {notificationsLoading ? null : nextTwoUpdates.length > 0 ? (
-                <CommunityUpdates updates={nextTwoUpdates} showHeading={false} />
-              ) : null}
-            </>
+            <CommunityPosts limit={1} startIndex={2} showHeading={false} />
           )}
 
           {/* Suggested Collectives Section */}
@@ -507,16 +532,16 @@ export default function NewHome() {
             </View>
           ) : (
             <NewSuggestedCollectives
-              collectives={transformedCollectives}
+              collectives={filteredSuggestedCollectives}
               seeAllLink="/search"
             />
           )}
 
-          {/* Remaining Community Updates - Below Suggested Collectives */}
+          {/* All Community Updates - Below Suggested Collectives */}
           {token?.access_token && (
             <>
-              {notificationsLoading ? null : remainingUpdates.length > 0 ? (
-                <CommunityUpdates updates={remainingUpdates} showHeading={false} />
+              {notificationsLoading ? null : allCommunityUpdates.length > 0 ? (
+                <CommunityUpdates updates={allCommunityUpdates} showHeading={false} />
               ) : null}
             </>
           )}

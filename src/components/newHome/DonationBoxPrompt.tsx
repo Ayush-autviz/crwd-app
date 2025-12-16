@@ -6,9 +6,10 @@ import { useAuthStore } from '../../store/store';
 
 interface DonationBoxPromptProps {
   causeCount?: number;
+  hasJoinedCollectives?: boolean; // Hide "Start Your Own Collective" if user has joined collectives
 }
 
-export default function DonationBoxPrompt({ causeCount }: DonationBoxPromptProps) {
+export default function DonationBoxPrompt({ causeCount, hasJoinedCollectives = false }: DonationBoxPromptProps) {
   const navigation = useNavigation();
   const { user } = useAuthStore();
   const firstName = user?.first_name || 'there';
@@ -76,29 +77,31 @@ export default function DonationBoxPrompt({ causeCount }: DonationBoxPromptProps
           </TouchableOpacity>
         )}
 
-        {/* Start Collective Card */}
-        <TouchableOpacity
-          style={[styles.card, styles.whiteCard]}
-          activeOpacity={0.7}
-          onPress={() => navigation.navigate('CreateCRWD' as never)}
-        >
-          <View style={[styles.iconContainer, styles.greenIcon]}>
-            <Plus size={24} color="#000000" strokeWidth={3} />
-          </View>
-          <View style={styles.content}>
-            <Text style={styles.cardTitle}>Start Your Own Collective</Text>
-            <Text style={styles.cardSubtitle}>
-              Bring people together around causes you care about.
-            </Text>
-            <TouchableOpacity
-              style={styles.linkContainer}
-              onPress={() => navigation.navigate('CreateCRWD' as never)}
-            >
-              <Text style={styles.blackLink}>Create collective</Text>
-              <ArrowRight size={12} color="#111827" />
-            </TouchableOpacity>
-          </View>
-        </TouchableOpacity>
+        {/* Start Collective Card - Only show if user hasn't joined any collectives */}
+        {!hasJoinedCollectives && (
+          <TouchableOpacity
+            style={[styles.card, styles.whiteCard]}
+            activeOpacity={0.7}
+            onPress={() => navigation.navigate('CreateCRWD' as never)}
+          >
+            <View style={[styles.iconContainer, styles.greenIcon]}>
+              <Plus size={24} color="#000000" strokeWidth={3} />
+            </View>
+            <View style={styles.content}>
+              <Text style={styles.cardTitle}>Start Your Own Collective</Text>
+              <Text style={styles.cardSubtitle}>
+                Bring people together around causes you care about.
+              </Text>
+              <TouchableOpacity
+                style={styles.linkContainer}
+                onPress={() => navigation.navigate('CreateCRWD' as never)}
+              >
+                <Text style={styles.blackLink}>Create collective</Text>
+                <ArrowRight size={12} color="#111827" />
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );

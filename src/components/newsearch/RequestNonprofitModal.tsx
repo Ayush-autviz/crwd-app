@@ -9,8 +9,11 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { X, Send } from 'lucide-react-native';
+import { requestCause } from '../../services/api/crwd';
+import { useToast } from '../../contexts/ToastContext';
 
 interface RequestNonprofitModalProps {
   isOpen: boolean;
@@ -25,6 +28,7 @@ export default function RequestNonprofitModal({
   const [ein, setEin] = useState('');
   const [reason, setReason] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { showToast } = useToast();
 
   const handleSubmit = async () => {
     if (!nonprofitName.trim() || !ein.trim() || !reason.trim()) {
@@ -33,26 +37,28 @@ export default function RequestNonprofitModal({
 
     setIsSubmitting(true);
     try {
-      // TODO: Implement API call to submit nonprofit request
-      console.log('Submitting nonprofit request:', {
-        nonprofitName,
-        ein,
-        reason,
+      await requestCause({
+        name: nonprofitName.trim(),
+        ein_number: ein.trim(),
+        description: reason.trim(),
       });
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Reset form and close modal
+      
+      // Reset form first
       setNonprofitName('');
       setEin('');
       setReason('');
+      
+      // Close modal first
       onClose();
-
-      // TODO: Show success toast
-    } catch (error) {
+      
+      // Show success toast after modal closes
+      setTimeout(() => {
+        showToast('Request submitted successfully!', 3000);
+      }, 300);
+    } catch (error: any) {
       console.error('Error submitting nonprofit request:', error);
-      // TODO: Show error toast
+      const errorMessage = error?.response?.data?.message || error?.message || 'Failed to submit request. Please try again.';
+      showToast(errorMessage, 3000);
     } finally {
       setIsSubmitting(false);
     }
@@ -145,8 +151,17 @@ export default function RequestNonprofitModal({
               ]}
               activeOpacity={0.7}
             >
-              <Send size={16} color="#FFFFFF" />
-              <Text style={styles.submitText}>Submit Request</Text>
+              {isSubmitting ? (
+                <>
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                  <Text style={styles.submitText}>Submitting...</Text>
+                </>
+              ) : (
+                <>
+                  <Send size={16} color="#FFFFFF" />
+                  <Text style={styles.submitText}>Submit Request</Text>
+                </>
+              )}
             </TouchableOpacity>
           </View>
         </View>

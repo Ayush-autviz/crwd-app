@@ -431,15 +431,26 @@ export default function ManageDonationBoxScreen() {
     })
     .filter(id => !isNaN(id));
 
-  const existingCollectiveIds = existingCollectives
+  // Get existing collective IDs to filter them out
+  // Include collectives from both existingCollectives (from causes array) and attributingCollectives (directly from donation box)
+  const existingCollectiveIdsFromCausesFilter = existingCollectives
     .map(c => {
       const id = c.id.replace('collective-', '');
       return parseInt(id);
     })
     .filter(id => !isNaN(id));
+  const attributingCollectiveIdsFilter = attributingCollectives.map((collective: any) => collective.id).filter((id: any) => id != null);
+  const allExistingCollectiveIdsFilter = [...existingCollectiveIdsFromCausesFilter, ...attributingCollectiveIdsFilter];
+  // Remove duplicates
+  const existingCollectiveIds = Array.from(new Set(allExistingCollectiveIdsFilter));
 
   const allSelectedCauseIds = [...existingCauseIds, ...selectedCauses];
-  const allSelectedCollectiveIds = [...existingCollectiveIds, ...selectedCollectives];
+  // Include collectives from both existingCollectives (from causes array) and attributingCollectives (directly from donation box)
+  const attributingCollectiveIdsForSelection = attributingCollectives.map((collective: any) => collective.id).filter((id: any) => id != null);
+  const allExistingCollectiveIdsForSelection = [...existingCollectiveIds, ...attributingCollectiveIdsForSelection];
+  // Remove duplicates
+  const uniqueExistingCollectiveIdsForSelection = Array.from(new Set(allExistingCollectiveIdsForSelection));
+  const allSelectedCollectiveIds = [...uniqueExistingCollectiveIdsForSelection, ...selectedCollectives];
 
   // Create combined selected causes list for display
   const getSelectedCausesForDisplay = () => {

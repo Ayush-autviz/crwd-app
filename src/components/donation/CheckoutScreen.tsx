@@ -69,7 +69,7 @@ export default function CheckoutScreen({
   // Use API data if available, otherwise fall back to selectedOrganizations
   const hasApiData = causes.length > 0 || manualCauses.length > 0 || attributingCollectives.length > 0;
   const totalCauses = causes.length || manualCauses.length;
-  const totalCollectives = 0; // No longer showing collectives
+  const totalCollectives = attributingCollectives.length;
 
   // Calculate fees and capacity using the provided formula
   const calculateFees = (grossAmount: number) => {

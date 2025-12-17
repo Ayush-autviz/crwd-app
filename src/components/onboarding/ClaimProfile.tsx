@@ -248,6 +248,7 @@ export default function ClaimProfile() {
         mutationFn: emailVerification,
         onSuccess: async (response) => {
             console.log("email verified", response)
+            setShowOTPModal(false)
 
             // Automatically login after successful email verification
             try {

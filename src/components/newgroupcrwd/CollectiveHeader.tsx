@@ -115,7 +115,7 @@ export default function CollectiveHeader({
   return (
     <View style={styles.container}>
       <TouchableOpacity
-        onPress={() => navigation.goBack()}
+        onPress={() => navigation.navigate('DrawerNav' as never, { screen: 'Home' } as never)}
         style={styles.backButton}
         activeOpacity={0.7}
       >

@@ -36,9 +36,9 @@ export default function DonationScreen() {
   const [activeTab, setActiveTab] = useState<'setup' | 'onetime'>('setup');
   const [checkout, setCheckout] = useState(false);
   const [selectedOrganizations, setSelectedOrganizations] = useState<string[]>([]);
-  const [donationAmount, setDonationAmount] = useState(7);
+  const [donationAmount, setDonationAmount] = useState(5);
   const [step, setStep] = useState(1);
-  const [inputValue, setInputValue] = useState('7');
+  const [inputValue, setInputValue] = useState('5');
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCauseIds, setSelectedCauseIds] = useState<number[]>([]);
@@ -600,7 +600,10 @@ export default function DonationScreen() {
                             donationAmount <= 5 && styles.amountButtonDisabled
                           ]}
                         >
-                          <Text style={styles.minusIcon}>−</Text>
+                          <Text style={[
+                            styles.minusIcon,
+                            donationAmount > 5 && styles.minusIconWhite
+                          ]}>−</Text>
                         </TouchableOpacity>
                         
                         <View style={styles.amountDisplay}>
@@ -846,7 +849,7 @@ export default function DonationScreen() {
                   </View>
 
                   {/* Choose Collective to Support */}
-                  <View style={{ marginTop: 24 }}>
+                  {/* <View style={{ marginTop: 24 }}>
                     <Text style={[styles.organizationsTitle, { marginTop: 0 }]}>Choose collective to support</Text>
                     <View style={styles.organizationsList}>
                       {collectivesLoading ? (
@@ -926,7 +929,7 @@ export default function DonationScreen() {
                         })
                       )}
                     </View>
-                  </View>
+                  </View> */}
                 </View>
               ) : step === 2 ? (
                 <View style={styles.step2Content}>
@@ -1203,6 +1206,9 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: '#6b7280',
     fontWeight: 'bold',
+  },
+  minusIconWhite: {
+    color: '#ffffff',
   },
   tabContainer: {
     paddingHorizontal: 16,

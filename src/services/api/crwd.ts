@@ -42,6 +42,11 @@ export const deleteCause = async (id: string) => {
     return response.data;
 };
 
+export const requestCause = async (data: { name: string; ein_number: string; description: string }) => {
+    const response = await axiosClient.post('/crwd/request-cause/', data);
+    return response.data;
+};
+
 // Collectives API endpoints
 export const getCollectives = async () => {
     const response = await axiosClient.get('/crwd/collectives/');

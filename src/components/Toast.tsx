@@ -100,9 +100,10 @@ export const Toast: React.FC<ToastProps> = ({
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    bottom: 80,
+    top: 80,
     alignSelf: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+    // backgroundColor: 'rgba(0, 0, 0, 0.9)',
+    backgroundColor: 'white',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 25,
@@ -121,7 +122,7 @@ const styles = StyleSheet.create({
     zIndex: 1000,
   },
   text: {
-    color: 'white',
+    color: 'black',
     fontSize: 14,
     fontWeight: '500',
     textAlign: 'center',

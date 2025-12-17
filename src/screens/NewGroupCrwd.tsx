@@ -309,20 +309,55 @@ export default function NewGroupCrwdPage() {
               <>
                 {/* Joined Button - Non-clickable for admin */}
                 <TouchableOpacity
-                  style={[styles.button, styles.joinedButton]}
+                  style={[styles.button, styles.joinedButton, styles.disabledButton]}
                   disabled
                   activeOpacity={1}
                 >
-                  <Check size={16} color="#10B981" />
+                  <Check size={14} color="#10B981" />
                   <Text style={styles.joinedButtonText}>Joined</Text>
                 </TouchableOpacity>
                 {/* Share Button */}
                 <TouchableOpacity
                   onPress={handleShare}
                   style={[styles.button, styles.shareButton]}
-                  activeOpacity={0.7}
+                  activeOpacity={0.8}
                 >
-                  <Share2 size={16} color="#FFFFFF" />
+                  <Share2 size={14} color="#FFFFFF" />
+                  <Text style={styles.shareButtonText}>Share</Text>
+                </TouchableOpacity>
+              </>
+            ) : crwdData.is_joined ? (
+              <>
+                {/* Joined Button - Clickable for non-admin, prompts to unjoin */}
+                <TouchableOpacity
+                  onPress={handleJoinCollective}
+                  disabled={leaveCollectiveMutation.isPending}
+                  style={[
+                    styles.button,
+                    styles.joinedButton,
+                    leaveCollectiveMutation.isPending && styles.disabled,
+                  ]}
+                  activeOpacity={0.8}
+                >
+                  {leaveCollectiveMutation.isPending ? (
+                    <>
+                      <Loader2 size={14} color="#10B981" />
+                      <Text style={styles.joinedButtonText}>Leaving...</Text>
+                    </>
+                  ) : (
+                    <>
+                      <Check size={14} color="#10B981" />
+                      <Text style={styles.joinedButtonText}>Joined</Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+                {/* Share Button */}
+                <TouchableOpacity
+                  onPress={handleShare}
+                  style={[styles.button, styles.shareButton]}
+                  activeOpacity={0.8}
+                >
+                  <Share2 size={14} color="#FFFFFF" />
                   <Text style={styles.shareButtonText}>Share</Text>
                 </TouchableOpacity>
               </>
@@ -330,29 +365,18 @@ export default function NewGroupCrwdPage() {
               <>
                 <TouchableOpacity
                   onPress={handleJoinCollective}
-                  disabled={joinCollectiveMutation.isPending || leaveCollectiveMutation.isPending}
+                  disabled={joinCollectiveMutation.isPending}
                   style={[
                     styles.button,
-                    crwdData.is_joined ? styles.joinedButton : styles.joinButton,
-                    (joinCollectiveMutation.isPending || leaveCollectiveMutation.isPending) &&
-                      styles.disabled,
+                    styles.joinButton,
+                    joinCollectiveMutation.isPending && styles.disabled,
                   ]}
-                  activeOpacity={0.7}
+                  activeOpacity={0.8}
                 >
                   {joinCollectiveMutation.isPending ? (
                     <>
-                      <Loader2 size={16} color="#FFFFFF" />
+                      <Loader2 size={14} color="#FFFFFF" />
                       <Text style={styles.joinButtonText}>Joining...</Text>
-                    </>
-                  ) : leaveCollectiveMutation.isPending ? (
-                    <>
-                      <Loader2 size={16} color="#FFFFFF" />
-                      <Text style={styles.joinButtonText}>Leaving...</Text>
-                    </>
-                  ) : crwdData.is_joined ? (
-                    <>
-                      <Check size={16} color="#6B7280" />
-                      <Text style={styles.joinedButtonText}>Joined</Text>
                     </>
                   ) : (
                     <Text style={styles.joinButtonText}>Join Collective</Text>
@@ -361,9 +385,9 @@ export default function NewGroupCrwdPage() {
                 <TouchableOpacity
                   onPress={handleOneTimeDonation}
                   style={[styles.button, styles.donationButton]}
-                  activeOpacity={0.7}
+                  activeOpacity={0.8}
                 >
-                  <Text style={styles.donationButtonText}>Make a One-Time Donation</Text>
+                  <Text style={{ fontSize: 13, fontWeight: '600', color: '#1600ff', textAlign: 'center' }}>Make a One-Time Donation</Text>
                 </TouchableOpacity>
               </>
             )}
@@ -510,47 +534,55 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    paddingVertical: 16,
-    borderRadius: 12,
-    fontWeight: '700',
+    paddingVertical: 10,
+    borderRadius: 8,
+    fontWeight: '600',
   },
   joinButton: {
     backgroundColor: '#1600ff',
   },
   joinedButton: {
-    backgroundColor: '#F3F4F6',
+    backgroundColor: '#FFFFFF',
     borderWidth: 2,
     borderColor: '#10B981',
   },
   shareButton: {
     backgroundColor: '#1600ff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
   donationButton: {
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: '#1600ff',
     backgroundColor: 'transparent',
   },
   disabled: {
-    opacity: 0.5,
+    opacity: 0.6,
+  },
+  disabledButton: {
+    opacity: 1,
   },
   joinButtonText: {
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: '600',
     color: '#FFFFFF',
   },
   joinedButtonText: {
     fontSize: 14,
-    fontWeight: '700',
-    color: '#6B7280',
+    fontWeight: '600',
+    color: '#10B981',
   },
   shareButtonText: {
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: '600',
     color: '#FFFFFF',
   },
   donationButtonText: {
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: '600',
     color: '#1600ff',
   },
   disclaimer: {

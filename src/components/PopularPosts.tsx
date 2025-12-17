@@ -77,6 +77,8 @@ export default function PopularPosts({
     isLoading = false,
     error = null
 }: PopularPostsProps) {
+    // Handle "no title" case - don't show title if title is "no title" or empty
+    const shouldShowTitle = showTitle && title && title !== 'no title' && title.trim() !== '';
     const [showTooltip, setShowTooltip] = useState(false);
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const screenWidth = Dimensions.get('window').width;
@@ -273,7 +275,7 @@ export default function PopularPosts({
 
     return (
         <View style={{marginTop: 20, marginBottom: 50}}>
-            {showTitle && (
+            {shouldShowTitle && (
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                     <Text style={{fontSize: 18, fontWeight: '600'}}>{related ? 'Related Posts' : title}</Text>
@@ -324,7 +326,7 @@ export default function PopularPosts({
             )}
 
             {/* Tooltip */}
-            {showTooltip && showTitle && (
+            {showTooltip && shouldShowTitle && (
                 <View style={{
                     position: 'absolute',
                     top: 50,

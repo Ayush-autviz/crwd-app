@@ -11,7 +11,7 @@ import {
   TouchableWithoutFeedback,
   ActivityIndicator,
 } from 'react-native';
-import { Plus, Trash2, Search, X, ChevronLeft, ChevronDown, FileText, Pencil } from 'lucide-react-native';
+import { Plus, Minus, Trash2, Search, X, ChevronLeft, ChevronDown, FileText, Pencil } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView as RNSafeAreaView, SafeAreaView } from 'react-native-safe-area-context';
 import { Organization } from '../../Constants/organizations';
@@ -24,16 +24,20 @@ import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
 import { getDonationHistory } from '../../services/api/donation';
 import { getNonprofitColor } from '../../lib/getNonprofitColor';
 import DonationBoxSummaryCard from './DonationBoxSummaryCard';
+import { useToast } from '../../contexts/ToastContext';
 
 export default function ManageDonationBoxScreen() {
   const navigation = useNavigation();
   const queryClient = useQueryClient();
   const { user: currentUser } = useAuthStore();
+  const { showToast } = useToast();
   
   // Fetch donation box data
   const donationBoxQuery = useQuery({
     queryKey: ['donationBox'],
     queryFn: getDonationBox,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 
   const donationBox = donationBoxQuery.data;
@@ -93,6 +97,14 @@ export default function ManageDonationBoxScreen() {
       setEditableAmount(Math.round(donationBox.monthly_amount));
     }
   }, [donationBox?.monthly_amount]);
+
+  // Refetch donation box data when component mounts to get latest amount
+  useEffect(() => {
+    queryClient.invalidateQueries({ queryKey: ['donationBox'] });
+    donationBoxQuery.refetch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const [isEditingAmount, setIsEditingAmount] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [temporarilyRemovedCauses, setTemporarilyRemovedCauses] = useState<string[]>([]);
@@ -200,13 +212,40 @@ export default function ManageDonationBoxScreen() {
     },
   });
 
+  // Helper function to calculate max capacity for a given amount
+  const calculateMaxCapacity = (amount: number) => {
+    const calculateFees = (grossAmount: number) => {
+      const gross = grossAmount;
+      const stripeFee = (gross * 0.029) + 0.30;
+      const crwdFee = (gross - stripeFee) * 0.07;
+      const net = gross - stripeFee - crwdFee;
+      return {
+        stripeFee: Math.round(stripeFee * 100) / 100,
+        crwdFee: Math.round(crwdFee * 100) / 100,
+        net: Math.round(net * 100) / 100,
+      };
+    };
+    const fees = calculateFees(amount);
+    return Math.floor(fees.net / 0.20);
+  };
+
   const incrementAmount = () => {
     setEditableAmount(prev => Math.round(prev) + 1);
   };
 
   const decrementAmount = () => {
-    if (editableAmount > 1) {
-      setEditableAmount(prev => Math.max(1, Math.round(prev) - 1));
+    if (editableAmount > 5) {
+      const newAmount = Math.max(5, Math.round(editableAmount) - 1);
+      const newMaxCapacity = calculateMaxCapacity(newAmount);
+      const currentCapacity = totalCauseIds.length;
+      
+      // Check if new amount would reduce capacity below current causes
+      if (currentCapacity > newMaxCapacity) {
+        showToast(`You have ${currentCapacity} cause${currentCapacity !== 1 ? 's' : ''} selected. Please remove ${currentCapacity - newMaxCapacity} cause${currentCapacity - newMaxCapacity !== 1 ? 's' : ''} to lower the donation amount to $${newAmount}.`, 4000);
+        return;
+      }
+      
+      setEditableAmount(newAmount);
     }
   };
 
@@ -269,6 +308,15 @@ export default function ManageDonationBoxScreen() {
       setSelectedCauses(prev => prev.filter(id => id !== causeId));
       setSelectedCausesData(prev => prev.filter(c => c.id !== causeId));
     } else {
+      // Check capacity before adding
+      const newMaxCapacity = calculateMaxCapacity(editableAmount);
+      const currentCapacity = totalCauseIds.length;
+      
+      if (currentCapacity >= newMaxCapacity) {
+        showToast(`You've reached the maximum capacity of ${newMaxCapacity} cause${newMaxCapacity !== 1 ? 's' : ''} for this donation amount. Please increase your donation amount to add more causes.`, 4000);
+        return;
+      }
+      
       const causeData = causesData?.results?.find((c: any) => c.id === causeId);
       if (causeData) {
         setSelectedCauses(prev => [...prev, causeId]);
@@ -318,13 +366,22 @@ export default function ManageDonationBoxScreen() {
         .filter(id => !isNaN(id));
 
       // Get existing collective IDs that are NOT removed
-      const remainingExistingCollectiveIds = existingCollectives
-        .filter(c => !temporarilyRemovedCauses.includes(c.id))
+      // Include collectives from both existingCollectives (from causes array) and attributingCollectives (directly from donation box)
+      const existingCollectiveIdsUpdate = existingCollectives
         .map(c => {
           const id = c.id.replace('collective-', '');
           return parseInt(id);
         })
         .filter(id => !isNaN(id));
+      const attributingCollectiveIdsUpdate = attributingCollectives.map((collective: any) => collective.id).filter((id: any) => id != null);
+      const allCollectiveIdsUpdate = [...existingCollectiveIdsUpdate, ...attributingCollectiveIdsUpdate];
+      // Remove duplicates
+      const uniqueCollectiveIdsUpdate = Array.from(new Set(allCollectiveIdsUpdate));
+      
+      const remainingExistingCollectiveIds = uniqueCollectiveIdsUpdate.filter((collectiveId: number) => {
+        const collectiveIdString = `collective-${collectiveId}`;
+        return !temporarilyRemovedCauses.includes(collectiveIdString);
+      });
 
       // Combine existing (not removed) + newly selected causes/collectives
       const allCauseIds = [...remainingExistingCauseIds, ...selectedCauses];
@@ -453,13 +510,23 @@ export default function ManageDonationBoxScreen() {
     })
     .filter(id => !isNaN(id));
 
-  const remainingExistingCollectiveIds = existingCollectives
-    .filter(c => !temporarilyRemovedCauses.includes(c.id))
+  // Get collectives from both existingCollectives (from causes array) and attributingCollectives (directly from donation box)
+  // This ensures we count all collectives even if there are any edge cases
+  const existingCollectiveIdsFromCauses = existingCollectives
     .map(c => {
       const id = c.id.replace('collective-', '');
       return parseInt(id);
     })
     .filter(id => !isNaN(id));
+  const attributingCollectiveIds = attributingCollectives.map((collective: any) => collective.id).filter((id: any) => id != null);
+  const allCollectiveIds = [...existingCollectiveIdsFromCauses, ...attributingCollectiveIds];
+  // Remove duplicates
+  const uniqueCollectiveIds = Array.from(new Set(allCollectiveIds));
+  
+  const remainingExistingCollectiveIds = uniqueCollectiveIds.filter((collectiveId: number) => {
+    const collectiveIdString = `collective-${collectiveId}`;
+    return !temporarilyRemovedCauses.includes(collectiveIdString);
+  });
 
   const totalCauseIds = [...remainingExistingCauseIds, ...selectedCauses];
   const totalCollectiveIds = [...remainingExistingCollectiveIds, ...selectedCollectives];
@@ -541,46 +608,61 @@ export default function ManageDonationBoxScreen() {
               <View style={styles.gradientHeader} />
 
               <View style={styles.summaryCardContent}>
-                {/* Monthly Donation Section */}
-                <View style={styles.monthlySection}>
-                  <Text style={styles.monthlyLabel}>Monthly Donation</Text>
-                  <View style={styles.amountRow}>
-                    <View style={styles.amountControlsRow}>
-                      <TouchableOpacity
-                        onPress={decrementAmount}
-                        style={styles.amountControlButton}
-                      >
-                        <Text style={styles.amountControlMinus}>−</Text>
-                      </TouchableOpacity>
-                      <View style={styles.amountDisplayContainer}>
-                        {isEditingAmount ? (
-                          <TextInput
-                            value={Math.round(editableAmount).toString()}
-                            onChangeText={handleAmountChange}
-                            onBlur={() => {
-                              setIsEditingAmount(false);
-                              setEditableAmount(prev => Math.round(prev));
-                            }}
-                            autoFocus
-                            style={styles.amountInput}
-                            keyboardType="numeric"
-                          />
-                        ) : (
-                          <>
-                            <Text style={styles.amountText}>${Math.round(editableAmount)}</Text>
-                            <Text style={styles.perMonthText}>/   month</Text>
-                          </>
-                        )}
-                      </View>
-                      <TouchableOpacity
-                        onPress={incrementAmount}
-                        style={styles.amountControlButton}
-                      >
-                        <Plus size={16} color={PrimaryGrey} />
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                </View>
+                 {/* Monthly Donation Section */}
+                 <View style={styles.monthlySection}>
+                   <Text style={styles.monthlyLabel}>Monthly Donation</Text>
+                   <View style={styles.amountRow}>
+                     <View style={styles.amountDisplayContainer}>
+                       {isEditingAmount ? (
+                         <TextInput
+                           value={Math.round(editableAmount).toString()}
+                           onChangeText={handleAmountChange}
+                           onBlur={() => {
+                             setIsEditingAmount(false);
+                             setEditableAmount(prev => Math.round(prev));
+                           }}
+                           autoFocus
+                           style={styles.amountInput}
+                           keyboardType="numeric"
+                         />
+                       ) : (
+                         <>
+                           <Text style={styles.amountText}>${Math.round(editableAmount)}</Text>
+                           <Text style={styles.perMonthText}>/   month</Text>
+                         </>
+                       )}
+                     </View>
+                     <View style={styles.amountControls}>
+                       <TouchableOpacity
+                         onPress={decrementAmount}
+                         disabled={editableAmount <= 5}
+                         style={[
+                           styles.amountControlButton,
+                           editableAmount <= 5 && styles.amountControlButtonDisabled
+                         ]}
+                       >
+                         <Minus size={14} color={editableAmount <= 5 ? '#9CA3AF' : '#374151'} />
+                       </TouchableOpacity>
+                       <TouchableOpacity
+                         onPress={incrementAmount}
+                         style={styles.amountControlButton}
+                       >
+                         <Plus size={14} color="#374151" />
+                       </TouchableOpacity>
+                     </View>
+                   </View>
+                   {lifetimeAmount > 0 && (
+                     <Text style={styles.lifetimeAmount}>${Math.round(lifetimeAmount).toLocaleString()} lifetime</Text>
+                   )}
+                   {/* Billing Cycle Info - Only show when donation box is active */}
+                   {donationBox?.is_active && donationBox?.next_charge_date && formatNextChargeDate(donationBox.next_charge_date) && (
+                     <View style={styles.billingCycleBanner}>
+                       <Text style={styles.billingCycleText}>
+                         Changes take effect on your next billing cycle ({getChargeDay(donationBox.next_charge_date)} of the month)
+                       </Text>
+                     </View>
+                   )}
+                 </View>
 
                 {/* Supported Entities */}
                 <View style={styles.entitiesContainer}>
@@ -605,16 +687,15 @@ export default function ManageDonationBoxScreen() {
                   </Text>
                 </View>
 
-                {/* Payment Schedule */}
-                <Text style={styles.scheduleText}>on the {getChargeDay(donationBox?.next_charge_date)} of every month</Text>
+                {/* Payment Schedule - Commented out to match Vite version */}
+                {/* <Text style={styles.scheduleText}>on the {getChargeDay(donationBox?.next_charge_date)} of every month</Text> */}
 
-                {/* Action Buttons */}
-                <View style={styles.actionButtonsRow}>
+                {/* Action Buttons - Commented out to match Vite version */}
+                {/* <View style={styles.actionButtonsRow}>
                   <TouchableOpacity
                     style={styles.actionButton}
                     onPress={() => setIsEditingAmount(true)}
                   >
-                    {/* <Text style={styles.actionButtonIcon}>$</Text> */}
                     <Pencil size={16} color="#111827" style={{ marginBottom: 4 }} />
                     <Text style={styles.actionButtonText}>Edit amount</Text>
                   </TouchableOpacity>
@@ -625,17 +706,16 @@ export default function ManageDonationBoxScreen() {
                       navigation.navigate('DrawerNav', { screen: 'TransactionHistory' })
                     }}
                   >
-                    {/* <Text style={styles.actionButtonIcon}>📖</Text> */}
                     <FileText size={16} color="#111827" style={{ marginBottom: 4 }} />
                     <Text style={[styles.actionButtonText, styles.actionButtonTextUnderline]}>transaction history</Text>
                   </TouchableOpacity>
-                </View>
+                </View> */}
               </View>
             </View>
           </View>
 
-        {/* Tabs Navigation */}
-        <View style={styles.tabsContainer}>
+        {/* Tabs Navigation - Commented out to match Vite version */}
+        {/* <View style={styles.tabsContainer}>
           <View style={styles.tabs}>
             <TouchableOpacity
               style={[styles.tab, activeTab === 'nonprofits' && styles.tabActive]}
@@ -662,17 +742,19 @@ export default function ManageDonationBoxScreen() {
               </Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </View> */}
 
-        {/* Content Area */}
-        {activeTab === 'nonprofits' ? (
-          <View style={styles.contentSection}>
+        {/* Content Area - Only show nonprofits (tabs commented out to match Vite) */}
+        <View style={styles.contentSection}>
             {/* Selected Nonprofits */}
             {(() => {
               const selectedCausesForDisplay = getSelectedCausesForDisplay();
               return selectedCausesForDisplay.length > 0 && (
                 <View style={styles.selectedSection}>
-                  <Text style={styles.sectionTitle}>Selected Nonprofits</Text>
+                  <View style={{ marginBottom: 8 }}>
+                    <Text style={styles.sectionTitleLarge}>Your Selected Causes</Text>
+                    <Text style={styles.sectionSubtitle}>Your Donation Box. Add or remove anytime.</Text>
+                  </View>
                   <View style={styles.list}>
                     {selectedCausesForDisplay.map((org) => {
                       const causeId = org.isNewlySelected ? (org as any).causeId : parseInt(org.id.replace('cause-', ''));
@@ -716,12 +798,12 @@ export default function ManageDonationBoxScreen() {
 
             {/* Search Section */}
             <View style={styles.searchSection}>
-              <Text style={styles.sectionTitle}>ADD NONPROFITS</Text>
+              <Text style={styles.sectionTitleLarge}>Add More Causes</Text>
               <View style={styles.searchContainer}>
                 <Search size={20} color="#9ca3af" style={styles.searchIcon} />
                 <TextInput
                   style={styles.searchInput}
-                  placeholder="Search nonprofits..."
+                  placeholder="Search for causes..."
                   placeholderTextColor="#9ca3af"
                   value={searchQuery}
                   onChangeText={(text) => {
@@ -779,11 +861,18 @@ export default function ManageDonationBoxScreen() {
                                 {cause.mission || cause.description}
                               </Text>
                             </View>
-                            <View style={[styles.checkbox, isSelected && styles.checkboxSelected]}>
-                              {isSelected && (
-                                <View style={styles.checkmark} />
-                              )}
-                            </View>
+                            {!isSelected ? (
+                              <TouchableOpacity
+                                onPress={() => handleToggleCause(cause.id)}
+                                style={styles.addButton}
+                              >
+                                <Plus size={14} color="#ec4899" />
+                              </TouchableOpacity>
+                            ) : (
+                              <View style={styles.checkboxSelected}>
+                                <View style={styles.checkmarkWhite} />
+                              </View>
+                            )}
                           </View>
                         </TouchableOpacity>
                       );
@@ -830,11 +919,18 @@ export default function ManageDonationBoxScreen() {
                                   {cause.mission || cause.description}
                                 </Text>
                               </View>
-                              <View style={[styles.checkbox, isSelected && styles.checkboxSelected]}>
-                                {isSelected && (
-                                  <View style={styles.checkmark} />
-                                )}
-                              </View>
+                              {!isSelected ? (
+                                <TouchableOpacity
+                                  onPress={() => handleToggleCause(cause.id)}
+                                  style={styles.addButton}
+                                >
+                                  <Plus size={14} color="#ec4899" />
+                                </TouchableOpacity>
+                              ) : (
+                                <View style={styles.checkboxSelected}>
+                                  <View style={styles.checkmarkWhite} />
+                                </View>
+                              )}
                             </View>
                           </TouchableOpacity>
                         );
@@ -847,10 +943,11 @@ export default function ManageDonationBoxScreen() {
               </View>
             )}
           </View>
-        ) : (
+        {/* Collectives tab - Commented out to match Vite version */}
+        {/* ) : (
           <View style={styles.contentSection}>
             {/* Selected Collectives */}
-            {(() => {
+            {/* {(() => {
               const selectedCollectivesForDisplay = getSelectedCollectivesForDisplay();
               return selectedCollectivesForDisplay.length > 0 && (
                 <View style={styles.selectedSection}>
@@ -952,8 +1049,8 @@ export default function ManageDonationBoxScreen() {
               );
             })()}
 
-            {/* Available Collectives */}
-            <View style={styles.collectivesSection}>
+            {/* Available Collectives - Commented out to match Vite version */}
+            {/* <View style={styles.collectivesSection}>
               <Text style={styles.sectionTitle}>Joined Collectives</Text>
               {joinedCollectivesLoading ? (
                 <Text style={styles.loadingText}>Loading...</Text>
@@ -1052,7 +1149,7 @@ export default function ManageDonationBoxScreen() {
               )}
             </View>
           </View>
-        )}
+        )} */}
 
         {/* Distribution Details */}
         <View style={styles.distributionSection}>
@@ -1101,8 +1198,8 @@ export default function ManageDonationBoxScreen() {
             )}
           </TouchableOpacity>
           
-          {/* Deactivate Subscription Button - Only show if subscription is active */}
-          {isActive && (
+          {/* Deactivate Subscription Button - Commented out to match Vite version */}
+          {/* {isActive && (
             <TouchableOpacity
               style={[styles.deactivateButton, cancelDonationBoxMutation.isPending && styles.deactivateButtonDisabled]}
               onPress={() => setShowCancelModal(true)}
@@ -1114,7 +1211,7 @@ export default function ManageDonationBoxScreen() {
                 <Text style={styles.deactivateButtonText}>Deactivate Subscription</Text>
               )}
             </TouchableOpacity>
-          )}
+          )} */}
         </View>
       </SafeAreaView>
 
@@ -1285,7 +1382,11 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   amountRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: 8,
+    width: '100%',
   },
   amountControlsRow: {
     flexDirection: 'row',
@@ -1293,12 +1394,16 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   amountControlButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     backgroundColor: LightGrey,
     alignItems: 'center',
     justifyContent: 'center',
+    marginLeft: 0,
+  },
+  amountControlButtonDisabled: {
+    opacity: 0.5,
   },
   amountControlMinus: {
     fontSize: 16,
@@ -1314,11 +1419,30 @@ const styles = StyleSheet.create({
     fontSize: 36,
     fontWeight: '700',
     color: '#111827',
-    borderBottomWidth: 1,
-    borderBottomColor: SecondaryGrey,
-    width: 100,
+    minWidth: 80,
+  },
+  lifetimeAmount: {
+    fontSize: 12,
+    color: '#6b7280',
+    marginTop: 4,
+  },
+  billingCycleBanner: {
+    backgroundColor: '#DBEAFE',
+    borderRadius: 8,
+    padding: 12,
+    marginTop: 12,
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+  },
+  billingCycleText: {
+    fontSize: 12,
+    color: PrimaryBlue,
     textAlign: 'center',
-    paddingVertical: 4,
+  },
+  amountControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   entitiesContainer: {
     backgroundColor: LightGrey,
@@ -1410,12 +1534,6 @@ const styles = StyleSheet.create({
   amountSection: {
     alignItems: 'center',
     marginTop: 35,
-  },
-  amountControls: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-    marginBottom: 16,
   },
   amountButton: {
     width: 40,
@@ -1562,6 +1680,17 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     textTransform: 'uppercase',
   },
+  sectionTitleLarge: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#111827',
+    marginBottom: 4,
+  },
+  sectionSubtitle: {
+    fontSize: 11,
+    color: '#6b7280',
+    marginBottom: 12,
+  },
   causeCard: {
     backgroundColor: 'white',
     borderRadius: 12,
@@ -1577,18 +1706,18 @@ const styles = StyleSheet.create({
   causeCardContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    gap: 16,
+    padding: 12,
+    gap: 12,
   },
   causeIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
+    width: 40,
+    height: 40,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
   causeIconText: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700',
   },
   causeActions: {
@@ -1600,12 +1729,12 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   amountPercentage: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '700',
     color: '#111827',
   },
   amountPerMonth: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#6b7280',
   },
   collectiveHeader: {
@@ -1709,10 +1838,10 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   resultsTitle: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '600',
     color: '#374151',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   list: {
     gap: 12,
@@ -1755,13 +1884,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   causeName: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '700',
     color: '#111827',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   causeDescription: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#6b7280',
   },
   removeButton: {
@@ -1818,6 +1947,20 @@ const styles = StyleSheet.create({
     height: 8,
     borderRadius: 4,
     backgroundColor: '#ffffff',
+  },
+  checkmarkWhite: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#ffffff',
+  },
+  addButton: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#fce7f3',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   loadingText: {
     textAlign: 'center',

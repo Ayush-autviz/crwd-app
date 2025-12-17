@@ -19,12 +19,10 @@ export default function DonationBoxPrompt({ causeCount, hasJoinedCollectives = f
 
   return (
     <View style={styles.container}>
-      {/* Greeting - Only show if not showing "Almost There" card */}
-      {!showAlmostThereCard && (
-        <Text style={styles.greeting}>
-          Hi {firstName}, ready to make an impact?
-        </Text>
-      )}
+      {/* Greeting */}
+      <Text style={styles.greeting}>
+        Hi {firstName}, ready to make an impact?
+      </Text>
 
       {/* Action Cards */}
       <View style={styles.cardsContainer}>
@@ -35,10 +33,11 @@ export default function DonationBoxPrompt({ causeCount, hasJoinedCollectives = f
             activeOpacity={0.7}
             onPress={() => navigation.navigate('Donation' as never)}
           >
-            <View style={[styles.iconContainer, styles.orangeIcon]}>
-              <Clock size={24} color="#FFFFFF" />
-            </View>
-            <View style={styles.content}>
+            <View style={styles.cardInner}>
+              <View style={[styles.iconContainer, styles.orangeIcon]}>
+                <Clock size={24} color="#FFFFFF" />
+              </View>
+              <View style={styles.content}>
               <Text style={styles.cardTitle}>You're Almost There!</Text>
               <Text style={styles.cardDescription}>
                 You selected <Text style={styles.bold}>{causeCount} cause{causeCount !== 1 ? 's' : ''}</Text> but haven't started donating yet
@@ -50,6 +49,7 @@ export default function DonationBoxPrompt({ causeCount, hasJoinedCollectives = f
                 <Text style={styles.orangeLink}>Complete Setup - Just 2 minutes!</Text>
                 <ArrowRight size={16} color="#EA580C" />
               </TouchableOpacity>
+              </View>
             </View>
           </TouchableOpacity>
         ) : (
@@ -59,10 +59,11 @@ export default function DonationBoxPrompt({ causeCount, hasJoinedCollectives = f
             activeOpacity={0.7}
             onPress={() => navigation.navigate('Donation' as never)}
           >
-            <View style={[styles.iconContainer, styles.blueIcon]}>
-              <ShoppingBag size={24} color="#FFFFFF" />
-            </View>
-            <View style={styles.content}>
+            <View style={styles.cardInner}>
+              <View style={[styles.iconContainer, styles.blueIcon]}>
+                <ShoppingBag size={24} color="#FFFFFF" />
+              </View>
+              <View style={styles.content}>
               <Text style={styles.cardTitle}>Create a Donation Box</Text>
               <Text style={styles.cardSubtitle}>
                 Support multiple causes with one donation
@@ -73,6 +74,7 @@ export default function DonationBoxPrompt({ causeCount, hasJoinedCollectives = f
               >
                 <Text style={styles.linkText}>Start donating →</Text>
               </TouchableOpacity>
+              </View>
             </View>
           </TouchableOpacity>
         )}
@@ -84,10 +86,11 @@ export default function DonationBoxPrompt({ causeCount, hasJoinedCollectives = f
             activeOpacity={0.7}
             onPress={() => navigation.navigate('CreateCRWD' as never)}
           >
-            <View style={[styles.iconContainer, styles.greenIcon]}>
-              <Plus size={24} color="#000000" strokeWidth={3} />
-            </View>
-            <View style={styles.content}>
+            <View style={styles.cardInner}>
+              <View style={[styles.iconContainer, styles.greenIcon]}>
+                <Plus size={24} color="#000000" />
+              </View>
+              <View style={styles.content}>
               <Text style={styles.cardTitle}>Start Your Own Collective</Text>
               <Text style={styles.cardSubtitle}>
                 Bring people together around causes you care about.
@@ -99,6 +102,7 @@ export default function DonationBoxPrompt({ causeCount, hasJoinedCollectives = f
                 <Text style={styles.blackLink}>Create collective</Text>
                 <ArrowRight size={12} color="#111827" />
               </TouchableOpacity>
+              </View>
             </View>
           </TouchableOpacity>
         )}
@@ -113,9 +117,9 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   greeting: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700',
-    color: '#111827',
+    color: '#000',
     marginBottom: 16,
   },
   cardsContainer: {
@@ -127,7 +131,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E5E7EB',
     padding: 16,
-    flexDirection: 'row',
+  },
+  cardInner: {
+    flexDirection: 'column',
     alignItems: 'flex-start',
     gap: 12,
   },
@@ -158,24 +164,28 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     minWidth: 0,
+    alignItems: 'flex-start',
   },
   cardTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '700',
     color: '#111827',
     marginBottom: 4,
+    textAlign: 'left',
   },
   cardDescription: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#111827',
     marginBottom: 12,
-    lineHeight: 20,
+    lineHeight: 18,
+    textAlign: 'left',
   },
   cardSubtitle: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#4B5563',
     marginBottom: 8,
     marginTop: 4,
+    textAlign: 'left',
   },
   bold: {
     fontWeight: '700',
@@ -186,17 +196,17 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   linkText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
     color: '#1600ff',
   },
   orangeLink: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '600',
     color: '#EA580C',
   },
   blackLink: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
     color: '#111827',
   },

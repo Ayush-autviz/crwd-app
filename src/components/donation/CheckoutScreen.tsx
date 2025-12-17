@@ -226,7 +226,8 @@ export default function CheckoutScreen({
           collectivesCount={totalCollectives}
           currentCapacity={currentCapacity}
           maxCapacity={maxCapacity}
-          onEditAmount={() => navigation.navigate('ManageDonationBox' as never)}
+          donationBox={donationBox}
+          onAddCauses={() => navigation.navigate('ManageDonationBox' as never)}
         />
 
         {/* Currently Supporting Section */}

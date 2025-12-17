@@ -1,7 +1,11 @@
-import React from 'react'
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
-import { Pen } from 'lucide-react-native'
+import React, { useState, useEffect } from 'react'
+import { View, Text, TouchableOpacity, StyleSheet, TextInput, ActivityIndicator, Alert } from 'react-native'
+import { Pencil, Plus, Minus } from 'lucide-react-native'
 import { PrimaryBlue, PrimaryGrey, LightGrey, SecondaryGrey } from '../../Constants/Colors'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { updateDonationBox } from '../../services/api/donation'
+import { useAuthStore } from '../../store/store'
+
 // Using View with backgroundColor for gradient effect (can be replaced with LinearGradient if available)
 
 interface DonationBoxSummaryCardProps {
@@ -11,6 +15,7 @@ interface DonationBoxSummaryCardProps {
   collectivesCount: number
   currentCapacity: number
   maxCapacity: number
+  donationBox?: any
   onEditAmount?: () => void
   onEditPayment?: () => void
   onAddCauses?: () => void
@@ -23,12 +28,108 @@ export default function DonationBoxSummaryCard({
   collectivesCount,
   currentCapacity,
   maxCapacity,
+  donationBox,
   onEditAmount,
   onEditPayment,
   onAddCauses,
 }: DonationBoxSummaryCardProps) {
+  const queryClient = useQueryClient()
+  const { user: currentUser } = useAuthStore()
+  const [isEditingAmount, setIsEditingAmount] = useState(false)
+  const [editableAmount, setEditableAmount] = useState(monthlyAmount)
+
   const remainingCapacity = maxCapacity - currentCapacity
   const capacityPercentage = (currentCapacity / maxCapacity) * 100
+
+  // Update editableAmount when monthlyAmount changes
+  useEffect(() => {
+    setEditableAmount(monthlyAmount)
+  }, [monthlyAmount])
+
+  // Calculate fees and capacity
+  const calculateFees = (grossAmount: number) => {
+    const gross = grossAmount
+    const stripeFee = (gross * 0.029) + 0.30
+    const crwdFee = (gross - stripeFee) * 0.07
+    const net = gross - stripeFee - crwdFee
+    return {
+      stripeFee: Math.round(stripeFee * 100) / 100,
+      crwdFee: Math.round(crwdFee * 100) / 100,
+      net: Math.round(net * 100) / 100,
+    }
+  }
+
+  const incrementAmount = () => {
+    setEditableAmount(prev => Math.round(prev) + 5)
+  }
+
+  const decrementAmount = () => {
+    if (editableAmount > 5) {
+      setEditableAmount(prev => Math.max(5, Math.round(prev) - 5))
+    }
+  }
+
+  // Mutation to update donation box
+  const updateAmountMutation = useMutation({
+    mutationFn: (amount: number) => updateDonationBox({ monthly_amount: amount }),
+    onSuccess: () => {
+      console.log('Donation box amount updated successfully')
+      queryClient.invalidateQueries({ queryKey: ['donationBox'] })
+      queryClient.invalidateQueries({ queryKey: ['donationBox', currentUser?.id] })
+      setIsEditingAmount(false)
+    },
+    onError: (error: any) => {
+      console.error('Error updating donation box amount:', error)
+      // Revert on error
+      setEditableAmount(monthlyAmount)
+      Alert.alert('Error', 'Failed to update donation amount. Please try again.')
+    },
+  })
+
+  const handleSaveAmount = () => {
+    // Calculate capacity for the new amount
+    const fees = calculateFees(editableAmount)
+    const net = fees.net
+    const newMaxCapacity = Math.floor(net / 0.20)
+    
+    // Check if current causes exceed the new capacity
+    if (currentCapacity > newMaxCapacity) {
+      Alert.alert(
+        'Capacity Exceeded',
+        `You can only support up to ${newMaxCapacity} cause${newMaxCapacity !== 1 ? 's' : ''} with $${editableAmount}. Please remove some causes or increase the amount.`
+      )
+      return
+    }
+    
+    // If capacity check passes, update the amount
+    updateAmountMutation.mutate(editableAmount)
+  }
+
+  const handleCancelEdit = () => {
+    setEditableAmount(monthlyAmount)
+    setIsEditingAmount(false)
+  }
+
+  // Get day of month from next charge date
+  const getChargeDay = (dateString?: string) => {
+    if (!dateString) return '26th'
+    
+    try {
+      const date = new Date(dateString)
+      const day = date.getDate()
+      // Add ordinal suffix
+      if (day > 3 && day < 21) return `${day}th`
+      switch (day % 10) {
+        case 1: return `${day}st`
+        case 2: return `${day}nd`
+        case 3: return `${day}rd`
+        default: return `${day}th`
+      }
+    } catch (error) {
+      console.error('Error getting charge day:', error)
+      return '26th'
+    }
+  }
 
   return (
     <View style={styles.container}>
@@ -39,27 +140,104 @@ export default function DonationBoxSummaryCard({
         {/* Monthly Donation Section */}
         <View style={styles.monthlySection}>
           <Text style={styles.monthlyLabel}>Monthly Donation</Text>
+          
+          {/* Amount Display with Controls */}
           <View style={styles.amountRow}>
             <View style={styles.amountContainer}>
-              <Text style={styles.amountText}>${monthlyAmount}</Text>
-              <Text style={styles.perMonthText}>/   month</Text>
+              {isEditingAmount ? (
+                <TextInput
+                  value={Math.round(editableAmount).toString()}
+                  onChangeText={(text) => {
+                    const value = parseInt(text) || 5
+                    setEditableAmount(Math.max(5, value))
+                  }}
+                  style={styles.amountInput}
+                  keyboardType="numeric"
+                  autoFocus
+                />
+              ) : (
+                <Text style={styles.amountText}>${Math.round(editableAmount)}</Text>
+              )}
+              <Text style={styles.perMonthText}>/month</Text>
             </View>
-            {onEditAmount && (
+            
+            {/* +/- Buttons - Only show when editing */}
+            {isEditingAmount && (
+              <View style={styles.amountControls}>
+                <TouchableOpacity
+                  onPress={decrementAmount}
+                  disabled={editableAmount <= 5}
+                  style={[
+                    styles.amountControlButton,
+                    editableAmount <= 5 && styles.amountControlButtonDisabled
+                  ]}
+                >
+                  <Minus size={20} color={editableAmount <= 5 ? '#9CA3AF' : '#374151'} />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={incrementAmount}
+                  style={styles.amountControlButton}
+                >
+                  <Plus size={20} color="#374151" />
+                </TouchableOpacity>
+              </View>
+            )}
+            
+            {/* Pencil Icon - Only show when not editing */}
+            {!isEditingAmount && (
               <TouchableOpacity
-                onPress={onEditAmount}
+                onPress={() => setIsEditingAmount(true)}
                 style={styles.editButton}
                 accessibilityLabel="Edit amount"
               >
-                <Pen size={16} color={PrimaryGrey} />
+                <Pencil size={16} color={PrimaryGrey} />
               </TouchableOpacity>
             )}
           </View>
+          
+          {/* Lifetime Amount */}
+          {lifetimeAmount > 0 && (
+            <Text style={styles.lifetimeAmount}>${lifetimeAmount.toLocaleString()} lifetime</Text>
+          )}
+          
+          {/* Billing Cycle Info - Only show when editing and donation box is active */}
+          {isEditingAmount && donationBox?.is_active && donationBox?.next_charge_date && (
+            <View style={styles.billingCycleBanner}>
+              <Text style={styles.billingCycleText}>
+                Changes take effect on your next billing cycle ({getChargeDay(donationBox.next_charge_date)} of the month)
+              </Text>
+            </View>
+          )}
+          
+          {/* Action Buttons - Only show when editing */}
+          {isEditingAmount && (
+            <View style={styles.actionButtons}>
+              <TouchableOpacity
+                onPress={handleCancelEdit}
+                disabled={updateAmountMutation.isPending}
+                style={[styles.cancelButton, updateAmountMutation.isPending && styles.buttonDisabled]}
+              >
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleSaveAmount}
+                disabled={updateAmountMutation.isPending}
+                style={[styles.saveButton, updateAmountMutation.isPending && styles.buttonDisabled]}
+              >
+                {updateAmountMutation.isPending ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.saveButtonText}>Save</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
 
         {/* Supported Entities */}
         <View style={styles.entitiesContainer}>
           <Text style={styles.entitiesText}>
-            {causesCount} Cause{causesCount !== 1 ? 's' : ''} • {collectivesCount} Collective{collectivesCount !== 1 ? 's' : ''}
+            {causesCount} Cause{causesCount !== 1 ? 's' : ''}
           </Text>
         </View>
 
@@ -71,13 +249,24 @@ export default function DonationBoxSummaryCard({
           </View>
           <View style={styles.progressBarContainer}>
             <View style={styles.progressBar}>
-              <View style={[styles.progressFill, { width: `${capacityPercentage}%` }]} />
+              <View style={[styles.progressFill, { width: `${Math.min(100, capacityPercentage)}%` }]} />
             </View>
           </View>
           <Text style={styles.capacityText}>
             You can support {remainingCapacity} more cause{remainingCapacity !== 1 ? 's' : ''} with this donation amount.
           </Text>
         </View>
+
+        {/* Add Causes Button */}
+        {onAddCauses && (
+          <TouchableOpacity
+            onPress={onAddCauses}
+            style={styles.addCausesButton}
+          >
+            <Plus size={18} color="#FFFFFF" />
+            <Text style={styles.addCausesButtonText}>Add Causes</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   )
@@ -195,6 +384,96 @@ const styles = StyleSheet.create({
   capacityText: {
     fontSize: 14,
     color: PrimaryBlue,
+  },
+  lifetimeAmount: {
+    fontSize: 12,
+    color: '#6b7280',
+    marginTop: 4,
+  },
+  amountInput: {
+    fontSize: 36,
+    fontWeight: '700',
+    color: '#111827',
+    minWidth: 80,
+  },
+  amountControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  amountControlButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 8,
+    backgroundColor: LightGrey,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  amountControlButtonDisabled: {
+    opacity: 0.5,
+  },
+  billingCycleBanner: {
+    backgroundColor: '#DBEAFE',
+    borderRadius: 8,
+    padding: 12,
+    marginTop: 12,
+  },
+  billingCycleText: {
+    fontSize: 12,
+    color: PrimaryBlue,
+    textAlign: 'center',
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginTop: 12,
+  },
+  cancelButton: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#111827',
+  },
+  saveButton: {
+    flex: 1,
+    backgroundColor: PrimaryBlue,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  saveButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  buttonDisabled: {
+    opacity: 0.5,
+  },
+  addCausesButton: {
+    backgroundColor: PrimaryBlue,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginTop: 8,
+  },
+  addCausesButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
 })
 

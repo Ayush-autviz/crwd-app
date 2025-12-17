@@ -91,42 +91,49 @@ export default function CollectiveCarouselCard({
         )}
 
         <View style={styles.content}>
-          {/* Circular Icon */}
-          <View style={[styles.iconContainer, { backgroundColor: iconColor }]}>
-            {showImage ? (
-              <Image
-                source={{ uri: currentCollective.logo || currentCollective.image }}
-                style={styles.iconImage}
-                resizeMode="cover"
-              />
-            ) : (
-              <Text style={styles.iconLetter}>{iconLetter}</Text>
-            )}
+          {/* Icon and Title/Badge Row */}
+          <View style={styles.headerRow}>
+            {/* Circular Icon */}
+            <View style={[styles.iconContainer, { backgroundColor: iconColor }]}>
+              {showImage ? (
+                <Image
+                  source={{ uri: currentCollective.logo || currentCollective.image }}
+                  style={styles.iconImage}
+                  resizeMode="cover"
+                />
+              ) : (
+                <Text style={styles.iconLetter}>{iconLetter}</Text>
+              )}
+            </View>
+
+            {/* Title and Badge */}
+            <View style={styles.titleBadgeContainer}>
+              <Text style={styles.title}>{currentCollective.name}</Text>
+              {currentCollective.role && (
+                <View
+                  style={[
+                    styles.badge,
+                    currentCollective.role === 'Admin'
+                      ? styles.founderBadge
+                      : styles.memberBadge,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.badgeText,
+                      currentCollective.role === 'Admin' && styles.founderBadgeText,
+                      currentCollective.role !== 'Admin' && styles.memberBadgeText,
+                    ]}
+                  >
+                    {currentCollective.role === 'Admin' ? 'Founder' : currentCollective.role}
+                  </Text>
+                </View>
+              )}
+            </View>
           </View>
 
           {/* Content */}
           <View style={styles.textContent}>
-            <Text style={styles.title}>{currentCollective.name}</Text>
-            {currentCollective.role && (
-              <View
-                style={[
-                  styles.badge,
-                  currentCollective.role === 'Admin'
-                    ? styles.founderBadge
-                    : styles.memberBadge,
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.badgeText,
-                    currentCollective.role === 'Admin' && styles.founderBadgeText,
-                    currentCollective.role !== 'Admin' && styles.memberBadgeText,
-                  ]}
-                >
-                  {currentCollective.role === 'Admin' ? 'Founder' : currentCollective.role}
-                </Text>
-              </View>
-            )}
             <Text style={styles.description}>
               <Text style={styles.bold}>{currentCollective.memberCount}</Text> members are
               currently donating to{' '}
@@ -206,9 +213,15 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   content: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     alignItems: 'flex-start',
     gap: 12,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    width: '100%',
   },
   iconContainer: {
     width: 40,
@@ -217,6 +230,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     flexShrink: 0,
+  },
+  titleBadgeContainer: {
+    flex: 1,
+    minWidth: 0,
   },
   iconImage: {
     width: '100%',
@@ -231,20 +248,22 @@ const styles = StyleSheet.create({
   textContent: {
     flex: 1,
     minWidth: 0,
-    paddingRight: 60,
+    paddingRight: 0,
+    alignItems: 'flex-start',
+    width: '100%',
   },
   title: {
     fontSize: 16,
     fontWeight: '700',
     color: '#111827',
-    marginBottom: 8,
+    marginBottom: 4,
+    textAlign: 'left',
   },
   badge: {
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
     alignSelf: 'flex-start',
-    marginBottom: 8,
   },
   founderBadge: {
     backgroundColor: '#FCE7F3',
@@ -268,6 +287,7 @@ const styles = StyleSheet.create({
     color: '#374151',
     marginBottom: 16,
     lineHeight: 20,
+    textAlign: 'left',
   },
   bold: {
     fontWeight: '700',
@@ -277,10 +297,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    width: '100%',
   },
   outlineButton: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: 6,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
@@ -288,6 +310,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 8,
+    flex: 1,
   },
   outlineButtonText: {
     fontSize: 12,
@@ -297,11 +320,13 @@ const styles = StyleSheet.create({
   primaryButton: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: 6,
     backgroundColor: '#1600ff',
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 8,
+    flex: 1,
   },
   primaryButtonText: {
     fontSize: 12,

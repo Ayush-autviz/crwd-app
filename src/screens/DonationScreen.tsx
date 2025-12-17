@@ -971,7 +971,8 @@ export default function DonationScreen() {
                           const net = fees.net;
                           return Math.floor(net / 0.20);
                         })()}
-                        onEditAmount={() => {
+                        donationBox={donationBoxQuery.data || donationBox}
+                        onAddCauses={() => {
                           navigation.navigate('ManageDonationBox' as never);
                         }}
                       />

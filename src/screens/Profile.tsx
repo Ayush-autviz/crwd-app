@@ -30,6 +30,34 @@ type RootStackParamList = {
     Search: undefined;
 };
 
+// Avatar colors for consistent fallback styling (same as NewCreateCollective.tsx)
+const avatarColors = [
+  '#FF6B6B', '#4CAF50', '#FF9800', '#9C27B0', '#2196F3',
+  '#FFC107', '#E91E63', '#00BCD4', '#8BC34A', '#FF5722',
+  '#673AB7', '#009688', '#FFEB3B', '#795548', '#607D8B',
+];
+
+const getConsistentColor = (id: number | string, colors: string[]) => {
+  const hash = typeof id === 'number' ? id : id.toString().split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
+  return colors[hash % colors.length];
+};
+
+const getInitials = (firstName?: string, lastName?: string, name?: string, username?: string) => {
+  if (firstName && lastName) {
+    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+  }
+  if (firstName) {
+    return firstName.charAt(0).toUpperCase();
+  }
+  if (name) {
+    const words = name.split(' ').filter(Boolean);
+    if (words.length >= 2) {
+      return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase();
+    }
+    return words[0]?.charAt(0).toUpperCase() || 'U';
+  }
+  return username?.charAt(0).toUpperCase() || 'U';
+};
 
 export default function Profile() {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -372,17 +400,8 @@ export default function Profile() {
             return (
                 <View>
                     {statsCauses.length > 0 ? statsCauses.map((cause: any, index: number) => {
-                        // Generate consistent color based on cause name
-                        const causeColors = [
-                            '#f97316', // orange
-                            '#ec4899', // pink
-                            '#3b82f6', // blue
-                            '#10b981', // green
-                            '#f59e0b', // amber
-                            '#8b5cf6', // purple
-                        ];
-                        const colorIndex = (cause.name?.charCodeAt(0) || 0) % causeColors.length;
-                        const causeBgColor = causeColors[colorIndex];
+                        // Generate consistent color based on cause ID
+                        const causeBgColor = getConsistentColor(cause.id || cause.name || 'N', avatarColors);
                         
                         return (
                             <TouchableOpacity
@@ -496,8 +515,11 @@ export default function Profile() {
                                 <View style={styles.memberInfo}>
                                     <Avatar size={40}>
                                         <AvatarImage src={member.avatar} />
-                                        <AvatarFallback>
-                                            {member.name.split(' ').map((word: string) => word[0]).join('').toUpperCase()}
+                                        <AvatarFallback 
+                                            style={{ backgroundColor: getConsistentColor(member.id || member.username || member.name || 'U', avatarColors) }}
+                                            textStyle={{ color: '#FFFFFF', fontWeight: '600' }}
+                                        >
+                                            {getInitials(member.first_name, member.last_name, member.name, member.username)}
                                         </AvatarFallback>
                                     </Avatar>
                                     <View style={styles.memberDetails}>
@@ -744,8 +766,11 @@ export default function Profile() {
                             /> */}
                             <Avatar size={64}>
                                 <AvatarImage src={profileData?.profile_picture} />
-                                <AvatarFallback>
-                                    {profileData?.username?.split(' ')[0][0].toUpperCase()}
+                                <AvatarFallback 
+                                    style={{ backgroundColor: getConsistentColor(profileData?.id || profileData?.username || 'U', avatarColors) }}
+                                    textStyle={{ color: '#FFFFFF', fontWeight: '600' }}
+                                >
+                                    {getInitials(profileData?.first_name, profileData?.last_name, profileData?.username, profileData?.username)}
                                 </AvatarFallback>
                             </Avatar> 
                         </TouchableOpacity>
@@ -831,16 +856,8 @@ export default function Profile() {
                             marginHorizontal: -6,
                         }}>
                             {profileData.recently_supported_causes.slice(0, 6).map((cause: any, i: number) => {
-                                // Generate consistent color based on cause name
-                                const colors = [
-                                    '#f97316', // orange
-                                    '#ec4899', // pink
-                                    '#3b82f6', // blue
-                                    '#ef4444', // red
-                                    '#10b981', // green
-                                    '#f97316', // orange (repeat)
-                                ];
-                                const bgColor = colors[i % colors.length];
+                                // Generate consistent color based on cause ID
+                                const bgColor = getConsistentColor(cause.id || cause.name || 'N', avatarColors);
                                 
                                 return (
                                     <TouchableOpacity 

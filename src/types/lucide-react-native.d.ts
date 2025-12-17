@@ -55,4 +55,8 @@ declare module 'lucide-react-native' {
   export const Camera: FC<IconProps>;
   export const Edit2: FC<IconProps>;
   export const Loader: FC<IconProps>;
+  export const Clock: FC<IconProps>;
+  export const ShoppingBag: FC<IconProps>;
+  export const Settings: FC<IconProps>;
+  export const Minus: FC<IconProps>;
 } 

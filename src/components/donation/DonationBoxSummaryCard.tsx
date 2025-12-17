@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: SecondaryGrey,
     overflow: 'hidden',
-    marginHorizontal: 16,
+    // marginHorizontal: 16,
     marginVertical: 16,
   },
   gradientHeader: {

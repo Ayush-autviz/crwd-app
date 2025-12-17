@@ -51,6 +51,7 @@ interface PopularPostsProps {
     collectiveId?: string | number;
     isLoading?: boolean;
     error?: any;
+    onCommentPress?: (post: Post) => void;
 }
 
 type RootStackParamList = {
@@ -75,7 +76,8 @@ export default function PopularPosts({
     },
     hasMore = true,
     isLoading = false,
-    error = null
+    error = null,
+    onCommentPress,
 }: PopularPostsProps) {
     // Handle "no title" case - don't show title if title is "no title" or empty
     const shouldShowTitle = showTitle && title && title !== 'no title' && title.trim() !== '';
@@ -565,7 +567,19 @@ export default function PopularPosts({
                                             {postsLikesCount[item.id] !== undefined ? postsLikesCount[item.id] : item.likes}
                                         </Text>
                                     </TouchableOpacity>
-                                    <TouchableOpacity style={styles.footerButton}>
+                                    <TouchableOpacity 
+                                        style={styles.footerButton}
+                                        onPress={() => {
+                                            console.log('Comment button pressed for post:', item.id);
+                                            console.log('onCommentPress callback exists:', !!onCommentPress);
+                                            if (onCommentPress) {
+                                                console.log('Calling onCommentPress with item:', item);
+                                                onCommentPress(item);
+                                            } else {
+                                                console.log('onCommentPress is not defined');
+                                            }
+                                        }}
+                                    >
                                         <MessageCircle size={18} color="#6b7280" />
                                         <Text style={styles.footerCount}>{item.comments}</Text>
                                     </TouchableOpacity>

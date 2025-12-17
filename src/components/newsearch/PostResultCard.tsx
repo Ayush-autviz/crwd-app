@@ -1,8 +1,11 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, Linking } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Image, Linking, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
 import { Heart, MessageCircle } from 'lucide-react-native';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { likePost, unlikePost } from '../../services/api/social';
+import { useAuthStore } from '../../store/store';
 
 interface PreviewDetails {
   title?: string | null;
@@ -38,6 +41,7 @@ interface PostResultCardProps {
       description?: string;
     };
   };
+  onCommentPress?: (post: PostResultCardProps['post']) => void;
 }
 
 // Get consistent color for avatar
@@ -80,8 +84,13 @@ const formatTimeAgo = (dateString: string): string => {
   return date.toLocaleDateString();
 };
 
-export default function PostResultCard({ post }: PostResultCardProps) {
+export default function PostResultCard({ post, onCommentPress }: PostResultCardProps) {
   const navigation = useNavigation();
+  const queryClient = useQueryClient();
+  const { user: currentUser } = useAuthStore();
+  const [isLiked, setIsLiked] = useState(post.is_liked || false);
+  const [likesCount, setLikesCount] = useState(post.likes_count || 0);
+  
   const user = post.user;
   const avatarBgColor = user ? getConsistentColor(user.id, avatarColors) : '#6B7280';
 
@@ -100,6 +109,48 @@ export default function PostResultCard({ post }: PostResultCardProps) {
 
   // Format timestamp
   const timeAgo = formatTimeAgo(post.created_at);
+
+  // Like post mutation
+  const likeMutation = useMutation({
+    mutationFn: () => likePost(post.id.toString()),
+    onSuccess: () => {
+      setIsLiked(true);
+      setLikesCount((prev) => prev + 1);
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
+      queryClient.invalidateQueries({ queryKey: ['post', post.id] });
+    },
+    onError: (error) => {
+      console.error('Error liking post:', error);
+    },
+  });
+
+  // Unlike post mutation
+  const unlikeMutation = useMutation({
+    mutationFn: () => unlikePost(post.id.toString()),
+    onSuccess: () => {
+      setIsLiked(false);
+      setLikesCount((prev) => Math.max(prev - 1, 0));
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
+      queryClient.invalidateQueries({ queryKey: ['post', post.id] });
+    },
+    onError: (error) => {
+      console.error('Error unliking post:', error);
+    },
+  });
+
+  const handleLikePress = () => {
+    if (!currentUser?.id) {
+      // Navigate to login if not authenticated
+      navigation.navigate('Login' as never);
+      return;
+    }
+    
+    if (isLiked) {
+      unlikeMutation.mutate();
+    } else {
+      likeMutation.mutate();
+    }
+  };
 
   return (
     <TouchableOpacity
@@ -201,18 +252,39 @@ export default function PostResultCard({ post }: PostResultCardProps) {
 
         {/* Like and Comment Counts */}
         <View style={styles.engagement}>
-          <View style={styles.engagementItem}>
-            <Heart
-              size={14}
-              color={post.is_liked ? '#EF4444' : '#4B5563'}
-              fill={post.is_liked ? '#EF4444' : 'none'}
-            />
-            <Text style={styles.engagementText}>{post.likes_count}</Text>
-          </View>
-          <View style={styles.engagementItem}>
+          <TouchableOpacity
+            style={styles.engagementItem}
+            onPress={handleLikePress}
+            activeOpacity={0.7}
+            disabled={likeMutation.isPending || unlikeMutation.isPending}
+          >
+            {likeMutation.isPending || unlikeMutation.isPending ? (
+              <ActivityIndicator size={14} color="#4B5563" />
+            ) : (
+              <Heart
+                size={14}
+                color={isLiked ? '#EF4444' : '#4B5563'}
+                fill={isLiked ? '#EF4444' : 'none'}
+              />
+            )}
+            <Text style={[styles.engagementText, isLiked && styles.likedText]}>
+              {likesCount}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.engagementItem}
+            onPress={() => {
+              if (onCommentPress) {
+                onCommentPress(post);
+              } else {
+                navigation.navigate('PostDetail' as never, { postId: post.id } as never);
+              }
+            }}
+            activeOpacity={0.7}
+          >
             <MessageCircle size={14} color="#4B5563" />
             <Text style={styles.engagementText}>{post.comments_count}</Text>
-          </View>
+          </TouchableOpacity>
         </View>
       </View>
     </TouchableOpacity>
@@ -340,6 +412,9 @@ const styles = StyleSheet.create({
   engagementText: {
     fontSize: 12,
     color: '#4B5563',
+  },
+  likedText: {
+    color: '#EF4444',
   },
 });
 

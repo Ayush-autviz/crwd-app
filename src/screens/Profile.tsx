@@ -22,6 +22,7 @@ import { MapPin } from 'lucide-react-native'
 import { DoorOpenIcon } from 'lucide-react-native'
 import { useToast } from '../contexts/ToastContext'
 import { WEB_BASE_URL } from '../Constants/url'
+import CommentsBottomSheet from '../components/post/CommentsBottomSheet'
 
 type RootStackParamList = {
     ProfileEdit: undefined;
@@ -39,6 +40,8 @@ export default function Profile() {
     const [showImageModal, setShowImageModal] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const [activeStatsTab, setActiveStatsTab] = useState<'causes' | 'following' | 'followers' | 'crwds'>('causes');
+    const [showCommentsSheet, setShowCommentsSheet] = useState(false);
+    const [selectedPost, setSelectedPost] = useState<any>(null);
     
     // Bottom sheet ref
     const bottomSheetRef = useRef<BottomSheet>(null);
@@ -263,7 +266,7 @@ export default function Profile() {
     };
 
     const handleEditProfile = () => {
-        navigation.navigate('ProfileEdit' as never);
+        navigation.navigate('NewSettings' as never);
         setShowMenu(false);
     };
 
@@ -986,6 +989,19 @@ export default function Profile() {
                                 title="Recent Activity"
                                 onLoadMore={async () => {}}
                                 hasMore={false}
+                                onCommentPress={(post) => {
+                                    // Find the original post data to get firstName and lastName
+                                    const originalPost = postsQuery?.data?.results?.find((p: any) => p.id?.toString() === post.id);
+                                    setSelectedPost({
+                                        id: parseInt(post.id),
+                                        username: post.username,
+                                        text: post.text,
+                                        avatarUrl: post.avatarUrl,
+                                        firstName: originalPost?.user?.first_name || post.username?.split(' ')[0],
+                                        lastName: originalPost?.user?.last_name || post.username?.split(' ').slice(1).join(' ') || '',
+                                    });
+                                    setShowCommentsSheet(true);
+                                }}
                             />
                         )}
                     </View>
@@ -1098,6 +1114,18 @@ export default function Profile() {
                         {renderStatsContent()}
                     </BottomSheetScrollView>
             </BottomSheet>
+
+            {/* Comments Bottom Sheet */}
+            {selectedPost && (
+                <CommentsBottomSheet
+                    isOpen={showCommentsSheet}
+                    onClose={() => {
+                        setShowCommentsSheet(false);
+                        setSelectedPost(null);
+                    }}
+                    post={selectedPost}
+                />
+            )}
         </SafeAreaView>
     )
 }

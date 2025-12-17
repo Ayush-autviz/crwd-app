@@ -9,6 +9,7 @@ interface CommunityActivityProps {
   collectiveId?: string;
   isJoined?: boolean;
   collectiveData?: any;
+  onCommentPress?: (post: any) => void;
 }
 
 export default function CommunityActivity({
@@ -17,6 +18,7 @@ export default function CommunityActivity({
   collectiveId,
   isJoined = false,
   collectiveData,
+  onCommentPress,
 }: CommunityActivityProps) {
   const navigation = useNavigation();
 
@@ -53,7 +55,7 @@ export default function CommunityActivity({
           <Text style={styles.loadingText}>Loading activity...</Text>
         </View>
       ) : posts && posts.length > 0 ? (
-        <PopularPosts posts={posts} title="no title" hasMore={false} />
+        <PopularPosts posts={posts} title="no title" hasMore={false} onCommentPress={onCommentPress} />
       ) : (
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyText}>

@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -29,12 +29,15 @@ import NewFeaturedNonprofits from '../components/newHome/NewFeaturedNonprofits';
 import CommunityUpdates from '../components/newHome/CommunityUpdates';
 import CommunityPosts from '../components/newHome/CommunityPosts';
 import ExploreCards from '../components/newHome/ExploreCards';
+import CommentsBottomSheet from '../components/post/CommentsBottomSheet';
 
 import GuestHome from '../components/GuestHome';
 
 export default function NewHome() {
   const { user, token } = useAuthStore();
   const navigation = useNavigation();
+  const [showCommentsSheet, setShowCommentsSheet] = useState(false);
+  const [selectedPost, setSelectedPost] = useState<any>(null);
 
   // FCM token send to backend
   const sendFcmTokenToBackend = useMutation({
@@ -233,6 +236,11 @@ export default function NewHome() {
     return transformedCollectives.filter((collective: any) => !joinedCollectiveIds.has(collective.id));
   }, [transformedCollectives, joinedCollectiveIds]);
 
+  // Check if donation box exists
+  // API returns {"status_code":200,"message":"Donation box not found"} when not set up
+  const isDonationBoxNotFound = donationBoxData?.message === 'Donation box not found';
+  const isDonationBoxActive = donationBoxData?.is_active === true;
+
   // Get list of cause IDs from donation box to filter them out from featured nonprofits
   const donationBoxCauseIds = useMemo(() => {
     if (donationBoxData && !isDonationBoxNotFound && donationBoxData.box_causes) {
@@ -249,11 +257,6 @@ export default function NewHome() {
   const filteredFeaturedNonprofits = useMemo(() => {
     return transformedNonprofits.filter((nonprofit: any) => !donationBoxCauseIds.has(nonprofit.id));
   }, [transformedNonprofits, donationBoxCauseIds]);
-
-  // Check if donation box exists
-  // API returns {"status_code":200,"message":"Donation box not found"} when not set up
-  const isDonationBoxNotFound = donationBoxData?.message === 'Donation box not found';
-  const isDonationBoxActive = donationBoxData?.is_active === true;
 
   // Transform donation box data
   const donationBoxInfo =
@@ -505,7 +508,23 @@ export default function NewHome() {
 
           {/* 2 Posts - Above Featured Nonprofits */}
           {token?.access_token && (
-            <CommunityPosts limit={2} startIndex={0} showHeading={true} />
+            <CommunityPosts 
+              limit={2} 
+              startIndex={0} 
+              showHeading={true}
+              onCommentPress={(post) => {
+                // Find the original post data to get firstName and lastName
+                setSelectedPost({
+                  id: typeof post.id === 'string' ? parseInt(post.id) : post.id,
+                  username: post.user?.username || post.username || 'Unknown User',
+                  text: post.content || post.text || '',
+                  avatarUrl: post.user?.avatar || post.user?.profile_picture || post.avatarUrl || '',
+                  firstName: post.user?.first_name || post.user?.firstName || post.firstName,
+                  lastName: post.user?.last_name || post.user?.lastName || post.lastName,
+                });
+                setShowCommentsSheet(true);
+              }}
+            />
           )}
 
           {/* Featured Nonprofits Section */}
@@ -522,7 +541,23 @@ export default function NewHome() {
 
           {/* 1 Post - After Featured Nonprofits */}
           {token?.access_token && (
-            <CommunityPosts limit={1} startIndex={2} showHeading={false} />
+            <CommunityPosts 
+              limit={1} 
+              startIndex={2} 
+              showHeading={false}
+              onCommentPress={(post) => {
+                // Find the original post data to get firstName and lastName
+                setSelectedPost({
+                  id: typeof post.id === 'string' ? parseInt(post.id) : post.id,
+                  username: post.user?.username || post.username || 'Unknown User',
+                  text: post.content || post.text || '',
+                  avatarUrl: post.user?.avatar || post.user?.profile_picture || post.avatarUrl || '',
+                  firstName: post.user?.first_name || post.user?.firstName || post.firstName,
+                  lastName: post.user?.last_name || post.user?.lastName || post.lastName,
+                });
+                setShowCommentsSheet(true);
+              }}
+            />
           )}
 
           {/* Suggested Collectives Section */}
@@ -555,6 +590,18 @@ export default function NewHome() {
           
         </View>
       </ScrollView>
+
+      {/* Comments Bottom Sheet */}
+      {selectedPost && (
+        <CommentsBottomSheet
+          isOpen={showCommentsSheet}
+          onClose={() => {
+            setShowCommentsSheet(false);
+            setSelectedPost(null);
+          }}
+          post={selectedPost}
+        />
+      )}
     </SafeAreaView>
   );
 }

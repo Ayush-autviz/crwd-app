@@ -31,6 +31,7 @@ import DonationInfoBox from '../components/newgroupcrwd/DonationInfoBox';
 import SupportedNonprofits from '../components/newgroupcrwd/SupportedNonprofits';
 import CommunityActivity from '../components/newgroupcrwd/CommunityActivity';
 import { Share } from 'react-native';
+import CommentsBottomSheet from '../components/post/CommentsBottomSheet';
 
 export default function NewGroupCrwdPage() {
   const route = useRoute();
@@ -44,6 +45,8 @@ export default function NewGroupCrwdPage() {
     'Nonprofits'
   );
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [showCommentsSheet, setShowCommentsSheet] = useState(false);
+  const [selectedPost, setSelectedPost] = useState<any>(null);
 
   // Get collective ID from route params
   const crwdId = (route.params as any)?.id || (route.params as any)?.collectiveId || '';
@@ -418,6 +421,24 @@ export default function NewGroupCrwdPage() {
             collectiveId={crwdId}
             isJoined={crwdData.is_joined}
             collectiveData={crwdData}
+            onCommentPress={(post) => {
+              console.log('onCommentPress called with post:', post);
+              // Find the original post data to get firstName and lastName
+              const originalPost = posts?.results?.find((p: any) => p.id?.toString() === post.id);
+              console.log('Original post found:', originalPost);
+              const postData = {
+                id: parseInt(post.id),
+                username: post.username,
+                text: post.text,
+                avatarUrl: post.avatarUrl,
+                firstName: originalPost?.user?.first_name || post.username?.split(' ')[0],
+                lastName: originalPost?.user?.last_name || post.username?.split(' ').slice(1).join(' ') || '',
+              };
+              console.log('Setting selectedPost:', postData);
+              setSelectedPost(postData);
+              console.log('Setting showCommentsSheet to true');
+              setShowCommentsSheet(true);
+            }}
           />
 
           {/* Legal Disclaimer */}
@@ -470,6 +491,20 @@ export default function NewGroupCrwdPage() {
           </View>
         </View>
       </Modal>
+
+      {/* Comments Bottom Sheet - Always render to ensure ref is available */}
+      {selectedPost && (
+        <CommentsBottomSheet
+          key={selectedPost.id} // Force remount when post changes
+          isOpen={showCommentsSheet}
+          onClose={() => {
+            console.log('CommentsBottomSheet onClose called');
+            setShowCommentsSheet(false);
+            setSelectedPost(null);
+          }}
+          post={selectedPost}
+        />
+      )}
     </SafeAreaView>
   );
 }

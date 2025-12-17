@@ -21,6 +21,7 @@ import PopularCollectives from './guest/PopularCollectives';
 import LearnAndGetInspired from './guest/LearnAndGetInspired';
 import CommunityTestimonials from './guest/CommunityTestimonials';
 import StartMakingDifference from './guest/StartMakingDifference';
+import CommentsBottomSheet from './post/CommentsBottomSheet';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -129,6 +130,8 @@ export default function GuestHome() {
   const [isVisible, setIsVisible] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [showAppBanner, setShowAppBanner] = useState(true);
+  const [showCommentsSheet, setShowCommentsSheet] = useState(false);
+  const [selectedPost, setSelectedPost] = useState<any>(null);
   const slideAnim = React.useRef(new Animated.Value(0)).current;
   const opacityAnim = React.useRef(new Animated.Value(0)).current;
 
@@ -434,6 +437,18 @@ export default function GuestHome() {
             </Animated.View>
           </TouchableWithoutFeedback>
         </Modal>
+      )}
+
+      {/* Comments Bottom Sheet */}
+      {selectedPost && (
+        <CommentsBottomSheet
+          isOpen={showCommentsSheet}
+          onClose={() => {
+            setShowCommentsSheet(false);
+            setSelectedPost(null);
+          }}
+          post={selectedPost}
+        />
       )}
     </SafeAreaView>
   );

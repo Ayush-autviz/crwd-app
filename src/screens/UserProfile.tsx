@@ -15,6 +15,7 @@ import ProfileStats from '../components/ProfileStats'
 import PopularPosts from '../components/PopularPosts'
 import { PrimaryBlue, PrimaryGrey } from '../Constants/Colors'
 import { WEB_BASE_URL } from '../Constants/url'
+import CommentsBottomSheet from '../components/post/CommentsBottomSheet'
 
 export default function UserProfile() {
     const route = useRoute()
@@ -24,6 +25,8 @@ export default function UserProfile() {
     const [isFollowing, setIsFollowing] = useState(false);
     const [showStatsSheet, setShowStatsSheet] = useState(false);
     const [activeStatsTab, setActiveStatsTab] = useState<'causes' | 'crwds' | 'followers' | 'following'>('causes');
+    const [showCommentsSheet, setShowCommentsSheet] = useState(false);
+    const [selectedPost, setSelectedPost] = useState<any>(null);
     const menuRef = useRef<View>(null);
     const { showToast } = useToast();
     const { user: currentUser } = useAuthStore();
@@ -715,6 +718,19 @@ export default function UserProfile() {
                             isLoadingMore={isFetchingNextPage}
                             isLoading={postsLoading}
                             error={null}
+                            onCommentPress={(post) => {
+                                // Find the original post data to get firstName and lastName
+                                const originalPost = posts?.results?.find((p: any) => p.id?.toString() === post.id);
+                                setSelectedPost({
+                                    id: parseInt(post.id),
+                                    username: post.username,
+                                    text: post.text,
+                                    avatarUrl: post.avatarUrl,
+                                    firstName: originalPost?.user?.first_name || post.username?.split(' ')[0],
+                                    lastName: originalPost?.user?.last_name || post.username?.split(' ').slice(1).join(' ') || '',
+                                });
+                                setShowCommentsSheet(true);
+                            }}
                         />
                     </View>
                 </View>
@@ -781,6 +797,18 @@ export default function UserProfile() {
                     </BottomSheetScrollView>
                 </BottomSheetView>
             </BottomSheet>
+
+            {/* Comments Bottom Sheet */}
+            {selectedPost && (
+                <CommentsBottomSheet
+                    isOpen={showCommentsSheet}
+                    onClose={() => {
+                        setShowCommentsSheet(false);
+                        setSelectedPost(null);
+                    }}
+                    post={selectedPost}
+                />
+            )}
         </SafeAreaView>
     )
 }

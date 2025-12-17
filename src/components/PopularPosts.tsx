@@ -161,6 +161,10 @@ export default function PopularPosts({
 
     // Initialize liked posts state based on posts data
     useEffect(() => {
+        if (!posts || !Array.isArray(posts)) {
+            return;
+        }
+        
         const likedSet = new Set<string>();
         const likesCount: Record<string, number> = {};
         
@@ -365,7 +369,7 @@ export default function PopularPosts({
             )}
             {!isLoading && !error && (
             <FlatList
-                data={posts}
+                data={posts || []}
                 contentContainerStyle={{ paddingVertical: 8 }}
                 renderItem={({ item }) => {
                     // Generate consistent color based on username
@@ -455,13 +459,13 @@ export default function PopularPosts({
                                 <Avatar size={40}>
                                     <AvatarImage src={item.avatarUrl} />
                                     <AvatarFallback style={{ backgroundColor: avatarBgColor }} textStyle={{ color: 'white', fontWeight: '600' }}>
-                                        {item.username.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                                        {item.username ? item.username.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : 'U'}
                                     </AvatarFallback>
                                 </Avatar>
                             </TouchableOpacity>
                             <View style={styles.headerInfo}>
                                 <View style={styles.headerTop}>
-                                    <Text style={styles.username}>{item.username}</Text>
+                                    <Text style={styles.username}>{item.username || 'Unknown User'}</Text>
                                     <View style={{flexDirection: 'row', alignItems: 'center', gap: 4}}>
                                     <Text style={styles.date}>{item.time}</Text>
                                     {item.org && (

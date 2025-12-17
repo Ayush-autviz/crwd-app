@@ -66,7 +66,7 @@ export default function HomeHeader({ show = false, menu = true, post = true }) {
                         <TouchableOpacity
                             onPress={() => navigation.navigate('Activity' as never)}
                             activeOpacity={0.8}
-                            style={{ padding: 6, position: 'relative', backgroundColor: '#FFE6E6', borderRadius: 100 }}
+                            style={{ padding: 6, position: 'relative', borderRadius: 100 }}
                         >
                             <Bell size={20} color="#111827" />
                             {unreadCount?.data > 0 && currentUser?.id && (

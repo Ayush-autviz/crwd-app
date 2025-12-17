@@ -53,7 +53,7 @@ export default function CommunityActivity({
           <Text style={styles.loadingText}>Loading activity...</Text>
         </View>
       ) : posts && posts.length > 0 ? (
-        <PopularPosts posts={{ results: posts }} title="no title" showLoadMore={false} />
+        <PopularPosts posts={posts} title="no title" hasMore={false} />
       ) : (
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyText}>

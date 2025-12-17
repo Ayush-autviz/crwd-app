@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image, Linking } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
 import { Heart, MessageCircle } from 'lucide-react-native';
@@ -142,15 +142,61 @@ export default function PostResultCard({ post }: PostResultCardProps) {
           </Text>
         ) : null}
 
-        {/* Media or Preview */}
-        {post.preview_details?.image ? (
-          <Image
-            source={{ uri: post.preview_details.image }}
-            style={styles.media}
-            resizeMode="cover"
-          />
+        {/* Preview Card or Media */}
+        {post.preview_details && (post.preview_details.url || post.preview_details.title || post.preview_details.image) ? (
+          <TouchableOpacity
+            onPress={() => {
+              if (post.preview_details?.url) {
+                Linking.openURL(post.preview_details.url);
+              }
+            }}
+            style={[
+              styles.previewCard,
+              !post.preview_details.image && styles.previewCardNoImage,
+            ]}
+            activeOpacity={0.8}
+          >
+            {post.preview_details.image && (
+              <Image
+                source={{ uri: post.preview_details.image }}
+                style={styles.previewImage}
+                resizeMode="cover"
+              />
+            )}
+            <View style={styles.previewContent}>
+              {post.preview_details.site_name && (
+                <Text style={styles.previewSiteName} numberOfLines={1}>
+                  {post.preview_details.site_name.toUpperCase()}
+                </Text>
+              )}
+              {post.preview_details.title && (
+                <Text style={styles.previewTitle} numberOfLines={2}>
+                  {post.preview_details.title}
+                </Text>
+              )}
+              {post.preview_details.description && (
+                <Text style={styles.previewDescription} numberOfLines={2}>
+                  {post.preview_details.description}
+                </Text>
+              )}
+              {post.preview_details.domain && (
+                <Text style={styles.previewDomain} numberOfLines={1}>
+                  {post.preview_details.domain}
+                </Text>
+              )}
+            </View>
+          </TouchableOpacity>
         ) : post.media ? (
-          <Image source={{ uri: post.media }} style={styles.media} resizeMode="cover" />
+          <TouchableOpacity
+            onPress={() => {
+              if (post.media) {
+                Linking.openURL(post.media);
+              }
+            }}
+            activeOpacity={0.9}
+          >
+            <Image source={{ uri: post.media }} style={styles.media} resizeMode="cover" />
+          </TouchableOpacity>
         ) : null}
 
         {/* Like and Comment Counts */}
@@ -234,6 +280,52 @@ const styles = StyleSheet.create({
     height: 200,
     borderRadius: 8,
     marginBottom: 10,
+  },
+  previewCard: {
+    flexDirection: 'row',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    marginBottom: 10,
+    overflow: 'hidden',
+  },
+  previewCardNoImage: {
+    flexDirection: 'column',
+  },
+  previewImage: {
+    width: 120,
+    height: 120,
+    flexShrink: 0,
+  },
+  previewContent: {
+    flex: 1,
+    padding: 10,
+    justifyContent: 'space-between',
+  },
+  previewSiteName: {
+    fontSize: 9,
+    color: '#6B7280',
+    fontWeight: '600',
+    letterSpacing: 0.5,
+    marginBottom: 4,
+  },
+  previewTitle: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#111827',
+    marginBottom: 4,
+    lineHeight: 16,
+  },
+  previewDescription: {
+    fontSize: 10,
+    color: '#4B5563',
+    marginBottom: 4,
+    lineHeight: 14,
+  },
+  previewDomain: {
+    fontSize: 10,
+    color: '#6B7280',
   },
   engagement: {
     flexDirection: 'row',

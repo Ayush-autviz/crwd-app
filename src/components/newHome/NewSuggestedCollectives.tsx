@@ -90,16 +90,38 @@ export default function NewSuggestedCollectives({
         contentContainerStyle={styles.scrollContent}
       >
         {collectives.map((collective, index) => {
-          // Priority: 1. Use color (with white text), 2. Use logo (image), 3. Fallback to generated color with letter
+          // Priority: 1. If color is available, show color with letter, 2. If no color, show image, 3. Fallback to generated color with letter
           const hasColor = collective.iconColor;
           const hasLogo =
             collective.icon &&
             (collective.icon.startsWith('http') ||
               collective.icon.startsWith('/') ||
               collective.icon.startsWith('data:'));
-          const iconColor = hasColor || (!hasLogo ? getIconColor(index) : undefined);
+          const iconColor = hasColor ? collective.iconColor : (!hasLogo ? getIconColor(index) : undefined);
           const iconLetter = getIconLetter(collective.name);
-          const showImage = hasLogo && !hasColor; // Show logo only if no color is available
+          const showImage = !hasColor && hasLogo;
+
+          // Generate vibrant color for founder avatar
+          const avatarColors = [
+            '#EF4444', // Red
+            '#10B981', // Green
+            '#3B82F6', // Blue
+            '#8B5CF6', // Purple
+            '#84CC16', // Lime Green
+            '#EC4899', // Pink
+            '#F59E0B', // Amber
+            '#06B6D4', // Cyan
+            '#F97316', // Orange
+            '#A855F7', // Violet
+            '#14B8A6', // Teal
+            '#F43F5E', // Rose
+            '#6366F1', // Indigo
+            '#22C55E', // Emerald
+            '#EAB308', // Yellow
+          ];
+          const founderId = collective.founder.name || collective.id;
+          const founderColorIndex = founderId ? (String(founderId).split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % avatarColors.length) : 0;
+          const founderAvatarBgColor = avatarColors[founderColorIndex];
 
           return (
             <TouchableOpacity
@@ -110,34 +132,36 @@ export default function NewSuggestedCollectives({
                 (navigation as any).navigate('GroupCRWD', { id: collective.id })
               }
             >
-              {/* Icon */}
-              <View
-                style={[
-                  styles.iconContainer,
-                  iconColor ? { backgroundColor: iconColor } : {},
-                ]}
-              >
-                {showImage ? (
-                  <Image
-                    source={{ uri: collective.icon }}
-                    style={styles.iconImage}
-                    resizeMode="cover"
-                  />
-                ) : (
-                  <Text style={styles.iconLetter}>{iconLetter}</Text>
-                )}
+              {/* Icon and Title Row */}
+              <View style={styles.iconTitleRow}>
+                <View
+                  style={[
+                    styles.iconContainer,
+                    iconColor ? { backgroundColor: iconColor } : {},
+                  ]}
+                >
+                  {showImage ? (
+                    <Image
+                      source={{ uri: collective.icon }}
+                      style={styles.iconImage}
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <Text style={styles.iconLetter}>{iconLetter}</Text>
+                  )}
+                </View>
+                <Text style={styles.cardTitle} numberOfLines={1}>
+                  {collective.name}
+                </Text>
               </View>
-
-              {/* Title */}
-              <Text style={styles.cardTitle}>{collective.name}</Text>
 
               {/* Founder */}
               <View style={styles.founderRow}>
                 <Avatar size={20}>
                   <AvatarImage src={collective.founder.profile_picture} />
                   <AvatarFallback
-                    style={{ backgroundColor: '#1600ff' }}
-                    textStyle={{ color: '#FFFFFF', fontSize: 10 }}
+                    style={{ backgroundColor: founderAvatarBgColor }}
+                    textStyle={{ color: '#FFFFFF', fontSize: 10, fontWeight: '600' }}
                   >
                     {collective.founder.name
                       .split(' ')
@@ -147,7 +171,7 @@ export default function NewSuggestedCollectives({
                   </AvatarFallback>
                 </Avatar>
                 <Text style={styles.founderText}>
-                  Founded by {collective.founder.name}
+                  Founded by <Text style={styles.founderName}>{collective.founder.name}</Text>
                 </Text>
               </View>
 
@@ -182,12 +206,12 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   title: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700',
     color: '#111827',
   },
   seeAll: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '500',
     color: '#1600ff',
   },
@@ -195,20 +219,30 @@ const styles = StyleSheet.create({
     paddingRight: 16,
   },
   card: {
-    backgroundColor: '#F9FAFB',
+    backgroundColor: '#FFFFFF',
     borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
     padding: 12,
     minWidth: 240,
     maxWidth: 280,
+    height: 220,
     marginRight: 12,
+    flexDirection: 'column',
+  },
+  iconTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 10,
   },
   iconContainer: {
-    width: 48,
-    height: 48,
+    width: 40,
+    height: 40,
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 10,
+    flexShrink: 0,
   },
   iconImage: {
     width: '100%',
@@ -218,33 +252,41 @@ const styles = StyleSheet.create({
   iconLetter: {
     color: '#FFFFFF',
     fontWeight: '700',
-    fontSize: 20,
+    fontSize: 18,
   },
   cardTitle: {
     fontSize: 14,
     fontWeight: '700',
     color: '#000000',
-    marginBottom: 8,
+    flexShrink: 0,
+    flex: 1,
   },
   founderRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
     marginBottom: 6,
+    flexShrink: 0,
   },
   founderText: {
     fontSize: 12,
     color: '#6B7280',
   },
+  founderName: {
+    fontWeight: '600',
+    color: '#374151',
+  },
   nonprofitCount: {
     fontSize: 12,
     color: '#6B7280',
     marginBottom: 8,
+    flexShrink: 0,
   },
   description: {
     fontSize: 12,
     color: '#6B7280',
     lineHeight: 18,
+    flex: 1,
   },
 });
 

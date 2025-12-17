@@ -14,6 +14,7 @@ import { ArrowLeft, Search as SearchIcon, Sparkles, Plus } from 'lucide-react-na
 import { useQuery } from '@tanstack/react-query';
 import { getCausesBySearch, getCollectives } from '../services/api/crwd';
 import { getPosts, newSearch } from '../services/api/social';
+import { useAuthStore } from '../store/store';
 import SearchResultsHeader from '../components/newsearch/SearchResultsHeader';
 import SearchTabs from '../components/newsearch/SearchTabs';
 import CauseResultCard from '../components/newsearch/CauseResultCard';
@@ -43,6 +44,7 @@ const getTabValue = (tab: TabType): 'cause' | 'collective' | 'user' | 'post' => 
 export default function NewSearchPage() {
   const navigation = useNavigation();
   const route = useRoute();
+  const { user: currentUser } = useAuthStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<TabType>('Causes');
   const [hasSearched, setHasSearched] = useState(false);
@@ -220,7 +222,7 @@ export default function NewSearchPage() {
                     ))}
                   {activeTab === 'Users' &&
                     results.map((user: any) => (
-                      <UserResultCard key={user.id} user={user} />
+                      <UserResultCard key={user.id} user={user} currentUserId={currentUser?.id?.toString()} />
                     ))}
                   {activeTab === 'Posts' &&
                     results.map((post: any) => (

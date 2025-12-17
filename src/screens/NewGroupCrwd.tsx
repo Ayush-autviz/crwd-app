@@ -372,7 +372,24 @@ export default function NewGroupCrwdPage() {
           <SupportedNonprofits nonprofits={nonprofits} isLoading={isLoadingCauses} />
 
           <CommunityActivity
-            posts={posts?.results || []}
+            posts={posts?.results ? posts.results.map((post: any) => ({
+              id: post.id?.toString() || '',
+              userId: post.user?.id?.toString(),
+              username: post.user?.username || post.user?.full_name || post.user?.first_name && post.user?.last_name 
+                ? `${post.user.first_name} ${post.user.last_name}` 
+                : 'Unknown User',
+              avatarUrl: post.user?.profile_picture || '',
+              time: post.created_at ? new Date(post.created_at).toLocaleDateString() : '',
+              org: post.collective?.name || 'Unknown Collective',
+              orgUrl: post.collective?.id,
+              text: post.content || '',
+              imageUrl: post.media || undefined,
+              previewDetails: post.preview_details || null,
+              likes: post.likes_count || 0,
+              comments: post.comments_count || 0,
+              shares: 0,
+              isLiked: post.is_liked || false,
+            })) : []}
             isLoading={isLoadingPosts}
             collectiveId={crwdId}
             isJoined={crwdData.is_joined}

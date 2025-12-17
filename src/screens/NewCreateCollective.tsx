@@ -52,6 +52,61 @@ const getCategoryById = (categoryId: string | undefined) => {
   return categories.find(cat => cat.id === categoryId) || null;
 };
 
+// Get category names as an array for multi-letter categories (e.g., "MK" -> ["Relief", "Food"])
+const getCategoryNames = (categoryId: string | undefined): string[] => {
+  if (!categoryId) return ['Uncategorized'];
+  
+  // If category is multiple letters, split and get names for each
+  if (categoryId.length > 1) {
+    const categoryNames = categoryId
+      .split('')
+      .map(char => {
+        const category = getCategoryById(char);
+        return category?.name || char;
+      })
+      .filter(Boolean);
+    
+    return categoryNames.length > 0 ? categoryNames : ['Uncategorized'];
+  }
+  
+  // Single letter category
+  const category = getCategoryById(categoryId);
+  return category?.name ? [category.name] : ['Uncategorized'];
+};
+
+// Get category IDs as an array (for getting individual colors)
+const getCategoryIds = (categoryId: string | undefined): string[] => {
+  if (!categoryId) return [];
+  
+  // If category is multiple letters, split into individual IDs
+  if (categoryId.length > 1) {
+    return categoryId.split('');
+  }
+  
+  // Single letter category
+  return [categoryId];
+};
+
+// Get category background color for display (use first category's background for multi-letter)
+const getCategoryColor = (categoryId: string | undefined): string => {
+  if (!categoryId) return '#10B981';
+  
+  // For multi-letter categories, use the first category's background color
+  const firstChar = categoryId.charAt(0);
+  const category = getCategoryById(firstChar);
+  return category?.background || '#10B981';
+};
+
+// Get category text color for display
+const getCategoryTextColor = (categoryId: string | undefined): string => {
+  if (!categoryId) return '#FFFFFF';
+  
+  // For multi-letter categories, use the first category's text color
+  const firstChar = categoryId.charAt(0);
+  const category = getCategoryById(firstChar);
+  return category?.text || '#FFFFFF';
+};
+
 // Avatar colors for consistent fallback styling
 const avatarColors = [
   '#FF6B6B', '#4CAF50', '#FF9800', '#9C27B0', '#2196F3',
@@ -87,6 +142,7 @@ export default function NewCreateCollective() {
   const [showShareModal, setShowShareModal] = useState(false);
   const [createdCollective, setCreatedCollective] = useState<any>(null);
   const [step, setStep] = useState(1);
+  const [hasStarted, setHasStarted] = useState(false);
 
   // Logo customization state
   const [logoType, setLogoType] = useState<'letter' | 'upload'>('letter');
@@ -129,6 +185,9 @@ export default function NewCreateCollective() {
     };
     loadSavedData();
   }, []);
+
+  // Check if form is empty
+  const isFormEmpty = !name && !description && selectedCauses.length === 0;
 
   // Save form data to AsyncStorage whenever it changes
   useEffect(() => {
@@ -390,6 +449,50 @@ export default function NewCreateCollective() {
     );
   }
 
+  // Show "Lead a Giving Community" view as first step for logged-in users (only if form is empty and hasn't started)
+  if (step === 1 && isFormEmpty && !hasStarted) {
+    return (
+      <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+        <View style={styles.header}>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.backButton}
+          >
+            <ArrowLeft size={20} color="#4B5563" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Create a CRWD Collective</Text>
+        </View>
+        <View style={styles.promptContainer}>
+          <View style={styles.promptIconContainer}>
+            <Users size={32} color="#A855F7" />
+          </View>
+          <Text style={styles.promptTitle}>Lead a Giving Community</Text>
+          <Text style={styles.promptDescription}>
+            You pick the causes. You invite the people. They give monthly. No money touches your hands. You just rally the movement.
+          </Text>
+          <TouchableOpacity
+            onPress={async () => {
+              // Clear any saved form data and proceed to form
+              try {
+                await AsyncStorage.removeItem('createCrwd_name');
+                await AsyncStorage.removeItem('createCrwd_desc');
+              } catch (error) {
+                console.error('Error clearing saved data:', error);
+              }
+              setName('');
+              setDescription('');
+              setSelectedCauses([]);
+              setHasStarted(true);
+            }}
+            style={styles.promptButton}
+          >
+            <Text style={styles.promptButtonText}>Get Started</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   // Review/Confirmation Step
   if (step === 2 && !createdCollective) {
     return (
@@ -445,9 +548,8 @@ export default function NewCreateCollective() {
                 {selectedCauses.map((cause) => {
                   const causeData = cause.cause || cause;
                   const categoryId = causeData.category || causeData.cause_category;
-                  const category = getCategoryById(categoryId);
-                  const categoryName = category?.name || 'Uncategorized';
-                  const categoryColor = category?.text || '#10B981';
+                  const categoryNames = getCategoryNames(categoryId);
+                  const categoryIds = getCategoryIds(categoryId);
                   const avatarBgColor = getConsistentColor(causeData.id, avatarColors);
                   const initials = getInitials(causeData.name || 'N');
                   
@@ -468,10 +570,22 @@ export default function NewCreateCollective() {
                           <Text style={styles.reviewCauseDescription} numberOfLines={2}>
                             {causeData.mission || causeData.description}
                           </Text>
-                          <View style={[styles.reviewCauseCategory, { backgroundColor: `${categoryColor}20` }]}>
-                            <Text style={[styles.reviewCauseCategoryText, { color: categoryColor }]}>
-                              {categoryName}
-                            </Text>
+                          <View style={styles.reviewCauseCategoriesContainer}>
+                            {categoryNames.map((name, index) => {
+                              const singleCategoryId = categoryIds[index];
+                              const bgColor = getCategoryColor(singleCategoryId);
+                              const textColor = getCategoryTextColor(singleCategoryId);
+                              return (
+                                <View
+                                  key={index}
+                                  style={[styles.reviewCauseCategory, { backgroundColor: bgColor }]}
+                                >
+                                  <Text style={[styles.reviewCauseCategoryText, { color: textColor }]}>
+                                    {name}
+                                  </Text>
+                                </View>
+                              );
+                            })}
                           </View>
                         </View>
                       </View>
@@ -554,7 +668,7 @@ export default function NewCreateCollective() {
             {/* Heading */}
             <View style={styles.successHeading}>
               <Text style={styles.successTitle}>
-                🎉 Your Collective is <Text style={styles.successTitleBold}>Live!</Text>
+                {name} is <Text style={styles.successTitleBold}>Live!</Text>
               </Text>
             </View>
 
@@ -840,9 +954,8 @@ export default function NewCreateCollective() {
                   {selectedCauses.map((cause) => {
                     const causeData = cause.cause || cause;
                     const categoryId = causeData.category || causeData.cause_category;
-                    const category = getCategoryById(categoryId);
-                    const categoryName = category?.name || 'Uncategorized';
-                    const categoryColor = category?.text || '#10B981';
+                    const categoryNames = getCategoryNames(categoryId);
+                    const categoryIds = getCategoryIds(categoryId);
                     const avatarBgColor = getConsistentColor(causeData.id, avatarColors);
                     const initials = getInitials(causeData.name || 'N');
                     
@@ -861,10 +974,22 @@ export default function NewCreateCollective() {
                           <View style={styles.selectedCauseInfo}>
                             <View style={styles.selectedCauseHeader}>
                               <Text style={styles.selectedCauseName}>{causeData.name}</Text>
-                              <View style={[styles.selectedCauseCategory, { backgroundColor: `${categoryColor}20` }]}>
-                                <Text style={[styles.selectedCauseCategoryText, { color: categoryColor }]}>
-                                  {categoryName}
-                                </Text>
+                              <View style={styles.selectedCauseCategoriesContainer}>
+                                {categoryNames.map((name, index) => {
+                                  const singleCategoryId = categoryIds[index];
+                                  const bgColor = getCategoryColor(singleCategoryId);
+                                  const textColor = getCategoryTextColor(singleCategoryId);
+                                  return (
+                                    <View
+                                      key={index}
+                                      style={[styles.selectedCauseCategory, { backgroundColor: bgColor }]}
+                                    >
+                                      <Text style={[styles.selectedCauseCategoryText, { color: textColor }]}>
+                                        {name}
+                                      </Text>
+                                    </View>
+                                  );
+                                })}
                               </View>
                             </View>
                             <Text style={styles.selectedCauseDescription} numberOfLines={2}>
@@ -933,9 +1058,8 @@ export default function NewCreateCollective() {
                         favoriteCauses.map((item: any) => {
                           const cause = item.cause || item;
                           const categoryId = cause.category || cause.cause_category;
-                          const category = getCategoryById(categoryId);
-                          const categoryName = category?.name || 'Uncategorized';
-                          const categoryColor = category?.text || '#10B981';
+                          const categoryNames = getCategoryNames(categoryId);
+                          const categoryIds = getCategoryIds(categoryId);
                           const isSelected = isCauseSelected(cause.id);
                           const avatarBgColor = getConsistentColor(cause.id, avatarColors);
                           const initials = getInitials(cause.name || 'N');
@@ -961,10 +1085,22 @@ export default function NewCreateCollective() {
                               <View style={styles.causeInfo}>
                                 <View style={styles.causeHeader}>
                                   <Text style={styles.causeName}>{cause.name}</Text>
-                                  <View style={[styles.causeCategory, { backgroundColor: `${categoryColor}20` }]}>
-                                    <Text style={[styles.causeCategoryText, { color: categoryColor }]}>
-                                      {categoryName}
-                                    </Text>
+                                  <View style={styles.causeCategoriesContainer}>
+                                    {categoryNames.map((name, index) => {
+                                      const singleCategoryId = categoryIds[index];
+                                      const bgColor = getCategoryColor(singleCategoryId);
+                                      const textColor = getCategoryTextColor(singleCategoryId);
+                                      return (
+                                        <View
+                                          key={index}
+                                          style={[styles.causeCategory, { backgroundColor: bgColor }]}
+                                        >
+                                          <Text style={[styles.causeCategoryText, { color: textColor }]}>
+                                            {name}
+                                          </Text>
+                                        </View>
+                                      );
+                                    })}
                                   </View>
                                 </View>
                                 <Text style={styles.causeDescription} numberOfLines={2}>
@@ -1062,9 +1198,8 @@ export default function NewCreateCollective() {
 
                       return availableCauses.map((cause: any) => {
                         const categoryId = cause.category || cause.cause_category;
-                        const category = getCategoryById(categoryId);
-                        const categoryName = category?.name || 'Uncategorized';
-                        const categoryColor = category?.text || '#10B981';
+                        const categoryNames = getCategoryNames(categoryId);
+                        const categoryIds = getCategoryIds(categoryId);
                         const isSelected = isCauseSelected(cause.id);
                         const avatarBgColor = getConsistentColor(cause.id, avatarColors);
                         const initials = getInitials(cause.name || 'N');
@@ -1090,10 +1225,22 @@ export default function NewCreateCollective() {
                             <View style={styles.causeInfo}>
                               <View style={styles.causeHeader}>
                                 <Text style={styles.causeName}>{cause.name}</Text>
-                                <View style={[styles.causeCategory, { backgroundColor: `${categoryColor}20` }]}>
-                                  <Text style={[styles.causeCategoryText, { color: categoryColor }]}>
-                                    {categoryName}
-                                  </Text>
+                                <View style={styles.causeCategoriesContainer}>
+                                  {categoryNames.map((name, index) => {
+                                    const singleCategoryId = categoryIds[index];
+                                    const bgColor = getCategoryColor(singleCategoryId);
+                                    const textColor = getCategoryTextColor(singleCategoryId);
+                                    return (
+                                      <View
+                                        key={index}
+                                        style={[styles.causeCategory, { backgroundColor: bgColor }]}
+                                      >
+                                        <Text style={[styles.causeCategoryText, { color: textColor }]}>
+                                          {name}
+                                        </Text>
+                                      </View>
+                                    );
+                                  })}
                                 </View>
                               </View>
                               <Text style={styles.causeDescription} numberOfLines={2}>
@@ -1470,6 +1617,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#111827',
   },
+  selectedCauseCategoriesContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
   selectedCauseCategory: {
     paddingHorizontal: 8,
     paddingVertical: 2,
@@ -1590,6 +1742,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     color: '#111827',
+  },
+  causeCategoriesContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
   },
   causeCategory: {
     paddingHorizontal: 8,

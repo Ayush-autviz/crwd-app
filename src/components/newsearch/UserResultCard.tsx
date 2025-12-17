@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, CommonActions } from '@react-navigation/native';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
 
 interface UserResultCardProps {
@@ -12,6 +12,7 @@ interface UserResultCardProps {
     profile_picture?: string;
     bio?: string;
   };
+  currentUserId?: string;
 }
 
 // Get consistent color for avatar
@@ -41,7 +42,7 @@ const getConsistentColor = (id: number | string, colors: string[]) => {
   return colors[hash % colors.length];
 };
 
-export default function UserResultCard({ user }: UserResultCardProps) {
+export default function UserResultCard({ user, currentUserId }: UserResultCardProps) {
   const navigation = useNavigation();
   const avatarBgColor = getConsistentColor(user.id, avatarColors);
   const initials =
@@ -55,9 +56,44 @@ export default function UserResultCard({ user }: UserResultCardProps) {
       ? `${user.first_name} ${user.last_name}`
       : user.first_name || user.username || 'Unknown User';
 
+  // Check if this is the current user's profile
+  const isCurrentUser = currentUserId && user.id.toString() === currentUserId;
+
+  const handlePress = () => {
+    if (isCurrentUser) {
+      // Navigate to Profile tab (Me tab in MainTabs)
+      // Use the same pattern as PopularPosts.tsx
+      (navigation as any).dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [
+            {
+              name: 'DrawerNav',
+              state: {
+                routes: [
+                  {
+                    name: 'MainTabs',
+                    state: {
+                      routes: [{ name: 'Profile' }],
+                      index: 0,
+                    },
+                  },
+                ],
+                index: 0,
+              },
+            },
+          ],
+        })
+      );
+    } else {
+      // Navigate to UserProfile screen
+      navigation.navigate('UserProfile' as never, { userId: user.id } as never);
+    }
+  };
+
   return (
     <TouchableOpacity
-      onPress={() => navigation.navigate('UserProfile' as never, { userId: user.id } as never)}
+      onPress={handlePress}
       style={styles.card}
       activeOpacity={0.7}
     >

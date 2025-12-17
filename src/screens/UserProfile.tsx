@@ -762,13 +762,12 @@ export default function UserProfile() {
                                 onPress={() => setActiveStatsTab(tab.value as typeof activeStatsTab)}
                                 style={[
                                     styles.tab,
-                                    activeStatsTab === tab.value && styles.tabActive
+                                    activeStatsTab === tab.value && styles.activeTab
                                 ]}
-                                activeOpacity={0.7}
                             >
                                 <Text style={[
                                     styles.tabText,
-                                    activeStatsTab === tab.value && styles.tabTextActive
+                                    activeStatsTab === tab.value && styles.activeTabText
                                 ]}>
                                     {tab.label}
                                 </Text>
@@ -1032,29 +1031,32 @@ const styles = StyleSheet.create({
     },
     tabsContainer: {
         flexDirection: 'row',
-        backgroundColor: '#F3F4F6',
-        borderRadius: 16,
-        padding: 4,
-        marginBottom: 16,
+        // paddingHorizontal: 8,
+        marginTop: 16,
+        marginBottom: 8,
+        paddingVertical: 4,
         gap: 2,
+        backgroundColor: '#f3f4f6',
+        borderRadius: 16,
+        // marginHorizontal: 2,
     },
     tab: {
-        flex: 1,
-        paddingVertical: 6,
         paddingHorizontal: 12,
-        borderRadius: 12,
-        alignItems: 'center',
+        paddingVertical: 6,
+        borderRadius: 8,
     },
-    tabActive: {
-        backgroundColor: '#FFFFFF',
+    activeTab: {
+        backgroundColor: '#fff',
+        borderRadius: 16,
     },
     tabText: {
         fontSize: 14,
-        fontWeight: '600',
-        color: '#6B7280',
-    },
-    tabTextActive: {
         color: '#111827',
+        fontWeight: '600',
+    },
+    activeTabText: {
+        color: '#111827',
+        fontWeight: '700',
     },
     bottomSheetScrollView: {
         flex: 1,

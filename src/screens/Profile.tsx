@@ -602,7 +602,7 @@ export default function Profile() {
     }
 
     return (
-        <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }} edges={['top', 'left', 'right']}>
+        <SafeAreaView style={{ backgroundColor: 'white', flex: 1, paddingBottom: 80 }} edges={['top', 'left', 'right']}>
             <MainHeaderNav title={'Me'} menu={false} />
 
             {/* Top right buttons */}
@@ -1093,7 +1093,7 @@ export default function Profile() {
 
                     <BottomSheetScrollView 
                         showsVerticalScrollIndicator={false}
-                        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 30 }}
+                        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 80 }}
     >
                         {renderStatsContent()}
                     </BottomSheetScrollView>
@@ -1175,7 +1175,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         paddingVertical: 16,
-        paddingHorizontal: 16,
+        // paddingHorizontal: 16,
     },
     causeIcon: {
         width: 48,

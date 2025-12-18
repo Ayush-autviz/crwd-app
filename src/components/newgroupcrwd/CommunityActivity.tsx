@@ -45,7 +45,7 @@ export default function CommunityActivity({
             style={styles.postButton}
             activeOpacity={0.7}
           >
-            <Text style={styles.postButtonText}>Start a Conversation</Text>
+            <Text style={styles.postButtonText}>Create Post</Text>
           </TouchableOpacity>
         )}
       </View>

@@ -62,6 +62,7 @@ import NonProfitInterests from './src/components/onboarding/NonProfitInterests'
 import CompleteOnboard from './src/components/onboarding/CompleteOnboard'
 import OnBoard from './src/components/onboarding/OnBoard'
 import NewOnboard from './src/components/onboarding/NewOnboard'
+import OneTimeDonationScreen from './src/screens/OneTimeDonationScreen'
 import {FontAwesome6} from '@react-native-vector-icons/fontawesome6'
 import { Image, Platform, View } from 'react-native'
 import { PermissionsAndroid } from 'react-native'
@@ -316,6 +317,7 @@ useEffect(() => {
         <Stack.Screen name='Activity' component={Activity} />
         <Stack.Screen name="Post" component={Post} />
         <Stack.Screen name="ManageDonationBox" component={ManageDonationBoxScreen} />
+        <Stack.Screen name="OneTimeDonationScreen" component={OneTimeDonationScreen} />
         <Stack.Screen name="Articles" component={Articles} />
         <Stack.Screen name="ArticleDetail" component={ArticleDetail} />
       </Stack.Navigator>

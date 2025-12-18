@@ -23,7 +23,7 @@ import { getDonationBox, createDonationBox, removeCauseFromBox, removeCollective
 import DonationBoxSummaryCard from '../components/donation/DonationBoxSummaryCard';
 import { getCausesBySearch, getJoinCollective, getCollectiveById } from '../services/api/crwd';
 import { useAuthStore } from '../store/store';
-import { Alert, ActivityIndicator, Modal } from 'react-native';
+import { Alert, ActivityIndicator, Modal, Pressable } from 'react-native';
 import { useStripe } from '@stripe/stripe-react-native';
 import MainHeaderNav from '../components/MainHeaderNav';
 import DonationReviewBottomSheet from '../components/donation/DonationReviewBottomSheet';
@@ -54,6 +54,8 @@ export default function DonationScreen() {
   const [showReviewBottomSheet, setShowReviewBottomSheet] = useState(false);
   const [justCreatedBox, setJustCreatedBox] = useState(false);
   const [showRequestModal, setShowRequestModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<{ id: string; name: string; type: 'cause' | 'collective' } | null>(null);
   const reviewBottomSheetRef = useRef<any>(null);
   const { user: currentUser } = useAuthStore();
   const queryClient = useQueryClient();
@@ -61,8 +63,12 @@ export default function DonationScreen() {
 
   // Load current donation box
   const donationBoxQuery = useQuery({
-    queryKey: ['donationBox'],
+    queryKey: ['donationBox', currentUser?.id],
     queryFn: getDonationBox,
+    enabled: !!currentUser?.id,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    staleTime: 0,
   });
 
   // Fetch donation history for lifetime amount
@@ -75,21 +81,28 @@ export default function DonationScreen() {
   // Decide step based on existing box - only when setup tab is active
   useEffect(() => {
     if (activeTab === 'setup') {
-    if (donationBoxQuery.data && donationBoxQuery.data.id) {
-      setDonationBox(donationBoxQuery.data);
-      if(donationBoxQuery.data.is_active) {
-        setCheckout(true);
+      if (donationBoxQuery.data && donationBoxQuery.data.id) {
+        setDonationBox(donationBoxQuery.data);
+        if(donationBoxQuery.data.is_active) {
+          setCheckout(true);
+        } else {
+          // If donation box exists but is not active, show step 2 (not checkout)
+          setCheckout(false);
+        }
+        setStep(2);
       } else {
-        // If donation box exists but is not active, show step 2 (not checkout)
         setCheckout(false);
+        setStep(1);
       }
-      setStep(2);
-    } else {
-      setCheckout(false);
-      setStep(1);
-    }
     }
   }, [donationBoxQuery.data, activeTab]);
+
+  // Update local donationBox state when query data changes (for immediate UI updates)
+  useEffect(() => {
+    if (donationBoxQuery.data) {
+      setDonationBox(donationBoxQuery.data);
+    }
+  }, [donationBoxQuery.data]);
 
   // Causes search (max 5 rendered)
   const { data: causesData, isLoading: causesLoading } = useQuery({
@@ -119,6 +132,57 @@ export default function DonationScreen() {
     onError: (e: any) => Alert.alert('Error', e?.response?.data?.message || 'Failed to create box'),
   });
 
+
+  // Mutation to remove cause from box
+  const removeCauseMutation = useMutation({
+    mutationFn: (causeId: string) => removeCauseFromBox(causeId),
+    onSuccess: async () => {
+      console.log('Cause removed successfully');
+      // Invalidate and refetch donation box data
+      await queryClient.invalidateQueries({ queryKey: ['donationBox', currentUser?.id] });
+      await queryClient.invalidateQueries({ queryKey: ['donationBox'] });
+      // Refetch the donation box query
+      await donationBoxQuery.refetch();
+      setShowDeleteModal(false);
+      setItemToDelete(null);
+    },
+    onError: (error: any) => {
+      console.error('Error removing cause:', error);
+      const errorMessage = error?.response?.data?.message || error?.message || 'Failed to remove cause';
+      Alert.alert('Error', errorMessage);
+    },
+  });
+
+  // Mutation to remove collective from box
+  const removeCollectiveMutation = useMutation({
+    mutationFn: (collectiveId: string) => removeCollectiveFromBox(collectiveId),
+    onSuccess: async () => {
+      console.log('Collective removed successfully');
+      // Invalidate and refetch donation box data
+      await queryClient.invalidateQueries({ queryKey: ['donationBox', currentUser?.id] });
+      await queryClient.invalidateQueries({ queryKey: ['donationBox'] });
+      // Refetch the donation box query
+      await donationBoxQuery.refetch();
+      setShowDeleteModal(false);
+      setItemToDelete(null);
+    },
+    onError: (error: any) => {
+      console.error('Error removing collective:', error);
+      const errorMessage = error?.response?.data?.message || error?.message || 'Failed to remove collective';
+      Alert.alert('Error', errorMessage);
+    },
+  });
+
+  // Handle delete confirmation
+  const handleDelete = () => {
+    if (itemToDelete) {
+      if (itemToDelete.type === 'cause') {
+        removeCauseMutation.mutate(itemToDelete.id);
+      } else {
+        removeCollectiveMutation.mutate(itemToDelete.id);
+      }
+    }
+  };
 
   const activateDonationBoxConfirm = useMutation({
     mutationFn: confirmMobileActivation,
@@ -271,11 +335,27 @@ export default function DonationScreen() {
           causes: [],
         };
 
+        // Get preselected causes and collective ID from route params
+        const maybeParams: any = (route as any)?.params;
+        const preselectedCauseIds = maybeParams?.preselectedCauses || [];
+        const preselectedCollectiveId = maybeParams?.preselectedCollectiveId;
+        const hasPreselectedCollective = preselectedCollectiveId !== undefined;
+
         // Add causes from selectedCauseIds
+        // If they came from preselectedCollectiveId, add attributed_collective
         selectedCauseIds.forEach((causeId) => {
-          requestData.causes.push({
-            cause_id: causeId,
-          });
+          if (hasPreselectedCollective && preselectedCauseIds.includes(causeId)) {
+            // This cause came from the preselected collective
+            requestData.causes.push({
+              cause_id: causeId,
+              attributed_collective: preselectedCollectiveId,
+            });
+          } else {
+            // Standalone cause, no attributed_collective
+            requestData.causes.push({
+              cause_id: causeId,
+            });
+          }
         });
 
         // Add causes from selectedCollectiveIds
@@ -293,6 +373,7 @@ export default function DonationScreen() {
                 collectiveDetailsData.causes.forEach((causeItem: any) => {
                   const causeId = causeItem.cause?.id || causeItem.id;
                   if (causeId && !selectedCauseIds.includes(causeId)) {
+                    // Only add if not already added from selectedCauseIds
                     requestData.causes.push({
                       cause_id: causeId,
                       attributed_collective: collectiveId,
@@ -951,7 +1032,10 @@ export default function DonationScreen() {
                           const causes = boxCauses.map((boxCause: any) => boxCause.cause).filter((cause: any) => cause != null);
                           return causes.length;
                         })()}
-                        collectivesCount={0}
+                        collectivesCount={(() => {
+                          const attributingCollectives = donationBoxQuery.data?.attributing_collectives || donationBox?.attributing_collectives || [];
+                          return attributingCollectives.length;
+                        })()}
                         currentCapacity={(() => {
                           const boxCauses = donationBoxQuery.data?.box_causes || donationBox?.box_causes || [];
                           const uniqueCauseIds = new Set(boxCauses.map((bc: any) => bc.cause?.id).filter(Boolean));
@@ -1050,6 +1134,16 @@ export default function DonationScreen() {
                                         <Text style={styles.amountPercentageStep2}>{distributionPercentage}%</Text>
                                         <Text style={styles.amountPerMonthStep2}>${amountPerItem.toFixed(2)}/mo</Text>
                                       </View>
+                                      <TouchableOpacity
+                                        onPress={() => {
+                                          setItemToDelete({ id: cause.id.toString(), name: cause.name, type: 'cause' });
+                                          setShowDeleteModal(true);
+                                        }}
+                                        style={styles.trashButtonStep2}
+                                        activeOpacity={0.7}
+                                      >
+                                        <Trash2 size={18} color="#ef4444" />
+                                      </TouchableOpacity>
                                     </View>
                                   </View>
                                 );
@@ -1159,6 +1253,64 @@ export default function DonationScreen() {
         isOpen={showRequestModal}
         onClose={() => setShowRequestModal(false)}
       />
+
+      {/* Remove Cause Confirmation Modal */}
+      <Modal
+        visible={showDeleteModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => {
+          setShowDeleteModal(false);
+          setItemToDelete(null);
+        }}
+      >
+        <View style={styles.deleteModalOverlay}>
+          <Pressable
+            style={styles.deleteModalBackdrop}
+            onPress={() => {
+              setShowDeleteModal(false);
+              setItemToDelete(null);
+            }}
+          />
+          <View style={styles.deleteModalContent}>
+            <View style={styles.deleteModalHandle} />
+            <View style={styles.deleteModalBody}>
+              <Text style={styles.deleteModalTitle}>Remove Cause?</Text>
+              <Text style={styles.deleteModalDescription}>
+                Are you sure you want to remove <Text style={styles.deleteModalBold}>{itemToDelete?.name}</Text> from your donation box? This action cannot be undone.
+              </Text>
+            </View>
+            <View style={styles.deleteModalFooter}>
+              <TouchableOpacity
+                onPress={() => {
+                  setShowDeleteModal(false);
+                  setItemToDelete(null);
+                }}
+                disabled={removeCauseMutation.isPending || removeCollectiveMutation.isPending}
+                style={[styles.deleteModalCancelButton, (removeCauseMutation.isPending || removeCollectiveMutation.isPending) && styles.deleteModalButtonDisabled]}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.deleteModalCancelText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleDelete}
+                disabled={removeCauseMutation.isPending || removeCollectiveMutation.isPending}
+                style={[styles.deleteModalConfirmButton, (removeCauseMutation.isPending || removeCollectiveMutation.isPending) && styles.deleteModalButtonDisabled]}
+                activeOpacity={0.7}
+              >
+                {removeCauseMutation.isPending || removeCollectiveMutation.isPending ? (
+                  <>
+                    <ActivityIndicator size="small" color="#FFFFFF" style={{ marginRight: 8 }} />
+                    <Text style={styles.deleteModalConfirmText}>Removing...</Text>
+                  </>
+                ) : (
+                  <Text style={styles.deleteModalConfirmText}>Remove</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
     </>
   );
@@ -1918,5 +2070,87 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  trashButtonStep2: {
+    padding: 8,
+    borderRadius: 8,
+  },
+  deleteModalOverlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  deleteModalBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  deleteModalContent: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingBottom: 20,
+    maxHeight: '90%',
+  },
+  deleteModalHandle: {
+    width: 40,
+    height: 4,
+    backgroundColor: '#d1d5db',
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginTop: 8,
+    marginBottom: 16,
+  },
+  deleteModalBody: {
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+  },
+  deleteModalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#111827',
+    marginBottom: 12,
+  },
+  deleteModalDescription: {
+    fontSize: 14,
+    color: '#4b5563',
+    lineHeight: 20,
+  },
+  deleteModalBold: {
+    fontWeight: '600',
+    color: '#111827',
+  },
+  deleteModalFooter: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    gap: 12,
+  },
+  deleteModalCancelButton: {
+    flex: 1,
+    backgroundColor: '#e5e7eb',
+    paddingVertical: 12,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  deleteModalCancelText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#111827',
+  },
+  deleteModalConfirmButton: {
+    flex: 1,
+    backgroundColor: '#ef4444',
+    paddingVertical: 12,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+  },
+  deleteModalConfirmText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  deleteModalButtonDisabled: {
+    opacity: 0.5,
   },
 });

@@ -44,6 +44,9 @@ interface OneTimeDonationProps {
     data: any;
   };
   activeTab?: string;
+  preselectedCauses?: number[];
+  preselectedCausesData?: any[];
+  preselectedCollectiveId?: number;
   show?: boolean;
 }
 
@@ -53,12 +56,16 @@ export default function OneTimeDonation({
   setSelectedOrganizations,
   preselectedItem,
   activeTab,
+  preselectedCauses,
+  preselectedCausesData,
+  preselectedCollectiveId,
   show=true
 }: OneTimeDonationProps) {
   const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
   const [donationAmount, setDonationAmount] = useState(5);
   const [inputValue, setInputValue] = useState('5');
   const [preselectedItemAdded, setPreselectedItemAdded] = useState(false);
+  const [preselectedCausesProcessed, setPreselectedCausesProcessed] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearchResults, setShowSearchResults] = useState(false);
   const { user: currentUser } = useAuthStore();
@@ -70,13 +77,44 @@ export default function OneTimeDonation({
 
   // Handle preselected item from navigation
   useEffect(() => {
-    if (preselectedItem && !preselectedItemAdded) {
+    if (preselectedItem && !preselectedItemAdded && !preselectedCausesProcessed) {
       console.log('OneTimeDonation: Setting preselected item:', preselectedItem);
       setSelectedItems([preselectedItem]);
       setSelectedOrganizations([preselectedItem.id]);
       setPreselectedItemAdded(true);
     }
-  }, [preselectedItem, setSelectedOrganizations, preselectedItemAdded]);
+  }, [preselectedItem, setSelectedOrganizations, preselectedItemAdded, preselectedCausesProcessed]);
+
+  // Handle preselected causes from collective (multiple causes)
+  useEffect(() => {
+    if (preselectedCauses && preselectedCauses.length > 0 && !preselectedCausesProcessed && !preselectedItemAdded) {
+      console.log('OneTimeDonation: Setting preselected causes:', preselectedCauses, preselectedCausesData);
+      
+      // If we have the full cause data, use it directly
+      if (preselectedCausesData && preselectedCausesData.length > 0) {
+        const causesAsItems: SelectedItem[] = preselectedCausesData.map((cause: any) => ({
+          id: cause.id.toString(),
+          type: 'cause' as const,
+          data: cause,
+        }));
+        
+        setSelectedItems(causesAsItems);
+        setSelectedOrganizations(causesAsItems.map(item => item.id));
+        setPreselectedCausesProcessed(true);
+      } else {
+        // Fallback: create items from IDs only
+        const causesAsItems: SelectedItem[] = preselectedCauses.map((causeId: number) => ({
+          id: causeId.toString(),
+          type: 'cause' as const,
+          data: { id: causeId },
+        }));
+        
+        setSelectedItems(causesAsItems);
+        setSelectedOrganizations(causesAsItems.map(item => item.id));
+        setPreselectedCausesProcessed(true);
+      }
+    }
+  }, [preselectedCauses, preselectedCausesData, preselectedCausesProcessed, preselectedItemAdded, setSelectedOrganizations]);
 
   // Fetch causes with search - only when search is active
   const { data: causesData, isLoading: causesLoading } = useQuery({

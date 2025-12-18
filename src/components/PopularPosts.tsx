@@ -302,7 +302,7 @@ export default function PopularPosts({
                         onPress={handleStartConversation}
                         style={{ padding: 8, backgroundColor: SecondaryGrey, borderRadius: 8 }}
                     >
-                        <Text style={{ fontSize: 14,}}>Start a Conversation</Text>
+                        <Text style={{ fontSize: 14,}}>Create Post</Text>
                     </TouchableOpacity>
                     )}
                 </View>

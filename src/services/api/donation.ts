@@ -27,7 +27,7 @@ export const confirmMobileActivation = async (data: any) => {
 };
 
 export const addCausesToBox = async (data: any) => {
-    const response = await axiosClient.post('/donations/box/add-causes/', data);
+    const response = await axiosClient.post('/donations/box/add-cause/', data);
     return response.data;
 };
 

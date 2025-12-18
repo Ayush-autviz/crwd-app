@@ -237,7 +237,7 @@ export default function DonationBoxSummaryCard({
         {/* Supported Entities */}
         <View style={styles.entitiesContainer}>
           <Text style={styles.entitiesText}>
-            {causesCount} Cause{causesCount !== 1 ? 's' : ''}
+            {causesCount} Cause{causesCount !== 1 ? 's' : ''} • {collectivesCount} Collective{collectivesCount !== 1 ? 's' : ''}
           </Text>
         </View>
 

@@ -229,13 +229,18 @@ export default function NewGroupCrwdPage() {
 
     const causeIds = collectiveCauses.map((cause: any) => cause.id);
 
-    // Navigate to one-time donation tab with preselected causes
-    navigation.navigate('DonationScreen' as never, {
+    // Navigate to one-time donation screen with preselected causes
+    (navigation as any).navigate('OneTimeDonationScreen', {
+      preselectedItem: {
+        id: crwdId,
+        type: 'collective',
+        data: crwdData,
+      },
       activeTab: 'onetime',
       preselectedCauses: causeIds,
       preselectedCausesData: collectiveCauses,
       preselectedCollectiveId: parseInt(crwdId || '0'),
-    } as never);
+    });
   };
 
   const handleShare = async () => {
@@ -252,7 +257,7 @@ export default function NewGroupCrwdPage() {
 
   const handleManageCollective = () => {
     if (crwdId) {
-      navigation.navigate('ManageCRWD' as never, { collectiveId: crwdId } as never);
+      (navigation as any).navigate('ManageCRWD', { collectiveId: crwdId });
     }
   };
 

@@ -192,10 +192,12 @@ export default function ManageDonationBoxScreen() {
     mutationFn: (data: any) => updateDonationBox(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['donationBox'] });
-      handleBack();
+      showToast('Donation box updated successfully!', 3000);
     },
     onError: (error: any) => {
       console.error('Error updating donation box:', error);
+      const errorMessage = error?.response?.data?.message || error?.message || 'Failed to update donation box. Please try again.';
+      showToast(errorMessage, 3000);
     },
   });
 
@@ -385,20 +387,94 @@ export default function ManageDonationBoxScreen() {
 
       // Combine existing (not removed) + newly selected causes/collectives
       const allCauseIds = [...remainingExistingCauseIds, ...selectedCauses];
-      const allCollectiveIds = [...remainingExistingCollectiveIds, ...selectedCollectives];
+      const allCollectiveIdsForUpdate = [...remainingExistingCollectiveIds, ...selectedCollectives];
 
-      // Prepare payload with amount and all causes/collectives
-      const payload: any = {
-        monthly_amount: Math.round(editableAmount),
+      // Validate that at least one nonprofit or collective exists
+      if (allCauseIds.length === 0 && allCollectiveIdsForUpdate.length === 0) {
+        showToast('Please add at least one nonprofit or collective to your donation box.', 3000);
+        return;
+      }
+
+      // Build causes array with cause_id and optional attributed_collective
+      const causesArray: Array<{ cause_id: number; attributed_collective?: number }> = [];
+
+      // Get box_causes from donation box data to map attributed_collectives
+      const boxCausesFromDonationBox = donationBox?.box_causes || [];
+      const causeToAttributedCollective = new Map<number, number>();
+      
+      // Map existing causes to their attributed_collective from box_causes
+      boxCausesFromDonationBox.forEach((boxCause: any) => {
+        const causeId = boxCause.cause?.id;
+        if (causeId) {
+          // Check if attributed_collectives exists and is not "manual"
+          const attributedCollectives = boxCause.attributed_collectives || [];
+          // Find the first numeric collective ID (not "manual")
+          const numericCollectiveId = attributedCollectives.find((ac: any) => 
+            typeof ac === 'number' && ac !== 0
+          );
+          if (numericCollectiveId) {
+            causeToAttributedCollective.set(causeId, numericCollectiveId);
+          }
+        }
+      });
+
+      // Add existing causes (not removed) with their attributed_collective from box_causes
+      remainingExistingCauseIds.forEach((causeId) => {
+        const attributedCollective = causeToAttributedCollective.get(causeId);
+        const causeEntry: { cause_id: number; attributed_collective?: number } = {
+          cause_id: causeId,
+        };
+        // Only add attributed_collective if it exists and is not 0
+        if (attributedCollective && attributedCollective !== 0) {
+          causeEntry.attributed_collective = attributedCollective;
+        }
+        causesArray.push(causeEntry);
+      });
+
+      // Add newly selected causes (standalone, no attributed_collective)
+      selectedCauses.forEach((causeId) => {
+        causesArray.push({
+          cause_id: causeId,
+        });
+      });
+
+      // Add causes from newly selected collectives
+      // When a collective is selected, we need to get its causes and add them with attributed_collective
+      for (const collectiveId of selectedCollectives) {
+        try {
+          const collectiveData = collectiveDetails[collectiveId] || await getCollectiveById(collectiveId.toString());
+          if (collectiveData?.causes) {
+            collectiveData.causes.forEach((collectiveCause: any) => {
+              const causeId = collectiveCause.cause?.id || collectiveCause.id;
+              if (causeId) {
+                // Check if this cause is already in the array (shouldn't happen for newly selected, but just in case)
+                const alreadyExists = causesArray.some(c => c.cause_id === causeId);
+                if (!alreadyExists) {
+                  const causeEntry: { cause_id: number; attributed_collective?: number } = {
+                    cause_id: causeId,
+                    attributed_collective: collectiveId,
+                  };
+                  causesArray.push(causeEntry);
+                }
+              }
+            });
+          }
+        } catch (error) {
+          console.error(`Error fetching collective ${collectiveId} details:`, error);
+        }
+      }
+
+      // Note: Causes from existing collectives are already included in remainingExistingCauseIds
+      // with their attributed_collective mapped from box_causes above, so we don't need to add them separately
+
+      // Prepare payload with new format (matching Vite)
+      const payload: {
+        monthly_amount: string;
+        causes: Array<{ cause_id: number; attributed_collective?: number }>;
+      } = {
+        monthly_amount: editableAmount.toString(),
+        causes: causesArray,
       };
-
-      if (allCauseIds.length > 0) {
-        payload.cause_ids = allCauseIds;
-      }
-
-      if (allCollectiveIds.length > 0) {
-        payload.collective_ids = allCollectiveIds;
-      }
 
       // Send single update call with all data
       await updateDonationBoxMutation.mutateAsync(payload);
@@ -412,9 +488,10 @@ export default function ManageDonationBoxScreen() {
       // Refresh and go back
       queryClient.invalidateQueries({ queryKey: ['donationBox'] });
       handleBack();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating donation box:', error);
-      // You might want to show an error toast here
+      const errorMessage = error?.response?.data?.message || error?.message || 'Failed to update donation box. Please try again.';
+      showToast(errorMessage, 3000);
     }
   };
 

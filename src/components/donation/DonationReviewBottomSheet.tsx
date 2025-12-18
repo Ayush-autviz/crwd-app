@@ -456,7 +456,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   causesList: {
-    gap: 12,
+    gap: 6,
   },
   causeItem: {
     flexDirection: 'row',
@@ -496,7 +496,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 24,
     paddingBottom: 24,
-    marginTop: 16,
+    // marginTop: 16,
   },
   completeButton: {
     backgroundColor: '#1F2937',

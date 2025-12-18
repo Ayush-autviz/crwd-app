@@ -66,44 +66,77 @@ export default function NewCausePage() {
     ?.filter((cause: any) => cause.id.toString() !== causeId)
     .slice(0, 2) || [];
 
+  // Fetch donation box to check if cause is already added
+  const { data: donationBoxData, refetch: refetchDonationBox } = useQuery({
+    queryKey: ['donationBox', currentUser?.id],
+    queryFn: getDonationBox,
+    enabled: !!currentUser?.id,
+    refetchOnMount: true,
+    staleTime: 0,
+  });
+
+  // Check if current cause is already in the donation box
+  const isCauseInBox = donationBoxData?.box_causes?.some((boxCause: any) => {
+    const cause = boxCause.cause || boxCause;
+    const causeIdNum = parseInt(causeId);
+    return (
+      (cause?.id && parseInt(cause.id.toString()) === causeIdNum) ||
+      (boxCause.cause_id && parseInt(boxCause.cause_id.toString()) === causeIdNum)
+    );
+  }) || false;
+
   // Add cause to donation box mutation
   const addToDonationBoxMutation = useMutation({
     mutationFn: async () => {
       if (!causeId) throw new Error('Cause ID is missing');
-      return addCausesToBox({ cause_ids: [parseInt(causeId)] });
+      // Use correct API format: { causes: [{ cause_id: 0 }] } without attributed_collective
+      return addCausesToBox({ 
+        causes: [{ 
+          cause_id: parseInt(causeId) 
+        }] 
+      });
     },
     onSuccess: async () => {
       setShowAddToBoxModal(false);
-      queryClient.invalidateQueries({ queryKey: ['donationBox', currentUser?.id] });
+      // Invalidate and refetch donation box to update isCauseInBox
+      await queryClient.invalidateQueries({ queryKey: ['donationBox', currentUser?.id] });
+      await refetchDonationBox();
+      
+      // Show custom toast
       showToast('Cause added to donation box!', 3000);
-
-      // Check if donation box exists and navigate accordingly
-      try {
-        const donationBoxData = await getDonationBox();
-        if (!donationBoxData || !donationBoxData.id) {
-          // Navigate to donation box setup
-          navigation.navigate('DonationScreen' as never, {
-            activeTab: 'nonprofits',
-            preselectedItem: {
-              id: causeId,
-              type: 'cause',
-              data: causeData,
+      
+      // Navigate to bottom tab "Donate" with setup tab
+      (navigation as any).reset({
+        index: 0,
+        routes: [
+          {
+            name: 'DrawerNav' as never,
+            state: {
+              routes: [
+                {
+                  name: 'MainTabs' as never,
+                  state: {
+                    routes: [
+                      { name: 'Home' as never },
+                      { name: 'Search' as never },
+                      {
+                        name: 'Donate' as never,
+                        params: {
+                          initialTab: 'setup',
+                        },
+                      },
+                      { name: 'Collectives' as never },
+                      { name: 'Profile' as never },
+                    ],
+                    index: 2, // Donate tab index
+                  },
+                },
+              ],
+              index: 0,
             },
-          } as never);
-        } else {
-          // Navigate to donation box with cause preselected
-          navigation.navigate('DonationScreen' as never, {
-            activeTab: 'nonprofits',
-            preselectedItem: {
-              id: causeId,
-              type: 'cause',
-              data: causeData,
-            },
-          } as never);
-        }
-      } catch (error) {
-        console.error('Error checking donation box:', error);
-      }
+          },
+        ],
+      });
     },
     onError: (error: any) => {
       console.error('Error adding cause to donation box:', error);
@@ -155,8 +188,144 @@ export default function NewCausePage() {
     setShowAddToBoxModal(true);
   };
 
-  const handleConfirmAddToBox = () => {
-    addToDonationBoxMutation.mutate();
+  const handleConfirmAddToBox = async () => {
+    // Check if donation box exists first
+    try {
+      const donationBox = await getDonationBox();
+      
+      // If donation box is not set up, navigate to donation page with cause preselected
+      if (!donationBox || !donationBox.id || donationBox.message === "Donation box not found") {
+        setShowAddToBoxModal(false);
+        // Navigate to bottom tab "Donate" with preselected cause
+        (navigation as any).reset({
+          index: 0,
+          routes: [
+            {
+              name: 'DrawerNav' as never,
+              state: {
+                routes: [
+                  {
+                    name: 'MainTabs' as never,
+                    state: {
+                      routes: [
+                        { name: 'Home' as never },
+                        { name: 'Search' as never },
+                        {
+                          name: 'Donate' as never,
+                          params: {
+                            initialTab: 'setup',
+                            preselectedItem: {
+                              id: causeId || '',
+                              type: 'cause',
+                              data: causeData,
+                            },
+                            preselectedCauses: causeId ? [parseInt(causeId)] : [],
+                            preselectedCausesData: causeData ? [{
+                              id: causeData.id,
+                              name: causeData.name,
+                              description: causeData.description || causeData.mission || '',
+                              mission: causeData.mission || '',
+                              logo: causeData.image || causeData.logo || '',
+                            }] : [],
+                          },
+                        },
+                        { name: 'Collectives' as never },
+                        { name: 'Profile' as never },
+                      ],
+                      index: 2, // Donate tab index
+                    },
+                  },
+                ],
+                index: 0,
+              },
+            },
+          ],
+        });
+        return;
+      }
+      
+      // If donation box exists, check capacity before adding cause
+      // Calculate fees and capacity
+      const calculateFees = (grossAmount: number) => {
+        const gross = grossAmount;
+        const stripeFee = (gross * 0.029) + 0.30;
+        const crwdFee = (gross - stripeFee) * 0.07;
+        const net = gross - stripeFee - crwdFee;
+        return {
+          stripeFee: Math.round(stripeFee * 100) / 100,
+          crwdFee: Math.round(crwdFee * 100) / 100,
+          net: Math.round(net * 100) / 100,
+        };
+      };
+
+      const monthlyAmount = parseFloat(donationBox.monthly_amount || '0');
+      const fees = calculateFees(monthlyAmount);
+      const net = fees.net;
+      const maxCapacity = Math.floor(net / 0.20);
+      
+      // Count current causes in the box
+      const boxCauses = donationBox.box_causes || [];
+      const currentCapacity = boxCauses.length;
+      
+      // Check if adding this cause would exceed capacity
+      if (currentCapacity >= maxCapacity) {
+        showToast(`Your donation box is full. You can only support up to ${maxCapacity} cause${maxCapacity !== 1 ? 's' : ''} for $${monthlyAmount} per month. Please increase your donation amount or remove a cause to add this one.`, 5000);
+        setShowAddToBoxModal(false);
+        return;
+      }
+      
+      // If capacity check passes, proceed with adding
+      addToDonationBoxMutation.mutate();
+    } catch (error) {
+      console.error('Error checking donation box:', error);
+      // If there's an error (might be "Donation box not found"), navigate to setup with preselected cause
+      setShowAddToBoxModal(false);
+      // Navigate to bottom tab "Donate" with preselected cause
+      (navigation as any).reset({
+        index: 0,
+        routes: [
+          {
+            name: 'DrawerNav' as never,
+            state: {
+              routes: [
+                {
+                  name: 'MainTabs' as never,
+                  state: {
+                    routes: [
+                      { name: 'Home' as never },
+                      { name: 'Search' as never },
+                      {
+                        name: 'Donate' as never,
+                        params: {
+                          initialTab: 'setup',
+                          preselectedItem: {
+                            id: causeId || '',
+                            type: 'cause',
+                            data: causeData,
+                          },
+                          preselectedCauses: causeId ? [parseInt(causeId)] : [],
+                          preselectedCausesData: causeData ? [{
+                            id: causeData.id,
+                            name: causeData.name,
+                            description: causeData.description || causeData.mission || '',
+                            mission: causeData.mission || '',
+                            logo: causeData.image || causeData.logo || '',
+                          }] : [],
+                        },
+                      },
+                      { name: 'Collectives' as never },
+                      { name: 'Profile' as never },
+                    ],
+                    index: 2, // Donate tab index
+                  },
+                },
+              ],
+              index: 0,
+            },
+          },
+        ],
+      });
+    }
   };
 
   const handleDonate = () => {
@@ -164,15 +333,43 @@ export default function NewCausePage() {
       navigation.navigate('SplashScreen' as never);
       return;
     }
-    // Navigate to one-time donation flow
-    navigation.navigate('DonationScreen' as never, {
-      activeTab: 'nonprofits',
-      preselectedItem: {
-        id: causeId,
-        type: 'cause',
-        data: causeData,
-      },
-    } as never);
+    // Navigate to one-time donation flow - navigate to bottom tab "Donate" with onetime tab
+    (navigation as any).reset({
+      index: 0,
+      routes: [
+        {
+          name: 'DrawerNav',
+          state: {
+            routes: [
+              {
+                name: 'MainTabs',
+                state: {
+                  routes: [
+                    { name: 'Home' },
+                    { name: 'Search' },
+                    {
+                      name: 'Donate',
+                      params: {
+                        initialTab: 'onetime',
+                        preselectedItem: {
+                          id: causeId,
+                          type: 'cause',
+                          data: causeData,
+                        },
+                      },
+                    },
+                    { name: 'Collectives' },
+                    { name: 'Profile' },
+                  ],
+                  index: 2, // Donate tab index
+                },
+              },
+            ],
+            index: 0,
+          },
+        },
+      ],
+    });
   };
 
   const handleShare = async () => {
@@ -207,6 +404,7 @@ export default function NewCausePage() {
           <CauseActionButtons
             onAddToDonationBox={handleAddToDonationBox}
             onDonate={handleDonate}
+            isAlreadyInBox={isCauseInBox}
           />
 
           <VerifiedNonprofitInfo causeData={causeData} />
@@ -256,7 +454,10 @@ export default function NewCausePage() {
                 disabled={addToDonationBoxMutation.isPending}
               >
                 {addToDonationBoxMutation.isPending ? (
-                  <ActivityIndicator size="small" color="#FFFFFF" />
+                  <>
+                    <ActivityIndicator size="small" color="#FFFFFF" style={{ marginRight: 8 }} />
+                    <Text style={styles.modalConfirmText}>Adding...</Text>
+                  </>
                 ) : (
                   <Text style={styles.modalConfirmText}>Add to Box</Text>
                 )}
@@ -369,6 +570,7 @@ const styles = StyleSheet.create({
     minWidth: 120,
     alignItems: 'center',
     justifyContent: 'center',
+    flexDirection: 'row',
   },
   modalConfirmText: {
     fontSize: 14,

@@ -28,6 +28,7 @@ import { useStripe } from '@stripe/stripe-react-native';
 import MainHeaderNav from '../components/MainHeaderNav';
 import DonationReviewBottomSheet from '../components/donation/DonationReviewBottomSheet';
 import RequestNonprofitModal from '../components/newsearch/RequestNonprofitModal';
+import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/Avatar';
 
 
 export default function DonationScreen() {
@@ -785,14 +786,15 @@ export default function DonationScreen() {
                           
                           return (
                             <View key={cause.id} style={styles.selectedCauseItem}>
-                              <View
-                                style={[
-                                  styles.selectedCauseAvatar,
-                                  { backgroundColor: avatarBgColor }
-                                ]}
-                              >
-                                <Text style={styles.selectedCauseAvatarText}>{initials}</Text>
-                              </View>
+                              <Avatar size={48} style={[styles.selectedCauseAvatar, { borderRadius: 8 }]}>
+                                <AvatarImage src={cause.image} />
+                                <AvatarFallback
+                                  style={{ backgroundColor: avatarBgColor }}
+                                  textStyle={{ color: '#FFFFFF', fontSize: 16, fontWeight: '700' }}
+                                >
+                                  {initials}
+                                </AvatarFallback>
+                              </Avatar>
                               <View style={styles.selectedCauseInfo}>
                                 <Text style={styles.selectedCauseName}>{cause.name}</Text>
                                 <Text style={styles.selectedCauseDescription} numberOfLines={1}>
@@ -870,14 +872,15 @@ export default function DonationScreen() {
                             
                             return (
                               <View key={cause.id} style={styles.causeItem}>
-                                <View
-                                  style={[
-                                    styles.causeAvatar,
-                                    { backgroundColor: avatarBgColor }
-                                  ]}
-                                >
-                                  <Text style={styles.causeAvatarText}>{initials}</Text>
-                                </View>
+                                <Avatar size={48} style={[styles.causeAvatar, { borderRadius: 8 }]}>
+                                  <AvatarImage src={cause.image} />
+                                  <AvatarFallback
+                                    style={{ backgroundColor: avatarBgColor }}
+                                    textStyle={{ color: '#FFFFFF', fontSize: 16, fontWeight: '700' }}
+                                  >
+                                    {initials}
+                                  </AvatarFallback>
+                                </Avatar>
                                 <View style={styles.causeInfo}>
                                   <Text style={styles.causeName}>{cause.name}</Text>
                                   <Text style={styles.causeDescription} numberOfLines={1}>
@@ -1118,11 +1121,15 @@ export default function DonationScreen() {
                                 const initials = getInitials(cause.name || 'N');
                                 return (
                                   <View key={cause.id} style={styles.causeCardStep2}>
-                                    <View style={[styles.causeIconStep2, { backgroundColor: avatarBgColor }]}>
-                                      <Text style={styles.causeIconTextStep2}>
+                                    <Avatar size={48} style={[styles.causeIconStep2, { borderRadius: 8 }]}>
+                                      <AvatarImage src={cause.image} />
+                                      <AvatarFallback
+                                        style={{ backgroundColor: avatarBgColor }}
+                                        textStyle={{ color: '#FFFFFF', fontSize: 16, fontWeight: '700' }}
+                                      >
                                         {initials}
-                                      </Text>
-                                    </View>
+                                      </AvatarFallback>
+                                    </Avatar>
                                     <View style={styles.causeInfoStep2}>
                                       <Text style={styles.causeNameStep2}>{cause.name}</Text>
                                       <Text style={styles.causeDescriptionStep2} numberOfLines={1}>
@@ -1235,6 +1242,7 @@ export default function DonationScreen() {
                   id: cause.id,
                   name: cause.name,
                   description: cause.description || cause.mission,
+                  image: cause.image,
                 };
               }).filter((cause: any) => cause.id != null)
         }

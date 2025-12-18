@@ -544,7 +544,7 @@ export default function ManageDonationBoxScreen() {
     })), ...newlySelectedCauses.map((cause: any) => ({
       id: `cause-${cause.id}`,
       name: cause.name,
-      imageUrl: cause.logo || '',
+      imageUrl: cause.image || cause.logo || '',
       description: cause.mission || cause.description || '',
       isExisting: false,
       isNewlySelected: true,
@@ -847,14 +847,19 @@ export default function ManageDonationBoxScreen() {
                     {selectedCausesForDisplay.map((org) => {
                       const causeId = org.isNewlySelected ? (org as any).causeId : parseInt(org.id.replace('cause-', ''));
                       const colors = getNonprofitColor(causeId || org.name);
+                      const initials = org.name.charAt(0).toUpperCase();
                       return (
                         <View key={org.id} style={styles.causeCard}>
                           <View style={styles.causeCardContent}>
-                            <View style={[styles.causeIcon, { backgroundColor: colors.bgColor }]}>
-                              <Text style={[styles.causeIconText, { color: colors.textColor }]}>
-                                {org.name.charAt(0).toUpperCase()}
-                              </Text>
-                            </View>
+                            <Avatar size={40} style={[styles.causeIcon, { borderRadius: 8 }]}>
+                              <AvatarImage src={org.imageUrl} />
+                              <AvatarFallback
+                                style={{ backgroundColor: colors.bgColor }}
+                                textStyle={{ color: colors.textColor, fontSize: 18, fontWeight: '700' }}
+                              >
+                                {initials}
+                              </AvatarFallback>
+                            </Avatar>
                             <View style={styles.causeInfo}>
                               <Text style={styles.causeName}>{org.name}</Text>
                               {org.description && (
@@ -931,6 +936,7 @@ export default function ManageDonationBoxScreen() {
                     {displayCauses.map((cause: any) => {
                       const isSelected = selectedCauses.includes(cause.id);
                       const colors = getNonprofitColor(cause.id || cause.name);
+                      const initials = cause.name?.charAt(0)?.toUpperCase() || 'C';
                       return (
                         <TouchableOpacity
                           key={cause.id}
@@ -938,11 +944,15 @@ export default function ManageDonationBoxScreen() {
                           onPress={() => handleToggleCause(cause.id)}
                         >
                           <View style={styles.causeCardContent}>
-                            <View style={[styles.causeIcon, { backgroundColor: colors.bgColor }]}>
-                              <Text style={[styles.causeIconText, { color: colors.textColor }]}>
-                                {cause.name?.charAt(0)?.toUpperCase() || 'C'}
-                              </Text>
-                            </View>
+                            <Avatar size={40} style={[styles.causeIcon, { borderRadius: 8 }]}>
+                              <AvatarImage src={cause.image} />
+                              <AvatarFallback
+                                style={{ backgroundColor: colors.bgColor }}
+                                textStyle={{ color: colors.textColor, fontSize: 18, fontWeight: '700' }}
+                              >
+                                {initials}
+                              </AvatarFallback>
+                            </Avatar>
                             <View style={styles.causeInfo}>
                               <Text style={styles.causeName}>{cause.name}</Text>
                               <Text style={styles.causeDescription} numberOfLines={1}>
@@ -989,6 +999,7 @@ export default function ManageDonationBoxScreen() {
                       {searchResults.map((cause: any) => {
                         const isSelected = selectedCauses.includes(cause.id);
                         const colors = getNonprofitColor(cause.id || cause.name);
+                        const initials = cause.name?.charAt(0)?.toUpperCase() || 'C';
                         return (
                           <TouchableOpacity
                             key={cause.id}
@@ -996,11 +1007,15 @@ export default function ManageDonationBoxScreen() {
                             onPress={() => handleToggleCause(cause.id)}
                           >
                             <View style={styles.causeCardContent}>
-                              <View style={[styles.causeIcon, { backgroundColor: colors.bgColor }]}>
-                                <Text style={[styles.causeIconText, { color: colors.textColor }]}>
-                                  {cause.name?.charAt(0)?.toUpperCase() || 'C'}
-                                </Text>
-                              </View>
+                              <Avatar size={40} style={[styles.causeIcon, { borderRadius: 8 }]}>
+                                <AvatarImage src={cause.image} />
+                                <AvatarFallback
+                                  style={{ backgroundColor: colors.bgColor }}
+                                  textStyle={{ color: colors.textColor, fontSize: 18, fontWeight: '700' }}
+                                >
+                                  {initials}
+                                </AvatarFallback>
+                              </Avatar>
                               <View style={styles.causeInfo}>
                                 <Text style={styles.causeName}>{cause.name}</Text>
                                 <Text style={styles.causeDescription} numberOfLines={1}>
@@ -1240,16 +1255,16 @@ export default function ManageDonationBoxScreen() {
         )} */}
 
         {/* Distribution Details */}
-        <View style={styles.distributionSection}>
+        {/* <View style={styles.distributionSection}>
           <Text style={styles.distributionText}>
             Your ${Math.round(editableAmount)} becomes ${(Math.round(editableAmount) * 0.9).toFixed(2)}{" "}
             after fees, split evenly across causes. Your donation will be evenly
             distributed across all {visibleCauses.length} organizations.
           </Text>
-        </View>
+        </View> */}
 
         {/* Next Payment Section */}
-        <View style={styles.nextPaymentSection}>
+        {/* <View style={styles.nextPaymentSection}>
           <Text style={styles.sectionTitle}>NEXT PAYMENT</Text>
           <View style={styles.nextPaymentCard}>
             <View style={styles.nextPaymentInfo}>
@@ -1265,7 +1280,7 @@ export default function ManageDonationBoxScreen() {
 
         <Text style={styles.allocationNote}>
           Allocations will automatically adjust for 100% distribution
-        </Text>
+        </Text> */}
       </ScrollView>
 
       {/* Update Donation Button Footer - Always visible at bottom */}

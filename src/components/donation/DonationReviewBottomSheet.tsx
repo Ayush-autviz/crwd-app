@@ -17,6 +17,7 @@ import { Alert } from 'react-native';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../../store/store';
 import { BottomSheetModal, BottomSheetBackdrop, BottomSheetScrollView, BottomSheetView } from '@gorhom/bottom-sheet';
+import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
 
 interface DonationReviewBottomSheetProps {
   donationAmount: number;
@@ -308,16 +309,15 @@ const DonationReviewBottomSheet = forwardRef<any, DonationReviewBottomSheetProps
                   const initials = getInitials(cause.name);
                   return (
                     <View key={cause.id} style={styles.causeItem}>
-                      <View
-                        style={[
-                          styles.causeAvatar,
-                          { backgroundColor: avatarBgColor },
-                        ]}
-                      >
-                        <Text style={styles.causeAvatarText}>
+                      <Avatar size={40} style={[styles.causeAvatar, { borderRadius: 8 }]}>
+                        <AvatarImage src={cause.image} />
+                        <AvatarFallback
+                          style={{ backgroundColor: avatarBgColor }}
+                          textStyle={{ color: '#FFFFFF', fontSize: 14, fontWeight: '700' }}
+                        >
                           {initials}
-                        </Text>
-                      </View>
+                        </AvatarFallback>
+                      </Avatar>
                       <View style={styles.causeInfo}>
                         <Text style={styles.causeName} numberOfLines={1}>
                           {cause.name}

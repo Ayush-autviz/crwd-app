@@ -582,11 +582,15 @@ export default function OneTimeDonation({
                       style={styles.causeItem}
                       onPress={() => handleSelectItem({ id: String(cause.id), type: 'cause', data: cause })}
                     >
-                      <View style={[styles.causeAvatar, { backgroundColor: avatarBgColor }]}>
-                        <Text style={styles.causeAvatarText}>
+                      <Avatar size={48} style={[styles.causeAvatar, { borderRadius: 8 }]}>
+                        <AvatarImage src={cause.image} />
+                        <AvatarFallback
+                          style={{ backgroundColor: avatarBgColor }}
+                          textStyle={{ color: '#FFFFFF', fontSize: 16, fontWeight: '700' }}
+                        >
                           {initials}
-                        </Text>
-                      </View>
+                        </AvatarFallback>
+                      </Avatar>
                       <View style={styles.causeInfo}>
                         <Text style={styles.causeName}>{cause.name}</Text>
                         <Text style={styles.causeDescription} numberOfLines={1}>
@@ -620,11 +624,15 @@ export default function OneTimeDonation({
                       style={styles.causeItem}
                       onPress={() => handleSelectItem({ id: String(cause.id), type: 'cause', data: cause })}
                     >
-                      <View style={[styles.causeAvatar, { backgroundColor: avatarBgColor }]}>
-                        <Text style={styles.causeAvatarText}>
+                      <Avatar size={48} style={[styles.causeAvatar, { borderRadius: 8 }]}>
+                        <AvatarImage src={cause.image} />
+                        <AvatarFallback
+                          style={{ backgroundColor: avatarBgColor }}
+                          textStyle={{ color: '#FFFFFF', fontSize: 16, fontWeight: '700' }}
+                        >
                           {initials}
-                        </Text>
-                      </View>
+                        </AvatarFallback>
+                      </Avatar>
                       <View style={styles.causeInfo}>
                         <Text style={styles.causeName}>{cause.name}</Text>
                         <Text style={styles.causeDescription} numberOfLines={1}>

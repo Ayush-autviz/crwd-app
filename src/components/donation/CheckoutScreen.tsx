@@ -23,6 +23,7 @@ import { getDonationHistory, removeCauseFromBox, cancelDonationBox } from '../..
 import { getNonprofitColor } from '../../lib/getNonprofitColor';
 import RequestNonprofitModal from '../newsearch/RequestNonprofitModal';
 import { Alert } from 'react-native';
+import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
 
 const { width, height } = Dimensions.get('window');
 
@@ -315,11 +316,15 @@ export default function CheckoutScreen({
                   <View key={cause.id} style={styles.causeCard}>
                     <View style={styles.causeCardContent}>
                       {/* Avatar */}
-                      <View style={[styles.causeIcon, { backgroundColor: avatarBgColor }]}>
-                        <Text style={styles.causeIconText}>
+                      <Avatar size={48} style={{ ...styles.causeIcon, borderRadius: 8 }}>
+                        <AvatarImage src={cause.image} />
+                        <AvatarFallback
+                          style={{ backgroundColor: avatarBgColor }}
+                          textStyle={{ color: '#FFFFFF', fontSize: 16, fontWeight: '700' }}
+                        >
                           {initials}
-                        </Text>
-                      </View>
+                        </AvatarFallback>
+                      </Avatar>
 
                       {/* Cause Info */}
                       <View style={styles.causeInfo}>

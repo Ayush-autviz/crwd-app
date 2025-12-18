@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, CommonActions } from '@react-navigation/native';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
+import { useAuthStore } from '../../store/store';
 
 interface CollectiveResultCardProps {
   collective: {
@@ -53,8 +54,23 @@ const getInitials = (name: string): string => {
   return name.charAt(0).toUpperCase();
 };
 
+// Get consistent color for avatar
+const avatarColors = [
+  '#3B82F6', '#EC4899', '#8B5CF6', '#10B981', '#F59E0B', '#EF4444', '#06B6D4',
+  '#F97316', '#84CC16', '#A855F7', '#14B8A6', '#F43F5E', '#6366F1', '#22C55E', '#EAB308',
+];
+
+const getConsistentColor = (id: number | string, colors: string[]) => {
+  const hash =
+    typeof id === 'number'
+      ? id
+      : id.toString().split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
+  return colors[hash % colors.length];
+};
+
 export default function CollectiveResultCard({ collective }: CollectiveResultCardProps) {
   const navigation = useNavigation();
+  const { user: currentUser } = useAuthStore();
 
   // Priority: 1. Use color (with white text), 2. Use logo (image), 3. Fallback to generated color with letter
   const hasColor = collective.color;
@@ -72,12 +88,13 @@ export default function CollectiveResultCard({ collective }: CollectiveResultCar
   const founderName = founder
     ? `${founder.first_name || ''} ${founder.last_name || ''}`.trim() || founder.username || 'Unknown'
     : 'Unknown';
+  // Get founder initials from first name and last name
   const founderInitials = founder
-    ? getInitials(
-        `${founder.first_name || ''} ${founder.last_name || ''}`.trim() ||
-          founder.username ||
-          'U'
-      )
+    ? (founder.first_name && founder.last_name
+        ? `${founder.first_name.charAt(0)}${founder.last_name.charAt(0)}`.toUpperCase()
+        : founder.first_name
+        ? founder.first_name.charAt(0).toUpperCase()
+        : getInitials(founderName))
     : 'U';
 
   // Get nonprofit count
@@ -90,7 +107,7 @@ export default function CollectiveResultCard({ collective }: CollectiveResultCar
   return (
     <TouchableOpacity
       onPress={() =>
-        navigation.navigate('GroupCRWD' as never, { id: collective.id } as never)
+        (navigation as any).navigate('GroupCRWD', { id: collective.id })
       }
       style={styles.card}
       activeOpacity={0.7}
@@ -125,13 +142,61 @@ export default function CollectiveResultCard({ collective }: CollectiveResultCar
               <Avatar size={20}>
                 <AvatarImage src={founder.profile_picture} />
                 <AvatarFallback
-                  style={{ backgroundColor: '#9CA3AF' }}
+                  style={{ backgroundColor: getConsistentColor(founder.id || founderName, avatarColors) }}
                   textStyle={{ color: '#FFFFFF', fontSize: 10, fontWeight: '700' }}
                 >
                   {founderInitials}
                 </AvatarFallback>
               </Avatar>
-              <Text style={styles.founderText}>Founded by {founderName}</Text>
+              <Text style={styles.founderText}>
+                Founded by{' '}
+                {founder.id ? (
+                  <TouchableOpacity
+                    onPress={() => {
+                      // Check if it's the current user's own profile
+                      if (currentUser?.id && founder.id && currentUser.id.toString() === founder.id.toString()) {
+                        // Navigate to Profile tab (Me tab in MainTabs)
+                        navigation.dispatch(
+                          CommonActions.reset({
+                            index: 0,
+                            routes: [
+                              {
+                                name: 'DrawerNav' as never,
+                                state: {
+                                  routes: [
+                                    {
+                                      name: 'MainTabs' as never,
+                                      state: {
+                                        routes: [
+                                          { name: 'Home' as never },
+                                          { name: 'Search' as never },
+                                          { name: 'Donate' as never },
+                                          { name: 'Collectives' as never },
+                                          { name: 'Profile' as never },
+                                        ],
+                                        index: 4, // Profile tab index
+                                      },
+                                    },
+                                  ],
+                                  index: 0,
+                                },
+                              },
+                            ],
+                          })
+                        );
+                      } else {
+                        // Navigate to UserProfile screen
+                        (navigation as any).navigate('UserProfile', { userId: founder.id!.toString() });
+                      }
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.founderNameLink}>{founderName}</Text>
+                  </TouchableOpacity>
+                ) : (
+                  <Text>{founderName}</Text>
+                )}
+              </Text>
             </View>
           )}
 
@@ -201,6 +266,10 @@ const styles = StyleSheet.create({
   founderText: {
     fontSize: 12,
     color: '#4B5563',
+  },
+  founderNameLink: {
+    color: '#1600ff',
+    fontWeight: '600',
   },
   nonprofitCount: {
     fontSize: 12,

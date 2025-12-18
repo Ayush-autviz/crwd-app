@@ -32,6 +32,7 @@ import SupportedNonprofits from '../components/newgroupcrwd/SupportedNonprofits'
 import CommunityActivity from '../components/newgroupcrwd/CommunityActivity';
 import { Share } from 'react-native';
 import CommentsBottomSheet from '../components/post/CommentsBottomSheet';
+import JoinCollectiveBottomSheet from '../components/newgroupcrwd/JoinCollectiveBottomSheet';
 
 export default function NewGroupCrwdPage() {
   const route = useRoute();
@@ -47,6 +48,7 @@ export default function NewGroupCrwdPage() {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showCommentsSheet, setShowCommentsSheet] = useState(false);
   const [selectedPost, setSelectedPost] = useState<any>(null);
+  const [showJoinModal, setShowJoinModal] = useState(false);
 
   // Get collective ID from route params
   const crwdId = (route.params as any)?.id || (route.params as any)?.collectiveId || '';
@@ -123,11 +125,19 @@ export default function NewGroupCrwdPage() {
     mutationFn: joinCollective,
     onSuccess: async (response) => {
       console.log('Join collective successful:', response);
+      
+      // Invalidate queries to refresh data
       queryClient.invalidateQueries({ queryKey: ['crwd', crwdId] });
       queryClient.invalidateQueries({ queryKey: ['joined-collectives'] });
       queryClient.invalidateQueries({ queryKey: ['joined-collectives', currentUser?.id] });
+      queryClient.invalidateQueries({ queryKey: ['joined-collectives-manage'] });
+      queryClient.invalidateQueries({ queryKey: ['joinedCollectives'] });
+      
+      // Refetch donation box to get latest data including capacity
       await refetchDonationBox();
-      showToast('Successfully joined the collective!', 3000);
+      
+      // Always show the drawer sheet after joining
+      setShowJoinModal(true);
     },
     onError: (error: any) => {
       console.error('Join collective error:', error);
@@ -204,6 +214,96 @@ export default function NewGroupCrwdPage() {
       // Join immediately
       joinCollectiveMutation.mutate(crwdId);
     }
+  };
+
+  const handleJoinConfirm = async (selectedNonprofits: any[], collectiveId: string, shouldSetupDonationBox: boolean) => {
+    if (!crwdId) return;
+
+    // If no donation box and user wants to set it up
+    if (shouldSetupDonationBox && (!donationBoxData || !donationBoxData.id)) {
+      const preselectedCauses = selectedNonprofits.map((np) => {
+        const cause = np.cause || np;
+        return {
+          id: cause.id || np.id,
+          name: cause.name || np.name || 'Unknown Nonprofit',
+          description: cause.mission || cause.description || np.mission || np.description || '',
+          mission: cause.mission || np.mission || '',
+          logo: cause.image || cause.logo || np.image || np.logo || '',
+        };
+      });
+
+      const preselectedCauseIds = preselectedCauses.map((cause) => cause.id);
+
+      // Close the drawer
+      setShowJoinModal(false);
+      
+      // Navigate to donation setup with preselected causes
+      (navigation as any).reset({
+        index: 0,
+        routes: [
+          {
+            name: 'DrawerNav' as never,
+            state: {
+              routes: [
+                {
+                  name: 'MainTabs' as never,
+                  state: {
+                    routes: [
+                      { name: 'Home' as never },
+                      { name: 'Search' as never },
+                      {
+                        name: 'Donate' as never,
+                        params: {
+                          initialTab: 'setup',
+                          preselectedCauses: preselectedCauseIds,
+                          preselectedCausesData: preselectedCauses,
+                          preselectedCollectiveId: parseInt(collectiveId),
+                        },
+                      },
+                      { name: 'Collectives' as never },
+                      { name: 'Profile' as never },
+                    ],
+                    index: 2, // Donate tab index
+                  },
+                },
+              ],
+              index: 0,
+            },
+          },
+        ],
+      });
+      return;
+    }
+
+    // If donation box exists and causes are selected, add them
+    if (donationBoxData && donationBoxData.id && selectedNonprofits.length > 0) {
+      const causes = selectedNonprofits.map((np) => {
+        const cause = np.cause || np;
+        const causeId = cause.id || np.id;
+        const causeEntry: { cause_id: number; attributed_collective?: number } = {
+          cause_id: causeId,
+          attributed_collective: parseInt(collectiveId),
+        };
+        return causeEntry;
+      });
+      
+      try {
+        await addCausesToBox({ causes });
+        queryClient.invalidateQueries({ queryKey: ['donationBox'] });
+        await refetchDonationBox();
+        showToast('Nonprofits added to your donation box!', 3000);
+      } catch (error) {
+        console.error('Error adding causes to donation box:', error);
+        showToast('Failed to add nonprofits to donation box. Please try again.', 3000);
+      }
+    }
+
+    // Close the drawer
+    setShowJoinModal(false);
+  };
+
+  const handleCloseJoinModal = () => {
+    setShowJoinModal(false);
   };
 
   // Check if current user is the admin/creator
@@ -510,6 +610,18 @@ export default function NewGroupCrwdPage() {
           post={selectedPost}
         />
       )}
+
+      {/* Join Collective Bottom Sheet */}
+      <JoinCollectiveBottomSheet
+        isOpen={showJoinModal}
+        onClose={handleCloseJoinModal}
+        collectiveName={crwdData.name || 'Collective'}
+        nonprofits={nonprofits}
+        collectiveId={crwdId || ''}
+        onJoin={handleJoinConfirm}
+        isJoining={false}
+        donationBox={donationBoxData}
+      />
     </SafeAreaView>
   );
 }

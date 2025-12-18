@@ -61,8 +61,7 @@ export default function UserResultCard({ user, currentUserId }: UserResultCardPr
 
   const handlePress = () => {
     if (isCurrentUser) {
-      // Navigate to Profile tab (Me tab in MainTabs)
-      // Use the same pattern as PopularPosts.tsx
+      // Navigate to Profile tab (index 4 in MainTabs)
       (navigation as any).dispatch(
         CommonActions.reset({
           index: 0,
@@ -74,8 +73,14 @@ export default function UserResultCard({ user, currentUserId }: UserResultCardPr
                   {
                     name: 'MainTabs',
                     state: {
-                      routes: [{ name: 'Profile' }],
-                      index: 0,
+                      routes: [
+                        { name: 'Home' },
+                        { name: 'Search' },
+                        { name: 'Donate' },
+                        { name: 'Collectives' },
+                        { name: 'Profile' },
+                      ],
+                      index: 4, // Profile tab index
                     },
                   },
                 ],

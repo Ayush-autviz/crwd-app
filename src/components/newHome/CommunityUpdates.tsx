@@ -47,7 +47,7 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
       <View style={styles.header}>
         <View style={styles.userInfo}>
           {/* Avatar */}
-          <Avatar size={48} style={styles.avatar}>
+          <Avatar size={40} style={styles.avatar}>
             <AvatarImage src={update.user.avatar} />
             <AvatarFallback
               style={{ backgroundColor: '#1600ff' }}
@@ -203,7 +203,8 @@ const styles = StyleSheet.create({
   },
   contentBox: {
     borderRadius: 12,
-    padding: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,

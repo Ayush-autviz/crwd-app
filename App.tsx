@@ -63,6 +63,7 @@ import CompleteOnboard from './src/components/onboarding/CompleteOnboard'
 import OnBoard from './src/components/onboarding/OnBoard'
 import NewOnboard from './src/components/onboarding/NewOnboard'
 import OneTimeDonationScreen from './src/screens/OneTimeDonationScreen'
+import NewSaved from './src/screens/NewSaved'
 import {FontAwesome6} from '@react-native-vector-icons/fontawesome6'
 import { Image, Platform, View } from 'react-native'
 import { PermissionsAndroid } from 'react-native'
@@ -263,7 +264,8 @@ useEffect(() => {
         <Drawer.Screen name="MainTabs" component={BottomTabs} />
         <Drawer.Screen name="CreateCRWD" component={NewCreateCollective} />
         <Drawer.Screen name="YourCRWDs" component={YourCRWDs} />
-        <Drawer.Screen name="Saved" component={Saved} />
+        {/* <Drawer.Screen name="Saved" component={Saved} /> */}
+        <Drawer.Screen name="Saved" component={NewSaved} />
         <Drawer.Screen name="Donation" component={DonationScreen} />
         <Drawer.Screen name='Settings' component={Settings} />
         <Drawer.Screen name='TransactionHistory' component={TransactionHistory} />
@@ -318,6 +320,7 @@ useEffect(() => {
         <Stack.Screen name="Post" component={Post} />
         <Stack.Screen name="ManageDonationBox" component={ManageDonationBoxScreen} />
         <Stack.Screen name="OneTimeDonationScreen" component={OneTimeDonationScreen} />
+       
         <Stack.Screen name="Articles" component={Articles} />
         <Stack.Screen name="ArticleDetail" component={ArticleDetail} />
       </Stack.Navigator>

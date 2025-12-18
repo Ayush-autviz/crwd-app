@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, Linking, ActivityIndicator } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, CommonActions } from '@react-navigation/native';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
 import { Heart, MessageCircle } from 'lucide-react-native';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -154,7 +154,7 @@ export default function PostResultCard({ post, onCommentPress }: PostResultCardP
 
   return (
     <TouchableOpacity
-      onPress={() => navigation.navigate('PostDetail' as never, { postId: post.id } as never)}
+      onPress={() => (navigation as any).navigate('PostDetail', { postId: post.id })}
       style={styles.card}
       activeOpacity={0.7}
     >
@@ -162,19 +162,105 @@ export default function PostResultCard({ post, onCommentPress }: PostResultCardP
         {/* User Header */}
         <View style={styles.header}>
           {user && (
-            <Avatar size={40} style={styles.avatar}>
-              <AvatarImage src={user.profile_picture} />
-              <AvatarFallback
-                style={{ backgroundColor: avatarBgColor }}
-                textStyle={{ color: '#FFFFFF', fontSize: 12, fontWeight: '700' }}
-              >
-                {initials}
-              </AvatarFallback>
-            </Avatar>
+            <TouchableOpacity
+              onPress={(e) => {
+                e.stopPropagation();
+                    // Check if it's the current user's own profile
+                    if (currentUser?.id && user.id && currentUser.id.toString() === user.id.toString()) {
+                      // Navigate to Profile tab (index 4 in MainTabs)
+                      navigation.dispatch(
+                        CommonActions.reset({
+                          index: 0,
+                          routes: [
+                            {
+                              name: 'DrawerNav' as never,
+                              state: {
+                                routes: [
+                                  {
+                                    name: 'MainTabs' as never,
+                                    state: {
+                                      routes: [
+                                        { name: 'Home' as never },
+                                        { name: 'Search' as never },
+                                        { name: 'Donate' as never },
+                                        { name: 'Collectives' as never },
+                                        { name: 'Profile' as never },
+                                      ],
+                                      index: 4, // Profile tab index
+                                    },
+                                  },
+                                ],
+                                index: 0,
+                              },
+                            },
+                          ],
+                        })
+                      );
+                    } else {
+                      // Navigate to UserProfile screen
+                      (navigation as any).navigate('UserProfile', { userId: user.id.toString() });
+                    }
+              }}
+              activeOpacity={0.7}
+            >
+              <Avatar size={40} style={styles.avatar}>
+                <AvatarImage src={user.profile_picture} />
+                <AvatarFallback
+                  style={{ backgroundColor: avatarBgColor }}
+                  textStyle={{ color: '#FFFFFF', fontSize: 12, fontWeight: '700' }}
+                >
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+            </TouchableOpacity>
           )}
           <View style={styles.userInfo}>
             <View style={styles.nameRow}>
-              <Text style={styles.name}>{fullName}</Text>
+              {user && (
+                <TouchableOpacity
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    // Check if it's the current user's own profile
+                    if (currentUser?.id && user.id && currentUser.id.toString() === user.id.toString()) {
+                      // Navigate to Profile tab (Me tab in MainTabs)
+                      navigation.dispatch(
+                        CommonActions.reset({
+                          index: 0,
+                          routes: [
+                            {
+                              name: 'DrawerNav' as never,
+                              state: {
+                                routes: [
+                                  {
+                                    name: 'MainTabs' as never,
+                                    state: {
+                      routes: [
+                        { name: 'Home' as never },
+                        { name: 'Search' as never },
+                        { name: 'Donate' as never },
+                        { name: 'Collectives' as never },
+                        { name: 'Profile' as never },
+                      ],
+                      index: 4, // Profile tab index
+                                    },
+                                  },
+                                ],
+                                index: 0,
+                              },
+                            },
+                          ],
+                        })
+                      );
+                    } else {
+                      // Navigate to UserProfile screen
+                      (navigation as any).navigate('UserProfile', { userId: user.id.toString() });
+                    }
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.name}>{fullName}</Text>
+                </TouchableOpacity>
+              )}
               {post.collective && (
                 <>
                   <Text style={styles.separator}>•</Text>
@@ -264,7 +350,6 @@ export default function PostResultCard({ post, onCommentPress }: PostResultCardP
               <Heart
                 size={14}
                 color={isLiked ? '#EF4444' : '#4B5563'}
-                fill={isLiked ? '#EF4444' : 'none'}
               />
             )}
             <Text style={[styles.engagementText, isLiked && styles.likedText]}>
@@ -277,7 +362,7 @@ export default function PostResultCard({ post, onCommentPress }: PostResultCardP
               if (onCommentPress) {
                 onCommentPress(post);
               } else {
-                navigation.navigate('PostDetail' as never, { postId: post.id } as never);
+                (navigation as any).navigate('PostDetail', { postId: post.id });
               }
             }}
             activeOpacity={0.7}

@@ -59,4 +59,6 @@ declare module 'lucide-react-native' {
   export const ShoppingBag: FC<IconProps>;
   export const Settings: FC<IconProps>;
   export const Minus: FC<IconProps>;
+  export const HandHeart: FC<IconProps>;
+  export const Mountain: FC<IconProps>;
 } 

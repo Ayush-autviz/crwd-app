@@ -27,11 +27,11 @@ export default function CommunityActivity({
       <View style={styles.header}>
         <View>
           <Text style={styles.title}>Community Activity</Text>
-          {posts && posts.length > 0 && (
+          {/* {posts && posts.length > 0 && (
             <Text style={styles.subtitle}>
               {posts.length} Update{posts.length !== 1 ? 's' : ''}
             </Text>
-          )}
+          )} */}
         </View>
         {!isJoined ? (
           <View style={styles.joinButton}>

@@ -302,7 +302,9 @@ export default function PopularPosts({
                         onPress={handleStartConversation}
                         style={{ padding: 8, backgroundColor: SecondaryGrey, borderRadius: 8 }}
                     >
-                        <Text style={{ fontSize: 14,}}>Create Post</Text>
+                        <Text style={{ fontSize: 14,}}>Create Post
+
+                        </Text>
                     </TouchableOpacity>
                     )}
                 </View>
@@ -759,14 +761,8 @@ const styles = StyleSheet.create({
         marginHorizontal: 4,
         marginBottom: 16,
         padding: 16,
-        shadowColor: '#595959',
-        shadowOffset: {
-            width: 2,
-            height: 2,
-        },
-        shadowOpacity: 0.15,
-        shadowRadius: 4,
-        elevation: 3,
+        borderWidth: 1,
+        borderColor: '#e5e7eb',
     },
     postHeader: {
         flexDirection: 'row',

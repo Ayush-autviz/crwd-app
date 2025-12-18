@@ -70,7 +70,13 @@ export default function Account() {
       setOriginalData(formData)
     },
     onError: (error: any) => {
-      showToast('Failed to update profile. Please try again.', 3000)
+      // Check for image validation error
+      const errorMessage = error?.response?.data?.message || error?.message || '';
+      if (errorMessage.includes('profile_picture_file') || errorMessage.includes('invalid_image') || errorMessage.includes('corrupted image')) {
+        showToast('Please upload a valid image file. The file may be corrupted or not a valid image format.', 3000)
+      } else {
+        showToast(errorMessage || 'Failed to update profile. Please try again.', 3000)
+      }
       console.error('Profile update error:', error)
     }
   })

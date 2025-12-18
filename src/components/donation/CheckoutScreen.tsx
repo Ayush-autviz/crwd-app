@@ -12,15 +12,17 @@ import {
   TouchableWithoutFeedback,
   ActivityIndicator,
 } from 'react-native';
-import { X } from 'lucide-react-native';
+import { X, Trash2 } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import { getCollectiveById } from '../../services/api/crwd';
 import { PrimaryBlue, SecondaryGrey } from '../../Constants/Colors';
-import { useQueryClient, useQuery } from '@tanstack/react-query';
+import { useQueryClient, useQuery, useMutation } from '@tanstack/react-query';
 import DonationBoxSummaryCard from './DonationBoxSummaryCard';
-import { getDonationHistory } from '../../services/api/donation';
+import { getDonationHistory, removeCauseFromBox, cancelDonationBox } from '../../services/api/donation';
 import { getNonprofitColor } from '../../lib/getNonprofitColor';
+import RequestNonprofitModal from '../newsearch/RequestNonprofitModal';
+import { Alert } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
 
@@ -55,6 +57,11 @@ export default function CheckoutScreen({
   const [expandedCollectives, setExpandedCollectives] = useState<Set<number>>(new Set());
   const [collectiveDetails, setCollectiveDetails] = useState<Record<number, any>>({});
   const [loadingCollectives, setLoadingCollectives] = useState<Set<number>>(new Set());
+  const [showRemoveModal, setShowRemoveModal] = useState(false);
+  const [causeToRemove, setCauseToRemove] = useState<{ id: number; name: string } | null>(null);
+  const [showPauseModal, setShowPauseModal] = useState(false);
+  const [selectedPauseOption, setSelectedPauseOption] = useState<number | null>(null);
+  const [showRequestModal, setShowRequestModal] = useState(false);
 
   // Get box_causes from donation box API (main source)
   const boxCauses = donationBox?.box_causes || [];
@@ -102,6 +109,65 @@ export default function CheckoutScreen({
   const lifetimeAmount = donationHistoryData?.results?.reduce((sum: number, transaction: any) => {
     return sum + parseFloat(transaction.gross_amount || '0');
   }, 0) || 0;
+
+  // Mutation to remove cause from box
+  const removeCauseMutation = useMutation({
+    mutationFn: (causeId: string) => removeCauseFromBox(causeId),
+    onSuccess: () => {
+      console.log('Cause removed successfully');
+      queryClient.invalidateQueries({ queryKey: ['donationBox'] });
+      setShowRemoveModal(false);
+      setCauseToRemove(null);
+    },
+    onError: (error: any) => {
+      console.error('Error removing cause:', error);
+      Alert.alert('Error', error?.response?.data?.message || 'Failed to remove cause');
+    },
+  });
+
+  // Mutation to cancel donation box
+  const cancelDonationBoxMutation = useMutation({
+    mutationFn: () => cancelDonationBox(),
+    onSuccess: () => {
+      console.log('Donation box cancelled successfully');
+      queryClient.invalidateQueries({ queryKey: ['donationBox'] });
+      setShowPauseModal(false);
+      Alert.alert('Success', 'Your subscription has been cancelled');
+    },
+    onError: (error: any) => {
+      console.error('Error cancelling donation box:', error);
+      Alert.alert('Error', error?.response?.data?.message || 'Failed to cancel subscription');
+    },
+  });
+
+  const handleRemoveCause = (cause: any) => {
+    setCauseToRemove({ id: cause.id, name: cause.name });
+    setShowRemoveModal(true);
+  };
+
+  const handleConfirmRemove = () => {
+    if (causeToRemove) {
+      removeCauseMutation.mutate(causeToRemove.id.toString());
+    }
+  };
+
+  const handleCancelSubscription = () => {
+    Alert.alert(
+      'Cancel Subscription',
+      'Are you sure you want to cancel your subscription completely?',
+      [
+        { text: 'No', style: 'cancel' },
+        {
+          text: 'Yes, Cancel',
+          style: 'destructive',
+          onPress: () => {
+            cancelDonationBoxMutation.mutate();
+            setSelectedPauseOption(null);
+          },
+        },
+      ]
+    );
+  };
 
   // Helper for consistent avatar colors
   const avatarColors = [
@@ -263,12 +329,19 @@ export default function CheckoutScreen({
                         </Text>
                       </View>
 
-                      {/* Donation Info */}
+                      {/* Donation Info & Remove Button */}
                       <View style={styles.causeActions}>
                         <View style={styles.amountInfo}>
                           <Text style={styles.amountPercentage}>{distributionPercentage}%</Text>
                           <Text style={styles.amountPerMonth}>${amountPerItem.toFixed(2)}/mo</Text>
                         </View>
+                        <TouchableOpacity
+                          onPress={() => handleRemoveCause(cause)}
+                          style={styles.trashButton}
+                          activeOpacity={0.7}
+                        >
+                          <Trash2 size={18} color="#EF4444" />
+                        </TouchableOpacity>
                       </View>
                     </View>
                   </View>
@@ -318,6 +391,28 @@ export default function CheckoutScreen({
             </View>
           </View>
         )}
+
+        {/* Request Nonprofit Section */}
+        <View style={styles.requestSection}>
+          <TouchableOpacity
+            onPress={() => setShowRequestModal(true)}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.requestText}>
+              Don't see your nonprofit? Request it
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Pause Donations Section */}
+        <View style={styles.pauseSection}>
+          <TouchableOpacity
+            onPress={() => setShowPauseModal(true)}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.pauseText}>Pause Donations</Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
 
     </SafeAreaView>
@@ -403,6 +498,200 @@ export default function CheckoutScreen({
         </View>
       </TouchableWithoutFeedback>
     </Modal>
+
+    {/* Remove Cause Modal */}
+    <Modal
+      visible={showRemoveModal}
+      transparent={true}
+      animationType="slide"
+      onRequestClose={() => {
+        setShowRemoveModal(false);
+        setCauseToRemove(null);
+      }}
+    >
+      <TouchableWithoutFeedback onPress={() => {
+        setShowRemoveModal(false);
+        setCauseToRemove(null);
+      }}>
+        <View style={styles.modalOverlay}>
+          <TouchableWithoutFeedback onPress={() => {}}>
+            <View style={styles.removeModalContent}>
+              {/* Handle Bar */}
+              <View style={styles.modalHandleBar}>
+                <View style={styles.modalHandle} />
+              </View>
+
+              {/* Content */}
+              <View style={styles.removeModalBody}>
+                <Text style={styles.removeModalTitle}>Remove Cause?</Text>
+                <Text style={styles.removeModalDescription}>
+                  Are you sure you want to remove <Text style={styles.removeModalBold}>{causeToRemove?.name}</Text> from your donation box? This action cannot be undone.
+                </Text>
+              </View>
+              
+              {/* Footer Buttons */}
+              <View style={styles.removeModalFooter}>
+                <TouchableOpacity
+                  onPress={() => {
+                    setShowRemoveModal(false);
+                    setCauseToRemove(null);
+                  }}
+                  disabled={removeCauseMutation.isPending}
+                  style={[styles.removeModalButton, styles.removeModalCancelButton]}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.removeModalCancelText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={handleConfirmRemove}
+                  disabled={removeCauseMutation.isPending}
+                  style={[styles.removeModalButton, styles.removeModalConfirmButton]}
+                  activeOpacity={0.7}
+                >
+                  {removeCauseMutation.isPending ? (
+                    <>
+                      <ActivityIndicator size="small" color="#FFFFFF" style={{ marginRight: 8 }} />
+                      <Text style={styles.removeModalConfirmText}>Removing...</Text>
+                    </>
+                  ) : (
+                    <Text style={styles.removeModalConfirmText}>Remove</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </View>
+          </TouchableWithoutFeedback>
+        </View>
+      </TouchableWithoutFeedback>
+    </Modal>
+
+    {/* Pause Donations Modal */}
+    <Modal
+      visible={showPauseModal}
+      transparent={true}
+      animationType="slide"
+      onRequestClose={() => {
+        setShowPauseModal(false);
+        setSelectedPauseOption(null);
+      }}
+    >
+      <TouchableWithoutFeedback onPress={() => {
+        setShowPauseModal(false);
+        setSelectedPauseOption(null);
+      }}>
+        <View style={styles.modalOverlay}>
+          <TouchableWithoutFeedback onPress={() => {}}>
+            <View style={styles.pauseModalContent}>
+              {/* Header */}
+              <View style={styles.pauseModalHeader}>
+                <View style={styles.pauseModalHeaderContent}>
+                  <Text style={styles.pauseModalTitle}>Pause Your Donations</Text>
+                  <Text style={styles.pauseModalSubtitle}>
+                    We understand that life happens. Choose how long you'd like to pause your recurring donations.
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  onPress={() => {
+                    setShowPauseModal(false);
+                    setSelectedPauseOption(null);
+                  }}
+                  style={styles.pauseModalCloseButton}
+                  activeOpacity={0.7}
+                >
+                  <X size={18} color="#6B7280" />
+                </TouchableOpacity>
+              </View>
+
+              {/* Content */}
+              <View style={styles.pauseModalBody}>
+                {/* Pause Options */}
+                <View style={styles.pauseOptionsContainer}>
+                  {/* Option 1: Skip this month */}
+                  <TouchableOpacity
+                    onPress={() => setSelectedPauseOption(1)}
+                    style={[
+                      styles.pauseOption,
+                      selectedPauseOption === 1 && styles.pauseOptionSelected,
+                    ]}
+                    activeOpacity={0.7}
+                  >
+                    <View style={styles.pauseOptionContent}>
+                      <Text style={styles.pauseOptionText}>Skip this month</Text>
+                      <Text style={styles.pauseOptionSubtext}>Resume next month</Text>
+                    </View>
+                  </TouchableOpacity>
+
+                  {/* Option 2: Pause for 2 months */}
+                  <TouchableOpacity
+                    onPress={() => setSelectedPauseOption(2)}
+                    style={[
+                      styles.pauseOption,
+                      selectedPauseOption === 2 && styles.pauseOptionSelected,
+                    ]}
+                    activeOpacity={0.7}
+                  >
+                    <View style={styles.pauseOptionContent}>
+                      <Text style={styles.pauseOptionText}>Pause for 2 months</Text>
+                      <Text style={styles.pauseOptionSubtext}>Resume in 2 months</Text>
+                    </View>
+                  </TouchableOpacity>
+
+                  {/* Option 3: Pause for 3 months */}
+                  <TouchableOpacity
+                    onPress={() => setSelectedPauseOption(3)}
+                    style={[
+                      styles.pauseOption,
+                      selectedPauseOption === 3 && styles.pauseOptionSelected,
+                    ]}
+                    activeOpacity={0.7}
+                  >
+                    <View style={styles.pauseOptionContent}>
+                      <Text style={styles.pauseOptionText}>Pause for 3 months</Text>
+                      <Text style={styles.pauseOptionSubtext}>Resume in 3 months</Text>
+                    </View>
+                  </TouchableOpacity>
+                </View>
+
+                {/* Cancel Subscription Link */}
+                {/* <View style={styles.pauseCancelSection}>
+                  <TouchableOpacity
+                    onPress={handleCancelSubscription}
+                    disabled={cancelDonationBoxMutation.isPending}
+                    style={styles.pauseCancelButton}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.pauseCancelText}>
+                      {cancelDonationBoxMutation.isPending ? 'Cancelling...' : 'Cancel subscription completely'}
+                    </Text>
+                  </TouchableOpacity>
+                </View> */}
+              </View>
+
+              {/* Footer */}
+              <View style={styles.pauseModalFooter}>
+                <TouchableOpacity
+                  onPress={handleCancelSubscription}
+                  disabled={cancelDonationBoxMutation.isPending}
+                  style={styles.pauseModalCancelButton}
+                  activeOpacity={0.7}
+                >
+                  {cancelDonationBoxMutation.isPending ? (
+                    <Text style={styles.pauseModalCancelText}>Cancelling...</Text>
+                  ) : (
+                    <Text style={styles.pauseModalCancelText}>Cancel subscription completely</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </View>
+          </TouchableWithoutFeedback>
+        </View>
+      </TouchableWithoutFeedback>
+    </Modal>
+
+    {/* Request Nonprofit Modal */}
+    <RequestNonprofitModal
+      isOpen={showRequestModal}
+      onClose={() => setShowRequestModal(false)}
+    />
 
     </>
   );
@@ -911,7 +1200,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    // padding: 20,
   },
   modalContent: {
     backgroundColor: 'white',
@@ -1038,5 +1327,220 @@ const styles = StyleSheet.create({
     bottom: 0,
     zIndex: 999,
     pointerEvents: 'none',
+  },
+  trashButton: {
+    padding: 8,
+    marginLeft: 8,
+  },
+  requestSection: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  requestText: {
+    fontSize: 14,
+    color: '#1600ff',
+    textDecorationLine: 'underline',
+    fontWeight: '500',
+  },
+  pauseSection: {
+    paddingHorizontal: 20,
+    paddingBottom: 32,
+    alignItems: 'center',
+  },
+  pauseText: {
+    fontSize: 14,
+    color: '#6B7280',
+    fontWeight: '500',
+  },
+  removeModalContent: {
+    backgroundColor: 'white',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    width: '100%',
+    maxHeight: '90%',
+    position: 'absolute',
+    bottom: 0,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 10,
+  },
+  modalHandleBar: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    paddingTop: 8,
+    paddingBottom: 6,
+  },
+  modalHandle: {
+    width: 40,
+    height: 4,
+    backgroundColor: '#D1D5DB',
+    borderRadius: 2,
+  },
+  removeModalBody: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+  },
+  removeModalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#111827',
+    marginBottom: 8,
+  },
+  removeModalDescription: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginBottom: 16,
+    lineHeight: 20,
+  },
+  removeModalBold: {
+    fontWeight: '600',
+    color: '#111827',
+  },
+  removeModalFooter: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+    backgroundColor: 'white',
+    flexDirection: 'row',
+    gap: 12,
+  },
+  removeModalButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    marginBottom: 12,
+  },
+  removeModalCancelButton: {
+    backgroundColor: '#E5E7EB',
+  },
+  removeModalCancelText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#111827',
+  },
+  removeModalConfirmButton: {
+    backgroundColor: '#EF4444',
+  },
+  removeModalConfirmText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  pauseModalContent: {
+    backgroundColor: 'white',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    width: '100%',
+    maxHeight: '90%',
+    position: 'absolute',
+    bottom: 0,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 10,
+  },
+  pauseModalHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  pauseModalHeaderContent: {
+    flex: 1,
+    marginRight: 12,
+  },
+  pauseModalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#111827',
+    marginBottom: 4,
+  },
+  pauseModalSubtitle: {
+    fontSize: 12,
+    color: '#6B7280',
+    lineHeight: 16,
+  },
+  pauseModalCloseButton: {
+    padding: 4,
+  },
+  pauseModalBody: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  pauseOptionsContainer: {
+    gap: 8,
+  },
+  pauseOption: {
+    width: '100%',
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: '#E5E7EB',
+    backgroundColor: '#FFFFFF',
+  },
+  pauseOptionSelected: {
+    borderColor: '#1600ff',
+    backgroundColor: '#EFF6FF',
+  },
+  pauseOptionContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  pauseOptionText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#111827',
+  },
+  pauseOptionSubtext: {
+    fontSize: 12,
+    color: '#6B7280',
+  },
+  pauseCancelSection: {
+    marginTop: 16,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+  },
+  pauseCancelButton: {
+    width: '100%',
+    paddingVertical: 6,
+  },
+  pauseCancelText: {
+    fontSize: 12,
+    color: '#EF4444',
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  pauseModalFooter: {
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+    paddingTop: 12,
+  },
+  pauseModalCancelButton: {
+    paddingVertical: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pauseModalCancelText: {
+    fontSize: 14,
+    color: '#EF4444',
+    fontWeight: '500',
   },
 });

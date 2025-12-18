@@ -7,9 +7,35 @@ import { LightGrey, PrimaryBlue, PrimaryGrey } from '../Constants/Colors'
 import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native'
 import { ArrowLeftRight, Trophy, Heart, MessageCircle, MoreHorizontal, User, HandHeart, Users, Mountain, ArrowLeft } from 'lucide-react-native'
 import { useAuthStore } from '../store/store'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient, useQueries } from '@tanstack/react-query'
 import { getNotifications, markAllNotificationsAsRead } from '../services/api/notification'
+import { getUserProfileById } from '../services/api/social'
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/Avatar'
+
+// Avatar colors for consistent coloring
+const avatarColors = [
+    '#EF4444', // Red
+    '#8B5CF6', // Purple
+    '#EC4899', // Pink
+    '#F97316', // Orange
+    '#10B981', // Green
+    '#3B82F6', // Blue
+];
+
+const getConsistentColor = (id: number | string, colors: string[]) => {
+    const hash = typeof id === 'number' ? id : id.toString().split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
+    return colors[hash % colors.length];
+};
+
+const getInitials = (firstName?: string, lastName?: string, username?: string) => {
+    if (firstName) {
+        return firstName.charAt(0).toUpperCase();
+    }
+    if (username) {
+        return username.charAt(0).toUpperCase();
+    }
+    return 'U';
+};
 
 // Helper function to format time ago - matching Vite format
 const formatTimeAgo = (dateString: string): string => {
@@ -84,6 +110,50 @@ export default function Activity() {
         );
     }, [notificationsData]);
 
+    // Extract unique user IDs from personal notifications for profile fetching
+    const uniqueUserIdsFromPersonal = useMemo(() => {
+        if (!personalNotifications || personalNotifications.length === 0) return [];
+        return Array.from(
+            new Set(
+                personalNotifications
+                    .map((notification: any) => {
+                        const userId = 
+                            notification.data?.liker_id || 
+                            notification.data?.commenter_id || 
+                            notification.data?.mentioner_id ||
+                            notification.data?.follower_id ||
+                            notification.data?.donor_id || 
+                            notification.data?.new_member_id || 
+                            notification.user?.id || 
+                            notification.data?.user_id;
+                        return userId;
+                    })
+                    .filter((id: any) => id !== null && id !== undefined)
+            )
+        ) as (string | number)[];
+    }, [personalNotifications]);
+
+    // Fetch user profiles for personal notifications
+    const userProfileQueries = useQueries({
+        queries: uniqueUserIdsFromPersonal.map((userId: string | number) => ({
+            queryKey: ['userProfile', userId],
+            queryFn: () => getUserProfileById(userId.toString()),
+            enabled: !!currentUser?.id && !!userId,
+        })),
+    });
+
+    // Create a map of user ID to user profile
+    const userProfilesMap = useMemo(() => {
+        const map = new Map();
+        userProfileQueries.forEach((query: any, index: number) => {
+            if (query.data && uniqueUserIdsFromPersonal[index]) {
+                const profileUser = query.data?.user || query.data;
+                map.set(uniqueUserIdsFromPersonal[index].toString(), profileUser);
+            }
+        });
+        return map;
+    }, [userProfileQueries, uniqueUserIdsFromPersonal]);
+
     // Transform personal notifications - matching Vite RegularNotifications logic
     const transformedPersonalNotifications = useMemo(() => {
         if (!personalNotifications || personalNotifications.length === 0) return [];
@@ -129,6 +199,46 @@ export default function Activity() {
                 }
             }
 
+            // Extract user info for avatar - get the user who triggered the notification
+            // For likes, comments, mentions, etc., check liker_id, commenter_id, mentioner_id, etc.
+            const userId = 
+                notification.data?.liker_id || 
+                notification.data?.commenter_id || 
+                notification.data?.mentioner_id ||
+                notification.data?.follower_id ||
+                notification.data?.donor_id || 
+                notification.data?.new_member_id || 
+                notification.user?.id || 
+                notification.data?.user_id;
+            
+            // Extract username from body if it contains @username pattern (e.g., "@jake_long liked your post")
+            let username = '';
+            if (notification.body) {
+                const usernameMatch = notification.body.match(/@(\w+)/);
+                if (usernameMatch) {
+                    username = usernameMatch[1];
+                }
+            }
+            
+            // Get user profile from fetched profiles map if available
+            const userProfile = userId ? userProfilesMap.get(userId.toString()) : null;
+            const profileUser = userProfile?.user || userProfile;
+            
+            // Get user info from fetched profile, notification.user, or notification.data
+            const firstName = 
+                profileUser?.first_name || 
+                notification.user?.first_name || 
+                notification.data?.first_name || '';
+            const lastName = 
+                profileUser?.last_name || 
+                notification.user?.last_name || 
+                notification.data?.last_name || '';
+            const extractedUsername = 
+                username || 
+                profileUser?.username || 
+                notification.user?.username || 
+                notification.data?.username || '';
+
             return {
                 id: notification.id,
                 type: isDonation ? 'donation' : isNewMember ? 'new_member' : 'other',
@@ -140,9 +250,13 @@ export default function Activity() {
                 time: formatTimeAgo(notification.created_at || notification.updated_at),
                 avatarUrl: notification.user?.profile_picture || notification.data?.profile_picture || '',
                 collectiveId: notification.data?.collective_id,
+                userId: userId,
+                firstName: firstName,
+                lastName: lastName,
+                username: extractedUsername,
             };
         });
-    }, [personalNotifications]);
+    }, [personalNotifications, userProfilesMap]);
 
     // Transform community notifications to posts - matching Vite CommunityUpdates logic
     const transformedCommunityPosts = useMemo(() => {
@@ -203,11 +317,17 @@ export default function Activity() {
                 displayText = displayText.replace(regex, '').trim();
             }
 
+            // Extract user info for avatar
+            const firstName = notification.user?.first_name || notification.data?.first_name || '';
+            const lastName = notification.user?.last_name || notification.data?.last_name || '';
+
             return {
                 id: notification.id,
                 avatarUrl: notification.user?.profile_picture || notification.data?.profile_picture || '',
                 username: username,
                 userId: userId,
+                firstName: firstName,
+                lastName: lastName,
                 profileLink: isCurrentUser ? undefined : (userId ? `/user-profile/${userId}` : username ? `/user-profile/${username}` : undefined),
                 time: formatTimeAgo(notification.created_at || notification.updated_at),
                 org: collectiveName || null,
@@ -316,16 +436,36 @@ export default function Activity() {
 }
 
     const renderNotificationItem = ({ item }: { item: any }) => {
+        const handleAvatarPress = () => {
+            if (item.userId) {
+                (navigation as any).navigate('UserProfile', { userId: item.userId.toString() });
+            }
+        };
+
         return (
-            <View style={{ 
-                paddingHorizontal: 12, 
-                paddingVertical: 16, 
-                borderBottomWidth: 1, 
-                borderBottomColor: '#F3F4F6' 
-            }}>
+            <TouchableOpacity
+                style={{ 
+                    paddingHorizontal: 12, 
+                    paddingVertical: 16, 
+                    borderBottomWidth: 1, 
+                    borderBottomColor: '#F3F4F6' 
+                }}
+                onPress={() => {
+                    if (item.userId) {
+                        (navigation as any).navigate('UserProfile', { userId: item.userId.toString() });
+                    } else if (item.collectiveId) {
+                        (navigation as any).navigate('GroupCRWD', { crwdId: item.collectiveId.toString() });
+                    }
+                }}
+                activeOpacity={0.7}
+            >
                 <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 12 }}>
                     {/* Avatar with overlay icon */}
-                    <View style={{ position: 'relative' }}>
+                    <TouchableOpacity 
+                        onPress={handleAvatarPress}
+                        activeOpacity={0.7}
+                        style={{ position: 'relative' }}
+                    >
                         {item.type === 'donation' ? (
                             <>
                                 {/* Green circle with 'C' */}
@@ -394,15 +534,15 @@ export default function Activity() {
                                 <Avatar size={48}>
                                     <AvatarImage src={item.avatarUrl} />
                                     <AvatarFallback 
-                                        style={{ backgroundColor: '#E5E7EB' }}
-                                        textStyle={{ color: '#4B5563', fontSize: 14, fontWeight: '600' }}
+                                        style={{ backgroundColor: item.userId ? getConsistentColor(item.userId, avatarColors) : '#E5E7EB' }}
+                                        textStyle={{ color: '#FFFFFF', fontSize: 14, fontWeight: '700' }}
                                     >
-                                        {item.title?.charAt(0) || 'N'}
+                                        {getInitials(item.firstName, item.lastName, item.username)}
                                     </AvatarFallback>
                                 </Avatar>
                             </>
                         )}
-                    </View>
+                    </TouchableOpacity>
 
                     {/* Content */}
                     <View style={{ flex: 1, minWidth: 0 }}>
@@ -431,7 +571,7 @@ export default function Activity() {
                         </Text>
                     </View>
                 </View>
-            </View>
+            </TouchableOpacity>
         );
     }
 
@@ -454,8 +594,11 @@ export default function Activity() {
                     >
                         <Avatar size={40}>
                             <AvatarImage src={item.avatarUrl} />
-                            <AvatarFallback>
-                                {item.username?.charAt(0).toUpperCase() || 'U'}
+                            <AvatarFallback
+                                style={{ backgroundColor: item.userId ? getConsistentColor(item.userId, avatarColors) : '#E5E7EB' }}
+                                textStyle={{ color: '#FFFFFF', fontSize: 12, fontWeight: '700' }}
+                            >
+                                {getInitials(item.firstName, item.lastName, item.username)}
                             </AvatarFallback>
                         </Avatar>
                     </TouchableOpacity>

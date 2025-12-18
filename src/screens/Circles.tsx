@@ -25,6 +25,31 @@ const Circles = () => {
   const navigation = useNavigation<any>()
   const [activeTab, setActiveTab] = useState<TabKey>('my-crwds')
   const { user: currentUser } = useAuthStore();
+
+  // Avatar colors for consistent coloring
+  const avatarColors = [
+    '#EF4444', // Red
+    '#10B981', // Green
+    '#3B82F6', // Blue
+    '#8B5CF6', // Purple
+    '#84CC16', // Lime Green
+    '#EC4899', // Pink
+    '#F59E0B', // Amber
+    '#06B6D4', // Cyan
+    '#F97316', // Orange
+    '#A855F7', // Violet
+    '#14B8A6', // Teal
+    '#F43F5E', // Rose
+    '#6366F1', // Indigo
+    '#22C55E', // Emerald
+    '#EAB308', // Yellow
+  ];
+
+  const getConsistentColor = (id: number | string, colors: string[]) => {
+    const hash = typeof id === 'number' ? id : id.toString().split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
+    return colors[hash % colors.length];
+  };
+
   // Fetch collectives data using React Query
   const { data: collectiveData, isLoading: isLoadingCollectives } = useQuery({
     queryKey: ['circles'],
@@ -105,7 +130,10 @@ const Circles = () => {
           <View style={styles.founderInfo}>
             <Avatar size={20}>
               <AvatarImage src={circle.created_by.profile_picture} />
-              <AvatarFallback>
+              <AvatarFallback
+                style={{ backgroundColor: getConsistentColor(circle.created_by.id || founderName, avatarColors) }}
+                textStyle={{ color: '#FFFFFF', fontSize: 10, fontWeight: '600' }}
+              >
                 {founderName.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -181,7 +209,10 @@ const Circles = () => {
           <View style={styles.founderInfo}>
             <Avatar size={20}>
               <AvatarImage src={item.created_by.profile_picture} />
-              <AvatarFallback>
+              <AvatarFallback
+                style={{ backgroundColor: getConsistentColor(item.created_by.id || founderName, avatarColors) }}
+                textStyle={{ color: '#FFFFFF', fontSize: 10, fontWeight: '600' }}
+              >
                 {founderName.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>

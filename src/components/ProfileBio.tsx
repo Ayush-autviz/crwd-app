@@ -8,7 +8,7 @@ interface ProfileBioProps {
 
 export default function ProfileBio({ bio }: ProfileBioProps) {
   return (
-    <View style={{ marginTop: 20 }}>
+    <View style={{}}>
       <Text style={{ 
         fontSize: 14, 
         color: PrimaryGrey, 

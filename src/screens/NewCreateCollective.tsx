@@ -41,7 +41,6 @@ import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/Avatar';
 import { useToast } from '../contexts/ToastContext';
 import { useAuthStore } from '../store/store';
 import { categories } from '../Constants/categories';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'react-native-image-picker';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import CrwdAnimation from '../components/ui/CrwdAnimation';
@@ -171,55 +170,6 @@ export default function NewCreateCollective() {
     '#6366F1', // Indigo
   ];
 
-  // Load saved form data from AsyncStorage on mount
-  useEffect(() => {
-    const loadSavedData = async () => {
-      try {
-        const savedName = await AsyncStorage.getItem('createCrwd_name');
-        const savedDesc = await AsyncStorage.getItem('createCrwd_desc');
-        if (savedName) setName(savedName);
-        if (savedDesc) setDescription(savedDesc);
-      } catch (error) {
-        console.error('Error loading saved data:', error);
-      }
-    };
-    loadSavedData();
-  }, []);
-
-  // Check if form is empty
-  const isFormEmpty = !name && !description && selectedCauses.length === 0;
-
-  // Save form data to AsyncStorage whenever it changes
-  useEffect(() => {
-    const saveData = async () => {
-      try {
-        if (name) {
-          await AsyncStorage.setItem('createCrwd_name', name);
-        } else {
-          await AsyncStorage.removeItem('createCrwd_name');
-        }
-      } catch (error) {
-        console.error('Error saving name:', error);
-      }
-    };
-    saveData();
-  }, [name]);
-
-  useEffect(() => {
-    const saveData = async () => {
-      try {
-        if (description) {
-          await AsyncStorage.setItem('createCrwd_desc', description);
-        } else {
-          await AsyncStorage.removeItem('createCrwd_desc');
-        }
-      } catch (error) {
-        console.error('Error saving description:', error);
-      }
-    };
-    saveData();
-  }, [description]);
-
   // Fetch favorite causes
   const { data: favoriteCausesData, isLoading: isLoadingFavoriteCauses } = useQuery({
     queryKey: ['favoriteCauses'],
@@ -248,9 +198,6 @@ export default function NewCreateCollective() {
     mutationFn: createCollective,
     onSuccess: (response) => {
       console.log('Create collective successful:', response);
-      // Clear saved form data on successful creation
-      AsyncStorage.removeItem('createCrwd_name');
-      AsyncStorage.removeItem('createCrwd_desc');
       setCreatedCollective(response);
       // Wait for animation to complete (3 seconds for one full cycle) before showing success
       setTimeout(() => {
@@ -449,8 +396,8 @@ export default function NewCreateCollective() {
     );
   }
 
-  // Show "Lead a Giving Community" view as first step for logged-in users (only if form is empty and hasn't started)
-  if (step === 1 && isFormEmpty && !hasStarted) {
+  // Show "Lead a Giving Community" view as first step for logged-in users (only if hasn't started)
+  if (step === 1 && !hasStarted) {
     return (
       <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
         <View style={styles.header}>
@@ -471,14 +418,7 @@ export default function NewCreateCollective() {
             You pick the causes. You invite the people. They give monthly. No money touches your hands. You just rally the movement.
           </Text>
           <TouchableOpacity
-            onPress={async () => {
-              // Clear any saved form data and proceed to form
-              try {
-                await AsyncStorage.removeItem('createCrwd_name');
-                await AsyncStorage.removeItem('createCrwd_desc');
-              } catch (error) {
-                console.error('Error clearing saved data:', error);
-              }
+            onPress={() => {
               setName('');
               setDescription('');
               setSelectedCauses([]);
@@ -648,14 +588,6 @@ export default function NewCreateCollective() {
   if (step === 3 && createdCollective) {
     return (
       <SafeAreaView style={styles.successContainer} edges={['top', 'left', 'right', 'bottom']}>
-        {showConfetti && (
-          <ConfettiCannon
-            ref={confettiRef}
-            count={300}
-            origin={{ x: -10, y: 0 }}
-            fadeOut={true}
-          />
-        )}
         <View style={styles.successContent}>
           <View style={styles.successCard}>
             {/* Success Icon */}
@@ -749,6 +681,16 @@ export default function NewCreateCollective() {
             </View>
           </View>
         </View>
+        {showConfetti && (
+          <View style={styles.confettiContainer}>
+            <ConfettiCannon
+              ref={confettiRef}
+              count={300}
+              origin={{ x: -10, y: 0 }}
+              fadeOut={true}
+            />
+          </View>
+        )}
       </SafeAreaView>
     );
   }
@@ -2087,6 +2029,15 @@ const styles = StyleSheet.create({
     color: '#1600ff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  confettiContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 999,
+    pointerEvents: 'none',
   },
 });
 

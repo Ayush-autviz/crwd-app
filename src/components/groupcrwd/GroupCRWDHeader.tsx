@@ -31,6 +31,30 @@ const GroupCRWDHeader: React.FC<GroupCRWDHeaderProps> = ({
   const [localCategories, setLocalCategories] = useState<any[]>([]);
   const { user: currentUser } = useAuthStore();
 
+  // Avatar colors for consistent coloring
+  const avatarColors = [
+    '#EF4444', // Red
+    '#10B981', // Green
+    '#3B82F6', // Blue
+    '#8B5CF6', // Purple
+    '#84CC16', // Lime Green
+    '#EC4899', // Pink
+    '#F59E0B', // Amber
+    '#06B6D4', // Cyan
+    '#F97316', // Orange
+    '#A855F7', // Violet
+    '#14B8A6', // Teal
+    '#F43F5E', // Rose
+    '#6366F1', // Indigo
+    '#22C55E', // Emerald
+    '#EAB308', // Yellow
+  ];
+
+  const getConsistentColor = (id: number | string, colors: string[]) => {
+    const hash = typeof id === 'number' ? id : id.toString().split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
+    return colors[hash % colors.length];
+  };
+
   // Favorite/Unfavorite mutations
   const favoriteMutation = useMutation({
     mutationFn: favoriteCollective,
@@ -127,7 +151,10 @@ const GroupCRWDHeader: React.FC<GroupCRWDHeaderProps> = ({
         /> */}
         <Avatar size={48}>
           <AvatarImage src={crwdData?.created_by?.profile_picture} />
-          <AvatarFallback style={{ backgroundColor: '#dbeafe' }} textStyle={{ color: '#2563eb', fontWeight: '600' }}>
+          <AvatarFallback 
+            style={{ backgroundColor: getConsistentColor(crwdData?.created_by?.id || crwdData?.created_by?.first_name || 'N', avatarColors) }} 
+            textStyle={{ color: '#FFFFFF', fontWeight: '600' }}
+          >
             {crwdData?.created_by?.first_name?.charAt(0)?.toUpperCase() || 'N'}
           </AvatarFallback>
         </Avatar>

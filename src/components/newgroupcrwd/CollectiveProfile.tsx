@@ -59,6 +59,30 @@ export default function CollectiveProfile({
     return name.charAt(0).toUpperCase();
   };
 
+  // Avatar colors for consistent coloring
+  const avatarColors = [
+    '#EF4444', // Red
+    '#10B981', // Green
+    '#3B82F6', // Blue
+    '#8B5CF6', // Purple
+    '#84CC16', // Lime Green
+    '#EC4899', // Pink
+    '#F59E0B', // Amber
+    '#06B6D4', // Cyan
+    '#F97316', // Orange
+    '#A855F7', // Violet
+    '#14B8A6', // Teal
+    '#F43F5E', // Rose
+    '#6366F1', // Indigo
+    '#22C55E', // Emerald
+    '#EAB308', // Yellow
+  ];
+
+  const getConsistentColor = (id: number | string, colors: string[]) => {
+    const hash = typeof id === 'number' ? id : id.toString().split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
+    return colors[hash % colors.length];
+  };
+
   // Priority: 1. Use color (with white text), 2. Use logo (image), 3. Fallback to generated color with letter
   const hasColor = color;
   const hasLogo = logo && (logo.startsWith('http') || logo.startsWith('/') || logo.startsWith('data:'));
@@ -97,8 +121,8 @@ export default function CollectiveProfile({
           <Avatar size={24}>
             <AvatarImage src={founder?.profile_picture || undefined} />
             <AvatarFallback
-              style={{ backgroundColor: '#E5E7EB' }}
-              textStyle={{ color: '#4B5563', fontSize: 12, fontWeight: '600' }}
+              style={{ backgroundColor: getConsistentColor(founder.id || founderName, avatarColors) }}
+              textStyle={{ color: '#FFFFFF', fontSize: 12, fontWeight: '600' }}
             >
               {(founderName || 'F').charAt(0).toUpperCase()}
             </AvatarFallback>

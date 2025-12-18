@@ -1,7 +1,7 @@
 import { View, Text, FlatList, Image, Dimensions, TouchableOpacity, StyleSheet, Modal, Pressable, ActivityIndicator, Alert, Share, TouchableWithoutFeedback, Clipboard, Linking } from 'react-native'
 import React, { useState, useEffect } from 'react'
 import { LightGrey, PrimaryBlue, PrimaryGrey, SecondaryGrey } from '../Constants/Colors'
-import { Ellipsis, Heart, MessageCircle, Trash2, Share2 } from 'lucide-react-native'
+import { Ellipsis, Heart, MessageCircle, Trash2, Share2, MessageSquare } from 'lucide-react-native'
 import { useNavigation, NavigationProp, CommonActions } from '@react-navigation/native'
 import SocialShare from './SocialShare'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
@@ -373,7 +373,19 @@ export default function PopularPosts({
                     }} />
                 </View>
             )}
-            {!isLoading && !error && (
+
+            {/* Empty State */}
+            {!isLoading && !error && (!posts || posts.length === 0) && (
+                <View style={styles.emptyContainer}>
+                    <MessageSquare size={48} color="#9CA3AF" />
+                    <Text style={styles.emptyTitle}>No posts yet</Text>
+                    <Text style={styles.emptyDescription}>
+                        This user hasn't shared any posts yet. Check back later to see their activity.
+                    </Text>
+                </View>
+            )}
+
+            {!isLoading && !error && posts && posts.length > 0 && (
             <FlatList
                 data={posts || []}
                 contentContainerStyle={{ paddingVertical: 8 }}
@@ -955,7 +967,29 @@ const styles = StyleSheet.create({
     },
     errorText: {
         fontSize: 14,
-        color: '#dc2626',
+    },
+    emptyContainer: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
+        paddingVertical: 48,
+        paddingHorizontal: 24,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginVertical: 16,
+    },
+    emptyTitle: {
+        fontSize: 18,
+        fontWeight: '600',
+        color: '#111827',
+        marginTop: 16,
+        marginBottom: 8,
+    },
+    emptyDescription: {
+        fontSize: 14,
+        color: '#6B7280',
         textAlign: 'center',
-    }
+        maxWidth: 300,
+    },
 });

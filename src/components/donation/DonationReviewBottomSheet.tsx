@@ -16,7 +16,7 @@ import { useStripe } from '@stripe/stripe-react-native';
 import { Alert } from 'react-native';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../../store/store';
-import BottomSheet, { BottomSheetBackdrop, BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import { BottomSheetModal, BottomSheetBackdrop, BottomSheetScrollView, BottomSheetView } from '@gorhom/bottom-sheet';
 
 interface DonationReviewBottomSheetProps {
   donationAmount: number;
@@ -33,27 +33,27 @@ const DonationReviewBottomSheet = forwardRef<any, DonationReviewBottomSheetProps
   onComplete,
   onClose,
 }, ref) => {
-  const bottomSheetRef = useRef<BottomSheet>(null);
+  const bottomSheetRef = useRef<BottomSheetModal>(null);
   const [showLogoAnimation, setShowLogoAnimation] = useState(false);
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const queryClient = useQueryClient();
   const { user: currentUser } = useAuthStore();
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
-  const snapPoints = useMemo(() => [screenHeight * 0.9], []);
+  const snapPoints = useMemo(() => ['75%'], []);
 
   // Expose methods to parent component
   useImperativeHandle(ref, () => ({
     open: () => {
-      bottomSheetRef.current?.expand();
+      bottomSheetRef.current?.present();
     },
     close: () => {
-      bottomSheetRef.current?.close();
+      bottomSheetRef.current?.dismiss();
     },
   }));
 
   const handleClose = useCallback(() => {
-    bottomSheetRef.current?.close();
+    bottomSheetRef.current?.dismiss();
     onClose?.();
   }, [onClose]);
 
@@ -237,17 +237,17 @@ const DonationReviewBottomSheet = forwardRef<any, DonationReviewBottomSheetProps
         </Modal>
       )}
 
-      <BottomSheet
+      <BottomSheetModal
         ref={bottomSheetRef}
-        index={-1}
         snapPoints={snapPoints}
         enablePanDownToClose
         backdropComponent={renderBackdrop}
         backgroundStyle={{ backgroundColor: 'white' }}
-        onClose={handleClose}
+        onDismiss={handleClose}
+        enableDynamicSizing={false}
       >
         <View style={styles.container}>
-          {/* Header */}
+          {/* Header - Fixed */}
           <View style={styles.header}>
             <View style={styles.headerContent}>
               <Text style={styles.title}>Complete Your Monthly Gift</Text>
@@ -262,7 +262,8 @@ const DonationReviewBottomSheet = forwardRef<any, DonationReviewBottomSheetProps
 
           {/* Content - Scrollable */}
           <BottomSheetScrollView 
-            contentContainerStyle={[styles.content, { paddingBottom: 100 }]} 
+            style={styles.scrollView}
+            contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}
           >
             {/* Summary Box */}
@@ -330,30 +331,30 @@ const DonationReviewBottomSheet = forwardRef<any, DonationReviewBottomSheetProps
                 })}
               </View>
             </View>
-
-            {/* Complete Monthly Gift Button */}
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity
-                onPress={() => activateBoxMutation.mutate({ monthly_amount: donationAmount })}
-                disabled={activateBoxMutation.isPending || showLogoAnimation || isProcessingPayment}
-                style={[
-                  styles.completeButton,
-                  (activateBoxMutation.isPending || showLogoAnimation || isProcessingPayment) && styles.completeButtonDisabled,
-                ]}
-              >
-                {activateBoxMutation.isPending || isProcessingPayment ? (
-                  <>
-                    <ActivityIndicator size="small" color="#FFFFFF" style={{ marginRight: 8 }} />
-                    <Text style={styles.completeButtonText}>Activating...</Text>
-                  </>
-                ) : (
-                  <Text style={styles.completeButtonText}>Complete Monthly Gift</Text>
-                )}
-              </TouchableOpacity>
-            </View>
           </BottomSheetScrollView>
+
+          {/* Complete Monthly Gift Button - Fixed at bottom */}
+          <View style={styles.footer}>
+            <TouchableOpacity
+              onPress={() => activateBoxMutation.mutate({ monthly_amount: donationAmount })}
+              disabled={activateBoxMutation.isPending || showLogoAnimation || isProcessingPayment}
+              style={[
+                styles.completeButton,
+                (activateBoxMutation.isPending || showLogoAnimation || isProcessingPayment) && styles.completeButtonDisabled,
+              ]}
+            >
+              {activateBoxMutation.isPending || isProcessingPayment ? (
+                <>
+                  <ActivityIndicator size="small" color="#FFFFFF" style={{ marginRight: 8 }} />
+                  <Text style={styles.completeButtonText}>Activating...</Text>
+                </>
+              ) : (
+                <Text style={styles.completeButtonText}>Complete Monthly Gift</Text>
+              )}
+            </TouchableOpacity>
+          </View>
         </View>
-      </BottomSheet>
+      </BottomSheetModal>
     </>
   );
 });
@@ -364,6 +365,9 @@ export default DonationReviewBottomSheet;
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  scrollView: {
     flex: 1,
   },
   header: {
@@ -395,9 +399,10 @@ const styles = StyleSheet.create({
     padding: 8,
     marginLeft: 8,
   },
-  content: {
+  scrollContent: {
     paddingHorizontal: 16,
     paddingVertical: 16,
+    paddingBottom: 16,
   },
   summaryBox: {
     backgroundColor: '#F9FAFB',
@@ -492,11 +497,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#111827',
   },
-  buttonContainer: {
+  footer: {
     paddingHorizontal: 16,
-    paddingTop: 24,
-    paddingBottom: 24,
-    // marginTop: 16,
+    paddingTop: 12,
+    paddingBottom: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+    backgroundColor: '#FFFFFF',
   },
   completeButton: {
     backgroundColor: '#1F2937',

@@ -525,20 +525,24 @@ export default function OneTimeDonation({
           {/* Search Section */}
           <View style={styles.searchBarContainer}>
             <View style={styles.searchInputWrapper}>
-              <Search size={18} color={PrimaryGrey} style={styles.searchIcon} />
+              <Search size={20} color="#9ca3af" style={styles.searchIcon} />
               <TextInput
                 placeholder="Search for causes..."
-                placeholderTextColor={PrimaryGrey}
+                placeholderTextColor="#9ca3af"
                 value={searchQuery}
-                onChangeText={setSearchQuery}
-                onKeyPress={(e) => {
-                  if (e.nativeEvent.key === 'Enter' && searchQuery.trim()) {
-                    handleSearch();
+                onChangeText={(text) => {
+                  setSearchQuery(text);
+                  if (text.trim()) {
+                    setShowSearchResults(true);
+                  } else {
+                    setShowSearchResults(false);
                   }
                 }}
+                onSubmitEditing={handleSearch}
+                returnKeyType="search"
                 style={styles.searchInput}
               />
-              {searchQuery.length > 0 && (
+              {searchQuery ? (
                 <TouchableOpacity
                   onPress={() => {
                     setSearchQuery('');
@@ -546,9 +550,9 @@ export default function OneTimeDonation({
                   }}
                   style={styles.clearButton}
                 >
-                  <X size={16} color={PrimaryGrey} />
+                  <X size={16} color="#9ca3af" />
                 </TouchableOpacity>
-              )}
+              ) : null}
             </View>
           </View>
           
@@ -997,20 +1001,21 @@ const styles = StyleSheet.create({
   searchInputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
     borderWidth: 1,
-    borderColor: '#e5e7eb',
-    borderRadius: 12,
+    borderColor: '#d1d5db',
+    borderRadius: 8,
     paddingHorizontal: 12,
-    height: 44,
+    marginBottom: 12,
+    backgroundColor: '#ffffff',
   },
   searchIcon: {
     marginRight: 8,
   },
   searchInput: {
     flex: 1,
-    fontSize: 14,
+    fontSize: 16,
     color: '#111827',
+    paddingVertical: 12,
   },
   clearButton: {
     padding: 4,
@@ -1145,14 +1150,6 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     marginBottom: 8,
-  },
-  searchInput: {
-    backgroundColor: '#ffffff',
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    height: 40,
   },
   listContainer: {
     // marginBottom: 16,

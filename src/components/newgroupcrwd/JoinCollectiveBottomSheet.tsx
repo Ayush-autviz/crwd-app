@@ -320,8 +320,8 @@ export default function JoinCollectiveBottomSheet({
             </View>
           )}
 
-          {/* Deselect All / Select All - Only show if not at capacity and has donation box */}
-          {!isAtCapacity && hasDonationBox && (
+          {/* Deselect All / Select All - Only show if not at capacity */}
+          {!isAtCapacity && (
             <TouchableOpacity
               onPress={handleDeselectAll}
               style={styles.selectAllButton}

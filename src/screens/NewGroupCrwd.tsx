@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useMemo, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,15 +8,19 @@ import {
   TouchableOpacity,
   Modal,
   Alert,
+  Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Check, Share2, Loader2 } from 'lucide-react-native';
+import { Check, Share2, Loader2, X } from 'lucide-react-native';
+import BottomSheet, { BottomSheetView, BottomSheetBackdrop, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import {
   getCollectiveById,
   getCollectiveCauses,
   getCollectiveStats,
+  getCollectiveMembers,
+  getCollectiveDonationHistory,
   joinCollective,
   leaveCollective,
 } from '../services/api/crwd';
@@ -33,6 +37,7 @@ import CommunityActivity from '../components/newgroupcrwd/CommunityActivity';
 import { Share } from 'react-native';
 import CommentsBottomSheet from '../components/post/CommentsBottomSheet';
 import JoinCollectiveBottomSheet from '../components/newgroupcrwd/JoinCollectiveBottomSheet';
+import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/Avatar';
 
 export default function NewGroupCrwdPage() {
   const route = useRoute();
@@ -49,6 +54,33 @@ export default function NewGroupCrwdPage() {
   const [showCommentsSheet, setShowCommentsSheet] = useState(false);
   const [selectedPost, setSelectedPost] = useState<any>(null);
   const [showJoinModal, setShowJoinModal] = useState(false);
+  
+  // Bottom sheet ref for statistics
+  const statisticsBottomSheetRef = useRef<BottomSheet>(null);
+  const screenHeight = Dimensions.get('window').height;
+  const statisticsSnapPoints = useMemo(() => [screenHeight * 0.75], [screenHeight]);
+
+  // Bottom sheet backdrop for statistics
+  const renderStatisticsBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop
+        {...props}
+        disappearsOnIndex={-1}
+        appearsOnIndex={0}
+        opacity={0.5}
+      />
+    ),
+    []
+  );
+
+  // Update bottom sheet when modal state changes
+  useEffect(() => {
+    if (showStatisticsModal) {
+      statisticsBottomSheetRef.current?.snapToIndex(0);
+    } else {
+      statisticsBottomSheetRef.current?.close();
+    }
+  }, [showStatisticsModal]);
 
   // Get collective ID from route params
   const crwdId = (route.params as any)?.id || (route.params as any)?.collectiveId || '';
@@ -85,6 +117,20 @@ export default function NewGroupCrwdPage() {
     queryKey: ['collective-stats', crwdId],
     queryFn: () => getCollectiveStats(crwdId),
     enabled: !!crwdId && !!token?.access_token,
+  });
+
+  // Fetch members for statistics modal
+  const { data: membersData, isLoading: isLoadingMembers } = useQuery({
+    queryKey: ['members', crwdId],
+    queryFn: () => getCollectiveMembers(crwdId),
+    enabled: !!crwdId && showStatisticsModal && statisticsTab === 'Members',
+  });
+
+  // Fetch donation history for statistics modal
+  const { data: donationHistoryData, isLoading: isLoadingDonations } = useQuery({
+    queryKey: ['donationHistory', crwdId],
+    queryFn: () => getCollectiveDonationHistory(crwdId),
+    enabled: !!crwdId && showStatisticsModal && statisticsTab === 'Donations',
   });
 
   // Fetch posts
@@ -367,6 +413,262 @@ export default function NewGroupCrwdPage() {
     }
   };
 
+  // Render statistics content
+  const renderStatisticsContent = () => {
+    const nonprofits = causesData?.results || causesData || [];
+    const members = membersData?.results || membersData || [];
+    const donations = donationHistoryData?.results || donationHistoryData || [];
+
+    // Avatar colors for consistent coloring
+    const avatarColors = [
+      '#EF4444', '#10B981', '#3B82F6', '#8B5CF6', '#84CC16', '#EC4899',
+      '#F59E0B', '#06B6D4', '#F97316', '#A855F7', '#14B8A6', '#F43F5E',
+      '#6366F1', '#22C55E', '#EAB308',
+    ];
+
+    const getConsistentColor = (id: number | string, colors: string[]) => {
+      const hash = typeof id === 'number' ? id : id.toString().split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
+      return colors[hash % colors.length];
+    };
+
+    if (statisticsTab === 'Nonprofits') {
+      if (isLoadingCauses) {
+        return (
+          <View style={styles.statsLoadingContainer}>
+            <ActivityIndicator size="large" color="#9CA3AF" />
+            <Text style={styles.statsLoadingText}>Loading nonprofits...</Text>
+          </View>
+        );
+      }
+      return (
+        <View>
+          <Text style={styles.statsSectionTitle}>Currently Active</Text>
+          {nonprofits.length > 0 ? (
+            nonprofits.map((nonprofit: any) => {
+              const cause = nonprofit.cause || nonprofit;
+              const name = cause.name || nonprofit.name || 'Unknown Nonprofit';
+              const image = cause.image || nonprofit.image || '';
+              const causeId = cause.id || nonprofit.id;
+              const avatarBgColor = getConsistentColor(causeId, avatarColors);
+
+              return (
+                <TouchableOpacity
+                  key={nonprofit.id || cause.id}
+                  style={styles.statsItem}
+                  onPress={() => {
+                    statisticsBottomSheetRef.current?.close();
+                    (navigation as any).navigate('CauseScreen', { id: causeId });
+                  }}
+                >
+                  <Avatar size={48} style={{ borderRadius: 8 }}>
+                    <AvatarImage src={image} />
+                    <AvatarFallback
+                      style={{ backgroundColor: avatarBgColor }}
+                      textStyle={{ color: '#FFFFFF', fontSize: 18, fontWeight: '700' }}
+                    >
+                      {name.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <View style={styles.statsItemContent}>
+                    <Text style={styles.statsItemName}>{name}</Text>
+                    <Text style={styles.statsItemDescription} numberOfLines={2}>
+                      {cause.mission || 'No description available'}
+                    </Text>
+                  </View>
+                  <TouchableOpacity
+                    style={styles.viewButton}
+                    onPress={() => {
+                      statisticsBottomSheetRef.current?.close();
+                      (navigation as any).navigate('CauseScreen', { id: causeId });
+                    }}
+                  >
+                    <Text style={styles.viewButtonText}>View</Text>
+                  </TouchableOpacity>
+                </TouchableOpacity>
+              );
+            })
+          ) : (
+            <View style={styles.statsEmptyContainer}>
+              <Text style={styles.statsEmptyText}>No nonprofits found</Text>
+            </View>
+          )}
+        </View>
+      );
+    }
+
+    if (statisticsTab === 'Members') {
+      if (isLoadingMembers) {
+        return (
+          <View style={styles.statsLoadingContainer}>
+            <ActivityIndicator size="large" color="#9CA3AF" />
+            <Text style={styles.statsLoadingText}>Loading members...</Text>
+          </View>
+        );
+      }
+      return (
+        <View>
+          {members.length > 0 ? (
+            members.map((member: any) => {
+              const user = member.user || member;
+              const firstName = user.first_name || '';
+              const lastName = user.last_name || '';
+              const username = user.username || '';
+              const name = `${firstName} ${lastName}`.trim() || username;
+              const avatar = user.profile_picture || '';
+              const role = member.role || '';
+              const isFounder = role?.toLowerCase() === 'founder' || role?.toLowerCase() === 'admin' || member.is_founder;
+              const userId = user.id || member.id || username;
+              const avatarBgColor = getConsistentColor(userId, avatarColors);
+              const initial = name.charAt(0).toUpperCase() || username.charAt(0).toUpperCase() || 'U';
+
+              return (
+                <TouchableOpacity
+                  key={member.id || user.id}
+                  style={styles.memberItem}
+                  onPress={() => {
+                    if (user.id) {
+                      statisticsBottomSheetRef.current?.close();
+                      (navigation as any).navigate('UserProfile', { userId: user.id.toString() });
+                    }
+                  }}
+                >
+                  <Avatar size={48}>
+                    <AvatarImage src={avatar} />
+                    <AvatarFallback
+                      style={{ backgroundColor: avatarBgColor }}
+                      textStyle={{ color: '#FFFFFF', fontSize: 18, fontWeight: '700' }}
+                    >
+                      {initial}
+                    </AvatarFallback>
+                  </Avatar>
+                  <View style={styles.memberDetails}>
+                    <View style={styles.memberNameRow}>
+                      <Text style={styles.memberName}>
+                        @{username || name.toLowerCase().replace(/\s+/g, '_')}
+                      </Text>
+                      {isFounder && (
+                        <View style={styles.founderBadge}>
+                          <Text style={styles.founderBadgeText}>Founder</Text>
+                        </View>
+                      )}
+                    </View>
+                    <Text style={styles.memberRole}>Active member</Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            })
+          ) : (
+            <View style={styles.statsEmptyContainer}>
+              <Text style={styles.statsEmptyText}>No members found</Text>
+            </View>
+          )}
+        </View>
+      );
+    }
+
+    if (statisticsTab === 'Donations') {
+      if (isLoadingDonations) {
+        return (
+          <View style={styles.statsLoadingContainer}>
+            <ActivityIndicator size="large" color="#9CA3AF" />
+            <Text style={styles.statsLoadingText}>Loading donations...</Text>
+          </View>
+        );
+      }
+      return (
+        <View>
+          {/* Summary Box */}
+          <View style={styles.donationSummaryBox}>
+            <Text style={styles.donationSummaryTitle}>Collective Donations</Text>
+            <Text style={styles.donationSummaryAmount}>
+              ${donationHistoryData?.total_donated_to_collective?.toFixed(2) || '0.00'}
+            </Text>
+            <Text style={styles.donationSummaryText}>
+              {donations.filter((d: any) => d.amount_attributed_to_collective > 0).length} donation{donations.filter((d: any) => d.amount_attributed_to_collective > 0).length !== 1 ? 's' : ''} credited to this collective
+            </Text>
+          </View>
+
+          {/* Donations List */}
+          {donations.length > 0 ? (
+            donations.map((donation: any, index: number) => {
+              const user = donation.user || {};
+              const firstName = user.first_name || '';
+              const lastName = user.last_name || '';
+              const fullName = `${firstName} ${lastName}`.trim() || user.username || 'Unknown User';
+              const initials = firstName && lastName 
+                ? `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase()
+                : fullName.charAt(0).toUpperCase();
+              const avatar = user.profile_picture || '';
+              const isCollectiveDonation = donation.amount_attributed_to_collective > 0;
+              const userId = user.id || index;
+              const avatarBgColor = getConsistentColor(userId, avatarColors);
+
+              // Format time ago
+              const formatTimeAgo = (dateString: string) => {
+                const date = new Date(dateString);
+                const now = new Date();
+                const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+                
+                if (diffInSeconds < 60) return 'Just now';
+                if (diffInSeconds < 3600) {
+                  const minutes = Math.floor(diffInSeconds / 60);
+                  return `${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
+                }
+                if (diffInSeconds < 86400) {
+                  const hours = Math.floor(diffInSeconds / 3600);
+                  return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
+                }
+                if (diffInSeconds < 604800) {
+                  const days = Math.floor(diffInSeconds / 86400);
+                  return `${days} day${days !== 1 ? 's' : ''} ago`;
+                }
+                if (diffInSeconds < 2592000) {
+                  const weeks = Math.floor(diffInSeconds / 604800);
+                  return `${weeks} week${weeks !== 1 ? 's' : ''} ago`;
+                }
+                const months = Math.floor(diffInSeconds / 2592000);
+                return `${months} month${months !== 1 ? 's' : ''} ago`;
+              };
+
+              return (
+                <View key={donation.id || index} style={styles.donationItem}>
+                  <Avatar size={48}>
+                    <AvatarImage src={avatar} />
+                    <AvatarFallback
+                      style={{ backgroundColor: avatarBgColor }}
+                      textStyle={{ color: '#FFFFFF', fontSize: 18, fontWeight: '700' }}
+                    >
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
+                  <View style={styles.donationInfo}>
+                    <View style={styles.donationNameRow}>
+                      <Text style={styles.donationName}>{fullName}</Text>
+                      {isCollectiveDonation && (
+                        <View style={styles.collectiveBadge}>
+                          <Text style={styles.collectiveBadgeText}>Collective</Text>
+                        </View>
+                      )}
+                    </View>
+                    <Text style={styles.donationTime}>
+                      {donation.charged_at ? formatTimeAgo(donation.charged_at) : 'Recently'}
+                    </Text>
+                  </View>
+                </View>
+              );
+            })
+          ) : (
+            <View style={styles.statsEmptyContainer}>
+              <Text style={styles.statsEmptyText}>No donations found</Text>
+            </View>
+          )}
+        </View>
+      );
+    }
+
+    return null;
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <CollectiveHeader
@@ -405,7 +707,6 @@ export default function NewGroupCrwdPage() {
               }
               setStatisticsTab(tab);
               setShowStatisticsModal(true);
-              // TODO: Show statistics modal
             }}
           />
 
@@ -624,6 +925,55 @@ export default function NewGroupCrwdPage() {
         isJoining={false}
         donationBox={donationBoxData}
       />
+
+      {/* Statistics Bottom Sheet */}
+      <BottomSheet
+        ref={statisticsBottomSheetRef}
+        index={showStatisticsModal ? 0 : -1}
+        snapPoints={statisticsSnapPoints}
+        enablePanDownToClose
+        backdropComponent={renderStatisticsBackdrop}
+        onChange={(index) => setShowStatisticsModal(index >= 0)}
+      >
+        <BottomSheetView style={styles.bottomSheetContent}>
+          {/* Header */}
+          <View style={styles.bottomSheetHeader}>
+            <View style={styles.bottomSheetHeaderTop}>
+              <Text style={styles.bottomSheetTitle}>Collective Statistics</Text>
+              <TouchableOpacity
+                onPress={() => setShowStatisticsModal(false)}
+                style={styles.closeButton}
+              >
+                <X size={20} color="#374151" />
+              </TouchableOpacity>
+            </View>
+            <Text style={styles.bottomSheetSubtitle}>
+              View detailed information about nonprofits, members, and donations
+            </Text>
+          </View>
+
+          {/* Tabs */}
+          <View style={styles.tabsContainer}>
+            {(['Nonprofits', 'Members', 'Donations'] as const).map((tab) => (
+              <TouchableOpacity
+                key={tab}
+                onPress={() => setStatisticsTab(tab)}
+                style={[styles.tab, statisticsTab === tab && styles.activeTab]}
+              >
+                <Text style={[styles.tabText, statisticsTab === tab && styles.activeTabText]}>
+                  {tab}
+                </Text>
+                {statisticsTab === tab && <View style={styles.tabIndicator} />}
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* Content */}
+          <BottomSheetScrollView style={styles.bottomSheetScrollView} showsVerticalScrollIndicator={false}>
+            {renderStatisticsContent()}
+          </BottomSheetScrollView>
+        </BottomSheetView>
+      </BottomSheet>
     </SafeAreaView>
   );
 }
@@ -807,6 +1157,229 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#FFFFFF',
+  },
+  bottomSheetContent: {
+    flex: 1,
+    paddingHorizontal: 16,
+  },
+  bottomSheetHeader: {
+    marginBottom: 16,
+  },
+  bottomSheetHeaderTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  bottomSheetTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#111827',
+  },
+  closeButton: {
+    padding: 8,
+  },
+  bottomSheetSubtitle: {
+    fontSize: 12,
+    color: '#6B7280',
+  },
+  tabsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+    marginBottom: 16,
+    paddingBottom: 12,
+  },
+  tab: {
+    paddingBottom: 8,
+    position: 'relative',
+  },
+  activeTab: {
+    // Active tab styling
+  },
+  tabText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#6B7280',
+  },
+  activeTabText: {
+    color: '#111827',
+  },
+  tabIndicator: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 2,
+    backgroundColor: '#111827',
+    borderRadius: 1,
+  },
+  bottomSheetScrollView: {
+    flex: 1,
+  },
+  statsLoadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  statsLoadingText: {
+    marginTop: 10,
+    fontSize: 14,
+    color: '#6B7280',
+  },
+  statsEmptyContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  statsEmptyText: {
+    fontSize: 14,
+    color: '#6B7280',
+  },
+  statsSectionTitle: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#6B7280',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 12,
+  },
+  statsItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
+  statsItemContent: {
+    flex: 1,
+    minWidth: 0,
+  },
+  statsItemName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#111827',
+    marginBottom: 4,
+  },
+  statsItemDescription: {
+    fontSize: 12,
+    color: '#6B7280',
+  },
+  viewButton: {
+    backgroundColor: '#1600ff',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  viewButtonText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  memberItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
+  memberDetails: {
+    flex: 1,
+    minWidth: 0,
+  },
+  memberNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flexWrap: 'wrap',
+    marginBottom: 4,
+  },
+  memberName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#111827',
+  },
+  founderBadge: {
+    backgroundColor: '#EF4444',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+  },
+  founderBadgeText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  memberRole: {
+    fontSize: 12,
+    color: '#6B7280',
+  },
+  donationSummaryBox: {
+    backgroundColor: '#F0FDF4',
+    borderWidth: 1,
+    borderColor: '#86EFAC',
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 16,
+  },
+  donationSummaryTitle: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 8,
+  },
+  donationSummaryAmount: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#2563EB',
+    marginBottom: 4,
+  },
+  donationSummaryText: {
+    fontSize: 12,
+    color: '#6B7280',
+  },
+  donationItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
+  donationInfo: {
+    flex: 1,
+    minWidth: 0,
+  },
+  donationNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flexWrap: 'wrap',
+    marginBottom: 4,
+  },
+  donationName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#111827',
+  },
+  collectiveBadge: {
+    backgroundColor: '#DBEAFE',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+  },
+  collectiveBadgeText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#2563EB',
+  },
+  donationTime: {
+    fontSize: 12,
+    color: '#6B7280',
   },
 });
 

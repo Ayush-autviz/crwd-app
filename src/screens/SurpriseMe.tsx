@@ -273,7 +273,7 @@ export default function SurpriseMePage() {
                 >
                   <View style={styles.cardContent}>
                     <Avatar style={styles.avatar}>
-                      <AvatarImage src={cause.image} />
+                      <AvatarImage src={cause.image || cause.logo} />
                       <AvatarFallback
                         style={StyleSheet.flatten([styles.avatarFallback, { backgroundColor: avatarBgColor }])}
                         textStyle={styles.avatarText}
@@ -283,7 +283,12 @@ export default function SurpriseMePage() {
                     </Avatar>
                     <View style={styles.cardText}>
                       <Text style={styles.causeName}>{cause.name}</Text>
-                      <Text style={styles.causeDescription} numberOfLines={2}>
+                      {(cause.city || cause.state) && (
+                        <Text style={styles.causeLocation}>
+                          {[cause.city, cause.state].filter(Boolean).join(', ')}
+                        </Text>
+                      )}
+                      <Text style={styles.causeDescription} numberOfLines={1}>
                         {cause.mission || cause.description || 'No description available'}
                       </Text>
                     </View>
@@ -448,9 +453,14 @@ const styles = StyleSheet.create({
     color: '#111827',
     marginBottom: 4,
   },
+  causeLocation: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginBottom: 6,
+  },
   causeDescription: {
     fontSize: 12,
-    color: '#4B5563',
+    color: '#374151',
   },
   footer: {
     position: 'absolute',

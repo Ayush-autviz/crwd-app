@@ -32,6 +32,7 @@ interface SelectedItem {
   id: string;
   type: 'cause' | 'collective';
   data: any;
+  attributedCollectiveId?: number; // Track if this cause came from a collective
 }
 
 interface OneTimeDonationProps {
@@ -96,6 +97,8 @@ export default function OneTimeDonation({
           id: cause.id.toString(),
           type: 'cause' as const,
           data: cause,
+          // Mark causes from collective with the collective ID
+          attributedCollectiveId: preselectedCollectiveId && preselectedCollectiveId > 0 ? preselectedCollectiveId : undefined,
         }));
         
         setSelectedItems(causesAsItems);
@@ -107,6 +110,8 @@ export default function OneTimeDonation({
           id: causeId.toString(),
           type: 'cause' as const,
           data: { id: causeId },
+          // Mark causes from collective with the collective ID
+          attributedCollectiveId: preselectedCollectiveId && preselectedCollectiveId > 0 ? preselectedCollectiveId : undefined,
         }));
         
         setSelectedItems(causesAsItems);
@@ -350,9 +355,14 @@ export default function OneTimeDonation({
           cause_id: causeId,
         };
         
-        // Only include attributed_collective if preselectedCollectiveId exists, is not 0, and cause_id is not 0
-        if (preselectedCollectiveId && preselectedCollectiveId > 0 && causeId > 0) {
-          causeEntry.attributed_collective = preselectedCollectiveId;
+        // Only include attributed_collective if this cause came from a collective (has attributedCollectiveId)
+        // Causes added from search will not have attributedCollectiveId
+        // Always preserve the collective ID for causes that came from a collective
+        if (item.attributedCollectiveId && item.attributedCollectiveId > 0 && causeId > 0) {
+          causeEntry.attributed_collective = item.attributedCollectiveId;
+        } else if (item.data?.attributed_collective && item.data.attributed_collective > 0 && causeId > 0) {
+          // Also check if the cause data itself has an attributed_collective field and preserve it
+          causeEntry.attributed_collective = item.data.attributed_collective;
         }
         
         causes.push(causeEntry);

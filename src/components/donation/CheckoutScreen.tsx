@@ -286,6 +286,7 @@ export default function CheckoutScreen({
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Donation Box Summary Card */}
+        <View style={{ marginHorizontal: 16, }}>
         <DonationBoxSummaryCard
           monthlyAmount={Math.round(actualDonationAmount)}
           lifetimeAmount={Math.round(lifetimeAmount)}
@@ -296,6 +297,7 @@ export default function CheckoutScreen({
           donationBox={donationBox}
           onAddCauses={() => navigation.navigate('ManageDonationBox' as never)}
         />
+        </View>
 
         {/* Currently Supporting Section */}
         {causes.length > 0 && (

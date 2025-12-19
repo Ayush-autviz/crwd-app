@@ -876,6 +876,8 @@ export default function Profile() {
                                             borderColor: '#e5e7eb',
                                             padding: 12,
                                             alignItems: 'center',
+                                            height: 100,
+                                            justifyContent: 'space-between',
                                         }}>
                                         {cause.logo ? (
                                             <View style={{
@@ -922,6 +924,7 @@ export default function Profile() {
                                                 fontWeight: '600', 
                                                 color: '#111827', 
                                                 textAlign: 'center',
+                                                height: 32,
                                             }}
                                         >
                                             {cause.name}

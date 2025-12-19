@@ -579,51 +579,53 @@ export default function DonationScreen() {
         <View style={styles.headerSpacer} />
       </View>
 
-      {/* Tab Navigation */}
-      <View style={styles.tabContainer}>
-        <View style={styles.tabWrapper}>
-          <TouchableOpacity
-            style={[
-              styles.tab,
-              activeTab === 'setup' && styles.activeTab
-            ]}
-            onPress={() => {
-              if (checkout) {
-                setCheckout(false);
-              }
-              setActiveTab('setup');
-              // Don't reset step - let useEffect handle it based on donation box existence
-            }}
-          >
-            <Text style={[
-              styles.tabText,
-              activeTab === 'setup' && styles.activeTabText
-            ]}>
-              Monthly Giving
-            </Text>
-          </TouchableOpacity>
+      {/* Tab Navigation - Hide when in checkout */}
+      {!checkout && (
+        <View style={styles.tabContainer}>
+          <View style={styles.tabWrapper}>
+            <TouchableOpacity
+              style={[
+                styles.tab,
+                activeTab === 'setup' && styles.activeTab
+              ]}
+              onPress={() => {
+                if (checkout) {
+                  setCheckout(false);
+                }
+                setActiveTab('setup');
+                // Don't reset step - let useEffect handle it based on donation box existence
+              }}
+            >
+              <Text style={[
+                styles.tabText,
+                activeTab === 'setup' && styles.activeTabText
+              ]}>
+                Monthly Giving
+              </Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity
-            style={[
-              styles.tab,
-              activeTab === 'onetime' && styles.activeTab
-            ]}
-            onPress={() => {
-              if (checkout) {
-                setCheckout(false);
-              }
-              setActiveTab('onetime');
-            }}
-          >
-            <Text style={[
-              styles.tabText,
-              activeTab === 'onetime' && styles.activeTabText
-            ]}>
-              One-Time Donation
-            </Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.tab,
+                activeTab === 'onetime' && styles.activeTab
+              ]}
+              onPress={() => {
+                if (checkout) {
+                  setCheckout(false);
+                }
+                setActiveTab('onetime');
+              }}
+            >
+              <Text style={[
+                styles.tabText,
+                activeTab === 'onetime' && styles.activeTabText
+              ]}>
+                One-Time Donation
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
+      )}
 
       {/* Main Content */}
       <View style={styles.contentContainer}>

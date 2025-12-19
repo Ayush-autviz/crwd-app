@@ -146,7 +146,50 @@ export default function SurpriseMePage() {
         ],
       });
     } else {
-      // Donation box is set up - add causes using API
+      // Donation box is set up - check capacity before adding causes
+      // Calculate fees and capacity
+      const calculateFees = (grossAmount: number) => {
+        const gross = grossAmount;
+        const stripeFee = (gross * 0.029) + 0.30;
+        const crwdFee = (gross - stripeFee) * 0.07;
+        const net = gross - stripeFee - crwdFee;
+        return {
+          stripeFee: Math.round(stripeFee * 100) / 100,
+          crwdFee: Math.round(crwdFee * 100) / 100,
+          net: Math.round(net * 100) / 100,
+        };
+      };
+
+      const monthlyAmount = parseFloat(donationBoxData.monthly_amount || '0');
+      const fees = calculateFees(monthlyAmount);
+      const net = fees.net;
+      const maxCapacity = Math.floor(net / 0.20);
+      
+      // Count current causes in the box
+      const boxCauses = donationBoxData.box_causes || [];
+      const currentCapacity = boxCauses.length;
+      
+      // Check if adding all surprise causes would exceed capacity
+      const newCausesCount = surpriseCauses.length;
+      const totalAfterAdding = currentCapacity + newCausesCount;
+      
+      if (totalAfterAdding > maxCapacity) {
+        const availableSlots = maxCapacity - currentCapacity;
+        if (availableSlots <= 0) {
+          showToast(
+            `Your donation box is full. You can only support up to ${maxCapacity} cause${maxCapacity !== 1 ? 's' : ''} for $${monthlyAmount} per month. Please increase your donation amount or remove some causes to add these.`,
+            5000
+          );
+        } else {
+          showToast(
+            `You can only add ${availableSlots} more cause${availableSlots !== 1 ? 's' : ''} to your donation box. You're trying to add ${newCausesCount} cause${newCausesCount !== 1 ? 's' : ''}. Please increase your donation amount or remove some causes first.`,
+            5000
+          );
+        }
+        return;
+      }
+      
+      // If capacity check passes, proceed with adding
       const causes = surpriseCauses.map((cause) => ({
         cause_id: cause.id,
       }));

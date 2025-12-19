@@ -140,7 +140,7 @@ export default function NewSavedScreen() {
                     activeOpacity={0.7}
                   >
                     <View style={styles.cardContent}>
-                      <Avatar size={40} style={styles.avatar}>
+                      <Avatar size={48} style={[styles.avatar, { borderRadius: 8 }]}>
                         <AvatarImage src={cause.image} alt={cause.name} />
                         <AvatarFallback
                           style={{ backgroundColor: avatarBgColor }}

@@ -492,11 +492,15 @@ export default function OneTimeDonation({
                   const initials = getInitials(cause.name || '');
                   return (
                     <View key={item.id} style={styles.selectedCauseItem}>
-                      <View style={[styles.selectedCauseAvatar, { backgroundColor: avatarBgColor }]}>
-                        <Text style={styles.selectedCauseAvatarText}>
+                      <Avatar size={48} style={{ borderRadius: 8, overflow: 'hidden' }}>
+                        <AvatarImage src={cause.image} />
+                        <AvatarFallback
+                          style={{ backgroundColor: avatarBgColor }}
+                          textStyle={{ color: '#FFFFFF', fontSize: 16, fontWeight: '700' }}
+                        >
                           {initials}
-                        </Text>
-                      </View>
+                        </AvatarFallback>
+                      </Avatar>
                       <View style={styles.selectedCauseInfo}>
                         <Text style={styles.selectedCauseName}>{cause.name}</Text>
                         {!!(cause.mission || cause.description) && (

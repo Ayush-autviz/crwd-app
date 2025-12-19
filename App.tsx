@@ -279,8 +279,7 @@ useEffect(() => {
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="DrawerNav" component={DrawerNavigator} />
         <Stack.Screen name="SplashScreen" component={SplashScreen} />
-        {/* <Stack.Screen name="OnBoard" component={OnBoard} /> */}
-        <Stack.Screen name="OnBoard" component={NewOnboard} />
+        <Stack.Screen name="OnBoard" component={OnBoard} />
         <Stack.Screen name="ClaimProfile" component={ClaimProfile} />
         <Stack.Screen name="AddPhoto" component={AddPhoto} />
         <Stack.Screen name="NonProfitInterests" component={NonProfitInterests} />

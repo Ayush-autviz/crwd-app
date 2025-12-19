@@ -22,6 +22,7 @@ import { addCausesToBox } from '../../services/api/donation';
 import { useToast } from '../../contexts/ToastContext';
 import { categories } from '../../Constants/categories';
 import { Sparkles } from 'lucide-react-native';
+import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
 
 type ViewType = 'initial' | 'surprise' | 'browse';
 
@@ -68,8 +69,8 @@ export default function CompleteOnboard() {
 
   // Fetch surprise me causes
   const { data: surpriseData, isLoading: isLoadingSurprise, refetch: refetchSurprise } = useQuery({
-    queryKey: ['surprise-me-onboard'],
-    queryFn: () => getSurpriseMe(),
+    queryKey: ['surprise-me-onboard', selectedCategoryIds],
+    queryFn: () => getSurpriseMe(selectedCategoryIds.length > 0 ? selectedCategoryIds : undefined),
     enabled: view === 'surprise',
   });
 
@@ -455,16 +456,15 @@ export default function CompleteOnboard() {
                             activeOpacity={0.8}
                           >
                             <View style={styles.causeCardContent}>
-                              <View
-                                style={[
-                                  styles.causeAvatar,
-                                  { backgroundColor: avatarBgColor }
-                                ]}
-                              >
-                                <Text style={styles.causeAvatarText}>
+                              <Avatar size={48} style={{ ...styles.causeAvatar, borderRadius: 8, overflow: 'hidden' }}>
+                                <AvatarImage src={cause.image} style={{ width: '100%', height: '100%', borderRadius: 8 }} />
+                                <AvatarFallback
+                                  style={{ backgroundColor: avatarBgColor, borderRadius: 8 }}
+                                  textStyle={{ color: '#FFFFFF', fontSize: 14, fontWeight: '700' }}
+                                >
                                   {initials}
-                                </Text>
-                              </View>
+                                </AvatarFallback>
+                              </Avatar>
                               <View style={styles.causeInfo}>
                                 <Text style={styles.causeName} numberOfLines={2}>
                                   {cause.name}
@@ -633,16 +633,15 @@ export default function CompleteOnboard() {
                             activeOpacity={0.8}
                           >
                             <View style={styles.causeCardContent}>
-                              <View
-                                style={[
-                                  styles.causeAvatar,
-                                  { backgroundColor: avatarBgColor }
-                                ]}
-                              >
-                                <Text style={styles.causeAvatarText}>
+                              <Avatar size={48} style={{ ...styles.causeAvatar, borderRadius: 8, overflow: 'hidden' }}>
+                                <AvatarImage src={cause.image} style={{ width: '100%', height: '100%', borderRadius: 8 }} />
+                                <AvatarFallback
+                                  style={{ backgroundColor: avatarBgColor, borderRadius: 8 }}
+                                  textStyle={{ color: '#FFFFFF', fontSize: 14, fontWeight: '700' }}
+                                >
                                   {initials}
-                                </Text>
-                              </View>
+                                </AvatarFallback>
+                              </Avatar>
                               <View style={styles.causeInfo}>
                                 <Text style={styles.causeName}>
                                   {cause.name}

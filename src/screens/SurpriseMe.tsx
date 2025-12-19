@@ -8,7 +8,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { ArrowLeft } from 'lucide-react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getSurpriseMe } from '../services/api/crwd';
@@ -49,15 +49,19 @@ const getInitials = (name: string) => {
 
 export default function SurpriseMePage() {
   const navigation = useNavigation();
+  const route = useRoute();
   const queryClient = useQueryClient();
   const { showToast } = useToast();
   const { user, token } = useAuthStore();
   const [surpriseCauses, setSurpriseCauses] = useState<any[]>([]);
 
+  // Get categories from route params
+  const categories = (route.params as any)?.categories;
+
   // Fetch random causes using the surprise me API
   const { data: surpriseData, isLoading, refetch } = useQuery({
-    queryKey: ['surprise-me'],
-    queryFn: () => getSurpriseMe(),
+    queryKey: ['surprise-me', categories],
+    queryFn: () => getSurpriseMe(categories),
     enabled: true,
   });
 

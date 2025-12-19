@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Dimensions, Image } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigation, CommonActions } from '@react-navigation/native';
 import { getCollectives } from '../../services/api/crwd';
@@ -10,6 +10,8 @@ const { width: screenWidth } = Dimensions.get('window');
 interface Collective {
   id: string | number;
   name: string;
+  color?: string;
+  logo?: string;
   iconColor?: string;
   founder: {
     name: string;
@@ -29,6 +31,20 @@ export default function PopularCollectives() {
     enabled: true,
   });
 
+  // Generate color for icon if not provided
+  const getIconColor = (name: string): string => {
+    const colors = [
+      '#1600ff', // Blue
+      '#10B981', // Green
+      '#EC4899', // Pink
+      '#F59E0B', // Amber
+      '#8B5CF6', // Purple
+      '#EF4444', // Red
+    ];
+    const hash = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return colors[hash % colors.length];
+  };
+
   // Transform API data to match component's expected format
   const transformedCollectives: Collective[] =
     collectivesData?.results?.slice(0, 4).map((collective: any, index: number) => {
@@ -36,13 +52,12 @@ export default function PopularCollectives() {
         ? `${collective.created_by.first_name || ''} ${collective.created_by.last_name || ''}`.trim() || 'Unknown'
         : 'Unknown';
 
-      // Generate icon colors based on index
-      const iconColors = ['#3B82F6', '#8B5CF6', '#10B981', '#F59E0B']; // Blue, Purple, Green, Orange
-
       return {
         id: collective.id,
         name: collective.name || 'Unknown Collective',
-        iconColor: iconColors[index % iconColors.length],
+        color: collective.color, // Use color from API if available
+        logo: collective.logo, // Use logo from API if available
+        iconColor: collective.color || getIconColor(collective.name || 'C'), // Fallback to generated color
         founder: {
           name: founderName,
           profile_picture: collective.created_by?.profile_picture || '',
@@ -89,16 +104,37 @@ export default function PopularCollectives() {
         {/* Grid Layout */}
         <View style={styles.grid}>
           {displayCollectives.slice(0, 4).map((collective) => {
-            const iconColor = collective.iconColor || '#1600ff';
+            // Priority: 1. If color is available, show color with letter, 2. If no color, show image, 3. Fallback to generated color with letter
+            const hasColor = collective.color;
+            const hasLogo = collective.logo && (
+              collective.logo.startsWith('http') ||
+              collective.logo.startsWith('/') ||
+              collective.logo.startsWith('data:')
+            );
+            const iconColor = hasColor ? collective.color : (!hasLogo ? collective.iconColor : undefined);
             const iconLetter = getIconLetter(collective.name);
+            const showImage = !hasColor && hasLogo;
 
             return (
               <View key={collective.id} style={styles.card}>
                 <View style={styles.cardContent}>
                   <View style={styles.cardHeader}>
                     {/* Icon */}
-                    <View style={[styles.icon, { backgroundColor: iconColor }]}>
-                      <Text style={styles.iconLetter}>{iconLetter}</Text>
+                    <View
+                      style={[
+                        styles.icon,
+                        iconColor ? { backgroundColor: iconColor } : {},
+                      ]}
+                    >
+                      {showImage ? (
+                        <Image
+                          source={{ uri: collective.logo }}
+                          style={styles.iconImage}
+                          resizeMode="cover"
+                        />
+                      ) : (
+                        <Text style={styles.iconLetter}>{iconLetter}</Text>
+                      )}
                     </View>
 
                     {/* Title */}
@@ -140,7 +176,7 @@ export default function PopularCollectives() {
                   {/* View Collective Button */}
                   <TouchableOpacity
                     style={styles.viewButton}
-                    onPress={() => navigation.navigate('NewGroupCrwd' as never, { id: collective.id } as never)}
+                    onPress={() => (navigation as any).navigate('GroupCRWD', { id: collective.id })}
                   >
                     <Text style={styles.viewButtonText}>View Collective</Text>
                   </TouchableOpacity>
@@ -243,6 +279,11 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
+  },
+  iconImage: {
+    width: '100%',
+    height: '100%',
   },
   iconLetter: {
     color: 'white',

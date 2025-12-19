@@ -171,7 +171,18 @@ export const getCollectiveDonationHistory = async (id: any) => {
 };
 
 // Surprise Me API endpoint
-export const getSurpriseMe = async () => {
-    const response = await axiosClient.get('/crwd/causes/surprise-me/');
+export const getSurpriseMe = async (categories?: string[] | string) => {
+    let categoriesParam = '';
+    if (categories) {
+        if (Array.isArray(categories)) {
+            categoriesParam = categories.length > 0 ? categories.join(',') : '';
+        } else {
+            categoriesParam = categories;
+        }
+    }
+    const url = categoriesParam 
+        ? `/crwd/causes/surprise-me/?categories=${categoriesParam}`
+        : '/crwd/causes/surprise-me/';
+    const response = await axiosClient.get(url);
     return response.data;
 };

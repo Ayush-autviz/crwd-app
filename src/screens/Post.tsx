@@ -5,8 +5,8 @@ import { PrimaryGrey, PrimaryBlue, LightGrey } from '../Constants/Colors'
 import { Image as ImageIcon, X, ArrowLeft, Paperclip, Lightbulb } from 'lucide-react-native'
 import * as ImagePicker from 'react-native-image-picker'
 import { useNavigation, useRoute } from '@react-navigation/native'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { createPost } from '../services/api/social'
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query'
+import { createPost, getLinkPreview } from '../services/api/social'
 import { useAuthStore } from '../store/store'
 import { Toast } from '../components/Toast'
 
@@ -30,6 +30,35 @@ export default function Post() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [urlError, setUrlError] = useState<string | null>(null)
+  
+  // Track link preview
+  const [showPreview, setShowPreview] = useState(false)
+  
+  // Validate URL format - defined before useQuery
+  const validateUrl = (url: string): boolean => {
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+  
+  // Fetch link preview automatically when URL is valid
+  const { data: previewData, isLoading: isLoadingPreview, refetch: fetchPreview } = useQuery({
+    queryKey: ['link-preview', form.url],
+    queryFn: () => getLinkPreview(form.url),
+    enabled: form.url.trim().length > 0 && validateUrl(form.url) && !urlError,
+  })
+  
+  // Show preview when data is available
+  useEffect(() => {
+    if (previewData && form.url && validateUrl(form.url) && !urlError) {
+      setShowPreview(true)
+    } else if (!form.url || !validateUrl(form.url) || urlError) {
+      setShowPreview(false)
+    }
+  }, [previewData, form.url, urlError])
 
   // Create post mutation
   const createPostMutation = useMutation({
@@ -68,16 +97,6 @@ export default function Post() {
     // Clear URL error when user starts typing
     if (field === 'url' && urlError) {
       setUrlError(null);
-    }
-  }
-
-  // Validate URL format
-  const validateUrl = (url: string): boolean => {
-    try {
-      new URL(url);
-      return true;
-    } catch {
-      return false;
     }
   }
 
@@ -332,6 +351,7 @@ export default function Post() {
                   onPress={() => {
                     setForm(prev => ({ ...prev, url: "" }));
                     if (postType === 'link') setPostType(null);
+                    setShowPreview(false);
                   }}
                   style={styles.clearButton}
                 >
@@ -341,6 +361,66 @@ export default function Post() {
             </View>
             {urlError && (
               <Text style={styles.errorText}>{urlError}</Text>
+            )}
+            {/* Preview Button - Manual refresh */}
+            {form.url && validateUrl(form.url) && !urlError && (
+              <TouchableOpacity
+                onPress={() => {
+                  fetchPreview();
+                }}
+                disabled={isLoadingPreview}
+                style={[styles.previewButton, isLoadingPreview && styles.previewButtonDisabled]}
+                activeOpacity={0.7}
+              >
+                {isLoadingPreview ? (
+                  <>
+                    <ActivityIndicator size="small" color="#374151" style={{ marginRight: 8 }} />
+                    <Text style={styles.previewButtonText}>Loading Preview...</Text>
+                  </>
+                ) : (
+                  <Text style={styles.previewButtonText}>Refresh Preview</Text>
+                )}
+              </TouchableOpacity>
+            )}
+            {/* Link Preview Card */}
+            {showPreview && previewData && !isLoadingPreview && (
+              <View style={styles.previewCard}>
+                <View style={styles.previewCardContent}>
+                  {/* Preview Image */}
+                  {previewData.image && (
+                    <View style={styles.previewImageContainer}>
+                      <Image
+                        source={{ uri: previewData.image }}
+                        style={styles.previewImage}
+                        resizeMode="cover"
+                      />
+                    </View>
+                  )}
+                  {/* Preview Content */}
+                  <View style={styles.previewContent}>
+                    {previewData.site_name && (
+                      <Text style={styles.previewSiteName} numberOfLines={1}>
+                        {previewData.site_name.toUpperCase()}
+                      </Text>
+                    )}
+                    {previewData.title && (
+                      <Text style={styles.previewTitle} numberOfLines={2}>
+                        {previewData.title}
+                      </Text>
+                    )}
+                    {previewData.description && (
+                      <Text style={styles.previewDescription} numberOfLines={2}>
+                        {previewData.description}
+                      </Text>
+                    )}
+                    {previewData.domain && (
+                      <Text style={styles.previewDomain} numberOfLines={1}>
+                        {previewData.domain}
+                      </Text>
+                    )}
+                  </View>
+                </View>
+              </View>
             )}
           </View>
         )}
@@ -516,6 +596,7 @@ const styles = StyleSheet.create({
   linkInput: {
     width: '100%',
     paddingHorizontal: 16,
+    paddingRight: 40, // Add extra padding on right to prevent text from overlapping X button
     paddingVertical: 12,
     borderWidth: 1,
     borderColor: '#D1D5DB',
@@ -526,7 +607,7 @@ const styles = StyleSheet.create({
   clearButton: {
     position: 'absolute',
     right: 12,
-    top: '50%',
+    top: '45%',
     transform: [{ translateY: -8 }],
     width: 24,
     height: 24,
@@ -537,6 +618,78 @@ const styles = StyleSheet.create({
     color: '#EF4444',
     fontSize: 14,
     marginTop: 8,
+  },
+  previewButton: {
+    marginTop: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 8,
+    width: 150,
+    
+  },
+  previewButtonDisabled: {
+    opacity: 0.5,
+  },
+  previewButtonText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#374151',
+    textAlign: 'center',
+  },
+  previewCard: {
+    marginTop: 16,
+    width: '100%',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    backgroundColor: '#FFFFFF',
+    overflow: 'hidden',
+  },
+  previewCardContent: {
+    flexDirection: 'row',
+    backgroundColor: '#FFFFFF',
+  },
+  previewImageContainer: {
+    width: 120,
+    height: 120,
+    flexShrink: 0,
+  },
+  previewImage: {
+    width: '100%',
+    height: '100%',
+  },
+  previewContent: {
+    flex: 1,
+    padding: 10,
+    justifyContent: 'space-between',
+  },
+  previewSiteName: {
+    fontSize: 9,
+    color: '#6B7280',
+    fontWeight: '600',
+    letterSpacing: 0.5,
+    marginBottom: 4,
+  },
+  previewTitle: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#111827',
+    marginBottom: 4,
+    lineHeight: 16,
+  },
+  previewDescription: {
+    fontSize: 10,
+    color: '#4B5563',
+    marginBottom: 4,
+    lineHeight: 14,
+  },
+  previewDomain: {
+    fontSize: 10,
+    color: '#6B7280',
   },
   imagePreviewSection: {
     marginBottom: 16,

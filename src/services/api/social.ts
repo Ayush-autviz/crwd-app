@@ -246,3 +246,9 @@ export const postCauseInterests = async (data: any) => {
     const response = await axiosClient.post('/social/users/cause-interests/', data);
     return response.data;
 };
+
+// link preview API endpoints
+export const getLinkPreview = async (url: string) => {
+    const response = await axiosClient.get(`/social/link-preview/?url=${url}`);
+    return response.data;
+};

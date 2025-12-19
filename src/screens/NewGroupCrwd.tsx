@@ -33,6 +33,7 @@ import CollectiveProfile from '../components/newgroupcrwd/CollectiveProfile';
 import CollectiveStats from '../components/newgroupcrwd/CollectiveStats';
 import DonationInfoBox from '../components/newgroupcrwd/DonationInfoBox';
 import SupportedNonprofits from '../components/newgroupcrwd/SupportedNonprofits';
+import PreviouslySupported from '../components/newgroupcrwd/PreviouslySupported';
 import CommunityActivity from '../components/newgroupcrwd/CommunityActivity';
 import { Share } from 'react-native';
 import CommentsBottomSheet from '../components/post/CommentsBottomSheet';
@@ -160,6 +161,9 @@ export default function NewGroupCrwdPage() {
 
   // Transform causes data for SupportedNonprofits component
   const nonprofits = causesData?.results || causesData || [];
+  
+  // Transform inactive causes data for PreviouslySupported component
+  const inactiveCauses = crwdData?.inactive_causes || [];
 
   // Extract stats
   const nonprofitCount = nonprofits.length || 0;
@@ -796,13 +800,14 @@ export default function NewGroupCrwdPage() {
                   style={[styles.button, styles.donationButton]}
                   activeOpacity={0.8}
                 >
-                  <Text style={{ fontSize: 13, fontWeight: '600', color: '#1600ff', textAlign: 'center' }}>Make a One-Time Donation</Text>
+                  <Text style={{ fontSize: 13, fontWeight: '600', color: '#1600ff', textAlign: 'center' }}>One-Time Donation</Text>
                 </TouchableOpacity>
               </>
             )}
           </View>
 
           <SupportedNonprofits nonprofits={nonprofits} isLoading={isLoadingCauses} />
+
 
           <CommunityActivity
             posts={posts?.results ? posts.results.map((post: any) => ({
@@ -848,6 +853,9 @@ export default function NewGroupCrwdPage() {
               setShowCommentsSheet(true);
             }}
           />
+
+<PreviouslySupported nonprofits={inactiveCauses} isLoading={isLoadingCauses} />
+
 
           {/* Legal Disclaimer */}
           <View style={styles.disclaimer}>

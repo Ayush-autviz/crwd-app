@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, Linking, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image, Linking, ActivityIndicator, Share, Clipboard } from 'react-native';
 import { useNavigation, CommonActions } from '@react-navigation/native';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
-import { Heart, MessageCircle } from 'lucide-react-native';
+import { Heart, MessageCircle, Share2 } from 'lucide-react-native';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { likePost, unlikePost } from '../../services/api/social';
 import { useAuthStore } from '../../store/store';
+import { WEB_BASE_URL } from '../../Constants/url';
+import { useToast } from '../../contexts/ToastContext';
 
 interface PreviewDetails {
   title?: string | null;
@@ -88,6 +90,7 @@ export default function PostResultCard({ post, onCommentPress }: PostResultCardP
   const navigation = useNavigation();
   const queryClient = useQueryClient();
   const { user: currentUser } = useAuthStore();
+  const { showToast } = useToast();
   const [isLiked, setIsLiked] = useState(post.is_liked || false);
   const [likesCount, setLikesCount] = useState(post.likes_count || 0);
   
@@ -149,6 +152,32 @@ export default function PostResultCard({ post, onCommentPress }: PostResultCardP
       unlikeMutation.mutate();
     } else {
       likeMutation.mutate();
+    }
+  };
+
+  const handleShare = async () => {
+    try {
+      const webUrl = `${WEB_BASE_URL}/post/${post.id}`;
+      const shareMessage = `Check out this post: ${webUrl}`;
+      
+      const result = await Share.share({
+        message: shareMessage,
+        title: 'Post',
+        url: webUrl, // iOS only
+      });
+
+      // Copy link to clipboard when sharing
+      if (result.action === Share.sharedAction) {
+        try {
+          await Clipboard.setString(webUrl);
+          showToast('Link copied to clipboard!');
+        } catch (clipboardError) {
+          console.log('Error copying to clipboard:', clipboardError);
+        }
+      }
+    } catch (error) {
+      console.error('Error sharing post:', error);
+      showToast('Error sharing post');
     }
   };
 
@@ -336,39 +365,51 @@ export default function PostResultCard({ post, onCommentPress }: PostResultCardP
           </TouchableOpacity>
         ) : null}
 
-        {/* Like and Comment Counts */}
+        {/* Like, Comment, and Share */}
         <View style={styles.engagement}>
+          <View style={styles.engagementLeft}>
+            <TouchableOpacity
+              style={styles.engagementItem}
+              onPress={handleLikePress}
+              activeOpacity={0.7}
+              disabled={likeMutation.isPending || unlikeMutation.isPending}
+            >
+              {likeMutation.isPending || unlikeMutation.isPending ? (
+                <ActivityIndicator size={14} color="#4B5563" />
+              ) : (
+                <Heart
+                  size={14}
+                  color={isLiked ? '#EF4444' : '#4B5563'}
+                />
+              )}
+              <Text style={[styles.engagementText, isLiked && styles.likedText]}>
+                {likesCount}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.engagementItem}
+              onPress={() => {
+                if (onCommentPress) {
+                  onCommentPress(post);
+                } else {
+                  (navigation as any).navigate('PostDetail', { postId: post.id });
+                }
+              }}
+              activeOpacity={0.7}
+            >
+              <MessageCircle size={14} color="#4B5563" />
+              <Text style={styles.engagementText}>{post.comments_count}</Text>
+            </TouchableOpacity>
+          </View>
           <TouchableOpacity
-            style={styles.engagementItem}
-            onPress={handleLikePress}
-            activeOpacity={0.7}
-            disabled={likeMutation.isPending || unlikeMutation.isPending}
-          >
-            {likeMutation.isPending || unlikeMutation.isPending ? (
-              <ActivityIndicator size={14} color="#4B5563" />
-            ) : (
-              <Heart
-                size={14}
-                color={isLiked ? '#EF4444' : '#4B5563'}
-              />
-            )}
-            <Text style={[styles.engagementText, isLiked && styles.likedText]}>
-              {likesCount}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.engagementItem}
-            onPress={() => {
-              if (onCommentPress) {
-                onCommentPress(post);
-              } else {
-                (navigation as any).navigate('PostDetail', { postId: post.id });
-              }
+            style={styles.shareButton}
+            onPress={(e) => {
+              e.stopPropagation();
+              handleShare();
             }}
             activeOpacity={0.7}
           >
-            <MessageCircle size={14} color="#4B5563" />
-            <Text style={styles.engagementText}>{post.comments_count}</Text>
+            <Share2 size={14} color="#4B5563" />
           </TouchableOpacity>
         </View>
       </View>
@@ -380,8 +421,8 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
+    // borderWidth: 1,
+    // borderColor: '#E5E7EB',
     marginBottom: 12,
   },
   content: {
@@ -487,12 +528,25 @@ const styles = StyleSheet.create({
   engagement: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+    paddingVertical: 10,
+  },
+  engagementLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 12,
   },
   engagementItem: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
+  },
+  shareButton: {
+    padding: 4,
   },
   engagementText: {
     fontSize: 12,

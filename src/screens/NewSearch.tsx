@@ -79,7 +79,14 @@ export default function NewSearchPage() {
   };
 
   const handleSurpriseMe = () => {
-    navigation.navigate('SurpriseMe' as never);
+    // Get categories from route params if available
+    const categories = (route.params as any)?.categories;
+    
+    if (categories && Array.isArray(categories) && categories.length > 0) {
+      navigation.navigate('SurpriseMe' as never, { categories } as never);
+    } else {
+      navigation.navigate('SurpriseMe' as never);
+    }
   };
 
   // Get results based on active tab from the unified search API response

@@ -349,6 +349,12 @@ export default function OneTimeDonation({
         const causeEntry: { cause_id: number; attributed_collective?: number } = {
           cause_id: causeId,
         };
+        
+        // Only include attributed_collective if preselectedCollectiveId exists, is not 0, and cause_id is not 0
+        if (preselectedCollectiveId && preselectedCollectiveId > 0 && causeId > 0) {
+          causeEntry.attributed_collective = preselectedCollectiveId;
+        }
+        
         causes.push(causeEntry);
       }
       // Note: For one-time donations, we're only handling causes, not collectives directly
@@ -360,7 +366,7 @@ export default function OneTimeDonation({
       causes: Array<{ cause_id: number; attributed_collective?: number }>;
     } = {
       amount: donationAmount.toString(),
-      causes: causes.length > 0 ? causes : [{ cause_id: 0 }], // Fallback if no causes selected
+      causes: causes.length > 0 ? causes : [{ cause_id: 0 }], // Fallback if no causes selected (no attributed_collective for fallback)
     };
 
     console.log('Sending one-time donation request:', requestBody);
@@ -492,8 +498,8 @@ export default function OneTimeDonation({
                   const initials = getInitials(cause.name || '');
                   return (
                     <View key={item.id} style={styles.selectedCauseItem}>
-                      <Avatar size={48} style={{ borderRadius: 8, overflow: 'hidden' }}>
-                        <AvatarImage src={cause.image} />
+                      <Avatar size={48} style={{ borderRadius: 8, overflow: 'hidden', marginRight:  4 }}>
+                        <AvatarImage src={cause.image || cause.logo} />
                         <AvatarFallback
                           style={{ backgroundColor: avatarBgColor }}
                           textStyle={{ color: '#FFFFFF', fontSize: 16, fontWeight: '700' }}
@@ -587,7 +593,7 @@ export default function OneTimeDonation({
                       onPress={() => handleSelectItem({ id: String(cause.id), type: 'cause', data: cause })}
                     >
                       <Avatar size={48} style={[styles.causeAvatar, { borderRadius: 8 }]}>
-                        <AvatarImage src={cause.image} />
+                        <AvatarImage src={cause.image || cause.logo} />
                         <AvatarFallback
                           style={{ backgroundColor: avatarBgColor }}
                           textStyle={{ color: '#FFFFFF', fontSize: 16, fontWeight: '700' }}
@@ -629,7 +635,7 @@ export default function OneTimeDonation({
                       onPress={() => handleSelectItem({ id: String(cause.id), type: 'cause', data: cause })}
                     >
                       <Avatar size={48} style={[styles.causeAvatar, { borderRadius: 8 }]}>
-                        <AvatarImage src={cause.image} />
+                        <AvatarImage src={cause.image || cause.logo} />
                         <AvatarFallback
                           style={{ backgroundColor: avatarBgColor }}
                           textStyle={{ color: '#FFFFFF', fontSize: 16, fontWeight: '700' }}
@@ -1124,6 +1130,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 8
   },
   checkoutButtonDisabled: {
     backgroundColor: '#9ca3af',

@@ -17,6 +17,47 @@ import { PrimaryBlue, PrimaryGrey } from '../Constants/Colors'
 import { WEB_BASE_URL } from '../Constants/url'
 import CommentsBottomSheet from '../components/post/CommentsBottomSheet'
 
+// Helper function to get consistent color based on ID or name
+const getConsistentColor = (id: string | number | undefined, fallbackName?: string): string => {
+  const avatarColors = [
+    '#10b981', // green
+    '#3b82f6', // blue
+    '#8b5cf6', // purple
+    '#f59e0b', // amber
+    '#ef4444', // red
+    '#ec4899', // pink
+    '#06b6d4', // cyan
+    '#84cc16', // lime
+  ];
+  
+  if (id !== undefined && id !== null) {
+    const idStr = String(id);
+    const hash = idStr.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return avatarColors[hash % avatarColors.length];
+  }
+  
+  if (fallbackName) {
+    const hash = fallbackName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return avatarColors[hash % avatarColors.length];
+  }
+  
+  return avatarColors[0]; // Default to first color
+};
+
+// Helper function to get initials from name
+const getInitials = (firstName?: string, lastName?: string, username?: string): string => {
+  if (firstName && lastName) {
+    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+  }
+  if (firstName) {
+    return firstName.charAt(0).toUpperCase();
+  }
+  if (username) {
+    return username.charAt(0).toUpperCase();
+  }
+  return 'U';
+};
+
 export default function UserProfile() {
     const route = useRoute()
     const navigation = useNavigation()
@@ -227,7 +268,9 @@ export default function UserProfile() {
         userId: post.user?.id,
         avatarUrl: post.user?.profile_picture || '/placeholder.svg',
         username: post.user?.username || post.user?.full_name || 'Unknown User',
-        time: new Date(post.created_at).toLocaleDateString(),
+        time: post.created_at || new Date().toISOString(), // Pass raw timestamp for proper relative time calculation
+        created_at: post.created_at, // Also include created_at for ProfileActivityCard to use
+        timestamp: post.created_at, // Include timestamp as well
         org: post.collective?.name || 'Unknown Collective',
         orgUrl: post.collective?.id,
         text: post.content || '',
@@ -463,10 +506,11 @@ export default function UserProfile() {
                                     <View style={styles.memberInfo}>
                                         <Avatar size={40}>
                                             <AvatarImage src={userData.profile_picture || userData.avatar} />
-                                            <AvatarFallback>
-                                                {userData.first_name && userData.last_name
-                                                    ? `${userData.first_name[0]}${userData.last_name[0]}`
-                                                    : (userData.name || 'U').charAt(0)}
+                                            <AvatarFallback
+                                                style={{ backgroundColor: getConsistentColor(userData.id, userData.username || userData.first_name || userData.name) }}
+                                                textStyle={{ color: '#FFFFFF', fontSize: 16, fontWeight: '600' }}
+                                            >
+                                                {getInitials(userData.first_name, userData.last_name, userData.username || userData.name)}
                                             </AvatarFallback>
                                         </Avatar>
                                         <View style={styles.memberDetails}>
@@ -571,8 +615,11 @@ export default function UserProfile() {
                     <View style={styles.profileHeader}>
                         <Avatar size={80}>
                             <AvatarImage src={userProfile.profile_picture} />
-                            <AvatarFallback>
-                                {userProfile.first_name?.charAt(0)}{userProfile.last_name?.charAt(0)}
+                            <AvatarFallback
+                                style={{ backgroundColor: getConsistentColor(userProfile.id, userProfile.username || userProfile.first_name) }}
+                                textStyle={{ color: '#FFFFFF', fontSize: 32, fontWeight: '700' }}
+                            >
+                                {getInitials(userProfile.first_name, userProfile.last_name, userProfile.username)}
                             </AvatarFallback>
                         </Avatar>
                         <Text style={styles.profileName}>
@@ -705,7 +752,9 @@ export default function UserProfile() {
                     )}
 
                     {/* Profile Bio */}
+                    <View style={userProfile.bio ? { marginTop: 20 } : {}}>
                     <ProfileBio bio={userProfile.bio} />
+                    </View>
 
                     {/* Recent Activity */}
                     <View style={styles.activitySection}>
@@ -747,7 +796,7 @@ export default function UserProfile() {
             >
                 <BottomSheetView style={styles.bottomSheetContent}>
                     {/* Drag Handle */}
-                    <View style={styles.dragHandle} />
+                    {/* <View style={styles.dragHandle} /> */}
 
                     {/* Header */}
                     <View style={styles.bottomSheetHeader}>
@@ -947,7 +996,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         alignSelf: 'center',
-        marginVertical: 16,
+        marginTop: 16,
         minWidth: 120,
     },
     followButtonMainOutline: {
@@ -966,10 +1015,10 @@ const styles = StyleSheet.create({
     divider: {
         height: 1,
         backgroundColor: '#E5E7EB',
-        marginVertical: 16,
+        marginVertical: 8,
     },
     supportsSection: {
-        marginTop: 24,
+        marginTop: 16,
     },
     supportsTitle: {
         fontSize: 18,
@@ -992,7 +1041,7 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         padding: 12,
         alignItems: 'center',
-        minHeight: 100,
+        height: 100,
         justifyContent: 'space-between',
     },
     supportsIcon: {
@@ -1013,6 +1062,7 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         color: '#111827',
         textAlign: 'center',
+        height: 32,
     },
     supportsMore: {
         alignItems: 'center',
@@ -1029,7 +1079,7 @@ const styles = StyleSheet.create({
         fontWeight: '500',
     },
     activitySection: {
-        paddingVertical: 16,
+        // paddingVertical: 16,
     },
     bottomSheetContent: {
         flex: 1,

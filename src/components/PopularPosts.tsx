@@ -11,6 +11,65 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/Avatar'
 import { useAuthStore } from '../store/store'
 import { WEB_BASE_URL } from '../Constants/url'
 
+// Format date to relative time or full date
+const formatPostTime = (timeString: string | undefined): string => {
+  if (!timeString) return '';
+  
+  // Check if it's already a relative time string (like "1h ago", "2d ago")
+  if (timeString.includes('ago') || timeString.includes('just now')) {
+    return timeString;
+  }
+  
+  let date: Date;
+  
+  // Handle DD/MM/YYYY format (e.g., "15/12/2025")
+  const ddmmyyyyMatch = timeString.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (ddmmyyyyMatch) {
+    const [, day, month, year] = ddmmyyyyMatch;
+    // Create date in YYYY-MM-DD format for proper parsing
+    date = new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`);
+  } else {
+    // Try to parse as ISO date string or other date formats
+    date = new Date(timeString);
+  }
+  
+  // Check if date is valid
+  if (isNaN(date.getTime())) {
+    // If parsing fails, return the original string
+    return timeString;
+  }
+  
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  const diffInHours = Math.floor(diffInSeconds / 3600);
+  
+  // Show relative time for recent posts (within 24 hours)
+  if (diffInSeconds < 60) {
+    return 'just now';
+  } else if (diffInMinutes < 60) {
+    return `${diffInMinutes} minute${diffInMinutes === 1 ? '' : 's'} ago`;
+  } else if (diffInHours < 24) {
+    return `${diffInHours} hour${diffInHours === 1 ? '' : 's'} ago`;
+  } else {
+    // For older posts, show full date
+    const currentYear = now.getFullYear();
+    const postYear = date.getFullYear();
+    
+    const options: Intl.DateTimeFormatOptions = {
+      month: 'long',
+      day: 'numeric',
+    };
+    
+    // Add year only if it's not the current year
+    if (postYear !== currentYear) {
+      options.year = 'numeric';
+    }
+    
+    return date.toLocaleDateString('en-US', options);
+  }
+};
+
 
 interface PreviewDetails {
     title: string | null;
@@ -485,7 +544,9 @@ export default function PopularPosts({
                                 <View style={styles.headerTop}>
                                     <Text style={styles.username}>{item.username || 'Unknown User'}</Text>
                                     <View style={{flexDirection: 'row', alignItems: 'center', gap: 4}}>
-                                    <Text style={styles.date}>{item.time}</Text>
+                                    <Text style={styles.date}>
+                                      {formatPostTime((item as any).created_at || (item as any).timestamp || item.time)}
+                                    </Text>
                                     {item.org && (
                                         <View style={[styles.tag, { backgroundColor: tagBgColor }]}>
                                             <Text style={styles.tagText}>{item.org}</Text>

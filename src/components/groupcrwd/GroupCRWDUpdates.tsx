@@ -32,7 +32,9 @@ const GroupCRWDUpdates: React.FC<GroupCRWDUpdatesProps> = ({
     userId: post.user?.id,
     avatarUrl: post.user?.profile_picture,
     username: post.user?.username || post.user?.full_name || 'Unknown User',
-    time: new Date(post.created_at).toLocaleDateString(),
+    time: post.created_at || new Date().toISOString(), // Pass raw timestamp for proper relative time calculation
+    created_at: post.created_at, // Also include created_at for ProfileActivityCard to use
+    timestamp: post.created_at, // Include timestamp as well
     org: post.collective?.name || 'Unknown Collective',
     orgUrl: post.collective?.id,
     text: post.content || '',

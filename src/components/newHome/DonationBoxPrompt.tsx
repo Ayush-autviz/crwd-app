@@ -80,7 +80,7 @@ export default function DonationBoxPrompt({ causeCount, hasJoinedCollectives = f
         )}
 
         {/* Start Collective Card - Only show if user hasn't joined any collectives */}
-        {!hasJoinedCollectives && (
+        {/* {!hasJoinedCollectives && (
           <TouchableOpacity
             style={[styles.card, styles.whiteCard]}
             activeOpacity={0.7}
@@ -105,7 +105,7 @@ export default function DonationBoxPrompt({ causeCount, hasJoinedCollectives = f
               </View>
             </View>
           </TouchableOpacity>
-        )}
+        )} */}
       </View>
     </View>
   );

@@ -99,7 +99,9 @@ export default function PostDetail() {
     avatarUrl: postData.user?.profile_picture ,
     imageUrl: postData.media || undefined,
     previewDetails: postData.preview_details || null,
-    time: new Date(postData.created_at).toLocaleDateString(),
+    time: postData.created_at || new Date().toISOString(), // Pass raw timestamp for proper relative time calculation
+    created_at: postData.created_at, // Also include created_at for ProfileActivityCard to use
+    timestamp: postData.created_at, // Include timestamp as well
     org: postData.collective?.name || 'Unknown Collective',
     likes: postData.likes_count || 0,
     comments: postData.comments_count || 0,

@@ -24,6 +24,7 @@ import HelloGreeting from '../components/newHome/HelloGreeting';
 import MyDonationBoxCard from '../components/newHome/MyDonationBoxCard';
 import DonationBoxPrompt from '../components/newHome/DonationBoxPrompt';
 import CollectiveCarouselCard from '../components/newHome/CollectiveCarouselCard';
+import CreateCollectiveCard from '../components/newHome/CreateCollectiveCard';
 import NewSuggestedCollectives from '../components/newHome/NewSuggestedCollectives';
 import NewFeaturedNonprofits from '../components/newHome/NewFeaturedNonprofits';
 import CommunityUpdates from '../components/newHome/CommunityUpdates';
@@ -487,7 +488,7 @@ export default function NewHome() {
                   hasJoinedCollectives={transformedAttributingCollectives.length > 0}
                 />
               )}
-               {/* Collective Carousel Card - Show joined collectives */}
+               {/* Collective Carousel Card - Show joined collectives or Create Collective Card */}
           {token?.access_token && (
             <>
               {joinedCollectivesLoading ? (
@@ -496,7 +497,9 @@ export default function NewHome() {
                 </View>
               ) : transformedAttributingCollectives.length > 0 ? (
                 <CollectiveCarouselCard collectives={transformedAttributingCollectives} />
-              ) : null}
+              ) : (
+                <CreateCollectiveCard />
+              )}
             </>
           )}
             </>

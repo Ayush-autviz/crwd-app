@@ -39,7 +39,7 @@ export default function CreateCollectiveCard() {
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    paddingVertical: 16,
+    paddingBottom: 16,
   },
   card: {
     backgroundColor: '#FFFFFF',

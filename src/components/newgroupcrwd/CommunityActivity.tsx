@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import PopularPosts from '../PopularPosts';
+import ActivityCard from './ActivityCard';
 
 interface CommunityActivityProps {
   posts: any[];
@@ -21,17 +22,20 @@ export default function CommunityActivity({
   onCommentPress,
 }: CommunityActivityProps) {
   const navigation = useNavigation();
+  
+  // Get recent activities from collective data
+  const recentActivities = collectiveData?.recent_activities || [];
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <View>
           <Text style={styles.title}>Community Activity</Text>
-          {/* {posts && posts.length > 0 && (
+          {posts && posts.length > 0 && (
             <Text style={styles.subtitle}>
               {posts.length} Update{posts.length !== 1 ? 's' : ''}
             </Text>
-          )} */}
+          )}
         </View>
         {!isJoined ? (
           <View style={styles.joinButton}>
@@ -54,14 +58,29 @@ export default function CommunityActivity({
         <View style={styles.loadingContainer}>
           <Text style={styles.loadingText}>Loading activity...</Text>
         </View>
-      ) : posts && posts.length > 0 ? (
-        <PopularPosts posts={posts} title="no title" hasMore={false} onCommentPress={onCommentPress} />
       ) : (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>
-            No community activity yet. Be the first to post!
-          </Text>
-        </View>
+        <>
+          {/* Posts Section */}
+          {posts && posts.length > 0 ? (
+            <PopularPosts posts={posts} title="no title" hasMore={false} onCommentPress={onCommentPress} />
+          ) : (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>
+                No community activity yet. Be the first to post!
+              </Text>
+            </View>
+          )}
+          
+          {/* Recent Activities Section */}
+          {recentActivities.length > 0 && (
+            <View style={styles.activitiesContainer}>
+              <Text style={styles.activitiesTitle}>Recent Activities</Text>
+              {recentActivities.map((activity: any) => (
+                <ActivityCard key={activity.id} activity={activity} />
+              ))}
+            </View>
+          )}
+        </>
       )}
     </View>
   );
@@ -120,13 +139,22 @@ const styles = StyleSheet.create({
     color: '#6B7280',
   },
   emptyContainer: {
-    paddingVertical: 24,
+    paddingTop: 24,
     alignItems: 'center',
   },
   emptyText: {
     fontSize: 12,
     color: '#6B7280',
     textAlign: 'center',
+  },
+  activitiesContainer: {
+    marginTop: 16,
+  },
+  activitiesTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#111827',
+    marginBottom: 12,
   },
 });
 

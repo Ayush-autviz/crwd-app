@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { ChevronLeft, ChevronRight, Share2, Settings, Eye } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -25,12 +25,29 @@ export default function CollectiveCarouselCard({
   const [currentIndex, setCurrentIndex] = useState(0);
   const navigation = useNavigation();
 
+  // Reset index if collectives array changes or becomes empty
+  useEffect(() => {
+    if (!collectives || collectives.length === 0) {
+      setCurrentIndex(0);
+    } else if (currentIndex >= collectives.length) {
+      setCurrentIndex(0);
+    }
+  }, [collectives, currentIndex]);
+
   if (!collectives || collectives.length === 0) {
     return null;
   }
 
-  const currentCollective = collectives[currentIndex];
   const totalCollectives = collectives.length;
+  
+  // Ensure currentIndex is within bounds
+  const safeIndex = Math.max(0, Math.min(currentIndex, totalCollectives - 1));
+  const currentCollective = collectives[safeIndex];
+  
+  // If somehow currentCollective is undefined, return null
+  if (!currentCollective) {
+    return null;
+  }
 
   const handlePrevious = () => {
     setCurrentIndex((prev) => (prev > 0 ? prev - 1 : totalCollectives - 1));
@@ -41,22 +58,25 @@ export default function CollectiveCarouselCard({
   };
 
   // Get first letter of collective name for icon
-  const iconLetter = currentCollective.name?.charAt(0).toUpperCase() || 'C';
+  const iconLetter = currentCollective?.name?.charAt(0)?.toUpperCase() || 'C';
 
   // Priority: 1. Use color (with white text), 2. Use logo (image), 3. Fallback to generated color with letter
-  const hasColor = currentCollective.color;
-  const hasLogo = (currentCollective.logo || currentCollective.image) && 
-    ((currentCollective.logo || currentCollective.image || '').startsWith('http') ||
-     (currentCollective.logo || currentCollective.image || '').startsWith('/') ||
-     (currentCollective.logo || currentCollective.image || '').startsWith('data:'));
-  const iconColor = hasColor || (!hasLogo ? '#14B8A6' : undefined); // Default color if no color/logo
+  const hasColor = !!currentCollective?.color;
+  const logoOrImage = currentCollective?.logo || currentCollective?.image || '';
+  const hasLogo = !!logoOrImage && 
+    (logoOrImage.startsWith('http') ||
+     logoOrImage.startsWith('/') ||
+     logoOrImage.startsWith('data:'));
+  const iconColor = hasColor ? currentCollective.color : (!hasLogo ? '#14B8A6' : undefined); // Default color if no color/logo
   const showImage = hasLogo && !hasColor; // Show logo only if no color is available
 
   // Check if user is founder/admin
-  const isFounder = currentCollective.role === 'Admin' || currentCollective.role === 'Founder';
+  const isFounder = currentCollective?.role === 'Admin' || currentCollective?.role === 'Founder';
 
   // Handle button click - navigate to edit if founder, otherwise view
   const handleButtonClick = () => {
+    if (!currentCollective?.id) return;
+    
     if (isFounder) {
       navigation.navigate('ManageCRWD' as never, { collectiveId: currentCollective.id } as never);
     } else {
@@ -108,8 +128,8 @@ export default function CollectiveCarouselCard({
 
             {/* Title and Badge */}
             <View style={styles.titleBadgeContainer}>
-              <Text style={styles.title}>{currentCollective.name}</Text>
-              {currentCollective.role && (
+              <Text style={styles.title}>{currentCollective?.name || 'Unknown Collective'}</Text>
+              {currentCollective?.role && (
                 <View
                   style={[
                     styles.badge,
@@ -135,9 +155,9 @@ export default function CollectiveCarouselCard({
           {/* Content */}
           <View style={styles.textContent}>
             <Text style={styles.description}>
-              <Text style={styles.bold}>{currentCollective.memberCount}</Text> members are
+              <Text style={styles.bold}>{currentCollective?.memberCount || 0}</Text> members are
               currently donating to{' '}
-              <Text style={styles.bold}>{currentCollective.causeCount} causes</Text>.
+              <Text style={styles.bold}>{currentCollective?.causeCount || 0} causes</Text>.
             </Text>
 
             {/* Action Buttons */}
@@ -334,4 +354,5 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
 });
+
 

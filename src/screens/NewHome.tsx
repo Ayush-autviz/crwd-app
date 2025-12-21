@@ -284,24 +284,26 @@ export default function NewHome() {
 
   // Transform joined collectives for carousel
   const transformedAttributingCollectives = useMemo(() => {
-    if (joinedCollectivesData?.data) {
-      return joinedCollectivesData.data.map((item: any) => {
-        const collective = item.collective;
-        // Check if user is admin (role is "admin" from API)
-        const isAdmin = item.role === 'admin';
+    if (joinedCollectivesData?.data && Array.isArray(joinedCollectivesData.data)) {
+      return joinedCollectivesData.data
+        .filter((item: any) => item && item.collective) // Filter out invalid items
+        .map((item: any) => {
+          const collective = item.collective;
+          // Check if user is admin (role is "admin" from API)
+          const isAdmin = item.role === 'admin';
 
-        return {
-          id: collective.id,
-          name: collective.name || 'Unknown Collective',
-          memberCount: collective.member_count || 0,
-          yearlyAmount: parseFloat(collective.total_donated || '0') * 12, // Convert monthly to yearly estimate
-          causeCount: collective.causes_count || 0,
-          role: isAdmin ? 'Admin' : 'Member',
-          image: collective.logo || collective.created_by?.profile_picture || '',
-          logo: collective.logo || undefined,
-          color: collective.color || undefined,
-        };
-      });
+          return {
+            id: collective?.id || '',
+            name: collective?.name || 'Unknown Collective',
+            memberCount: collective?.member_count || 0,
+            yearlyAmount: parseFloat(collective?.total_donated || '0') * 12, // Convert monthly to yearly estimate
+            causeCount: collective?.causes_count || 0,
+            role: isAdmin ? 'Admin' : 'Member',
+            image: collective?.logo || collective?.created_by?.profile_picture || '',
+            logo: collective?.logo || undefined,
+            color: collective?.color || undefined,
+          };
+        });
     }
     return [];
   }, [joinedCollectivesData]);
@@ -460,7 +462,7 @@ export default function NewHome() {
             style={styles.gradientContainer}
           >
             <View style={styles.gradientContent}>
-              {token?.access_token && (
+              {token?.access_token ? (
                 <>
                   {donationBoxLoading ? (
                     <View style={styles.loadingCard}>
@@ -470,8 +472,8 @@ export default function NewHome() {
                     <>
                       <HelloGreeting />
                       <MyDonationBoxCard
-                        monthlyAmount={donationBoxInfo.monthlyAmount}
-                        causeCount={donationBoxInfo.causeCount}
+                        monthlyAmount={donationBoxInfo.monthlyAmount || 10}
+                        causeCount={donationBoxInfo.causeCount || 0}
                       />
                     </>
                   ) : donationBoxData &&
@@ -494,13 +496,13 @@ export default function NewHome() {
                     <View style={styles.loadingCard}>
                       <ActivityIndicator size="large" color="#1600ff" />
                     </View>
-                  ) : (transformedAttributingCollectives?.length || 0) > 0 ? (
-                    <CollectiveCarouselCard collectives={transformedAttributingCollectives || []} />
+                  ) : (transformedAttributingCollectives && transformedAttributingCollectives.length > 0) ? (
+                    <CollectiveCarouselCard collectives={transformedAttributingCollectives} />
                   ) : (
                     <CreateCollectiveCard />
                   )}
                 </>
-              )}
+              ) : null}
             </View>
           </LinearGradient>
 

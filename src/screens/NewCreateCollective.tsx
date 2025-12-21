@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   View, 
   Text, 
@@ -37,9 +37,11 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createCollective, getCausesBySearch } from '../services/api/crwd';
 import { getFavoriteCauses } from '../services/api/social';
+import { getDonationBox, addCausesToBox } from '../services/api/donation';
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/Avatar';
 import { useToast } from '../contexts/ToastContext';
 import { useAuthStore } from '../store/store';
+import JoinCollectiveBottomSheet from '../components/newgroupcrwd/JoinCollectiveBottomSheet';
 import { categories } from '../Constants/categories';
 import * as ImagePicker from 'react-native-image-picker';
 import ConfettiCannon from 'react-native-confetti-cannon';
@@ -142,6 +144,7 @@ export default function NewCreateCollective() {
   const [createdCollective, setCreatedCollective] = useState<any>(null);
   const [step, setStep] = useState(1);
   const [hasStarted, setHasStarted] = useState(false);
+  const [showAddToBoxModal, setShowAddToBoxModal] = useState(false);
 
   // Logo customization state
   const [logoType, setLogoType] = useState<'letter' | 'upload'>('letter');
@@ -193,6 +196,35 @@ export default function NewCreateCollective() {
     enabled: searchTrigger > 0 && searchQuery.trim().length > 0,
   });
 
+  // Fetch donation box data (only on success step)
+  const { data: donationBoxData } = useQuery({
+    queryKey: ['donationBox', currentUser?.id],
+    queryFn: getDonationBox,
+    enabled: !!currentUser?.id && !!token?.access_token && step === 3 && !!createdCollective,
+  });
+
+  // Check which causes are already in donation box
+  const boxCauseIds = useMemo(() => {
+    if (!donationBoxData?.box_causes) return new Set<string>();
+    return new Set(
+      (donationBoxData.box_causes || []).map((boxCause: any) => {
+        const cause = boxCause.cause || boxCause;
+        return cause?.id?.toString() || boxCause.cause_id?.toString();
+      }).filter(Boolean)
+    );
+  }, [donationBoxData]);
+
+  // Causes from this collective that are NOT yet in the donation box
+  const causesToAdd = useMemo(() => {
+    return selectedCauses.filter((cause: any) => {
+      const causeId = (cause.cause || cause)?.id?.toString();
+      return causeId && !boxCauseIds.has(causeId);
+    });
+  }, [selectedCauses, boxCauseIds]);
+
+  // Check if all causes are already added
+  const allCausesAlreadyAdded = selectedCauses.length > 0 && causesToAdd.length === 0;
+
   // Create collective mutation
   const createCollectiveMutation = useMutation({
     mutationFn: createCollective,
@@ -242,6 +274,295 @@ export default function NewCreateCollective() {
       showToast(errorMessage, 4000);
     },
   });
+
+  // Handle adding collective to donation box
+  const handleAddToDonationBox = async () => {
+    if (!createdCollective?.id) {
+      showToast('Collective ID is missing', 4000);
+      return;
+    }
+
+    try {
+      // Check if donation box exists
+      const donationBox = await getDonationBox();
+      
+      // If donation box doesn't exist or has no ID, navigate to setup
+      if (!donationBox || !donationBox.id) {
+        // Prepare causes data for preselection
+        const preselectedCauses = selectedCauses.map((cause: any) => {
+          const causeData = cause.cause || cause;
+          return {
+            id: causeData.id || cause.id,
+            name: causeData.name || cause.name || 'Unknown Nonprofit',
+            description: causeData.mission || causeData.description || cause.mission || cause.description || '',
+            mission: causeData.mission || cause.mission || '',
+            logo: causeData.image || causeData.logo || cause.image || cause.logo || '',
+          };
+        });
+        const preselectedCauseIds = preselectedCauses.map((cause: any) => cause.id);
+
+        (navigation as any).reset({
+          index: 0,
+          routes: [
+            {
+              name: 'DrawerNav' as never,
+              state: {
+                routes: [
+                  {
+                    name: 'MainTabs' as never,
+                    state: {
+                      routes: [
+                        { name: 'Home' as never },
+                        { name: 'Search' as never },
+                        {
+                          name: 'Donate' as never,
+                          params: {
+                            initialTab: 'setup',
+                            preselectedItem: {
+                              id: createdCollective.id,
+                              type: 'collective',
+                              data: createdCollective,
+                            },
+                            activeTab: 'collectives',
+                            preselectedCauses: preselectedCauseIds,
+                            preselectedCausesData: preselectedCauses,
+                            preselectedCollectiveId: createdCollective.id,
+                          },
+                        },
+                        { name: 'Collectives' as never },
+                        { name: 'Profile' as never },
+                      ],
+                      index: 2, // Donate tab index
+                    },
+                  },
+                ],
+                index: 0,
+              },
+            },
+          ],
+        });
+      } else {
+        // Donation box exists, show bottom sheet to let user select causes
+        setShowAddToBoxModal(true);
+      }
+    } catch (error: any) {
+      console.error('Error checking donation box:', error);
+      // On error, navigate to setup tab with causes
+      const preselectedCauses = selectedCauses.map((cause: any) => {
+        const causeData = cause.cause || cause;
+        return {
+          id: causeData.id || cause.id,
+          name: causeData.name || cause.name || 'Unknown Nonprofit',
+          description: causeData.mission || causeData.description || cause.mission || cause.description || '',
+          mission: causeData.mission || cause.mission || '',
+          logo: causeData.image || causeData.logo || cause.image || cause.logo || '',
+        };
+      });
+      const preselectedCauseIds = preselectedCauses.map((cause: any) => cause.id);
+
+      (navigation as any).reset({
+        index: 0,
+        routes: [
+          {
+            name: 'DrawerNav' as never,
+            state: {
+              routes: [
+                {
+                  name: 'MainTabs' as never,
+                  state: {
+                    routes: [
+                      { name: 'Home' as never },
+                      { name: 'Search' as never },
+                      {
+                        name: 'Donate' as never,
+                        params: {
+                          initialTab: 'setup',
+                          preselectedItem: {
+                            id: createdCollective.id,
+                            type: 'collective',
+                            data: createdCollective,
+                          },
+                          activeTab: 'collectives',
+                          preselectedCauses: preselectedCauseIds,
+                          preselectedCausesData: preselectedCauses,
+                          preselectedCollectiveId: createdCollective.id,
+                        },
+                      },
+                      { name: 'Collectives' as never },
+                      { name: 'Profile' as never },
+                    ],
+                    index: 2,
+                  },
+                },
+              ],
+              index: 0,
+            },
+          },
+        ],
+      });
+    }
+  };
+
+  // Handle confirm from bottom sheet - add selected causes to donation box
+  const handleAddToBoxConfirm = async (selectedNonprofits: any[], collectiveId: string, shouldSetupDonationBox: boolean) => {
+    if (!createdCollective?.id) return;
+
+    // If no donation box and user wants to set it up
+    if (shouldSetupDonationBox) {
+      const preselectedCauses = selectedNonprofits.map((np) => {
+        const cause = np.cause || np;
+        return {
+          id: cause.id || np.id,
+          name: cause.name || np.name || 'Unknown Nonprofit',
+          description: cause.mission || cause.description || np.mission || np.description || '',
+          mission: cause.mission || np.mission || '',
+          logo: cause.image || cause.logo || np.image || np.logo || '',
+        };
+      });
+      const preselectedCauseIds = preselectedCauses.map((cause) => cause.id);
+
+      setShowAddToBoxModal(false);
+      
+      // Navigate to donation setup with preselected causes
+      (navigation as any).reset({
+        index: 0,
+        routes: [
+          {
+            name: 'DrawerNav' as never,
+            state: {
+              routes: [
+                {
+                  name: 'MainTabs' as never,
+                  state: {
+                    routes: [
+                      { name: 'Home' as never },
+                      { name: 'Search' as never },
+                      {
+                        name: 'Donate' as never,
+                        params: {
+                          initialTab: 'setup',
+                          preselectedCauses: preselectedCauseIds,
+                          preselectedCausesData: preselectedCauses,
+                          preselectedCollectiveId: parseInt(collectiveId),
+                        },
+                      },
+                      { name: 'Collectives' as never },
+                      { name: 'Profile' as never },
+                    ],
+                    index: 2,
+                  },
+                },
+              ],
+              index: 0,
+            },
+          },
+        ],
+      });
+      return;
+    }
+
+    // If donation box exists and causes are selected, add them
+    if (selectedNonprofits.length > 0) {
+      const causes = selectedNonprofits.map((np: any) => {
+        const causeData = np.cause || np;
+        const causeId = causeData.id || np.id;
+        return {
+          cause_id: causeId,
+          attributed_collective: parseInt(collectiveId),
+        };
+      });
+      
+      try {
+        await addCausesToBox({ causes });
+        showToast('Nonprofits added to your donation box!', 3000);
+        
+        await queryClient.invalidateQueries({ queryKey: ['donationBox', currentUser?.id] });
+        await queryClient.refetchQueries({ queryKey: ['donationBox', currentUser?.id] });
+
+        // Navigate to donation setup with collective preselected
+        (navigation as any).reset({
+          index: 0,
+          routes: [
+            {
+              name: 'DrawerNav' as never,
+              state: {
+                routes: [
+                  {
+                    name: 'MainTabs' as never,
+                    state: {
+                      routes: [
+                        { name: 'Home' as never },
+                        { name: 'Search' as never },
+                        {
+                          name: 'Donate' as never,
+                          params: {
+                            initialTab: 'setup',
+                            preselectedItem: {
+                              id: createdCollective.id,
+                              type: 'collective',
+                              data: createdCollective,
+                            },
+                            activeTab: 'collectives',
+                          },
+                        },
+                        { name: 'Collectives' as never },
+                        { name: 'Profile' as never },
+                      ],
+                      index: 2,
+                    },
+                  },
+                ],
+                index: 0,
+              },
+            },
+          ],
+        });
+      } catch (error: any) {
+        console.error('Error adding causes to donation box:', error);
+        showToast(error?.response?.data?.message || 'Failed to add nonprofits to donation box', 4000);
+        (navigation as any).reset({
+          index: 0,
+          routes: [
+            {
+              name: 'DrawerNav' as never,
+              state: {
+                routes: [
+                  {
+                    name: 'MainTabs' as never,
+                    state: {
+                      routes: [
+                        { name: 'Home' as never },
+                        { name: 'Search' as never },
+                        {
+                          name: 'Donate' as never,
+                          params: {
+                            initialTab: 'setup',
+                            preselectedItem: {
+                              id: createdCollective.id,
+                              type: 'collective',
+                              data: createdCollective,
+                            },
+                            activeTab: 'collectives',
+                          },
+                        },
+                        { name: 'Collectives' as never },
+                        { name: 'Profile' as never },
+                      ],
+                      index: 2,
+                    },
+                  },
+                ],
+                index: 0,
+              },
+            },
+          ],
+        });
+      }
+    }
+
+    // Close the modal
+    setShowAddToBoxModal(false);
+  };
 
   // Animate dots during API call or while waiting for animation to complete
   useEffect(() => {
@@ -606,51 +927,31 @@ export default function NewCreateCollective() {
 
             {/* Description */}
             <Text style={styles.successDescription}>
-              Your collective is ready to go! Set up your donation box to support your causes, or start sharing to grow your community.
+              {allCausesAlreadyAdded ? (
+                <>
+                  Your collective is ready to go! All causes are already in your donation box.{'\n'}
+                  Start sharing to grow your community.
+                </>
+              ) : (
+                <>
+                  Your collective is ready to go! Set up your donation box to support your causes, or start sharing to grow your community.
+                </>
+              )}
             </Text>
 
             {/* Action Buttons */}
             <View style={styles.successButtons}>
-              <TouchableOpacity
-                onPress={() => {
-                  // Navigate to bottom tab "Donate" with setup tab
-                  (navigation as any).reset({
-                    index: 0,
-                    routes: [
-                      {
-                        name: 'DrawerNav' as never,
-                        state: {
-                          routes: [
-                            {
-                              name: 'MainTabs' as never,
-                              state: {
-                                routes: [
-                                  { name: 'Home' as never },
-                                  { name: 'Search' as never },
-                                  {
-                                    name: 'Donate' as never,
-                                    params: {
-                                      initialTab: 'setup',
-                                    },
-                                  },
-                                  { name: 'Collectives' as never },
-                                  { name: 'Profile' as never },
-                                ],
-                                index: 2, // Donate tab index
-                              },
-                            },
-                          ],
-                          index: 0,
-                        },
-                      },
-                    ],
-                  });
-                }}
-                style={styles.successPrimaryButton}
-              >
-                <Heart size={20} color="white" />
-                <Text style={styles.successPrimaryButtonText}>Set Up My Donation Box</Text>
-              </TouchableOpacity>
+              {!allCausesAlreadyAdded && (
+                <TouchableOpacity
+                  onPress={handleAddToDonationBox}
+                  style={styles.successPrimaryButton}
+                >
+                  <Heart size={20} color="white" />
+                  <Text style={styles.successPrimaryButtonText}>
+                    {donationBoxData && donationBoxData.id ? 'Add to Donation Box' : 'Set Up Donation Box'}
+                  </Text>
+                </TouchableOpacity>
+              )}
               
               <TouchableOpacity
                 onPress={() => (navigation as any).navigate('GroupCRWD', { id: createdCollective.id })}
@@ -691,6 +992,29 @@ export default function NewCreateCollective() {
             />
           </View>
         )}
+
+        {/* Add to Donation Box Bottom Sheet */}
+        <JoinCollectiveBottomSheet
+          isOpen={showAddToBoxModal}
+          onClose={() => setShowAddToBoxModal(false)}
+          collectiveName={name}
+          nonprofits={selectedCauses.map((cause: any) => {
+            const causeData = cause.cause || cause;
+            return {
+              id: causeData.id || cause.id,
+              name: causeData.name || cause.name,
+              image: causeData.image || cause.image,
+              logo: causeData.logo || cause.logo,
+              description: causeData.description || cause.description,
+              mission: causeData.mission || cause.mission,
+              cause: causeData,
+            };
+          })}
+          collectiveId={createdCollective?.id?.toString() || ''}
+          onJoin={handleAddToBoxConfirm}
+          isJoining={false}
+          donationBox={donationBoxData}
+        />
       </SafeAreaView>
     );
   }

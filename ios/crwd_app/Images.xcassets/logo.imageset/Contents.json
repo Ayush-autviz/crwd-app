@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "main@1x.png",
+      "filename" : "Full_Logo_2x-removebg-preview.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "main@2x.png",
+      "filename" : "Full_Logo_2x-removebg-preview 1.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "main@3x.png",
+      "filename" : "Full_Logo_2x-removebg-preview 2.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

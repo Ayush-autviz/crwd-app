@@ -40,7 +40,7 @@ export default function DonationBoxPrompt({ causeCount, hasJoinedCollectives = f
               <View style={styles.content}>
               <Text style={styles.cardTitle}>You're Almost There!</Text>
               <Text style={styles.cardDescription}>
-                You selected <Text style={styles.bold}>{causeCount} cause{causeCount !== 1 ? 's' : ''}</Text> but haven't started donating yet
+                You selected <Text style={styles.bold}>{causeCount} {causeCount === 1 ? 'cause' : 'causes'}</Text> but haven't started donating yet
               </Text>
               <TouchableOpacity
                 style={styles.linkContainer}

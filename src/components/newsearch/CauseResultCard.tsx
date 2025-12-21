@@ -37,6 +37,13 @@ const getConsistentColor = (id: number | string, colors: string[]) => {
   return colors[hash % colors.length];
 };
 
+// Helper function to truncate description at first period
+const truncateAtFirstPeriod = (text: string): string => {
+  if (!text) return text;
+  const periodIndex = text.indexOf('.');
+  return periodIndex !== -1 ? text.substring(0, periodIndex + 1) : text;
+};
+
 export default function CauseResultCard({ cause }: CauseResultCardProps) {
   const navigation = useNavigation();
   const avatarBgColor = getConsistentColor(cause.id, avatarColors);
@@ -48,6 +55,8 @@ export default function CauseResultCard({ cause }: CauseResultCardProps) {
     .toUpperCase() || 'N';
 
   const location = [cause.city, cause.state].filter(Boolean).join(', ');
+  const description = cause.mission || cause.description || 'No description available';
+  const truncatedDescription = truncateAtFirstPeriod(description);
 
   return (
     <TouchableOpacity
@@ -68,8 +77,8 @@ export default function CauseResultCard({ cause }: CauseResultCardProps) {
         <View style={styles.textContainer}>
           <Text style={styles.title}>{cause.name}</Text>
           {location ? <Text style={styles.location}>{location}</Text> : null}
-          <Text style={styles.description} numberOfLines={2}>
-            {cause.mission || cause.description || 'No description available'}
+          <Text style={styles.description}>
+            {truncatedDescription}
           </Text>
         </View>
       </View>

@@ -454,57 +454,54 @@ export default function NewHome() {
 
           {/* My Donation Box Card or Prompt */}
           <LinearGradient
-        colors={['#DBEAFE', '#F3E8FF', '#FCE7F3']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-        style={styles.gradientContainer}
-      >
-        <View style={styles.gradientContent}>
-          {token?.access_token && (
-            <>
-              {donationBoxLoading ? (
-                <View style={styles.loadingCard}>
-                  <ActivityIndicator size="large" color="#1600ff" />
-                </View>
-              ) : donationBoxInfo ? (
+            colors={['#DBEAFE', '#F3E8FF', '#FCE7F3']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.gradientContainer}
+          >
+            <View style={styles.gradientContent}>
+              {token?.access_token && (
                 <>
-                  <HelloGreeting />
-                  <MyDonationBoxCard
-                    monthlyAmount={donationBoxInfo.monthlyAmount}
-                    causeCount={donationBoxInfo.causeCount}
-                  />
+                  {donationBoxLoading ? (
+                    <View style={styles.loadingCard}>
+                      <ActivityIndicator size="large" color="#1600ff" />
+                    </View>
+                  ) : donationBoxInfo ? (
+                    <>
+                      <HelloGreeting />
+                      <MyDonationBoxCard
+                        monthlyAmount={donationBoxInfo.monthlyAmount}
+                        causeCount={donationBoxInfo.causeCount}
+                      />
+                    </>
+                  ) : donationBoxData &&
+                    !isDonationBoxNotFound &&
+                    !isDonationBoxActive &&
+                    inactiveBoxCauseCount > 0 ? (
+                    // Donation box exists but is not active - show prompt with cause count
+                    <DonationBoxPrompt 
+                      causeCount={inactiveBoxCauseCount}
+                      hasJoinedCollectives={(transformedAttributingCollectives?.length || 0) > 0}
+                    />
+                  ) : (
+                    <DonationBoxPrompt 
+                      hasJoinedCollectives={(transformedAttributingCollectives?.length || 0) > 0}
+                    />
+                  )}
+                  
+                  {/* Collective Carousel Card - Show joined collectives or Create Collective Card */}
+                  {joinedCollectivesLoading ? (
+                    <View style={styles.loadingCard}>
+                      <ActivityIndicator size="large" color="#1600ff" />
+                    </View>
+                  ) : (transformedAttributingCollectives?.length || 0) > 0 ? (
+                    <CollectiveCarouselCard collectives={transformedAttributingCollectives || []} />
+                  ) : (
+                    <CreateCollectiveCard />
+                  )}
                 </>
-              ) : donationBoxData &&
-                !isDonationBoxNotFound &&
-                !isDonationBoxActive &&
-                inactiveBoxCauseCount > 0 ? (
-                // Donation box exists but is not active - show prompt with cause count
-                <DonationBoxPrompt 
-                  causeCount={inactiveBoxCauseCount}
-                  hasJoinedCollectives={transformedAttributingCollectives.length > 0}
-                />
-              ) : (
-                <DonationBoxPrompt 
-                  hasJoinedCollectives={transformedAttributingCollectives.length > 0}
-                />
               )}
-               {/* Collective Carousel Card - Show joined collectives or Create Collective Card */}
-          {token?.access_token && (
-            <>
-              {joinedCollectivesLoading ? (
-                <View style={styles.loadingCard}>
-                  <ActivityIndicator size="large" color="#1600ff" />
-                </View>
-              ) : transformedAttributingCollectives.length > 0 ? (
-                <CollectiveCarouselCard collectives={transformedAttributingCollectives} />
-              ) : (
-                <CreateCollectiveCard />
-              )}
-            </>
-          )}
-            </>
-          )}
-          </View>
+            </View>
           </LinearGradient>
 
          

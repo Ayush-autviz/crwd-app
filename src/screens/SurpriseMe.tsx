@@ -47,6 +47,13 @@ const getInitials = (name: string) => {
   return name.substring(0, 2).toUpperCase();
 };
 
+// Helper function to truncate description at first period
+const truncateAtFirstPeriod = (text: string): string => {
+  if (!text) return text;
+  const periodIndex = text.indexOf('.');
+  return periodIndex !== -1 ? text.substring(0, periodIndex + 1) : text;
+};
+
 export default function SurpriseMePage() {
   const navigation = useNavigation();
   const route = useRoute();
@@ -288,8 +295,8 @@ export default function SurpriseMePage() {
                           {[cause.city, cause.state].filter(Boolean).join(', ')}
                         </Text>
                       )}
-                      <Text style={styles.causeDescription} numberOfLines={1}>
-                        {cause.mission || cause.description || 'No description available'}
+                      <Text style={styles.causeDescription}>
+                        {truncateAtFirstPeriod(cause.mission || cause.description || 'No description available')}
                       </Text>
                     </View>
                   </View>

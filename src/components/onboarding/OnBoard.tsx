@@ -622,10 +622,11 @@ export default function OnBoard() {
   const { showToast } = useToast();
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
-  // Get redirectTo from route params
-  const redirectTo = (route.params as any)?.redirectTo || '/';
-  const isFromCreateCollective = redirectTo === '/create-crwd' || redirectTo === 'CreateCRWD';
-  const isFromCollective = typeof redirectTo === 'string' && redirectTo.includes('/groupcrwd/');
+  // Get redirectTo and redirectParams from route params (React Navigation pattern)
+  const redirectTo = (route.params as any)?.redirectTo || null;
+  const redirectParams = (route.params as any)?.redirectParams || {};
+  const isFromCreateCollective = redirectTo === 'CreateCRWD';
+  const isFromCollective = redirectTo === 'GroupCRWD';
 
   const googleLoginQuery = useQuery({
     queryKey: ['googleLogin'],
@@ -646,14 +647,42 @@ export default function OnBoard() {
       }
       showToast('Google authentication successful!');
 
-      // Handle redirect
-      if (redirectTo && redirectTo !== '/' && redirectTo !== 'DrawerNav') {
-        // Navigate to specific route if provided
-        (navigation as any).navigate(redirectTo);
-      } else if (response.user && !response.user.last_login_at) {
-        (navigation as any).navigate('NonProfitInterests', { fromAuth: true });
+      // Handle redirect - use reset to prevent going back to onboarding
+      if (response.user && !response.user.last_login_at) {
+        // New user - go through onboarding with redirectTo and redirectParams
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'NonProfitInterests' as never, params: { fromAuth: true, redirectTo: redirectTo || null, redirectParams } }],
+        });
+      } else if (redirectTo && redirectTo !== 'DrawerNav') {
+        // Existing user - navigate to redirectTo using reset
+        if (redirectTo === 'CreateCRWD') {
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'DrawerNav' as never }],
+          });
+          setTimeout(() => {
+            (navigation as any).navigate('DrawerNav', { screen: 'CreateCRWD' });
+          }, 100);
+        } else if (redirectTo === 'GroupCRWD') {
+          // Navigate to GroupCRWD with id param
+          console.log('OnBoard - Navigating to GroupCRWD with params:', redirectParams);
+          navigation.reset({
+            index: 0,
+            routes: [{ name: redirectTo as never, params: redirectParams }],
+          });
+        } else {
+          navigation.reset({
+            index: 0,
+            routes: [{ name: redirectTo as never, params: redirectParams }],
+          });
+        }
       } else {
-        navigation.navigate('DrawerNav' as never);
+        // Default - go to main app
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'DrawerNav' as never }],
+        });
       }
     },
     onError: (error: any) => {
@@ -708,12 +737,12 @@ export default function OnBoard() {
 
   const handleEmailLogin = () => {
     // Navigate to claim profile for email registration
-    (navigation as any).navigate('ClaimProfile', { redirectTo });
+    (navigation as any).navigate('ClaimProfile', { redirectTo, redirectParams });
   };
 
   const handleLogin = () => {
     // Navigate to Login page
-    (navigation as any).navigate('Login', { redirectTo });
+    (navigation as any).navigate('Login', { redirectTo, redirectParams });
   };
 
   const handleAppleLogin = () => {

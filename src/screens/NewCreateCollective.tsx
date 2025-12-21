@@ -706,12 +706,20 @@ export default function NewCreateCollective() {
           <Text style={styles.promptDescription}>
             You pick the causes. You invite the people. They give monthly. No money touches your hands. You just rally the movement.
           </Text>
-          <TouchableOpacity
-            onPress={() => navigation.navigate('Login' as never)}
-            style={styles.promptButton}
-          >
-            <Text style={styles.promptButtonText}>Get Started</Text>
-          </TouchableOpacity>
+          <View style={styles.promptButtons}>
+            <TouchableOpacity
+              onPress={() => (navigation as any).navigate('OnBoard', { redirectTo: 'CreateCRWD' })}
+              style={styles.promptPrimaryButton}
+            >
+              <Text style={styles.promptPrimaryButtonText}>Get Started</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => (navigation as any).navigate('Login', { redirectTo: 'CreateCRWD' })}
+              style={styles.promptSecondaryButton}
+            >
+              <Text style={styles.promptSecondaryButtonText}>Log in</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </SafeAreaView>
     );
@@ -745,9 +753,17 @@ export default function NewCreateCollective() {
               setSelectedCauses([]);
               setHasStarted(true);
             }}
-            style={styles.promptButton}
+            style={{
+              backgroundColor: '#1600ff',
+              padding: 12,
+              borderRadius: 8,
+            }}
           >
-            <Text style={styles.promptButtonText}>Get Started</Text>
+            <Text style={{
+              color: 'white',
+              fontSize: 16,
+              fontWeight: 'bold',
+            }}>Get Started</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -1614,15 +1630,33 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 24,
   },
-  promptButton: {
-    backgroundColor: '#1600ff',
-    paddingHorizontal: 32,
-    paddingVertical: 12,
-    borderRadius: 8,
+  promptButtons: {
+    flexDirection: 'row',
+    gap: 12,
     width: '100%',
     maxWidth: 320,
   },
-  promptButtonText: {
+  promptPrimaryButton: {
+    backgroundColor: '#1600ff',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+    flex: 1,
+  },
+  promptPrimaryButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  promptSecondaryButton: {
+    backgroundColor: '#1600ff',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+    flex: 1,
+  },
+  promptSecondaryButtonText: {
     color: 'white',
     fontSize: 16,
     fontWeight: '600',

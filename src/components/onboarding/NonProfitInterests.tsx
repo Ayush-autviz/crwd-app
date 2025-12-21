@@ -23,7 +23,8 @@ const { width } = Dimensions.get('window');
 export default function NonProfitInterests() {
   const navigation = useNavigation<any>();
   const route = useRoute();
-  const redirectTo = (route.params as any)?.redirectTo || '/';
+  const redirectTo = (route.params as any)?.redirectTo || null;
+  const redirectParams = (route.params as any)?.redirectParams || {};
   const { showToast } = useToast();
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [isYourCausesOpen, setIsYourCausesOpen] = useState(true);
@@ -69,10 +70,32 @@ export default function NonProfitInterests() {
   const postInterestsMutation = useMutation({
     mutationFn: (interests: string[]) => postCauseInterests({ interests }),
     onSuccess: () => {
-      navigation.navigate('CompleteOnboard', { 
-        redirectTo,
-        selectedCategories 
-      });
+      // If redirectTo is present, navigate directly there
+      // Otherwise, navigate to complete-onboard
+      if (redirectTo === 'CreateCRWD') {
+        // Navigate directly to CreateCRWD (matching Vite behavior)
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'DrawerNav' as never }],
+        });
+        // Then navigate to CreateCRWD within DrawerNav
+        setTimeout(() => {
+          (navigation as any).navigate('DrawerNav', { screen: 'CreateCRWD' });
+        }, 100);
+      } else if (redirectTo === 'GroupCRWD') {
+        // Navigate directly to GroupCRWD with params
+        console.log('NonProfitInterests - Navigating to GroupCRWD with params:', redirectParams);
+        navigation.reset({
+          index: 0,
+          routes: [{ name: redirectTo as never, params: redirectParams }],
+        });
+      } else {
+        navigation.navigate('CompleteOnboard', { 
+          redirectTo,
+          redirectParams,
+          selectedCategories 
+        });
+      }
     },
     onError: (error: any) => {
       showToast(error?.response?.data?.message || "Failed to save interests");
@@ -88,7 +111,28 @@ export default function NonProfitInterests() {
   };
 
   const handleSkip = () => {
-    navigation.navigate('CompleteOnboard', { redirectTo });
+    // If came from CreateCRWD, navigate directly to that page (matching Vite behavior)
+    // Otherwise, navigate to complete-onboard
+    if (redirectTo === 'CreateCRWD') {
+      // Navigate directly to CreateCRWD
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'DrawerNav' as never }],
+      });
+      // Then navigate to CreateCRWD within DrawerNav
+      setTimeout(() => {
+        (navigation as any).navigate('DrawerNav', { screen: 'CreateCRWD' });
+      }, 100);
+    } else if (redirectTo === 'GroupCRWD') {
+      // Navigate directly to GroupCRWD with params
+      console.log('NonProfitInterests (skip) - Navigating to GroupCRWD with params:', redirectParams);
+      navigation.reset({
+        index: 0,
+        routes: [{ name: redirectTo as never, params: redirectParams }],
+      });
+    } else {
+      navigation.navigate('CompleteOnboard', { redirectTo, redirectParams });
+    }
   };
 
   return (

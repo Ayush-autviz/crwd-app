@@ -17,7 +17,8 @@ export default function ClaimProfile() {
     const route = useRoute()
     const { showToast } = useToast()
     const { setUser, setToken } = useAuthStore()
-    const redirectTo = (route.params as any)?.redirectTo || '/'
+    const redirectTo = (route.params as any)?.redirectTo || null
+    const redirectParams = (route.params as any)?.redirectParams || {}
     
     const [formData, setFormData] = useState({
         firstName: "",
@@ -166,22 +167,41 @@ export default function ClaimProfile() {
                 })
             }
             
-            // If last_login_at is null, navigate to nonprofit interests page (new user)
+            // Handle redirect - use reset to prevent going back to signup
             if (response.user && !response.user.last_login_at) {
-                (navigation as any).navigate('NonProfitInterests', { 
-                    redirectTo,
-                    fromAuth: true 
-                })
-            } else {
-                // Navigate to redirectTo if available, otherwise main app for existing users
-                if (redirectTo && redirectTo !== '/') {
-                    navigation.navigate(redirectTo as never)
-                } else {
+                // New user - go through onboarding with redirectTo and redirectParams
+                navigation.reset({
+                    index: 0,
+                    routes: [{ name: 'NonProfitInterests' as never, params: { redirectTo, redirectParams, fromAuth: true } }],
+                });
+            } else if (redirectTo) {
+                // Existing user - navigate to redirectTo using reset
+                if (redirectTo === 'CreateCRWD') {
                     navigation.reset({
                         index: 0,
                         routes: [{ name: 'DrawerNav' as never }],
-                    })
+                    });
+                    setTimeout(() => {
+                        (navigation as any).navigate('DrawerNav', { screen: 'CreateCRWD' });
+                    }, 100);
+                } else if (redirectTo === 'GroupCRWD') {
+                    // Navigate to GroupCRWD with params
+                    navigation.reset({
+                        index: 0,
+                        routes: [{ name: redirectTo as never, params: redirectParams }],
+                    });
+                } else {
+                    navigation.reset({
+                        index: 0,
+                        routes: [{ name: redirectTo as never, params: redirectParams }],
+                    });
                 }
+            } else {
+                // Default - go to main app
+                navigation.reset({
+                    index: 0,
+                    routes: [{ name: 'DrawerNav' as never }],
+                });
             }
         },
         onError: (error: any) => {

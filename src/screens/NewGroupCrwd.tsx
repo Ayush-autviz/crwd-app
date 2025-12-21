@@ -84,7 +84,15 @@ export default function NewGroupCrwdPage() {
   }, [showStatisticsModal]);
 
   // Get collective ID from route params
-  const crwdId = (route.params as any)?.id || (route.params as any)?.collectiveId || '';
+  const crwdId = String((route.params as any)?.id || (route.params as any)?.collectiveId || (route.params as any)?.crwdId || '');
+  
+  // Debug: Log params to troubleshoot
+  useEffect(() => {
+    console.log('NewGroupCrwd - Route params:', JSON.stringify(route.params, null, 2));
+    console.log('NewGroupCrwd - Extracted crwdId:', crwdId);
+    console.log('NewGroupCrwd - crwdId type:', typeof crwdId);
+    console.log('NewGroupCrwd - crwdId isEmpty:', !crwdId || crwdId === '');
+  }, [route.params, crwdId]);
 
   // Fetch collective data
   const {
@@ -93,8 +101,11 @@ export default function NewGroupCrwdPage() {
     error: crwdError,
   } = useQuery({
     queryKey: ['crwd', crwdId],
-    queryFn: () => getCollectiveById(crwdId),
-    enabled: !!crwdId,
+    queryFn: () => {
+      console.log('Fetching collective with ID:', crwdId);
+      return getCollectiveById(crwdId);
+    },
+    enabled: !!crwdId && crwdId !== '',
     refetchOnMount: true,
     staleTime: 0,
   });
@@ -214,6 +225,27 @@ export default function NewGroupCrwdPage() {
     },
   });
 
+  // Check if crwdId is empty before loading
+  if (!crwdId || crwdId === '') {
+    return (
+      <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorTitle}>Collective ID missing</Text>
+          <Text style={styles.errorText}>
+            No collective ID provided. Please try navigating to the collective again.
+          </Text>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.errorButton}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.errorButtonText}>Go Back</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   // Loading state
   if (isLoadingCrwd) {
     return (
@@ -227,6 +259,9 @@ export default function NewGroupCrwdPage() {
 
   // Error state
   if (crwdError || !crwdData) {
+    console.log('NewGroupCrwd - Error fetching collective:', crwdError);
+    console.log('NewGroupCrwd - crwdId used:', crwdId);
+    console.log('NewGroupCrwd - route params:', route.params);
     return (
       <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
         <View style={styles.errorContainer}>
@@ -248,7 +283,18 @@ export default function NewGroupCrwdPage() {
 
   const handleJoinCollective = () => {
     if (!currentUser || !token?.access_token) {
-      navigation.navigate('SplashScreen' as never);
+      // Navigate to onboarding with redirectTo (React Navigation pattern)
+      // Ensure crwdId is a string and pass both id and collectiveId for compatibility
+      if (!crwdId || crwdId === '') {
+        console.error('Cannot navigate to onboarding: crwdId is empty');
+        showToast('Error: Collective ID is missing', 3000);
+        return;
+      }
+      console.log('Navigating to OnBoard with redirectTo: GroupCRWD, id:', crwdId);
+      (navigation as any).navigate('OnBoard', { 
+        redirectTo: 'GroupCRWD',
+        redirectParams: { id: String(crwdId), collectiveId: String(crwdId) }
+      });
       return;
     }
 
@@ -361,7 +407,18 @@ export default function NewGroupCrwdPage() {
 
   const handleOneTimeDonation = () => {
     if (!currentUser || !token?.access_token) {
-      navigation.navigate('SplashScreen' as never);
+      // Navigate to onboarding with redirectTo (React Navigation pattern)
+      // Ensure crwdId is a string and pass both id and collectiveId for compatibility
+      if (!crwdId || crwdId === '') {
+        console.error('Cannot navigate to onboarding: crwdId is empty');
+        showToast('Error: Collective ID is missing', 3000);
+        return;
+      }
+      console.log('Navigating to OnBoard with redirectTo: GroupCRWD, id:', crwdId);
+      (navigation as any).navigate('OnBoard', { 
+        redirectTo: 'GroupCRWD',
+        redirectParams: { id: String(crwdId), collectiveId: String(crwdId) }
+      });
       return;
     }
 
@@ -706,7 +763,12 @@ export default function NewGroupCrwdPage() {
             donationCount={donationCount}
             onStatClick={(tab) => {
               if (!currentUser || !token?.access_token) {
-                navigation.navigate('SplashScreen' as never);
+                // Navigate to onboarding with redirectTo (React Navigation pattern)
+                // Ensure crwdId is a string and pass both id and collectiveId for compatibility
+                (navigation as any).navigate('OnBoard', { 
+                  redirectTo: 'GroupCRWD',
+                  redirectParams: { id: String(crwdId), collectiveId: String(crwdId) }
+                });
                 return;
               }
               setStatisticsTab(tab);

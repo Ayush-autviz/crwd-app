@@ -53,7 +53,8 @@ const getInitials = (name: string) => {
 export default function CompleteOnboard() {
   const navigation = useNavigation<any>();
   const route = useRoute();
-  const redirectTo = (route.params as any)?.redirectTo || '/';
+  const redirectTo = (route.params as any)?.redirectTo || null;
+  const redirectParams = (route.params as any)?.redirectParams || {};
   const queryClient = useQueryClient();
   const { showToast } = useToast();
   const [view, setView] = useState<ViewType>('initial');
@@ -90,10 +91,23 @@ export default function CompleteOnboard() {
     onSuccess: () => {
       showToast('Nonprofits added to donation box!');
       queryClient.invalidateQueries({ queryKey: ['donationBox'] });
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'DrawerNav' as never }],
-      });
+      // Check if we should redirect to CreateCRWD (matching Vite behavior)
+      if (redirectTo && redirectTo === 'CreateCRWD') {
+        // Navigate directly to CreateCRWD
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'DrawerNav' as never }],
+        });
+        // Then navigate to CreateCRWD within DrawerNav
+        setTimeout(() => {
+          (navigation as any).navigate('DrawerNav', { screen: 'CreateCRWD' });
+        }, 100);
+      } else {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'DrawerNav' as never }],
+        });
+      }
     },
     onError: (error: any) => {
       showToast(error?.response?.data?.message || 'Failed to add nonprofits to donation box');
@@ -153,6 +167,31 @@ export default function CompleteOnboard() {
   };
 
   const handleStartWithNonprofits = () => {
+    // Check if we should redirect to CreateCRWD (matching Vite behavior)
+    if (redirectTo === 'CreateCRWD') {
+      // Navigate directly to CreateCRWD, even if causes are selected
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'DrawerNav' as never }],
+      });
+      // Then navigate to CreateCRWD within DrawerNav
+      setTimeout(() => {
+        (navigation as any).navigate('DrawerNav', { screen: 'CreateCRWD' });
+      }, 100);
+      return;
+    }
+
+    // Check if we should redirect to GroupCRWD
+    if (redirectTo === 'GroupCRWD') {
+      // Navigate directly to GroupCRWD with params
+      console.log('CompleteOnboard - Navigating to GroupCRWD with params:', redirectParams);
+      navigation.reset({
+        index: 0,
+        routes: [{ name: redirectTo as never, params: redirectParams }],
+      });
+      return;
+    }
+
     if (selectedCauses.length > 0) {
       // Get full cause data for selected causes based on current view
       let selectedCausesData: any[] = [];
@@ -203,11 +242,30 @@ export default function CompleteOnboard() {
         ],
       });
     } else {
-      // If no causes selected, navigate to home
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'DrawerNav' as never }],
-      });
+      // If no causes selected, check redirectTo
+      if (redirectTo === 'CreateCRWD') {
+        // Navigate directly to CreateCRWD
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'DrawerNav' as never }],
+        });
+        // Then navigate to CreateCRWD within DrawerNav
+        setTimeout(() => {
+          (navigation as any).navigate('DrawerNav', { screen: 'CreateCRWD' });
+        }, 100);
+      } else if (redirectTo === 'GroupCRWD') {
+        // Navigate directly to GroupCRWD with params
+        navigation.reset({
+          index: 0,
+          routes: [{ name: redirectTo as never, params: redirectParams }],
+        });
+      } else {
+        // Navigate to home
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'DrawerNav' as never }],
+        });
+      }
     }
   };
 
@@ -216,9 +274,29 @@ export default function CompleteOnboard() {
   };
 
   const handleSkip = () => {
-    // Navigate to redirectTo if available, otherwise to home
-    if (redirectTo && redirectTo !== '/') {
-      navigation.navigate(redirectTo as never);
+    // Navigate to redirectTo if available (matching Vite behavior)
+    if (redirectTo === 'CreateCRWD') {
+      // Navigate directly to CreateCRWD
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'DrawerNav' as never }],
+      });
+      // Then navigate to CreateCRWD within DrawerNav
+      setTimeout(() => {
+        (navigation as any).navigate('DrawerNav', { screen: 'CreateCRWD' });
+      }, 100);
+    } else if (redirectTo === 'GroupCRWD') {
+      // Navigate directly to GroupCRWD with params
+      navigation.reset({
+        index: 0,
+        routes: [{ name: redirectTo as never, params: redirectParams }],
+      });
+    } else if (redirectTo) {
+      // Navigate to redirectTo using reset
+      navigation.reset({
+        index: 0,
+        routes: [{ name: redirectTo as never, params: redirectParams }],
+      });
     } else {
       navigation.reset({
         index: 0,

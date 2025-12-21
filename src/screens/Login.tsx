@@ -13,7 +13,7 @@ import {
 } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation, useRoute } from '@react-navigation/native'
 import { PrimaryGrey, PrimaryBlue, LightGrey } from '../Constants/Colors'
 import { SvgXml } from 'react-native-svg'
 import { useMutation, useQuery } from '@tanstack/react-query'
@@ -32,8 +32,12 @@ const googleXml = `<svg viewBox="0 0 24 24">
 
 export default function Login() {
   const navigation = useNavigation()
+  const route = useRoute()
   const { showToast } = useToast()
   const { setUser, setToken } = useAuthStore()
+  
+  // Get redirectTo from route params (React Navigation pattern)
+  const redirectTo = (route.params as any)?.redirectTo || null;
   
   const [showPassword, setShowPassword] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
@@ -53,10 +57,43 @@ export default function Login() {
       }
       showToast('Google authentication successful!');
       
+      // Handle redirect - use reset to prevent going back to login
+      const redirectParams = (route.params as any)?.redirectParams || {};
       if (response.user && !response.user.last_login_at) {
-        (navigation as any).navigate('NonProfitInterests', { fromAuth: true })
+        // New user - go through onboarding with redirectTo and redirectParams
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'NonProfitInterests' as never, params: { fromAuth: true, redirectTo: redirectTo || null, redirectParams } }],
+        });
+      } else if (redirectTo && redirectTo !== 'DrawerNav') {
+        // Existing user - navigate to redirectTo using reset
+        if (redirectTo === 'CreateCRWD') {
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'DrawerNav' as never }],
+          });
+          setTimeout(() => {
+            (navigation as any).navigate('DrawerNav', { screen: 'CreateCRWD' });
+          }, 100);
+        } else if (redirectTo === 'GroupCRWD') {
+          // Navigate to GroupCRWD with id param
+          console.log('Login - Navigating to GroupCRWD with params:', redirectParams);
+          navigation.reset({
+            index: 0,
+            routes: [{ name: redirectTo as never, params: redirectParams }],
+          });
+        } else {
+          navigation.reset({
+            index: 0,
+            routes: [{ name: redirectTo as never, params: redirectParams }],
+          });
+        }
       } else {
-        navigation.navigate('DrawerNav' as never);
+        // Default - go to main app
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'DrawerNav' as never }],
+        });
       }
     },
     onError: (error: any) => {
@@ -87,13 +124,42 @@ export default function Login() {
         })
       }
       
+      // Handle redirect - use reset to prevent going back to login
+      const redirectParams = (route.params as any)?.redirectParams || {};
       if (response.user && !response.user.last_login_at) {
-        (navigation as any).reset('NonProfitInterests', { fromAuth: true })
+        // New user - go through onboarding with redirectTo and redirectParams
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'NonProfitInterests' as never, params: { fromAuth: true, redirectTo: redirectTo || null, redirectParams } }],
+        });
+      } else if (redirectTo && redirectTo !== '/' && redirectTo !== 'DrawerNav') {
+        // Existing user - navigate to redirectTo using reset
+        if (redirectTo === 'CreateCRWD') {
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'DrawerNav' as never }],
+          });
+          setTimeout(() => {
+            (navigation as any).navigate('DrawerNav', { screen: 'CreateCRWD' });
+          }, 100);
+        } else if (redirectTo === 'GroupCRWD') {
+          // Navigate to GroupCRWD with params
+          navigation.reset({
+            index: 0,
+            routes: [{ name: redirectTo as never, params: redirectParams }],
+          });
+        } else {
+          navigation.reset({
+            index: 0,
+            routes: [{ name: redirectTo as never, params: redirectParams }],
+          });
+        }
       } else {
+        // Default - go to main app
         navigation.reset({
           index: 0,
           routes: [{ name: 'DrawerNav' as never }],
-        })
+        });
       }
     },
     onError: (error: any) => {

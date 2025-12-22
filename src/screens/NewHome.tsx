@@ -126,7 +126,12 @@ export default function NewHome() {
   // Fetch joined collectives
   const { data: joinedCollectivesData, isLoading: joinedCollectivesLoading } = useQuery({
     queryKey: ['joinedCollectives', user?.id],
-    queryFn: () => getJoinCollective(user?.id?.toString() || ''),
+    queryFn: () => {
+      if (!user?.id) {
+        throw new Error('User ID is required');
+      }
+      return getJoinCollective(user.id.toString());
+    },
     enabled: !!user?.id && !!token?.access_token,
   });
 
@@ -139,15 +144,27 @@ export default function NewHome() {
 
   // Extract unique user IDs from community notifications
   const uniqueUserIds = useMemo(() => {
-    const communityNotifications =
-      notificationsData?.results?.filter((n: any) => n.type === 'community') || [];
-    return Array.from(
-      new Set(
-        communityNotifications
-          .slice(0, 5)
-          .map((notification: any) => {
-            const usernameMatch = notification.body?.match(/@(\w+)/);
-            if (usernameMatch) {
+    try {
+      const communityNotifications =
+        Array.isArray(notificationsData?.results)
+          ? notificationsData.results.filter((n: any) => n?.type === 'community')
+          : [];
+      return Array.from(
+        new Set(
+          communityNotifications
+            .slice(0, 5)
+            .map((notification: any) => {
+              if (!notification) return null;
+              const usernameMatch = notification.body?.match(/@(\w+)/);
+              if (usernameMatch) {
+                return (
+                  notification.data?.donor_id ||
+                  notification.data?.follower_id ||
+                  notification.data?.creator_id ||
+                  notification.data?.new_member_id ||
+                  null
+                );
+              }
               return (
                 notification.data?.donor_id ||
                 notification.data?.follower_id ||
@@ -155,27 +172,35 @@ export default function NewHome() {
                 notification.data?.new_member_id ||
                 null
               );
-            }
-            return (
-              notification.data?.donor_id ||
-              notification.data?.follower_id ||
-              notification.data?.creator_id ||
-              notification.data?.new_member_id ||
-              null
-            );
-          })
-          .filter((id: any) => id !== null)
-      )
-    ) as (string | number)[];
+            })
+            .filter((id: any) => id !== null && id !== undefined)
+        )
+      ) as (string | number)[];
+    } catch (error) {
+      console.error('Error extracting unique user IDs:', error);
+      return [];
+    }
   }, [notificationsData]);
 
   // Fetch user profiles for all unique user IDs
   const userProfileQueries = useQueries({
-    queries: uniqueUserIds.map((userId: string | number) => ({
-      queryKey: ['userProfile', userId],
-      queryFn: () => getUserProfileById(userId.toString()),
-      enabled: !!token?.access_token && !!userId,
-    })),
+    queries: Array.isArray(uniqueUserIds) && uniqueUserIds.length > 0
+      ? uniqueUserIds
+          .filter((userId) => userId !== null && userId !== undefined)
+          .map((userId: string | number) => ({
+            queryKey: ['userProfile', userId],
+            queryFn: () => {
+              try {
+                return getUserProfileById(userId.toString());
+              } catch (error) {
+                console.error(`Error fetching user profile for ${userId}:`, error);
+                throw error;
+              }
+            },
+            enabled: !!token?.access_token && !!userId,
+            retry: 1,
+          }))
+      : [],
   });
 
   // Create a map of user ID to user profile (reactive to query results)
@@ -190,46 +215,77 @@ export default function NewHome() {
   }, [userProfileQueries, uniqueUserIds]);
 
   // Transform API data to match component's expected format
-  const transformedCollectives =
-    collectivesData?.results?.map((collective: any) => {
-      const founderName = collective.created_by
-        ? `${collective.created_by.first_name || ''} ${collective.created_by.last_name || ''}`.trim()
-        : 'Unknown';
+  const transformedCollectives = useMemo(() => {
+    try {
+      if (!Array.isArray(collectivesData?.results)) {
+        return [];
+      }
+      return collectivesData.results
+        .filter((collective: any) => collective && collective.id)
+        .map((collective: any) => {
+          const founderName = collective.created_by
+            ? `${collective.created_by.first_name || ''} ${collective.created_by.last_name || ''}`.trim()
+            : 'Unknown';
 
-      return {
-        id: collective.id,
-        name: collective.name || 'Unknown Collective',
-        iconColor: collective.color, // Use color from API if available
-        icon: collective.logo || undefined, // Use logo from API if available
-        founder: {
-          name: founderName,
-          profile_picture: collective.created_by?.profile_picture || '',
-        },
-        nonprofit_count:
-          collective.causes_count ||
-          collective.supported_causes_count ||
-          collective.cause_count ||
-          0,
-        description: collective.description || 'No description available',
-      };
-    }) || [];
+          return {
+            id: collective.id,
+            name: collective.name || 'Unknown Collective',
+            iconColor: collective.color, // Use color from API if available
+            icon: collective.logo || undefined, // Use logo from API if available
+            founder: {
+              name: founderName,
+              profile_picture: collective.created_by?.profile_picture || '',
+            },
+            nonprofit_count:
+              collective.causes_count ||
+              collective.supported_causes_count ||
+              collective.cause_count ||
+              0,
+            description: collective.description || 'No description available',
+          };
+        });
+    } catch (error) {
+      console.error('Error transforming collectives:', error);
+      return [];
+    }
+  }, [collectivesData]);
 
   // Transform nonprofits data to match component's expected format
-  const transformedNonprofits =
-    nonprofitsData?.results?.map((nonprofit: any) => ({
-      id: nonprofit.id,
-      name: nonprofit.name || 'Unknown Nonprofit',
-      image: nonprofit.image || '',
-      description: nonprofit.mission || nonprofit.description || '',
-      mission: nonprofit.mission || '',
-    })) || [];
+  const transformedNonprofits = useMemo(() => {
+    try {
+      if (!Array.isArray(nonprofitsData?.results)) {
+        return [];
+      }
+      return nonprofitsData.results
+        .filter((nonprofit: any) => nonprofit && nonprofit.id)
+        .map((nonprofit: any) => ({
+          id: nonprofit.id,
+          name: nonprofit.name || 'Unknown Nonprofit',
+          image: nonprofit.image || '',
+          description: nonprofit.mission || nonprofit.description || '',
+          mission: nonprofit.mission || '',
+        }));
+    } catch (error) {
+      console.error('Error transforming nonprofits:', error);
+      return [];
+    }
+  }, [nonprofitsData]);
 
   // Get list of joined collective IDs to filter them out from suggested collectives
   const joinedCollectiveIds = useMemo(() => {
-    if (joinedCollectivesData?.data) {
-      return new Set(joinedCollectivesData.data.map((item: any) => item.collective.id));
+    try {
+      if (Array.isArray(joinedCollectivesData?.data)) {
+        return new Set(
+          joinedCollectivesData.data
+            .filter((item: any) => item && item.collective && item.collective.id)
+            .map((item: any) => item.collective.id)
+        );
+      }
+      return new Set();
+    } catch (error) {
+      console.error('Error extracting joined collective IDs:', error);
+      return new Set();
     }
-    return new Set();
   }, [joinedCollectivesData]);
 
   // Filter out collectives that user has already joined
@@ -244,14 +300,20 @@ export default function NewHome() {
 
   // Get list of cause IDs from donation box to filter them out from featured nonprofits
   const donationBoxCauseIds = useMemo(() => {
-    if (donationBoxData && !isDonationBoxNotFound && donationBoxData.box_causes) {
-      return new Set(
-        donationBoxData.box_causes
-          .map((boxCause: any) => boxCause.cause?.id)
-          .filter((id: any) => id != null)
-      );
+    try {
+      if (donationBoxData && !isDonationBoxNotFound && Array.isArray(donationBoxData.box_causes)) {
+        return new Set(
+          donationBoxData.box_causes
+            .filter((boxCause: any) => boxCause && boxCause.cause)
+            .map((boxCause: any) => boxCause.cause?.id)
+            .filter((id: any) => id != null && id !== undefined)
+        );
+      }
+      return new Set();
+    } catch (error) {
+      console.error('Error extracting donation box cause IDs:', error);
+      return new Set();
     }
-    return new Set();
   }, [donationBoxData, isDonationBoxNotFound]);
 
   // Filter out nonprofits that are already in the donation box
@@ -271,16 +333,25 @@ export default function NewHome() {
       : null;
 
   // Get cause count for inactive donation box - count unique causes from box_causes
-  const inactiveBoxCauseCount =
-    donationBoxData && !isDonationBoxNotFound && !isDonationBoxActive
-      ? (() => {
-          const boxCauses = donationBoxData.box_causes || [];
-          const uniqueCauseIds = new Set(
-            boxCauses.map((bc: any) => bc.cause?.id).filter(Boolean)
-          );
-          return uniqueCauseIds.size || 0;
-        })()
-      : 0;
+  const inactiveBoxCauseCount = useMemo(() => {
+    try {
+      if (donationBoxData && !isDonationBoxNotFound && !isDonationBoxActive) {
+        const boxCauses = Array.isArray(donationBoxData.box_causes) 
+          ? donationBoxData.box_causes 
+          : [];
+        const uniqueCauseIds = new Set(
+          boxCauses
+            .filter((bc: any) => bc && bc.cause && bc.cause.id)
+            .map((bc: any) => bc.cause.id)
+        );
+        return uniqueCauseIds.size || 0;
+      }
+      return 0;
+    } catch (error) {
+      console.error('Error calculating inactive box cause count:', error);
+      return 0;
+    }
+  }, [donationBoxData, isDonationBoxNotFound, isDonationBoxActive]);
 
   // Transform joined collectives for carousel
   const transformedAttributingCollectives = useMemo(() => {
@@ -313,9 +384,13 @@ export default function NewHome() {
   // Filter out items with postId (post type items)
   // Use useMemo to make it reactive to userProfilesMap changes
   const transformedCommunityUpdates = useMemo(() => {
-    return (
-      notificationsData?.results
-        ?.filter((notification: any) => 
+    try {
+      if (!Array.isArray(notificationsData?.results)) {
+        return [];
+      }
+      return notificationsData.results
+        .filter((notification: any) => 
+          notification &&
           notification.type === 'community' && 
           !notification.data?.post_id // Filter out post type items
         )
@@ -430,8 +505,11 @@ export default function NewHome() {
             postId: notification.data?.post_id || null, // Extract post_id if available
             isJoinNotification: isJoinNotification, // Flag for join notifications
           };
-        }) || []
-    );
+        });
+    } catch (error) {
+      console.error('Error transforming community updates:', error);
+      return [];
+    }
   }, [notificationsData, userProfilesMap]);
 
   // All community updates (no splitting needed - show all below suggested collectives)

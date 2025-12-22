@@ -380,6 +380,7 @@ export default function PostResultCard({ post, onCommentPress }: PostResultCardP
                 <Heart
                   size={14}
                   color={isLiked ? '#EF4444' : '#4B5563'}
+                  fill={isLiked ? '#EF4444' : 'none'}
                 />
               )}
               <Text style={[styles.engagementText, isLiked && styles.likedText]}>

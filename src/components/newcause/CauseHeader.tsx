@@ -37,6 +37,7 @@ export default function CauseHeader({
     onSuccess: () => {
       setIsFavorite(true);
       queryClient.invalidateQueries({ queryKey: ['cause', causeId] });
+      queryClient.invalidateQueries({ queryKey: ['favoriteCauses'] });
       showToast('Added to favorites!', 2000);
     },
     onError: (error: any) => {
@@ -53,6 +54,7 @@ export default function CauseHeader({
     onSuccess: () => {
       setIsFavorite(false);
       queryClient.invalidateQueries({ queryKey: ['cause', causeId] });
+      queryClient.invalidateQueries({ queryKey: ['favoriteCauses'] });
       showToast('Removed from favorites!', 2000);
     },
     onError: (error: any) => {

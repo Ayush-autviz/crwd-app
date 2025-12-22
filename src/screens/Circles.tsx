@@ -416,7 +416,7 @@ const styles = StyleSheet.create({
   collectiveIcon: {
     width: 48,
     height: 48,
-    borderRadius: 24,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 6,
@@ -425,7 +425,7 @@ const styles = StyleSheet.create({
   collectiveIconImage: {
     width: '100%',
     height: '100%',
-    borderRadius: 24,
+    borderRadius: 12,
   },
   collectiveIconText: {
     fontSize: 20,

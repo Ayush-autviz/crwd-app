@@ -48,18 +48,20 @@ export default function NewSavedScreen() {
   const navigation = useNavigation();
   const [activeTab, setActiveTab] = useState<TabType>('Nonprofits');
 
-  // Fetch favorite causes
+  // Fetch favorite causes - always enabled so it refetches when invalidated
   const { data: favoriteCausesData, isLoading: isLoadingCauses } = useQuery({
     queryKey: ['favoriteCauses'],
     queryFn: getFavoriteCauses,
-    enabled: activeTab === 'Nonprofits',
+    refetchOnMount: true,
+    staleTime: 0,
   });
 
-  // Fetch favorite collectives
+  // Fetch favorite collectives - always enabled so it refetches when invalidated
   const { data: favoriteCollectivesData, isLoading: isLoadingCollectives } = useQuery({
     queryKey: ['favoriteCollectives'],
     queryFn: getFavoriteCollectives,
-    enabled: activeTab === 'Collectives',
+    refetchOnMount: true,
+    staleTime: 0,
   });
 
   const favoriteCauses = favoriteCausesData?.results || [];
@@ -352,7 +354,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   collectiveAvatar: {
-    borderRadius: 24,
+    borderRadius: 12,
   },
   avatarText: {
     fontSize: 14,

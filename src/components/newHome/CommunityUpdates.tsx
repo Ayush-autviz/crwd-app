@@ -85,7 +85,7 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
       <View
         style={[
           styles.contentBox,
-          isJoinNotification ? styles.joinBox : styles.donationBox,
+          // isJoinNotification ? styles.joinBox : styles.donationBox,
         ]}
       >
         {/* Icon */}
@@ -96,9 +96,9 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
           ]}
         >
           {isJoinNotification ? (
-            <UserPlus size={20} color="#FFFFFF" />
+            <UserPlus size={18} color="#FFFFFF" />
           ) : (
-            <HandHeart size={20} color="#FFFFFF" />
+            <HandHeart size={18} color="#FFFFFF" />
           )}
         </View>
         {/* Action Text */}
@@ -174,7 +174,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   avatar: {
-    borderRadius: 12,
+    borderRadius: 100,
     flexShrink: 0,
   },
   userDetails: {
@@ -208,6 +208,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+    backgroundColor: '#F3F4F6',
   },
   joinBox: {
     backgroundColor: '#DBEAFE',
@@ -216,8 +217,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#D1FAE5',
   },
   iconContainer: {
-    width: 40,
-    height: 40,
+    width: 36,
+    height: 36,
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',

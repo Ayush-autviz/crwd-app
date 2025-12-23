@@ -199,11 +199,18 @@ export default function OneTimeDonation({
   // Calculate fees and capacity using the provided formula
   const calculateFees = (grossAmount: number) => {
     const gross = grossAmount;
-    const stripeFee = (gross * 0.029) + 0.30;
-    const crwdFee = (gross - stripeFee) * 0.07;
-    const net = gross - stripeFee - crwdFee;
+    let crwdFee: number;
+    let net: number;
+
+    if (gross < 10.00) {
+      crwdFee = 1.00;
+      net = gross - crwdFee;
+    } else {
+      crwdFee = gross * 0.10;
+      net = gross - crwdFee;
+    }
+
     return {
-      stripeFee: Math.round(stripeFee * 100) / 100,
       crwdFee: Math.round(crwdFee * 100) / 100,
       net: Math.round(net * 100) / 100,
     };

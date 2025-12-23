@@ -177,7 +177,8 @@ export default function ManageDonationBoxScreen() {
   const { data: causesData, isLoading: causesLoading } = useQuery({
     queryKey: ['causes-manage', searchQuery, currentUser?.id],
     queryFn: () => getCausesBySearch(searchQuery || '', '', 1),
-    enabled: activeTab === 'nonprofits',
+    enabled: true, // Always enable to allow adding causes after reload
+    refetchOnMount: true,
   });
 
   // Fetch joined collectives
@@ -218,11 +219,18 @@ export default function ManageDonationBoxScreen() {
   const calculateMaxCapacity = (amount: number) => {
     const calculateFees = (grossAmount: number) => {
       const gross = grossAmount;
-      const stripeFee = (gross * 0.029) + 0.30;
-      const crwdFee = (gross - stripeFee) * 0.07;
-      const net = gross - stripeFee - crwdFee;
+      let crwdFee: number;
+      let net: number;
+
+      if (gross < 10.00) {
+        crwdFee = 1.00;
+        net = gross - crwdFee;
+      } else {
+        crwdFee = gross * 0.10;
+        net = gross - crwdFee;
+      }
+
       return {
-        stripeFee: Math.round(stripeFee * 100) / 100,
         crwdFee: Math.round(crwdFee * 100) / 100,
         net: Math.round(net * 100) / 100,
       };
@@ -544,7 +552,7 @@ export default function ManageDonationBoxScreen() {
     })), ...newlySelectedCauses.map((cause: any) => ({
       id: `cause-${cause.id}`,
       name: cause.name,
-      imageUrl: cause.image || cause.logo || '',
+      imageUrl: cause.image || cause.logo || cause.imageUrl || '',
       description: cause.mission || cause.description || '',
       isExisting: false,
       isNewlySelected: true,
@@ -625,11 +633,18 @@ export default function ManageDonationBoxScreen() {
   // Calculate fees and capacity using the provided formula
   const calculateFees = (grossAmount: number) => {
     const gross = grossAmount;
-    const stripeFee = (gross * 0.029) + 0.30;
-    const crwdFee = (gross - stripeFee) * 0.07;
-    const net = gross - stripeFee - crwdFee;
+    let crwdFee: number;
+    let net: number;
+
+    if (gross < 10.00) {
+      crwdFee = 1.00;
+      net = gross - crwdFee;
+    } else {
+      crwdFee = gross * 0.10;
+      net = gross - crwdFee;
+    }
+
     return {
-      stripeFee: Math.round(stripeFee * 100) / 100,
       crwdFee: Math.round(crwdFee * 100) / 100,
       net: Math.round(net * 100) / 100,
     };
@@ -647,8 +662,8 @@ export default function ManageDonationBoxScreen() {
 
   // Calculate equal distribution percentage and amount per item
   const totalItems = totalCauseIds.length + totalCollectiveIds.length;
-  const distributionPercentage = totalItems > 0 ? Math.floor(100 / totalItems) : 0;
-  const amountPerItem = totalItems > 0 ? (editableAmount * 0.9) / totalItems : 0; // 90% after fees, divided equally
+  const distributionPercentage = totalItems > 0 ? 100 / totalItems : 0;
+  const amountPerItem = totalItems > 0 ? fees.net / totalItems : 0; // Net amount after fees, divided equally
 
   // Fetch donation history for lifetime amount
   const { data: donationHistoryData } = useQuery({
@@ -870,7 +885,7 @@ export default function ManageDonationBoxScreen() {
                             </View>
                             <View style={styles.causeActions}>
                               <View style={styles.amountInfo}>
-                                <Text style={styles.amountPercentage}>{distributionPercentage}%</Text>
+                                <Text style={styles.amountPercentage}>{distributionPercentage.toFixed(1)}%</Text>
                                 <Text style={styles.amountPerMonth}>${amountPerItem.toFixed(2)}/mo</Text>
                               </View>
                               <TouchableOpacity
@@ -1097,7 +1112,7 @@ export default function ManageDonationBoxScreen() {
                               </TouchableOpacity>
                               <View style={styles.causeActions}>
                                 <View style={styles.amountInfo}>
-                                  <Text style={styles.amountPercentage}>{distributionPercentage}%</Text>
+                                  <Text style={styles.amountPercentage}>{distributionPercentage.toFixed(1)}%</Text>
                                   <Text style={styles.amountPerMonth}>${amountPerItem.toFixed(2)}/mo</Text>
                                 </View>
                                 <View style={styles.collectiveActions}>

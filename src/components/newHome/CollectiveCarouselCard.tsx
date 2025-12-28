@@ -310,8 +310,8 @@ const styles = StyleSheet.create({
     textAlign: 'left',
   },
   bold: {
-    fontWeight: '700',
-    color: '#111827',
+    fontWeight: '600',
+    color: '#4B5563',
   },
   actions: {
     flexDirection: 'row',

@@ -1,8 +1,13 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator } from 'react-native';
 import { HandHeart, UserPlus } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
+import { followUserById, unfollowUserById, getUserProfileById } from '../../services/api/social';
+import { joinCollective } from '../../services/api/crwd';
+import { useAuthStore } from '../../store/store';
+import { useToast } from '../../contexts/ToastContext';
 
 interface CommunityUpdate {
   id: string | number;
@@ -16,6 +21,7 @@ interface CommunityUpdate {
   };
   collective?: {
     name: string;
+    id?: string | number;
   };
   content: string;
   timestamp?: string;
@@ -33,8 +39,87 @@ interface CommunityUpdatesProps {
 // Component to display notification summary
 function NotificationSummary({ update }: { update: CommunityUpdate }) {
   const navigation = useNavigation();
+  const queryClient = useQueryClient();
+  const { user: currentUser, token } = useAuthStore();
+  const { showToast } = useToast();
   const actionText = update.content || '';
   const isJoinNotification = update.isJoinNotification || false;
+  const isDonationNotification = !isJoinNotification && actionText.toLowerCase().includes('donated');
+
+  // Fetch user profile to check follow status
+  const { data: userProfile, isLoading: isLoadingProfile } = useQuery({
+    queryKey: ['userProfile', update.user.id],
+    queryFn: () => getUserProfileById(update.user.id?.toString() || ''),
+    enabled: !!update.user.id && !!token?.access_token && isDonationNotification && currentUser?.id !== update.user.id,
+  });
+
+  // Check if user is being followed
+  const isFollowing = userProfile?.is_following || false;
+
+  // Follow user mutation
+  const followMutation = useMutation({
+    mutationFn: (userId: string) => followUserById(userId),
+    onSuccess: () => {
+      showToast('Following user');
+      queryClient.invalidateQueries({ queryKey: ['userProfile', update.user.id] });
+    },
+    onError: (error: any) => {
+      console.error('Error following user:', error);
+      showToast('Failed to follow user. Please try again.');
+    },
+  });
+
+  // Unfollow user mutation
+  const unfollowMutation = useMutation({
+    mutationFn: (userId: string) => unfollowUserById(userId),
+    onSuccess: () => {
+      showToast('Unfollowed user');
+      queryClient.invalidateQueries({ queryKey: ['userProfile', update.user.id] });
+    },
+    onError: (error: any) => {
+      console.error('Error unfollowing user:', error);
+      showToast('Failed to unfollow user. Please try again.');
+    },
+  });
+
+  // Join collective mutation
+  const joinCollectiveMutation = useMutation({
+    mutationFn: (collectiveId: string) => joinCollective(collectiveId),
+    onSuccess: () => {
+      showToast('Joined collective');
+      queryClient.invalidateQueries({ queryKey: ['joinedCollectives'] });
+      // Navigate to the collective page
+      if (update.collective?.id) {
+        (navigation as any).navigate('GroupCRWD', { collectiveId: update.collective.id });
+      }
+    },
+    onError: (error: any) => {
+      console.error('Error joining collective:', error);
+      showToast('Failed to join collective. Please try again.');
+    },
+  });
+
+  const handleJoinClick = () => {
+    if (update.collective?.id) {
+      joinCollectiveMutation.mutate(update.collective.id.toString());
+    } else if (update.collective?.name) {
+      // If no ID, navigate to search
+      (navigation as any).navigate('Search', { 
+        searchQuery: update.collective.name,
+        searchType: 'collective'
+      });
+    }
+  };
+
+  const handleFollowClick = () => {
+    if (update.user.id && currentUser?.id !== update.user.id) {
+      if (isFollowing) {
+        unfollowMutation.mutate(update.user.id.toString());
+      } else {
+        followMutation.mutate(update.user.id.toString());
+      }
+    }
+  };
 
   const displayName =
     update.user.firstName && update.user.lastName
@@ -43,7 +128,7 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
 
   return (
     <View style={styles.notificationCard}>
-      {/* Top Section: Profile */}
+      {/* Top Section: Profile and Action Button */}
       <View style={styles.header}>
         <View style={styles.userInfo}>
           {/* Avatar */}
@@ -79,6 +164,44 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
             )}
           </View>
         </View>
+
+        {/* Action Button - Join for join notifications, Follow for donation notifications */}
+        {isJoinNotification && update.collective && (
+          <TouchableOpacity
+            onPress={handleJoinClick}
+            disabled={joinCollectiveMutation.isPending}
+            style={styles.joinButton}
+            activeOpacity={0.7}
+          >
+            {joinCollectiveMutation.isPending ? (
+              <ActivityIndicator size="small" color="#1600ff" />
+            ) : (
+              <Text style={styles.joinButtonText}>Join</Text>
+            )}
+          </TouchableOpacity>
+        )}
+        {isDonationNotification && update.user.id && currentUser?.id !== update.user.id && (
+          <TouchableOpacity
+            onPress={handleFollowClick}
+            disabled={followMutation.isPending || unfollowMutation.isPending || isLoadingProfile}
+            style={[
+              styles.followButton,
+              isFollowing && styles.followingButton,
+            ]}
+            activeOpacity={0.7}
+          >
+            {followMutation.isPending || unfollowMutation.isPending || isLoadingProfile ? (
+              <ActivityIndicator size="small" color={isFollowing ? "#FFFFFF" : "#1600ff"} />
+            ) : (
+              <Text style={[
+                styles.followButtonText,
+                isFollowing && styles.followingButtonText,
+              ]}>
+                {isFollowing ? 'Following' : 'Follow'}
+              </Text>
+            )}
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Content Box */}
@@ -167,11 +290,15 @@ const styles = StyleSheet.create({
   },
   header: {
     marginBottom: 10,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
   },
   userInfo: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 12,
+    flex: 1,
   },
   avatar: {
     borderRadius: 100,
@@ -235,6 +362,47 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#111827',
     flex: 1,
+  },
+  joinButton: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#1600ff',
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderRadius: 20,
+    marginLeft: 8,
+    minWidth: 60,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  joinButtonText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#1600ff',
+  },
+  followButton: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#1600ff',
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderRadius: 20,
+    marginLeft: 8,
+    minWidth: 70,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  followingButton: {
+    backgroundColor: '#1600ff',
+    borderColor: '#1600ff',
+  },
+  followButtonText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#1600ff',
+  },
+  followingButtonText: {
+    color: '#FFFFFF',
   },
 });
 

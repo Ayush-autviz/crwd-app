@@ -114,27 +114,27 @@ export default function CollectiveProfile({
               </View>
             )}
           </View>
+          {founder && (
+            <View style={styles.founderRow}>
+              <Avatar size={20}>
+                <AvatarImage src={founder?.profile_picture || undefined} />
+                <AvatarFallback
+                  style={{ backgroundColor: getConsistentColor(founder.id || founderName, avatarColors) }}
+                  textStyle={{ color: '#FFFFFF', fontSize: 10, fontWeight: '600' }}
+                >
+                  {(founderName || 'F').charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <Text style={styles.founderText}>
+                Founded by{' '}
+                <Text style={styles.founderLink} onPress={handleFounderClick}>
+                  {founderName}
+                </Text>
+              </Text>
+            </View>
+          )}
         </View>
       </View>
-      {founder && (
-        <View style={styles.founderRow}>
-          <Avatar size={24}>
-            <AvatarImage src={founder?.profile_picture || undefined} />
-            <AvatarFallback
-              style={{ backgroundColor: getConsistentColor(founder.id || founderName, avatarColors) }}
-              textStyle={{ color: '#FFFFFF', fontSize: 12, fontWeight: '600' }}
-            >
-              {(founderName || 'F').charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <Text style={styles.founderText}>
-            Founded by{' '}
-            <Text style={styles.founderLink} onPress={handleFounderClick}>
-              {founderName}
-            </Text>
-          </Text>
-        </View>
-      )}
       {description && (
         <Text style={styles.description}>{description}</Text>
       )}
@@ -165,6 +165,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     flexWrap: 'wrap',
+    marginBottom: 6,
   },
   title: {
     fontSize: 24,
@@ -175,7 +176,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#D1FAE5',
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 12,
+    borderRadius: 9999,
   },
   joinedText: {
     fontSize: 10,
@@ -186,7 +187,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    marginBottom: 16,
+    marginTop: 4,
   },
   founderText: {
     fontSize: 12,

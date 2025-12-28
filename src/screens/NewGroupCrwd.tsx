@@ -31,9 +31,7 @@ import { useToast } from '../contexts/ToastContext';
 import CollectiveHeader from '../components/newgroupcrwd/CollectiveHeader';
 import CollectiveProfile from '../components/newgroupcrwd/CollectiveProfile';
 import CollectiveStats from '../components/newgroupcrwd/CollectiveStats';
-import DonationInfoBox from '../components/newgroupcrwd/DonationInfoBox';
 import SupportedNonprofits from '../components/newgroupcrwd/SupportedNonprofits';
-import PreviouslySupported from '../components/newgroupcrwd/PreviouslySupported';
 import CommunityActivity from '../components/newgroupcrwd/CommunityActivity';
 import { Share } from 'react-native';
 import CommentsBottomSheet from '../components/post/CommentsBottomSheet';
@@ -196,6 +194,9 @@ export default function NewGroupCrwdPage() {
       
       // Refetch donation box to get latest data including capacity
       await refetchDonationBox();
+      
+      // Show success toast
+      showToast("You've joined the collective!", 3000);
       
       // Always show the drawer sheet after joining
       setShowJoinModal(true);
@@ -501,8 +502,12 @@ export default function NewGroupCrwdPage() {
           </View>
         );
       }
+      // Get inactive causes for previously supported section
+      const inactiveCauses = crwdData?.inactive_causes || [];
+      
       return (
         <View>
+          {/* Currently Active Section */}
           <Text style={styles.statsSectionTitle}>Currently Active</Text>
           {nonprofits.length > 0 ? (
             nonprofits.map((nonprofit: any) => {
@@ -552,6 +557,56 @@ export default function NewGroupCrwdPage() {
             <View style={styles.statsEmptyContainer}>
               <Text style={styles.statsEmptyText}>No nonprofits found</Text>
             </View>
+          )}
+
+          {/* Previously Supported Section */}
+          {inactiveCauses.length > 0 && (
+            <>
+              <Text style={[styles.statsSectionTitle, { marginTop: 32 }]}>Previously Supported</Text>
+              {inactiveCauses.map((nonprofit: any) => {
+                const cause = nonprofit.cause || nonprofit;
+                const name = cause.name || nonprofit.name || 'Unknown Nonprofit';
+                const image = cause.image || nonprofit.image || '';
+                const causeId = cause.id || nonprofit.id;
+                const avatarBgColor = getConsistentColor(causeId, avatarColors);
+
+                return (
+                  <TouchableOpacity
+                    key={nonprofit.id || cause.id}
+                    style={styles.statsItem}
+                    onPress={() => {
+                      statisticsBottomSheetRef.current?.close();
+                      (navigation as any).navigate('CauseScreen', { id: causeId });
+                    }}
+                  >
+                    <Avatar size={48} style={{ borderRadius: 8 }}>
+                      <AvatarImage src={image} />
+                      <AvatarFallback
+                        style={{ backgroundColor: avatarBgColor }}
+                        textStyle={{ color: '#FFFFFF', fontSize: 18, fontWeight: '700' }}
+                      >
+                        {name.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <View style={styles.statsItemContent}>
+                      <Text style={styles.statsItemName}>{name}</Text>
+                      <Text style={styles.statsItemDescription} numberOfLines={2}>
+                        {cause.mission || 'No description available'}
+                      </Text>
+                    </View>
+                    <TouchableOpacity
+                      style={styles.viewButton}
+                      onPress={() => {
+                        statisticsBottomSheetRef.current?.close();
+                        (navigation as any).navigate('CauseScreen', { id: causeId });
+                      }}
+                    >
+                      <Text style={styles.viewButtonText}>View</Text>
+                    </TouchableOpacity>
+                  </TouchableOpacity>
+                );
+              })}
+            </>
           )}
         </View>
       );
@@ -776,7 +831,7 @@ export default function NewGroupCrwdPage() {
             }}
           />
 
-          <DonationInfoBox nonprofitCount={nonprofitCount} />
+          {/* <DonationInfoBox nonprofitCount={nonprofitCount} /> */}
 
           {/* Action Buttons */}
           <View style={styles.actionButtons}>
@@ -788,7 +843,7 @@ export default function NewGroupCrwdPage() {
                   disabled
                   activeOpacity={1}
                 >
-                  <Check size={14} color="#10B981" />
+                  <Check size={14} color="#FFFFFF" />
                   <Text style={styles.joinedButtonText}>Joined</Text>
                 </TouchableOpacity>
                 {/* Share Button */}
@@ -915,9 +970,6 @@ export default function NewGroupCrwdPage() {
               setShowCommentsSheet(true);
             }}
           />
-
-<PreviouslySupported nonprofits={inactiveCauses} isLoading={isLoadingCauses} />
-
 
           {/* Legal Disclaimer */}
           <View style={styles.disclaimer}>
@@ -1116,9 +1168,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#1600ff',
   },
   joinedButton: {
-    backgroundColor: '#FFFFFF',
-    borderWidth: 2,
-    borderColor: '#10B981',
+    backgroundColor: '#1600ff',
+    borderColor: '#1600ff',
   },
   shareButton: {
     backgroundColor: '#1600ff',
@@ -1137,7 +1188,8 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   disabledButton: {
-    opacity: 1,
+    opacity: 0.75,
+    backgroundColor: '#1600ff',
   },
   joinButtonText: {
     fontSize: 14,
@@ -1147,7 +1199,7 @@ const styles = StyleSheet.create({
   joinedButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#10B981',
+    color: '#FFFFFF',
   },
   shareButtonText: {
     fontSize: 14,

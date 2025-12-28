@@ -78,9 +78,9 @@ export default function CollectiveCarouselCard({
     if (!currentCollective?.id) return;
     
     if (isFounder) {
-      navigation.navigate('ManageCRWD' as never, { collectiveId: currentCollective.id } as never);
+      (navigation as any).navigate('ManageCRWD', { collectiveId: currentCollective.id });
     } else {
-      navigation.navigate('GroupCRWD' as never, { id: currentCollective.id } as never);
+      (navigation as any).navigate('GroupCRWD', { id: currentCollective.id });
     }
   };
 
@@ -112,7 +112,15 @@ export default function CollectiveCarouselCard({
 
         <View style={styles.content}>
           {/* Icon and Title/Badge Row */}
-          <View style={styles.headerRow}>
+          <TouchableOpacity
+            style={styles.headerRow}
+            onPress={() => {
+              if (currentCollective?.id) {
+                (navigation as any).navigate('GroupCRWD', { id: currentCollective.id });
+              }
+            }}
+            activeOpacity={0.7}
+          >
             {/* Circular Icon */}
             <View style={[styles.iconContainer, { backgroundColor: iconColor }]}>
               {showImage ? (
@@ -150,7 +158,7 @@ export default function CollectiveCarouselCard({
                 </View>
               )}
             </View>
-          </View>
+          </TouchableOpacity>
 
           {/* Content */}
           <View style={styles.textContent}>
@@ -169,12 +177,12 @@ export default function CollectiveCarouselCard({
               >
                 {isFounder ? (
                   <>
-                    <Settings size={16} color="#111827" />
+                    {/* <Settings size={16} color="#111827" /> */}
                     <Text style={styles.outlineButtonText}>Manage</Text>
                   </>
                 ) : (
                   <>
-                    <Eye size={16} color="#111827" />
+                    {/* <Eye size={16} color="#111827" /> */}
                     <Text style={styles.outlineButtonText}>View</Text>
                   </>
                 )}
@@ -186,7 +194,7 @@ export default function CollectiveCarouselCard({
                   // TODO: Implement share functionality
                 }}
               >
-                <Share2 size={16} color="#FFFFFF" />
+                {/* <Share2 size={16} color="#FFFFFF" /> */}
                 <Text style={styles.primaryButtonText}>Share</Text>
               </TouchableOpacity>
             </View>

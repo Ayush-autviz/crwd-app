@@ -5,7 +5,6 @@ import { useNavigation } from '@react-navigation/native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
 import { followUserById, unfollowUserById, getUserProfileById } from '../../services/api/social';
-import { joinCollective } from '../../services/api/crwd';
 import { useAuthStore } from '../../store/store';
 import { useToast } from '../../contexts/ToastContext';
 
@@ -82,26 +81,11 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
     },
   });
 
-  // Join collective mutation
-  const joinCollectiveMutation = useMutation({
-    mutationFn: (collectiveId: string) => joinCollective(collectiveId),
-    onSuccess: () => {
-      showToast('Joined collective');
-      queryClient.invalidateQueries({ queryKey: ['joinedCollectives'] });
-      // Navigate to the collective page
-      if (update.collective?.id) {
-        (navigation as any).navigate('GroupCRWD', { collectiveId: update.collective.id });
-      }
-    },
-    onError: (error: any) => {
-      console.error('Error joining collective:', error);
-      showToast('Failed to join collective. Please try again.');
-    },
-  });
 
   const handleJoinClick = () => {
     if (update.collective?.id) {
-      joinCollectiveMutation.mutate(update.collective.id.toString());
+      // Navigate to collective screen
+      (navigation as any).navigate('GroupCRWD', { id: update.collective.id });
     } else if (update.collective?.name) {
       // If no ID, navigate to search
       (navigation as any).navigate('Search', { 
@@ -150,7 +134,7 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
           <View style={styles.userDetails}>
             <TouchableOpacity
               onPress={() =>
-                navigation.navigate('UserProfile' as never, { userId: update.user.id } as never)
+                (navigation as any).navigate('UserProfile', { userId: update.user.id })
               }
               activeOpacity={0.7}
             >
@@ -169,15 +153,10 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
         {isJoinNotification && update.collective && (
           <TouchableOpacity
             onPress={handleJoinClick}
-            disabled={joinCollectiveMutation.isPending}
             style={styles.joinButton}
             activeOpacity={0.7}
           >
-            {joinCollectiveMutation.isPending ? (
-              <ActivityIndicator size="small" color="#1600ff" />
-            ) : (
-              <Text style={styles.joinButtonText}>Join</Text>
-            )}
+            <Text style={styles.joinButtonText}>Join</Text>
           </TouchableOpacity>
         )}
         {isDonationNotification && update.user.id && currentUser?.id !== update.user.id && (

@@ -29,6 +29,7 @@ export default function LearnAndGetInspired({ articles }: LearnAndGetInspiredPro
       description: "Learn how CRWD's donation box makes it easy to support all your favorite causes",
       readTime: '5 min read',
       image: 'https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?w=1200&h=600&fit=crop',
+      slug: 'how-to-donate-to-multiple-charities-at-once',
     },
     {
       id: 2,
@@ -36,6 +37,7 @@ export default function LearnAndGetInspired({ articles }: LearnAndGetInspiredPro
       description: 'Every contribution counts toward lasting change',
       readTime: '4 min read',
       image: 'https://images.unsplash.com/photo-1733809701005-0b1c0ad53c90?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkb25hdGlvbiUyMGltcGFjdCUyMGNoYXJpdHl8ZW58MXx8fHwxNzYxODAzMDA4fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
+      slug: 'why-small-donations-matter',
     },
     {
       id: 3,
@@ -43,6 +45,7 @@ export default function LearnAndGetInspired({ articles }: LearnAndGetInspiredPro
       description: 'Learn how collectives amplify your giving power',
       readTime: '5 min read',
       image: 'https://images.unsplash.com/photo-1758599668125-e154250f24bd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx2b2x1bnRlZXJzJTIwaGVscGluZyUyMGNvbW11bml0eXxlbnwxfHx8fDE3NjE3NTE1NTF8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
+      slug: 'what-is-a-crwd-collective',
     },
   ];
 

@@ -86,7 +86,7 @@ export default function NewHome() {
       await messaging().registerDeviceForRemoteMessages();
       const fcmToken = await messaging().getToken();
       console.log('FCM TOKEN in NewHome:', fcmToken);
-      
+
       // Only send to backend if token exists and is not empty
       if (fcmToken && fcmToken.trim().length > 0) {
         sendFcmTokenToBackend.mutate({ token: fcmToken, device_type: Platform.OS === 'ios' ? 'ios' : 'android' });
@@ -186,20 +186,20 @@ export default function NewHome() {
   const userProfileQueries = useQueries({
     queries: Array.isArray(uniqueUserIds) && uniqueUserIds.length > 0
       ? uniqueUserIds
-          .filter((userId) => userId !== null && userId !== undefined)
-          .map((userId: string | number) => ({
-            queryKey: ['userProfile', userId],
-            queryFn: () => {
-              try {
-                return getUserProfileById(userId.toString());
-              } catch (error) {
-                console.error(`Error fetching user profile for ${userId}:`, error);
-                throw error;
-              }
-            },
-            enabled: !!token?.access_token && !!userId,
-            retry: 1,
-          }))
+        .filter((userId) => userId !== null && userId !== undefined)
+        .map((userId: string | number) => ({
+          queryKey: ['userProfile', userId],
+          queryFn: () => {
+            try {
+              return getUserProfileById(userId.toString());
+            } catch (error) {
+              console.error(`Error fetching user profile for ${userId}:`, error);
+              throw error;
+            }
+          },
+          enabled: !!token?.access_token && !!userId,
+          retry: 1,
+        }))
       : [],
   });
 
@@ -325,19 +325,19 @@ export default function NewHome() {
   const donationBoxInfo =
     donationBoxData && !isDonationBoxNotFound && isDonationBoxActive
       ? {
-          monthlyAmount: donationBoxData.monthly_amount || donationBoxData.amount || 10,
-          causeCount:
-            (donationBoxData.manual_causes?.length || 0) +
-            (donationBoxData.attributing_collectives?.length || 0),
-        }
+        monthlyAmount: donationBoxData.monthly_amount || donationBoxData.amount || 10,
+        causeCount:
+          (donationBoxData.manual_causes?.length || 0) +
+          (donationBoxData.attributing_collectives?.length || 0),
+      }
       : null;
 
   // Get cause count for inactive donation box - count unique causes from box_causes
   const inactiveBoxCauseCount = useMemo(() => {
     try {
       if (donationBoxData && !isDonationBoxNotFound && !isDonationBoxActive) {
-        const boxCauses = Array.isArray(donationBoxData.box_causes) 
-          ? donationBoxData.box_causes 
+        const boxCauses = Array.isArray(donationBoxData.box_causes)
+          ? donationBoxData.box_causes
           : [];
         const uniqueCauseIds = new Set(
           boxCauses
@@ -389,9 +389,9 @@ export default function NewHome() {
         return [];
       }
       return notificationsData.results
-        .filter((notification: any) => 
+        .filter((notification: any) =>
           notification &&
-          notification.type === 'community' && 
+          notification.type === 'community' &&
           !notification.data?.post_id // Filter out post type items
         )
         .map((notification: any) => {
@@ -483,6 +483,12 @@ export default function NewHome() {
             notification.data?.new_member_id !== undefined ||
             notification.title?.toLowerCase().includes('new member');
 
+          // Extract collective ID from notification data if available
+          const collectiveId = notification.data?.collective_id || 
+                             notification.data?.collectiveId || 
+                             notification.data?.crwd_id ||
+                             null;
+
           return {
             id: notification.id,
             user: {
@@ -495,8 +501,9 @@ export default function NewHome() {
             },
             collective: collectiveName
               ? {
-                  name: collectiveName,
-                }
+                name: collectiveName,
+                id: collectiveId,
+              }
               : undefined,
             content: actionText,
             timestamp: notification.created_at || notification.timestamp,
@@ -522,14 +529,14 @@ export default function NewHome() {
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <HomeHeader />
-     
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Main Content */}
-          <View style={styles.mainContent}>
+
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Main Content */}
+        <View style={styles.mainContent}>
           {/* Personalized Greeting */}
 
           {/* My Donation Box Card or Prompt */}
@@ -559,38 +566,72 @@ export default function NewHome() {
                     !isDonationBoxActive &&
                     inactiveBoxCauseCount > 0 ? (
                     // Donation box exists but is not active - show prompt with cause count
-                    <DonationBoxPrompt 
+                    <DonationBoxPrompt
                       causeCount={inactiveBoxCauseCount}
                       hasJoinedCollectives={(transformedAttributingCollectives?.length || 0) > 0}
                     />
                   ) : (
-                    <DonationBoxPrompt 
+                    <DonationBoxPrompt
                       hasJoinedCollectives={(transformedAttributingCollectives?.length || 0) > 0}
                     />
                   )}
-                  
+
                   {/* Collective Carousel Card - Show joined collectives or Create Collective Card */}
-                  {joinedCollectivesLoading ? (
-                    <View style={styles.loadingCard}>
-                      <ActivityIndicator size="large" color="#1600ff" />
+                  <View style={{ width: '100%' }} collapsable={false}>
+                    {/* Loading */}
+                    <View
+                      style={[
+                        { width: '100%' },
+                        !joinedCollectivesLoading && { display: 'none' },
+                      ]}
+                    >
+                      <View style={styles.loadingCard}>
+                        <ActivityIndicator size="large" color="#1600ff" />
+                      </View>
                     </View>
-                  ) : (transformedAttributingCollectives && transformedAttributingCollectives.length > 0) ? (
-                    <CollectiveCarouselCard collectives={transformedAttributingCollectives} />
-                  ) : (
-                    <CreateCollectiveCard />
-                  )}
+
+                    {/* Carousel */}
+                    <View
+                      style={[
+                        { width: '100%' },
+                        (joinedCollectivesLoading ||
+                          !transformedAttributingCollectives ||
+                          transformedAttributingCollectives.length === 0) &&
+                        { display: 'none' },
+                      ]}
+                    >
+                      <CollectiveCarouselCard
+                        collectives={transformedAttributingCollectives ?? []}
+                      />
+                    </View>
+
+                    {/* Create */}
+                    <View
+                      style={[
+                        { width: '100%' },
+                        (joinedCollectivesLoading ||
+                          (transformedAttributingCollectives &&
+                            transformedAttributingCollectives.length > 0)) &&
+                        { display: 'none' },
+                      ]}
+                    >
+                      <CreateCollectiveCard />
+                    </View>
+                  </View>
+
+
                 </>
               ) : null}
             </View>
           </LinearGradient>
 
-         
+
 
           {/* 2 Posts - Above Featured Nonprofits */}
           {token?.access_token && (
-            <CommunityPosts 
-              limit={2} 
-              startIndex={0} 
+            <CommunityPosts
+              limit={2}
+              startIndex={0}
               showHeading={true}
               onCommentPress={(post) => {
                 // Find the original post data to get firstName and lastName
@@ -621,9 +662,9 @@ export default function NewHome() {
 
           {/* 1 Post - After Featured Nonprofits */}
           {token?.access_token && (
-            <CommunityPosts 
-              limit={1} 
-              startIndex={2} 
+            <CommunityPosts
+              limit={1}
+              startIndex={2}
               showHeading={false}
               onCommentPress={(post) => {
                 // Find the original post data to get firstName and lastName
@@ -665,9 +706,9 @@ export default function NewHome() {
           <ExploreCards />
 
           {/* Footer */}
-          
-            <View />
-          
+
+          <View />
+
         </View>
       </ScrollView>
 

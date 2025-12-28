@@ -19,18 +19,36 @@ interface Nonprofit {
 interface SupportedNonprofitsProps {
   nonprofits: Nonprofit[];
   isLoading?: boolean;
+  onSeeAllClick?: () => void;
 }
+
+// Generate color for icon (same as Vite version)
+const getIconColor = (id: number | string): string => {
+  const colors = [
+    "#1600ff", // Blue
+    "#10B981", // Green
+    "#EC4899", // Pink
+    "#F59E0B", // Amber
+    "#8B5CF6", // Purple
+    "#EF4444", // Red
+  ];
+  const hash = typeof id === 'number' ? id : id.toString().split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
+  return colors[hash % colors.length];
+};
 
 export default function SupportedNonprofits({
   nonprofits,
   isLoading = false,
+  onSeeAllClick,
 }: SupportedNonprofitsProps) {
   const navigation = useNavigation();
 
   if (isLoading) {
     return (
       <View style={styles.container}>
-        <Text style={styles.title}>Supported Nonprofits</Text>
+        <View style={styles.header}>
+          <Text style={styles.title}>Supported Nonprofits</Text>
+        </View>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#9CA3AF" />
         </View>
@@ -42,75 +60,59 @@ export default function SupportedNonprofits({
     return null;
   }
 
-  // Generate vibrant avatar colors based on nonprofit ID for consistent colors
-  const avatarColors = [
-    '#EF4444', // Red
-    '#10B981', // Green
-    '#3B82F6', // Blue
-    '#8B5CF6', // Purple
-    '#84CC16', // Lime Green
-    '#EC4899', // Pink
-    '#F59E0B', // Amber
-    '#06B6D4', // Cyan
-    '#F97316', // Orange
-    '#A855F7', // Violet
-    '#14B8A6', // Teal
-    '#F43F5E', // Rose
-    '#6366F1', // Indigo
-    '#22C55E', // Emerald
-    '#EAB308', // Yellow
-  ];
-
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Supported Nonprofits</Text>
+      <View style={styles.header}>
+        <Text style={styles.title}>Supported Nonprofits</Text>
+        {onSeeAllClick && (
+          <TouchableOpacity onPress={onSeeAllClick} activeOpacity={0.7}>
+            <Text style={styles.seeAllText}>See all</Text>
+          </TouchableOpacity>
+        )}
+      </View>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {nonprofits.map((nonprofit, index) => {
+        {nonprofits.map((nonprofit) => {
           const cause = nonprofit.cause || nonprofit;
           const name = cause.name || nonprofit.name || 'Unknown Nonprofit';
           const image = cause.image || nonprofit.image || '';
-
-          const nonprofitId = cause.id || nonprofit.id || name;
-          const avatarColorIndex = nonprofitId
-            ? Number(nonprofitId) % avatarColors.length
-            : (name?.charCodeAt(0) || 0) % avatarColors.length;
-          const avatarBgColor = avatarColors[avatarColorIndex];
-
+          const description = cause.mission || nonprofit.mission || '';
           const causeId = cause.id || nonprofit.id;
+          const iconColor = getIconColor(causeId);
 
           return (
             <TouchableOpacity
               key={nonprofit.id}
-              onPress={() => causeId && navigation.navigate('CauseScreen' as never, { id: causeId } as never)}
+              onPress={() => causeId && (navigation as any).navigate('CauseScreen', { id: causeId })}
               style={styles.card}
               activeOpacity={0.7}
             >
-              {image ? (
-                <Avatar size={48} style={styles.avatar}>
-                  <AvatarImage src={image} />
-                  <AvatarFallback
-                    style={{ backgroundColor: avatarBgColor }}
-                    textStyle={{ color: '#FFFFFF', fontSize: 14, fontWeight: '600' }}
-                  >
-                    {name.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-              ) : (
-                <View
-                  style={[styles.avatarFallback, { backgroundColor: avatarBgColor }]}
+              {/* Avatar - Rounded square */}
+              <Avatar size={48} style={styles.avatar}>
+                <AvatarImage src={image} />
+                <AvatarFallback
+                  style={{ backgroundColor: iconColor }}
+                  textStyle={{ color: '#FFFFFF', fontSize: 14, fontWeight: '600' }}
                 >
-                  <Text style={styles.avatarLetter}>
-                    {name.charAt(0).toUpperCase()}
-                  </Text>
-                </View>
-              )}
-              <Text style={styles.name} numberOfLines={2}>
-                {name}
-              </Text>
+                  {name.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+
+              {/* Content */}
+              <View style={styles.content}>
+                {/* Title */}
+                <Text style={styles.name} numberOfLines={2}>
+                  {name}
+                </Text>
+
+                {/* Description */}
+                <Text style={styles.description} numberOfLines={3}>
+                  {description}
+                </Text>
+              </View>
             </TouchableOpacity>
           );
         })}
@@ -123,12 +125,23 @@ const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 12,
     paddingVertical: 16,
+    marginTop: 24,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
   },
   title: {
     fontSize: 18,
     fontWeight: '700',
     color: '#111827',
-    marginBottom: 12,
+  },
+  seeAllText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#10B981',
   },
   loadingContainer: {
     paddingVertical: 24,
@@ -139,41 +152,37 @@ const styles = StyleSheet.create({
     paddingRight: 12,
   },
   card: {
-    width: 120,
+    width: 240,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#E5E7EB',
-    borderRadius: 12,
+    borderRadius: 8,
     padding: 12,
-    marginRight: 8,
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    minHeight: 120,
+    marginRight: 12,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    minHeight: 100,
   },
   avatar: {
-    borderRadius: 12,
-    marginBottom: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
-  avatarFallback: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  avatarLetter: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#FFFFFF',
+  content: {
+    flex: 1,
+    minWidth: 0,
   },
   name: {
-    fontSize: 10,
-    fontWeight: '600',
+    fontSize: 12,
+    fontWeight: '700',
     color: '#111827',
-    textAlign: 'center',
-    flex: 1,
-    textAlignVertical: 'center',
+    marginBottom: 4,
+  },
+  description: {
+    fontSize: 11,
+    color: '#4B5563',
+    lineHeight: 16,
   },
 });
 

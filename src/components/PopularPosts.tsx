@@ -95,6 +95,19 @@ interface Post {
     comments: number;
     shares: number;
     isLiked?: boolean;
+    fundraiser?: {
+        id: number;
+        name: string;
+        description?: string;
+        image?: string | null;
+        color?: string | null;
+        target_amount: string;
+        current_amount: string;
+        progress_percentage: number;
+        is_active?: boolean;
+        total_donors?: number;
+        end_date?: string;
+    };
 }
 
 interface PopularPostsProps {
@@ -567,10 +580,122 @@ export default function PopularPosts({
 
                         {/* Content */}
                         <TouchableOpacity 
-                            onPress={() => handlePostPress(item)}
+                            onPress={() => {
+                                if (item.fundraiser) {
+                                    (navigation as any).navigate('FundraiserDetail', { fundraiserId: item.fundraiser.id });
+                                } else {
+                                    handlePostPress(item);
+                                }
+                            }}
                             activeOpacity={1}
                         >
-                            <Text style={styles.postText}>{item.text}</Text>
+                            {/* Fundraiser Post UI */}
+                            {item.fundraiser ? (
+                                <>
+                                    {/* Fundraiser Cover Image/Color - Prioritize color over image */}
+                                    <View style={{ width: '100%', height: 200, marginBottom: 12, borderRadius: 12, overflow: 'hidden' }}>
+                                        {item.fundraiser.color ? (
+                                            <View style={{ 
+                                                width: '100%', 
+                                                height: '100%', 
+                                                backgroundColor: item.fundraiser.color,
+                                                justifyContent: 'center',
+                                                alignItems: 'center'
+                                            }}>
+                                                <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>
+                                                    {item.fundraiser.name}
+                                                </Text>
+                                            </View>
+                                        ) : item.fundraiser.image ? (
+                                            <Image
+                                                source={{ uri: item.fundraiser.image }}
+                                                style={{ width: '100%', height: '100%' }}
+                                                resizeMode="cover"
+                                            />
+                                        ) : (
+                                            <View style={{ 
+                                                width: '100%', 
+                                                height: '100%', 
+                                                backgroundColor: '#1600ff',
+                                                justifyContent: 'center',
+                                                alignItems: 'center'
+                                            }}>
+                                                <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>
+                                                    {item.fundraiser.name}
+                                                </Text>
+                                            </View>
+                                        )}
+                                    </View>
+
+                                    {/* Fundraiser Info */}
+                                    <View style={{ marginBottom: 12 }}>
+                                        {!item.fundraiser.is_active && (
+                                            <Text style={{ fontSize: 12, color: '#6b7280', marginBottom: 4 }}>
+                                                Started a fundraiser
+                                            </Text>
+                                        )}
+                                        <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#111827', marginBottom: 8 }}>
+                                            {item.fundraiser.name}
+                                        </Text>
+                                        
+                                        {/* Amount and Progress */}
+                                        <View style={{ marginBottom: 8 }}>
+                                            <View style={{ flexDirection: 'row', alignItems: 'baseline', marginBottom: 4, flexWrap: 'wrap' }}>
+                                                <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#111827' }}>
+                                                    ${parseFloat(item.fundraiser.current_amount || '0').toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                                </Text>
+                                                <Text style={{ fontSize: 12, color: '#6b7280', marginLeft: 4 }}>
+                                                    raised of ${parseFloat(item.fundraiser.target_amount || '0').toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} goal
+                                                </Text>
+                                            </View>
+                                            {/* Progress Bar */}
+                                            <View style={{ 
+                                                width: '100%', 
+                                                height: 6, 
+                                                backgroundColor: '#e5e7eb', 
+                                                borderRadius: 3,
+                                                overflow: 'hidden'
+                                            }}>
+                                                <View style={{ 
+                                                    height: '100%', 
+                                                    backgroundColor: '#1600ff',
+                                                    width: `${Math.min(item.fundraiser.progress_percentage || 0, 100)}%`
+                                                }} />
+                                            </View>
+                                        </View>
+
+                                        {/* Donors and Days Left */}
+                                        {(item.fundraiser.total_donors !== undefined || item.fundraiser.end_date) && (
+                                            <View style={{ flexDirection: 'row', gap: 12, marginTop: 4, flexWrap: 'wrap' }}>
+                                                {item.fundraiser.total_donors !== undefined && (
+                                                    <Text style={{ fontSize: 12, color: '#6b7280' }}>
+                                                        <Text style={{ fontWeight: '600' }}>{item.fundraiser.total_donors}</Text> donor{item.fundraiser.total_donors !== 1 ? 's' : ''}
+                                                    </Text>
+                                                )}
+                                                {item.fundraiser.end_date && (() => {
+                                                    const endDate = new Date(item.fundraiser.end_date);
+                                                    const now = new Date();
+                                                    const daysLeft = Math.max(0, Math.floor((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+                                                    return (
+                                                        <Text style={{ fontSize: 12, color: '#6b7280' }}>
+                                                            <Text style={{ fontWeight: '600' }}>{daysLeft}</Text> days left
+                                                        </Text>
+                                                    );
+                                                })()}
+                                            </View>
+                                        )}
+                                    </View>
+
+                                    {/* Post Text (if exists) */}
+                                    {item.text && (
+                                        <Text style={styles.postText}>{item.text}</Text>
+                                    )}
+                                </>
+                            ) : (
+                                <>
+                                    <Text style={styles.postText}>{item.text}</Text>
+                                </>
+                            )}
                             
                             {/* Media Section - Only show if there's actual media content */}
                             {item.previewDetails && (item.previewDetails.image || item.previewDetails.title || item.previewDetails.description) ? (

@@ -923,7 +923,21 @@ export default function NewGroupCrwdPage() {
             )}
           </View>
 
-          <SupportedNonprofits nonprofits={nonprofits} isLoading={isLoadingCauses} />
+          <SupportedNonprofits 
+            nonprofits={nonprofits} 
+            isLoading={isLoadingCauses}
+            onSeeAllClick={() => {
+              if (!currentUser || !token?.access_token) {
+                (navigation as any).navigate('OnBoard', {
+                  redirectTo: 'GroupCRWD',
+                  redirectParams: { id: String(crwdId), collectiveId: String(crwdId) }
+                });
+                return;
+              }
+              setStatisticsTab('Nonprofits');
+              setShowStatisticsModal(true);
+            }}
+          />
 
 
           <CommunityActivity
@@ -946,6 +960,19 @@ export default function NewGroupCrwdPage() {
               comments: post.comments_count || 0,
               shares: 0,
               isLiked: post.is_liked || false,
+              fundraiser: post.fundraiser ? {
+                id: post.fundraiser.id,
+                name: post.fundraiser.name,
+                description: post.fundraiser.description,
+                image: post.fundraiser.image,
+                color: post.fundraiser.color,
+                target_amount: post.fundraiser.target_amount,
+                current_amount: post.fundraiser.current_amount,
+                progress_percentage: post.fundraiser.progress_percentage || 0,
+                is_active: post.fundraiser.is_active,
+                total_donors: post.fundraiser.total_donors,
+                end_date: post.fundraiser.end_date,
+              } : undefined,
             })) : []}
             isLoading={isLoadingPosts}
             collectiveId={crwdId}

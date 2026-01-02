@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,8 +6,6 @@ import {
   StyleSheet,
   ActivityIndicator,
   TouchableOpacity,
-  Modal,
-  Pressable,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute, useNavigation } from '@react-navigation/native';
@@ -27,6 +25,7 @@ import CauseDetails from '../components/newcause/CauseDetails';
 import OrganizationMission from '../components/newcause/OrganizationMission';
 import SimilarNonprofits from '../components/newcause/SimilarNonprofits';
 import { Share } from 'react-native';
+import AddToDonationBoxBottomSheet from '../components/newcause/AddToDonationBoxBottomSheet';
 
 export default function NewCausePage() {
   const route = useRoute();
@@ -36,7 +35,6 @@ export default function NewCausePage() {
   const { showToast } = useToast();
   const [showShareModal, setShowShareModal] = useState(false);
   const [showAddToBoxModal, setShowAddToBoxModal] = useState(false);
-  const addToBoxModalRef = useRef<View>(null);
 
   // Get cause ID from route params
   const causeId = (route.params as any)?.id || '';
@@ -425,54 +423,17 @@ export default function NewCausePage() {
 
       </ScrollView>
 
-      {/* Add to Donation Box Confirmation Modal */}
-      <Modal
-        visible={showAddToBoxModal}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowAddToBoxModal(false)}
-      >
-        <Pressable
-          style={styles.modalOverlay}
-          onPress={() => setShowAddToBoxModal(false)}
-        >
-          <Pressable
-            style={styles.modalContent}
-            onPress={(e) => e.stopPropagation()}
-          >
-            <Text style={styles.modalTitle}>Add to Donation Box?</Text>
-            <Text style={styles.modalDescription}>
-              This will add {causeData?.name} to your donation box. You can manage your
-              donations anytime.
-            </Text>
-            <View style={styles.modalActions}>
-              <TouchableOpacity
-                onPress={() => setShowAddToBoxModal(false)}
-                style={styles.modalCancelButton}
-                activeOpacity={0.7}
-                disabled={addToDonationBoxMutation.isPending}
-              >
-                <Text style={styles.modalCancelText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={handleConfirmAddToBox}
-                style={styles.modalConfirmButton}
-                activeOpacity={0.7}
-                disabled={addToDonationBoxMutation.isPending}
-              >
-                {addToDonationBoxMutation.isPending ? (
-                  <>
-                    <ActivityIndicator size="small" color="#FFFFFF" style={{ marginRight: 8 }} />
-                    <Text style={styles.modalConfirmText}>Adding...</Text>
-                  </>
-                ) : (
-                  <Text style={styles.modalConfirmText}>Add to Box</Text>
-                )}
-              </TouchableOpacity>
-            </View>
-          </Pressable>
-        </Pressable>
-      </Modal>
+      {/* Add to Donation Box Bottom Sheet */}
+      {causeData && (
+        <AddToDonationBoxBottomSheet
+          isOpen={showAddToBoxModal}
+          onClose={() => setShowAddToBoxModal(false)}
+          causeData={causeData}
+          donationBoxCount={donationBoxData?.box_causes?.length || 0}
+          onConfirm={handleConfirmAddToBox}
+          isPending={addToDonationBoxMutation.isPending}
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -524,65 +485,6 @@ const styles = StyleSheet.create({
   },
   content: {
     maxWidth: '100%',
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  modalContent: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 20,
-    width: '100%',
-    maxWidth: 400,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#111827',
-    marginBottom: 8,
-  },
-  modalDescription: {
-    fontSize: 14,
-    color: '#4B5563',
-    marginBottom: 20,
-    lineHeight: 20,
-  },
-  modalActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 12,
-  },
-  modalCancelButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    backgroundColor: '#FFFFFF',
-  },
-  modalCancelText: {
-    fontSize: 14,
-    color: '#111827',
-  },
-  modalConfirmButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 8,
-    backgroundColor: '#84CC16',
-    minWidth: 120,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
-  },
-  modalConfirmText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#FFFFFF',
   },
 });
 

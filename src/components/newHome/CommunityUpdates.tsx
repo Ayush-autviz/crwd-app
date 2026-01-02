@@ -331,7 +331,7 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   joinIcon: {
-    backgroundColor: '#3B82F6',
+    // backgroundColor: '#3B82F6',
   },
   donationIcon: {
     backgroundColor: '#10B981',

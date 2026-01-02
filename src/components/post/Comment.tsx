@@ -13,6 +13,7 @@ export interface CommentData {
   firstName?: string;
   lastName?: string;
   avatarUrl: string;
+  color?: string;
   content: string;
   timestamp: Date;
   likes: number;
@@ -39,6 +40,7 @@ export const Comment: React.FC<CommentProps> = ({
   firstName,
   lastName,
   avatarUrl,
+  color,
   content,
   timestamp,
   likes,
@@ -128,7 +130,13 @@ export const Comment: React.FC<CommentProps> = ({
     '#EF4444', '#06B6D4', '#F97316', '#84CC16', '#A855F7',
     '#14B8A6', '#F43F5E', '#6366F1', '#22C55E', '#EAB308',
   ];
-  const avatarColor = avatarColors[id % avatarColors.length];
+  
+  const getConsistentColor = (id: number | string, colors: string[]) => {
+    const hash = typeof id === 'number' ? id : id.toString().split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
+    return colors[hash % colors.length];
+  };
+  
+  const avatarColor = color || getConsistentColor(userId || id || username || 'U', avatarColors);
 
   return (
     <View style={styles.container}>

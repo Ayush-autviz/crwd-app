@@ -11,6 +11,7 @@ interface UserResultCardProps {
     last_name?: string;
     profile_picture?: string;
     bio?: string;
+    color?: string;
   };
   currentUserId?: string;
 }
@@ -44,7 +45,7 @@ const getConsistentColor = (id: number | string, colors: string[]) => {
 
 export default function UserResultCard({ user, currentUserId }: UserResultCardProps) {
   const navigation = useNavigation();
-  const avatarBgColor = getConsistentColor(user.id, avatarColors);
+  const avatarBgColor = user.color || getConsistentColor(user.id, avatarColors);
   const initials =
     user.first_name && user.last_name
       ? `${user.first_name.charAt(0)}${user.last_name.charAt(0)}`.toUpperCase()

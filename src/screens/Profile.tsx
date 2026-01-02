@@ -769,7 +769,7 @@ export default function Profile() {
                             <Avatar size={64}>
                                 <AvatarImage src={profileData?.profile_picture} />
                                 <AvatarFallback 
-                                    style={{ backgroundColor: getConsistentColor(profileData?.id || profileData?.username || 'U', avatarColors) }}
+                                    style={{ backgroundColor: profileData?.color || getConsistentColor(profileData?.id || profileData?.username || 'U', avatarColors) }}
                                     textStyle={{ color: '#FFFFFF', fontWeight: '600' }}
                                 >
                                     {getInitials(profileData?.first_name, profileData?.last_name, profileData?.username, profileData?.username)}

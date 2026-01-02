@@ -139,9 +139,9 @@ const styles = StyleSheet.create({
     color: '#111827',
   },
   seeAllText: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: '#10B981',
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1600ff',
   },
   loadingContainer: {
     paddingVertical: 24,

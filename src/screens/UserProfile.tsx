@@ -507,7 +507,7 @@ export default function UserProfile() {
                                         <Avatar size={40}>
                                             <AvatarImage src={userData.profile_picture || userData.avatar} />
                                             <AvatarFallback
-                                                style={{ backgroundColor: getConsistentColor(userData.id, userData.username || userData.first_name || userData.name) }}
+                                                style={{ backgroundColor: userData.color || getConsistentColor(userData.id, userData.username || userData.first_name || userData.name) }}
                                                 textStyle={{ color: '#FFFFFF', fontSize: 16, fontWeight: '600' }}
                                             >
                                                 {getInitials(userData.first_name, userData.last_name, userData.username || userData.name)}
@@ -616,7 +616,7 @@ export default function UserProfile() {
                         <Avatar size={80}>
                             <AvatarImage src={userProfile.profile_picture} />
                             <AvatarFallback
-                                style={{ backgroundColor: getConsistentColor(userProfile.id, userProfile.username || userProfile.first_name) }}
+                                style={{ backgroundColor: userProfile.color || getConsistentColor(userProfile.id, userProfile.username || userProfile.first_name) }}
                                 textStyle={{ color: '#FFFFFF', fontSize: 32, fontWeight: '700' }}
                             >
                                 {getInitials(userProfile.first_name, userProfile.last_name, userProfile.username)}

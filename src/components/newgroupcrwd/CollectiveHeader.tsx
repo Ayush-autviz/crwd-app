@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Modal, Pressable } from 'react-native';
-import { ArrowLeft, Star, Share2, MoreHorizontal, Edit, Link2, Flag } from 'lucide-react-native';
+import { ArrowLeft, Star, Share2, MoreHorizontal, Edit, Link2, Flag, Plus } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { favoriteCollective, unfavoriteCollective } from '../../services/api/social';
@@ -15,6 +15,7 @@ interface CollectiveHeaderProps {
   isAdmin?: boolean;
   onShare?: () => void;
   onManageCollective?: () => void;
+  onCreateFundraiser?: () => void;
 }
 
 export default function CollectiveHeader({
@@ -24,6 +25,7 @@ export default function CollectiveHeader({
   isAdmin = false,
   onShare,
   onManageCollective,
+  onCreateFundraiser,
 }: CollectiveHeaderProps) {
   const navigation = useNavigation();
   const queryClient = useQueryClient();
@@ -99,6 +101,15 @@ export default function CollectiveHeader({
       onManageCollective();
     } else if (collectiveId) {
       navigation.navigate('ManageCRWD' as never, { collectiveId } as never);
+    }
+    setShowDropdown(false);
+  };
+
+  const handleCreateFundraiser = () => {
+    if (onCreateFundraiser) {
+      onCreateFundraiser();
+    } else if (collectiveId) {
+      (navigation as any).navigate('CreateFundraiser', { collectiveId });
     }
     setShowDropdown(false);
   };
@@ -182,6 +193,14 @@ export default function CollectiveHeader({
                     >
                       <Edit size={16} color="#111827" strokeWidth={2.5} />
                       <Text style={styles.dropdownText}>Manage collective</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={handleCreateFundraiser}
+                      style={styles.dropdownItem}
+                      activeOpacity={0.7}
+                    >
+                      <Plus size={16} color="#111827" strokeWidth={2.5} />
+                      <Text style={styles.dropdownText}>Create fundraiser</Text>
                     </TouchableOpacity>
                     <View style={styles.separator} />
                   </>

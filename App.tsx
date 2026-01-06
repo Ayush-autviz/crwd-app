@@ -69,6 +69,8 @@ import { Image, Platform, View } from 'react-native'
 import { PermissionsAndroid } from 'react-native'
 import Circles from './src/screens/Circles'
 import NewSettings from './src/screens/NewSettings'
+import FundraiserDetail from './src/screens/FundraiserDetail'
+import CreateFundraiser from './src/screens/CreateFundraiser'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { StripeProvider } from '@stripe/stripe-react-native'
 import { STRIPE_PUBLISHABLE_KEY } from './src/config/stripe'
@@ -319,6 +321,8 @@ useEffect(() => {
         <Stack.Screen name="Post" component={Post} />
         <Stack.Screen name="ManageDonationBox" component={ManageDonationBoxScreen} />
         <Stack.Screen name="OneTimeDonationScreen" component={OneTimeDonationScreen} />
+        <Stack.Screen name="FundraiserDetail" component={FundraiserDetail} />
+        <Stack.Screen name="CreateFundraiser" component={CreateFundraiser} />
        
         <Stack.Screen name="Articles" component={Articles} />
         <Stack.Screen name="ArticleDetail" component={ArticleDetail} />

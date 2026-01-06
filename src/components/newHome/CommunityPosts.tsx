@@ -79,6 +79,7 @@ export default function CommunityPosts({
               full_name: post.user.full_name || (post.user.first_name && post.user.last_name ? `${post.user.first_name} ${post.user.last_name}` : undefined),
               profile_picture: post.user.profile_picture || post.user.avatar || '',
               bio: post.user.bio,
+              color: post.user.color || undefined,
             } : undefined,
             collective: post.collective ? {
               id: post.collective.id,

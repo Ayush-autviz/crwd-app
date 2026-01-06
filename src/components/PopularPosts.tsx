@@ -1,7 +1,7 @@
 import { View, Text, FlatList, Image, Dimensions, TouchableOpacity, StyleSheet, Modal, Pressable, ActivityIndicator, Alert, Share, TouchableWithoutFeedback, Clipboard, Linking } from 'react-native'
 import React, { useState, useEffect } from 'react'
 import { LightGrey, PrimaryBlue, PrimaryGrey, SecondaryGrey } from '../Constants/Colors'
-import { Ellipsis, Heart, MessageCircle, Trash2, Share2, MessageSquare } from 'lucide-react-native'
+import { Ellipsis, Heart, MessageCircle, Trash2, Share2, MessageSquare, Users } from 'lucide-react-native'
 import { useNavigation, NavigationProp, CommonActions } from '@react-navigation/native'
 import SocialShare from './SocialShare'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
@@ -449,10 +449,12 @@ export default function PopularPosts({
             {/* Empty State */}
             {!isLoading && !error && (!posts || posts.length === 0) && (
                 <View style={styles.emptyContainer}>
-                    <MessageSquare size={48} color="#9CA3AF" />
+                    <View style={styles.emptyIconContainer}>
+                        <Users size={48} color="#1600ff" strokeWidth={1.5} />
+                    </View>
                     <Text style={styles.emptyTitle}>No posts yet</Text>
                     <Text style={styles.emptyDescription}>
-                        This user hasn't shared any posts yet. Check back later to see their activity.
+                        Posts appear when you share updates in your collectives. Join or start a collective to start sharing your impact!
                     </Text>
                 </View>
             )}
@@ -1165,11 +1167,20 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         marginVertical: 16,
     },
+    emptyIconContainer: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        backgroundColor: '#EFF6FF',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 16,
+    },
     emptyTitle: {
         fontSize: 18,
-        fontWeight: '600',
+        fontWeight: '700',
         color: '#111827',
-        marginTop: 16,
+        marginTop: 8,
         marginBottom: 8,
     },
     emptyDescription: {

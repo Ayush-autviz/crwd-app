@@ -36,6 +36,7 @@ interface PostResultCardProps {
       full_name?: string;
       profile_picture?: string;
       bio?: string;
+      color?: string;
     };
     collective?: {
       id: number;
@@ -44,33 +45,39 @@ interface PostResultCardProps {
     };
   };
   onCommentPress?: (post: PostResultCardProps['post']) => void;
+  showSimplifiedHeader?: boolean; // When true, only show name and timestamp (for collective view)
 }
 
-// Get consistent color for avatar
+// Generate vibrant avatar colors
 const avatarColors = [
-  '#3B82F6',
-  '#EC4899',
-  '#8B5CF6',
-  '#10B981',
-  '#F59E0B',
-  '#EF4444',
-  '#06B6D4',
-  '#F97316',
-  '#84CC16',
-  '#A855F7',
-  '#14B8A6',
-  '#F43F5E',
-  '#6366F1',
-  '#22C55E',
-  '#EAB308',
+  '#3B82F6', // Blue
+  '#EC4899', // Pink
+  '#8B5CF6', // Purple
+  '#10B981', // Green
+  '#F59E0B', // Amber
+  '#EF4444', // Red
+  '#06B6D4', // Cyan
+  '#F97316', // Orange
+  '#84CC16', // Lime
+  '#A855F7', // Violet
+  '#14B8A6', // Teal
+  '#F43F5E', // Rose
+  '#6366F1', // Indigo
+  '#22C55E', // Emerald
+  '#EAB308', // Yellow
 ];
 
-const getConsistentColor = (id: number | string, colors: string[]) => {
-  const hash =
-    typeof id === 'number'
-      ? id
-      : id.toString().split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
-  return colors[hash % colors.length];
+// Use user ID to generate a consistent color for each user (same user = same color across all posts)
+const getConsistentColor = (id: number | string | undefined, fallbackName?: string) => {
+  if (id !== undefined && id !== null) {
+    const hash = typeof id === 'number' ? id : id.toString().split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
+    return avatarColors[hash % avatarColors.length];
+  }
+  if (fallbackName) {
+    const hash = fallbackName.split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
+    return avatarColors[hash % avatarColors.length];
+  }
+  return avatarColors[0];
 };
 
 // Format date to relative time
@@ -86,7 +93,7 @@ const formatTimeAgo = (dateString: string): string => {
   return date.toLocaleDateString();
 };
 
-export default function PostResultCard({ post, onCommentPress }: PostResultCardProps) {
+export default function PostResultCard({ post, onCommentPress, showSimplifiedHeader = false }: PostResultCardProps) {
   const navigation = useNavigation();
   const queryClient = useQueryClient();
   const { user: currentUser } = useAuthStore();
@@ -95,7 +102,10 @@ export default function PostResultCard({ post, onCommentPress }: PostResultCardP
   const [likesCount, setLikesCount] = useState(post.likes_count || 0);
   
   const user = post.user;
-  const avatarBgColor = user ? getConsistentColor(user.id, avatarColors) : '#6B7280';
+  // Use user.color first if available, then fall back to consistent color based on ID or username
+  const avatarBgColor = user 
+    ? (user.color || getConsistentColor(user.id, user.username || user.full_name || user.first_name || 'U'))
+    : '#6B7280';
 
   // Get user initials
   const initials =
@@ -290,14 +300,29 @@ export default function PostResultCard({ post, onCommentPress }: PostResultCardP
                   <Text style={styles.name}>{fullName}</Text>
                 </TouchableOpacity>
               )}
-              {post.collective && (
+              {!showSimplifiedHeader && user?.username && (
                 <>
                   <Text style={styles.separator}>•</Text>
-                  <Text style={styles.collectiveName}>{post.collective.name}</Text>
+                  <Text style={styles.username}>@{user.username}</Text>
                 </>
               )}
             </View>
-            <Text style={styles.time}>{timeAgo}</Text>
+            {!showSimplifiedHeader && post.collective && (
+              <TouchableOpacity
+                onPress={(e) => {
+                  e.stopPropagation();
+                  if (post.collective?.id) {
+                    (navigation as any).navigate('GroupCRWD', { id: post.collective.id.toString() });
+                  }
+                }}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.collectiveName}>{post.collective.name}</Text>
+              </TouchableOpacity>
+            )}
+            {showSimplifiedHeader && (
+              <Text style={styles.time}>{timeAgo}</Text>
+            )}
           </View>
         </View>
 
@@ -380,7 +405,7 @@ export default function PostResultCard({ post, onCommentPress }: PostResultCardP
                 <Heart
                   size={14}
                   color={isLiked ? '#EF4444' : '#4B5563'}
-                  fill={isLiked ? '#EF4444' : 'none'}
+                  {...(isLiked && { fill: '#EF4444' })}
                 />
               )}
               <Text style={[styles.engagementText, isLiked && styles.likedText]}>
@@ -432,7 +457,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 10,
+    gap: 8,
     marginBottom: 10,
   },
   avatar: {
@@ -446,8 +471,9 @@ const styles = StyleSheet.create({
   nameRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 4,
     flexWrap: 'wrap',
+    marginBottom: 2,
   },
   name: {
     fontSize: 12,
@@ -458,15 +484,19 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#9CA3AF',
   },
+  username: {
+    fontSize: 12,
+    color: '#6B7280',
+  },
   collectiveName: {
     fontSize: 12,
-    color: '#1600ff',
-    fontWeight: '500',
+    color: '#6B7280',
+    marginTop: 0,
   },
   time: {
     fontSize: 10,
     color: '#6B7280',
-    marginTop: 2,
+    marginTop: 0,
   },
   postContent: {
     fontSize: 12,

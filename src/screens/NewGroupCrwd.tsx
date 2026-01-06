@@ -469,6 +469,12 @@ export default function NewGroupCrwdPage() {
     }
   };
 
+  const handleCreateFundraiser = () => {
+    if (crwdId) {
+      (navigation as any).navigate('CreateFundraiser', { collectiveId: crwdId });
+    }
+  };
+
   const handleConfirmUnjoin = () => {
     if (!leaveCollectiveMutation.isPending && crwdId) {
       leaveCollectiveMutation.mutate(crwdId);
@@ -794,6 +800,7 @@ export default function NewGroupCrwdPage() {
         isAdmin={isAdmin}
         onShare={handleShare}
         onManageCollective={handleManageCollective}
+        onCreateFundraiser={handleCreateFundraiser}
       />
 
       <ScrollView
@@ -1001,7 +1008,7 @@ export default function NewGroupCrwdPage() {
           {/* Legal Disclaimer */}
           <View style={styles.disclaimer}>
             <Text style={styles.disclaimerText}>
-              All donations are made to CRWD Foundation Inc. (EIN: XX-XXXXXXX), a 501(c)(3)
+              All donations are made to CRWD Foundation Inc. (EIN: 41-2423690), a 501(c)(3)
               nonprofit organization. CRWD Foundation grants funds to qualified 501(c)(3)
               organizations selected by donors.
             </Text>

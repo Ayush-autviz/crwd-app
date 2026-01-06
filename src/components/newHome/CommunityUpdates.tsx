@@ -1,12 +1,14 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator } from 'react-native';
-import { HandHeart, UserPlus } from 'lucide-react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import { HandHeart, Users } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
-import { followUserById, unfollowUserById, getUserProfileById } from '../../services/api/social';
+import { followUserById, unfollowUserById, getUserProfileById, getPostById } from '../../services/api/social';
+import { getJoinCollective } from '../../services/api/crwd';
 import { useAuthStore } from '../../store/store';
 import { useToast } from '../../contexts/ToastContext';
+import PostResultCard from '../newsearch/PostResultCard';
 
 interface CommunityUpdate {
   id: string | number;
@@ -17,6 +19,7 @@ interface CommunityUpdate {
     lastName?: string;
     username: string;
     avatar?: string;
+    color?: string;
   };
   collective?: {
     name: string;
@@ -35,6 +38,63 @@ interface CommunityUpdatesProps {
   showHeading?: boolean;
 }
 
+// Component to display full post when postId exists
+function PostWithData({ update }: { update: CommunityUpdate }) {
+  const { data: postData, isLoading } = useQuery({
+    queryKey: ['post', update.postId],
+    queryFn: () => getPostById(update.postId?.toString() || ''),
+    enabled: !!update.postId,
+  });
+
+  if (isLoading) {
+    return (
+      <View style={styles.loadingCard}>
+        <View style={styles.loadingContent}>
+          <View style={styles.loadingAvatar} />
+          <View style={styles.loadingTextContainer}>
+            <View style={styles.loadingText} />
+            <View style={[styles.loadingText, { width: '60%' }]} />
+            <View style={styles.loadingImage} />
+          </View>
+        </View>
+      </View>
+    );
+  }
+
+  if (!postData) {
+    // Fallback to notification summary if post not found
+    return <NotificationSummary update={update} />;
+  }
+
+  // Transform post data to match PostResultCard format
+  const post = {
+    id: postData.id,
+    content: postData.content || '',
+    media: postData.media || undefined,
+    preview_details: postData.preview_details || null,
+    created_at: postData.created_at || update.timestamp || new Date().toISOString(),
+    likes_count: postData.likes_count || 0,
+    comments_count: postData.comments_count || 0,
+    is_liked: postData.is_liked || false,
+    user: postData.user ? {
+      id: postData.user.id,
+      username: postData.user.username || update.user.username,
+      first_name: postData.user.first_name || update.user.firstName,
+      last_name: postData.user.last_name || update.user.lastName,
+      full_name: postData.user.full_name || (update.user.firstName && update.user.lastName ? `${update.user.firstName} ${update.user.lastName}` : undefined),
+      profile_picture: postData.user.profile_picture || update.user.avatar || '',
+      bio: postData.user.bio,
+    } : undefined,
+    collective: postData.collective ? {
+      id: postData.collective.id,
+      name: postData.collective.name,
+      description: postData.collective.description,
+    } : update.collective,
+  };
+
+  return <PostResultCard post={post} />;
+}
+
 // Component to display notification summary
 function NotificationSummary({ update }: { update: CommunityUpdate }) {
   const navigation = useNavigation();
@@ -44,6 +104,18 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
   const actionText = update.content || '';
   const isJoinNotification = update.isJoinNotification || false;
   const isDonationNotification = !isJoinNotification && actionText.toLowerCase().includes('donated');
+
+  // Fetch joined collectives to check if user has already joined
+  const { data: joinedCollectivesData } = useQuery({
+    queryKey: ['joinedCollectives', currentUser?.id],
+    queryFn: () => getJoinCollective(currentUser?.id?.toString() || ''),
+    enabled: !!currentUser?.id && !!token?.access_token && !!update.collective?.id,
+  });
+
+  // Check if user has already joined this collective
+  const hasJoinedCollective = joinedCollectivesData?.data?.some((item: any) => 
+    item.collective?.id?.toString() === update.collective?.id?.toString()
+  ) || false;
 
   // Fetch user profile to check follow status
   const { data: userProfile, isLoading: isLoadingProfile } = useQuery({
@@ -81,13 +153,10 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
     },
   });
 
-
   const handleJoinClick = () => {
     if (update.collective?.id) {
-      // Navigate to collective screen
       (navigation as any).navigate('GroupCRWD', { id: update.collective.id });
     } else if (update.collective?.name) {
-      // If no ID, navigate to search
       (navigation as any).navigate('Search', { 
         searchQuery: update.collective.name,
         searchType: 'collective'
@@ -105,24 +174,112 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
     }
   };
 
-  const displayName =
-    update.user.firstName && update.user.lastName
-      ? `${update.user.firstName} ${update.user.lastName}`
-      : update.user.name || update.user.username;
+  // Get user display name
+  const userName = update.user.firstName && update.user.lastName 
+    ? `${update.user.firstName} ${update.user.lastName}`
+    : update.user.name || update.user.username;
 
+  // For join notifications, use similar structure to donation but with Users icon
+  if (isJoinNotification) {
+    // Try to extract nonprofit count from content if available
+    // Example patterns: "Supporting 12 nonprofits", "supports 5 causes"
+    let nonprofitCount = 0;
+    const countMatch = actionText.match(/(\d+)\s*(nonprofit|cause|organization)/i);
+    if (countMatch) {
+      nonprofitCount = parseInt(countMatch[1], 10);
+    }
+
+    // Clean action text - remove the supporting text if it exists
+    let cleanActionText = actionText;
+    if (countMatch) {
+      cleanActionText = actionText.replace(/\s*Supporting\s+\d+\s+nonprofit[s]?/i, '').trim();
+    }
+
+    return (
+      <View style={styles.notificationCard}>
+        {/* Top Section: Profile and Action Button */}
+        <View style={styles.header}>
+          <View style={styles.userInfo}>
+            {/* Avatar */}
+            <Avatar size={44} style={styles.avatar}>
+              <AvatarImage src={update.user.avatar} />
+              <AvatarFallback
+                style={{ backgroundColor: update.user.color || '#1600ff' }}
+                textStyle={{ color: '#FFFFFF', fontSize: 12 }}
+              >
+                {update.user.name
+                  .split(' ')
+                  .map((n) => n.charAt(0))
+                  .join('')
+                  .toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+
+            {/* User Info */}
+            <View style={styles.userDetails}>
+              <View style={styles.nameRow}>
+                <TouchableOpacity
+                  onPress={() =>
+                    (navigation as any).navigate('UserProfile', { userId: update.user.id })
+                  }
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.userName}>{userName}</Text>
+                </TouchableOpacity>
+                <Text style={styles.username}>@{update.user.username}</Text>
+              </View>
+            </View>
+          </View>
+          
+          {/* Join Button - Only show if user hasn't joined */}
+          {update.collective && !hasJoinedCollective && (
+            <TouchableOpacity
+              onPress={handleJoinClick}
+              style={styles.joinButton}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.joinButtonText}>Join</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* Content Box */}
+        <View style={styles.contentBox}>
+          {/* Icon */}
+          <View style={styles.iconContainerJoin}>
+            <Users size={20} color="#1600ff" />
+          </View>
+          <View style={styles.actionTextContainer}>
+            {/* Action Text */}
+            <Text style={styles.actionText}>
+              {userName} {cleanActionText}
+            </Text>
+            {/* Supporting X nonprofits - Only on second line if it exists */}
+            {nonprofitCount > 0 && (
+              <Text style={styles.nonprofitCountText}>
+                Supporting {nonprofitCount} nonprofit{nonprofitCount !== 1 ? 's' : ''}
+              </Text>
+            )}
+          </View>
+        </View>
+      </View>
+    );
+  }
+
+  // Default UI for donation and other notifications
   return (
     <View style={styles.notificationCard}>
       {/* Top Section: Profile and Action Button */}
       <View style={styles.header}>
         <View style={styles.userInfo}>
           {/* Avatar */}
-          <Avatar size={40} style={styles.avatar}>
+          <Avatar size={44} style={styles.avatar}>
             <AvatarImage src={update.user.avatar} />
             <AvatarFallback
-              style={{ backgroundColor: '#1600ff' }}
+              style={{ backgroundColor: update.user.color || '#1600ff' }}
               textStyle={{ color: '#FFFFFF', fontSize: 12 }}
             >
-              {displayName
+              {update.user.name
                 .split(' ')
                 .map((n) => n.charAt(0))
                 .join('')
@@ -132,33 +289,24 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
 
           {/* User Info */}
           <View style={styles.userDetails}>
-            <TouchableOpacity
-              onPress={() =>
-                (navigation as any).navigate('UserProfile', { userId: update.user.id })
-              }
-              activeOpacity={0.7}
-            >
-              <View style={styles.nameRow}>
-                <Text style={styles.userName}>{displayName}</Text>
-                <Text style={styles.username}>@{update.user.username}</Text>
-              </View>
-            </TouchableOpacity>
+            <View style={styles.nameRow}>
+              <TouchableOpacity
+                onPress={() =>
+                  (navigation as any).navigate('UserProfile', { userId: update.user.id })
+                }
+                activeOpacity={0.7}
+              >
+                <Text style={styles.userName}>{userName}</Text>
+              </TouchableOpacity>
+              <Text style={styles.username}>@{update.user.username}</Text>
+            </View>
             {update.collective && (
               <Text style={styles.collectiveName}>{update.collective.name}</Text>
             )}
           </View>
         </View>
-
-        {/* Action Button - Join for join notifications, Follow for donation notifications */}
-        {isJoinNotification && update.collective && (
-          <TouchableOpacity
-            onPress={handleJoinClick}
-            style={styles.joinButton}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.joinButtonText}>Join</Text>
-          </TouchableOpacity>
-        )}
+        
+        {/* Action Button - Follow for donation notifications */}
         {isDonationNotification && update.user.id && currentUser?.id !== update.user.id && (
           <TouchableOpacity
             onPress={handleFollowClick}
@@ -184,27 +332,15 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
       </View>
 
       {/* Content Box */}
-      <View
-        style={[
-          styles.contentBox,
-          // isJoinNotification ? styles.joinBox : styles.donationBox,
-        ]}
-      >
+      <View style={styles.contentBox}>
         {/* Icon */}
-        <View
-          style={[
-            styles.iconContainer,
-            isJoinNotification ? styles.joinIcon : styles.donationIcon,
-          ]}
-        >
-          {isJoinNotification ? (
-            <UserPlus size={18} color="#FFFFFF" />
-          ) : (
-            <HandHeart size={18} color="#FFFFFF" />
-          )}
+        <View style={styles.iconContainerDonation}>
+          <HandHeart size={20} color="#FFFFFF" />
         </View>
         {/* Action Text */}
-        <Text style={styles.actionText}>{actionText}</Text>
+        <Text style={styles.actionTextDonation}>
+          {actionText}
+        </Text>
       </View>
     </View>
   );
@@ -230,9 +366,14 @@ export default function CommunityUpdates({
       )}
 
       <View style={styles.updatesList}>
-        {updates.map((update) => (
-          <NotificationSummary key={update.id} update={update} />
-        ))}
+        {updates.map((update) => {
+          // If postId exists, fetch and display the full post
+          const PostContent = update.postId ? PostWithData : NotificationSummary;
+          
+          return (
+            <PostContent key={update.id} update={update} />
+          );
+        })}
       </View>
     </View>
   );
@@ -242,7 +383,7 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
     paddingHorizontal: 16,
-    marginVertical: 24,
+    marginVertical: 16,
   },
   heading: {
     marginBottom: 16,
@@ -255,17 +396,47 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 12,
-    color: '#4B5563',
+    color: '#6B7280',
   },
   updatesList: {
+    gap: 10,
+  },
+  loadingCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 10,
+    marginBottom: 10,
+  },
+  loadingContent: {
+    flexDirection: 'row',
     gap: 12,
+  },
+  loadingAvatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#E5E7EB',
+  },
+  loadingTextContainer: {
+    flex: 1,
+    gap: 8,
+  },
+  loadingText: {
+    height: 12,
+    backgroundColor: '#E5E7EB',
+    borderRadius: 4,
+    width: '80%',
+  },
+  loadingImage: {
+    height: 160,
+    backgroundColor: '#E5E7EB',
+    borderRadius: 8,
+    marginTop: 8,
   },
   notificationCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    padding: 12,
+    padding: 10,
   },
   header: {
     marginBottom: 10,
@@ -275,7 +446,7 @@ const styles = StyleSheet.create({
   },
   userInfo: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     gap: 12,
     flex: 1,
   },
@@ -309,38 +480,50 @@ const styles = StyleSheet.create({
   },
   contentBox: {
     borderRadius: 12,
-    paddingHorizontal: 12,
+    paddingHorizontal: 10,
     paddingVertical: 6,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: '#F9FAFB',
+    marginBottom: 8,
   },
-  joinBox: {
-    backgroundColor: '#DBEAFE',
-  },
-  donationBox: {
-    backgroundColor: '#D1FAE5',
-  },
-  iconContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 20,
+  iconContainerJoin: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
     flexShrink: 0,
   },
-  joinIcon: {
-    // backgroundColor: '#3B82F6',
-  },
-  donationIcon: {
+  iconContainerDonation: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     backgroundColor: '#10B981',
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexShrink: 0,
+  },
+  actionTextContainer: {
+    flex: 1,
+    gap: 4,
   },
   actionText: {
     fontSize: 12,
     fontWeight: '600',
+    color: '#4B5563',
+    flex: 1,
+  },
+  actionTextDonation: {
+    fontSize: 12,
+    fontWeight: '600',
     color: '#111827',
     flex: 1,
+  },
+  nonprofitCountText: {
+    fontSize: 12,
+    color: '#6B7280',
   },
   joinButton: {
     backgroundColor: '#FFFFFF',
@@ -381,7 +564,8 @@ const styles = StyleSheet.create({
     color: '#1600ff',
   },
   followingButtonText: {
+    fontSize: 12,
+    fontWeight: '600',
     color: '#FFFFFF',
   },
 });
-

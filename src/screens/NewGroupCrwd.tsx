@@ -33,6 +33,7 @@ import CollectiveProfile from '../components/newgroupcrwd/CollectiveProfile';
 import CollectiveStats from '../components/newgroupcrwd/CollectiveStats';
 import SupportedNonprofits from '../components/newgroupcrwd/SupportedNonprofits';
 import CommunityActivity from '../components/newgroupcrwd/CommunityActivity';
+import DiscoverMoreCollectives from '../components/newgroupcrwd/DiscoverMoreCollectives';
 import { Share } from 'react-native';
 import CommentsBottomSheet from '../components/post/CommentsBottomSheet';
 import JoinCollectiveBottomSheet from '../components/newgroupcrwd/JoinCollectiveBottomSheet';
@@ -955,6 +956,9 @@ export default function NewGroupCrwdPage() {
                 ? `${post.user.first_name} ${post.user.last_name}` 
                 : 'Unknown User',
               avatarUrl: post.user?.profile_picture || '',
+              color: post.user?.color || undefined, // Add color field for fallback avatar
+              firstName: post.user?.first_name || undefined,
+              lastName: post.user?.last_name || undefined,
               time: post.created_at || new Date().toISOString(), // Pass raw timestamp for proper relative time calculation
               created_at: post.created_at, // Also include created_at for ProfileActivityCard to use
               timestamp: post.created_at, // Include timestamp as well
@@ -1004,6 +1008,9 @@ export default function NewGroupCrwdPage() {
               setShowCommentsSheet(true);
             }}
           />
+
+          {/* Discover More Collectives */}
+          <DiscoverMoreCollectives collectiveId={crwdId} />
 
           {/* Legal Disclaimer */}
           <View style={styles.disclaimer}>

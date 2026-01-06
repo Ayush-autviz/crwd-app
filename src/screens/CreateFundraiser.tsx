@@ -11,9 +11,11 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import {
   ArrowLeft,
   Info,
@@ -88,7 +90,8 @@ export default function CreateFundraiser() {
   const [uploadedCoverImageFile, setUploadedCoverImageFile] = useState<any>(null);
   const [campaignTitle, setCampaignTitle] = useState('');
   const [fundraisingGoal, setFundraisingGoal] = useState('1000');
-  const [endDate, setEndDate] = useState<string>('');
+  const [endDate, setEndDate] = useState<Date | null>(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [campaignStory, setCampaignStory] = useState('');
   
   // Step 2 state
@@ -203,16 +206,51 @@ export default function CreateFundraiser() {
     });
   };
 
-  // Validate date format (YYYY-MM-DD)
-  const validateDate = (dateString: string): boolean => {
-    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-    if (!dateRegex.test(dateString)) {
-      return false;
+  // Format date to YYYY-MM-DD string
+  const formatDateToString = (date: Date | null): string => {
+    if (!date) return '';
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  // Format date for display
+  const formatDateForDisplay = (date: Date | null): string => {
+    if (!date) return '';
+    try {
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+    } catch (error) {
+      // Fallback formatting
+      const year = date.getFullYear();
+      const month = date.toLocaleString('en-US', { month: 'long' });
+      const day = date.getDate();
+      return `${month} ${day}, ${year}`;
     }
-    const date = new Date(dateString);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return date >= today;
+  };
+
+  // Handle date picker change
+  const handleDateChange = (event: any, selectedDate?: Date) => {
+    if (Platform.OS === 'android') {
+      setShowDatePicker(false);
+      if (event.type === 'set' && selectedDate) {
+        // Set time to start of day to avoid timezone issues
+        const date = new Date(selectedDate);
+        date.setHours(0, 0, 0, 0);
+        setEndDate(date);
+      }
+    } else if (Platform.OS === 'ios') {
+      // For iOS, update the date immediately as user scrolls
+      if (selectedDate) {
+        const date = new Date(selectedDate);
+        date.setHours(0, 0, 0, 0);
+        setEndDate(date);
+      }
+    }
   };
 
   const handleNext = () => {
@@ -222,9 +260,11 @@ export default function CreateFundraiser() {
         showToast('Please fill in all required campaign details.', 3000);
         return;
       }
-      // Validate date format
-      if (!validateDate(endDate)) {
-        showToast('Please enter a valid end date in YYYY-MM-DD format (must be today or later).', 3000);
+      // Validate date is today or later
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (endDate < today) {
+        showToast('Please select a date that is today or later.', 3000);
         return;
       }
       if (coverType === 'image' && !uploadedCoverImage) {
@@ -245,7 +285,7 @@ export default function CreateFundraiser() {
   const handleLaunch = () => {
     // Prepare request data
     const startDate = new Date().toISOString();
-    const endDateISO = endDate ? new Date(endDate).toISOString() : '';
+    const endDateISO = endDate ? endDate.toISOString() : '';
 
     if (coverType === 'image') {
       // If image tab is selected, validate that image exists
@@ -499,6 +539,7 @@ export default function CreateFundraiser() {
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
+          scrollEnabled={!showDatePicker}
         >
           {step === 1 ? (
             <>
@@ -632,15 +673,73 @@ export default function CreateFundraiser() {
                 <Text style={styles.label}>
                   Campaign End Date <Text style={styles.required}>*</Text>
                 </Text>
-                <TextInput
-                  style={styles.input}
-                  value={endDate}
-                  onChangeText={setEndDate}
-                  placeholder="YYYY-MM-DD"
-                  placeholderTextColor="#9CA3AF"
-                />
+                <TouchableOpacity
+                  style={styles.dateInput}
+                  onPress={() => setShowDatePicker(true)}
+                >
+                  <Text style={[styles.dateInputText, !endDate && styles.dateInputPlaceholder]}>
+                    {endDate ? formatDateForDisplay(endDate) : 'Select end date'}
+                  </Text>
+                </TouchableOpacity>
                 <Text style={styles.helperText}>Choose when your campaign ends</Text>
               </View>
+              
+              {/* Date Picker Modal for iOS */}
+              {Platform.OS === 'ios' && (
+                <Modal
+                  visible={showDatePicker}
+                  transparent={true}
+                  animationType="slide"
+                  onRequestClose={() => setShowDatePicker(false)}
+                >
+                  <View style={styles.datePickerModal}>
+                    <TouchableOpacity
+                      style={styles.datePickerModalBackdrop}
+                      activeOpacity={1}
+                      onPress={() => setShowDatePicker(false)}
+                    />
+                    <View style={styles.datePickerModalContent}>
+                      <View style={styles.datePickerHeader}>
+                        <TouchableOpacity
+                          onPress={() => setShowDatePicker(false)}
+                          style={styles.datePickerCancelButton}
+                        >
+                          <Text style={styles.datePickerCancelText}>Cancel</Text>
+                        </TouchableOpacity>
+                        <Text style={styles.datePickerTitle}>Select End Date</Text>
+                        <TouchableOpacity
+                          onPress={() => setShowDatePicker(false)}
+                          style={styles.datePickerDoneButton}
+                        >
+                          <Text style={styles.datePickerDoneText}>Done</Text>
+                        </TouchableOpacity>
+                      </View>
+                      <View style={styles.datePickerContainer}>
+                        <DateTimePicker
+                          value={endDate || new Date()}
+                          mode="date"
+                          display="spinner"
+                          onChange={handleDateChange}
+                          minimumDate={new Date()}
+                          textColor="#111827"
+                          themeVariant="light"
+                        />
+                      </View>
+                    </View>
+                  </View>
+                </Modal>
+              )}
+              
+              {/* Date Picker for Android */}
+              {Platform.OS === 'android' && showDatePicker && (
+                <DateTimePicker
+                  value={endDate || new Date()}
+                  mode="date"
+                  display="default"
+                  onChange={handleDateChange}
+                  minimumDate={new Date()}
+                />
+              )}
 
               {/* Campaign Story */}
               <View style={styles.section}>
@@ -803,18 +902,7 @@ export default function CreateFundraiser() {
                   <View style={styles.previewStatCard}>
                     <Text style={styles.previewStatLabel}>ENDS ON</Text>
                     <Text style={styles.previewStatDate}>
-                      {endDate ? (() => {
-                        try {
-                          const date = new Date(endDate);
-                          return date.toLocaleDateString('en-US', { 
-                            year: 'numeric', 
-                            month: 'long', 
-                            day: 'numeric' 
-                          });
-                        } catch {
-                          return endDate;
-                        }
-                      })() : 'N/A'}
+                      {endDate ? formatDateForDisplay(endDate) : 'N/A'}
                     </Text>
                   </View>
                 </View>
@@ -1215,6 +1303,80 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#6B7280',
     marginTop: 4,
+  },
+  dateInput: {
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+  },
+  dateInputText: {
+    fontSize: 16,
+    color: '#111827',
+  },
+  dateInputPlaceholder: {
+    color: '#9CA3AF',
+  },
+  datePickerModal: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  datePickerModalBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  datePickerModalContent: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingBottom: Platform.OS === 'ios' ? 34 : 16,
+    maxHeight: '50%',
+    width: '100%',
+  },
+  datePickerHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  datePickerTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#111827',
+  },
+  datePickerCancelButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
+  datePickerCancelText: {
+    fontSize: 16,
+    color: '#6B7280',
+  },
+  datePickerDoneButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
+  datePickerDoneText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: PrimaryBlue,
+  },
+  datePickerContainer: {
+    height: 200,
+    width: '100%',
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  datePicker: {
+    width: '100%',
+    height: 200,
   },
   textArea: {
     borderWidth: 1,

@@ -453,7 +453,11 @@ export default function FundraiserDetail() {
             <TextInput
               style={styles.donationInput}
               value={donationAmount}
-              onChangeText={setDonationAmount}
+              onChangeText={(text) => {
+                // Only allow numbers
+                const numericValue = text.replace(/[^0-9]/g, '');
+                setDonationAmount(numericValue);
+              }}
               placeholder="25"
               keyboardType="numeric"
               placeholderTextColor="#9CA3AF"

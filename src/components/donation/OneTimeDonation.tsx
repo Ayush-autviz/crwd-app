@@ -15,9 +15,10 @@ import {
   Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import { Minus, Plus, Trash2, Search, X } from 'lucide-react-native';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { createOneTimeDonationMobile } from '../../services/api/donation';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { createOneTimeDonationMobile, createFundraiserDonation } from '../../services/api/donation';
 import { PrimaryBlue, PrimaryGrey } from '../../Constants/Colors';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
 import { getCausesBySearch, getJoinCollective } from '../../services/api/crwd';
@@ -48,6 +49,8 @@ interface OneTimeDonationProps {
   preselectedCauses?: number[];
   preselectedCausesData?: any[];
   preselectedCollectiveId?: number;
+  fundraiserId?: number;
+  initialDonationAmount?: string;
   show?: boolean;
 }
 
@@ -60,11 +63,14 @@ export default function OneTimeDonation({
   preselectedCauses,
   preselectedCausesData,
   preselectedCollectiveId,
+  fundraiserId,
+  initialDonationAmount,
   show=true
 }: OneTimeDonationProps) {
   const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
-  const [donationAmount, setDonationAmount] = useState(5);
-  const [inputValue, setInputValue] = useState('5');
+  const initialAmount = initialDonationAmount ? parseFloat(initialDonationAmount) : 5;
+  const [donationAmount, setDonationAmount] = useState(initialAmount);
+  const [inputValue, setInputValue] = useState(initialAmount.toString());
   const [preselectedItemAdded, setPreselectedItemAdded] = useState(false);
   const [preselectedCausesProcessed, setPreselectedCausesProcessed] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -75,6 +81,8 @@ export default function OneTimeDonation({
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showRequestModal, setShowRequestModal] = useState(false);
   const confettiRef = useRef<ConfettiCannon>(null);
+  const navigation = useNavigation();
+  const queryClient = useQueryClient();
 
   // Handle preselected item from navigation
   useEffect(() => {
@@ -121,18 +129,91 @@ export default function OneTimeDonation({
     }
   }, [preselectedCauses, preselectedCausesData, preselectedCausesProcessed, preselectedItemAdded, setSelectedOrganizations]);
 
-  // Fetch causes with search - only when search is active
+  // Fetch causes with search - only when search is active and not a fundraiser donation
   const { data: causesData, isLoading: causesLoading } = useQuery({
     queryKey: ['causes', searchQuery],
     queryFn: () => getCausesBySearch(searchQuery || '', '', 1),
-    enabled: showSearchResults && searchQuery.length > 0,
+    enabled: !fundraiserId && showSearchResults && searchQuery.length > 0,
   });
 
-  // Fetch default causes (no search query)
+  // Fetch default causes (no search query) - only when not a fundraiser donation
   const { data: defaultCausesData, isLoading: defaultCausesLoading } = useQuery({
     queryKey: ['defaultCauses'],
     queryFn: () => getCausesBySearch('', '', 1),
-    enabled: !showSearchResults,
+    enabled: !fundraiserId && !showSearchResults,
+  });
+
+  // Fundraiser donation mutation
+  const fundraiserDonationMutation = useMutation({
+    mutationFn: createFundraiserDonation,
+    onSuccess: async (response) => {
+      console.log('Fundraiser donation response:', response);
+      const clientSecret = response?.client_secret;
+      if (!clientSecret) {
+        Alert.alert('Error', 'Missing client secret from server response');
+        return;
+      }
+
+      try {
+        setIsPresenting(true);
+        const merchantDisplayName = getMerchantDisplayName();
+        const init = await initPaymentSheet({
+          paymentIntentClientSecret: clientSecret,
+          merchantDisplayName: `${merchantDisplayName} via CRWD`,
+          allowsDelayedPaymentMethods: false,
+          applePay: {
+            merchantCountryCode: 'US',
+          }
+        });
+
+        if (init.error) {
+          console.error('PaymentSheet init error:', init.error);
+          Alert.alert('Error', init.error.message || 'Failed to initialize payment');
+          return;
+        }
+
+        const present = await presentPaymentSheet();
+        if (present.error) {
+          if (present.error.code === 'Canceled') {
+            // User canceled, don't show error
+            return;
+          }
+          console.error('PaymentSheet present error:', present.error);
+          Alert.alert('Payment Failed', present.error.message || 'Unable to complete payment');
+          return;
+        }
+
+        // Payment succeeded
+        setShowSuccessModal(true);
+        // Fire confetti after modal appears
+        setTimeout(() => {
+          confettiRef.current?.start();
+        }, 300);
+        setSelectedItems([]);
+        setSelectedOrganizations([]);
+        
+        // Invalidate fundraiser query to refresh data
+        if (fundraiserId) {
+          queryClient.invalidateQueries({ queryKey: ['fundraiser', fundraiserId.toString()] });
+        }
+        
+        // Navigate back to fundraiser detail screen after a short delay
+        setTimeout(() => {
+          setShowSuccessModal(false);
+          (navigation as any).navigate('FundraiserDetail', { id: fundraiserId, fundraiserId: fundraiserId });
+        }, 2000);
+      } catch (err: any) {
+        console.error('Stripe confirmation exception:', err);
+        Alert.alert('Error', err?.message || 'Payment confirmation failed');
+      } finally {
+        setIsPresenting(false);
+      }
+    },
+    onError: (error: any) => {
+      console.error('Fundraiser donation error:', error);
+      Alert.alert('Error', error?.response?.data?.message || error?.message || 'Failed to process donation');
+      setIsPresenting(false);
+    },
   });
 
   // One-time donation mutation
@@ -350,6 +431,24 @@ export default function OneTimeDonation({
   };
 
   const handleCheckout = () => {
+    // If this is a fundraiser donation, use the fundraiser API
+    if (fundraiserId) {
+      const selectedCauseIds = selectedItems
+        .filter(item => item.type === 'cause')
+        .map(item => parseInt(item.id));
+
+      const requestBody = {
+        fundraiser_id: fundraiserId,
+        amount: donationAmount.toString(),
+        selected_cause_ids: selectedCauseIds.length > 0 ? selectedCauseIds : [0],
+      };
+
+      console.log('Sending fundraiser donation request:', requestBody);
+      fundraiserDonationMutation.mutate(requestBody);
+      return;
+    }
+
+    // Regular one-time donation
     // Prepare request body according to API specification
     // Format: { amount: string, causes: [{ cause_id: number, attributed_collective?: number }] }
     const causes: Array<{ cause_id: number; attributed_collective?: number }> = [];
@@ -545,7 +644,8 @@ export default function OneTimeDonation({
           </View>
         )}
 
-        {/* Add More Causes Section */}
+        {/* Add More Causes Section - Hide for fundraiser donations */}
+        {!fundraiserId && (
         <View style={styles.addMoreSection}>
           <Text style={styles.addMoreTitle}>Add More Causes</Text>
 
@@ -680,19 +780,20 @@ export default function OneTimeDonation({
             )}
           </View>
         </View>
+        )}
         </ScrollView>
       
       {/* Checkout Button Footer - Always visible at bottom */}
       <View style={styles.footer}>
         <TouchableOpacity
           onPress={handleCheckout}
-          disabled={oneTimeDonationMutation.isPending || isPresenting || selectedItems.length === 0}
+          disabled={(fundraiserId ? fundraiserDonationMutation.isPending : oneTimeDonationMutation.isPending) || isPresenting || selectedItems.length === 0}
           style={[
             styles.checkoutButton,
-            (oneTimeDonationMutation.isPending || isPresenting || selectedItems.length === 0) && styles.checkoutButtonDisabled
+            ((fundraiserId ? fundraiserDonationMutation.isPending : oneTimeDonationMutation.isPending) || isPresenting || selectedItems.length === 0) && styles.checkoutButtonDisabled
           ]}
         >
-          {(oneTimeDonationMutation.isPending || isPresenting) ? (
+          {((fundraiserId ? fundraiserDonationMutation.isPending : oneTimeDonationMutation.isPending) || isPresenting) ? (
             <ActivityIndicator color="#ffffff" />
           ) : (
             <Text style={styles.checkoutButtonText}>Continue to Review</Text>

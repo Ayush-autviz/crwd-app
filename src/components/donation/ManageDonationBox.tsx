@@ -758,7 +758,7 @@ export default function ManageDonationBoxScreen() {
                      <Text style={styles.lifetimeAmount}>${Math.round(lifetimeAmount).toLocaleString()} lifetime</Text>
                    )}
                    {/* Billing Cycle Info - Only show when donation box is active */}
-                   {donationBox?.is_active && donationBox?.next_charge_date && formatNextChargeDate(donationBox.next_charge_date) && (
+                   {donationBox?.is_active && donationBox?.next_charge_date && (
                      <View style={styles.billingCycleBanner}>
                        <Text style={styles.billingCycleText}>
                          Changes take effect on your next billing cycle ({getChargeDay(donationBox.next_charge_date)} of the month)

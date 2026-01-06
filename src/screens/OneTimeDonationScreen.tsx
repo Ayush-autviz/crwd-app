@@ -25,6 +25,8 @@ export default function OneTimeDonationScreen() {
   const preselectedCauses = (route.params as any)?.preselectedCauses;
   const preselectedCausesData = (route.params as any)?.preselectedCausesData;
   const preselectedCollectiveId = (route.params as any)?.preselectedCollectiveId;
+  const fundraiserId = (route.params as any)?.fundraiserId;
+  const initialDonationAmount = (route.params as any)?.donationAmount;
 
   // If not logged in, show sign-in prompt
   if (!currentUser?.id) {
@@ -93,6 +95,8 @@ export default function OneTimeDonationScreen() {
         preselectedCauses={preselectedCauses}
         preselectedCausesData={preselectedCausesData}
         preselectedCollectiveId={preselectedCollectiveId}
+        fundraiserId={fundraiserId}
+        initialDonationAmount={initialDonationAmount}
       />
     </SafeAreaView>
   );

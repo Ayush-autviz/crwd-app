@@ -77,6 +77,11 @@ export const createOneTimeDonationMobile = async (data: any) => {
     return response.data;
 };
 
+export const createFundraiserDonation = async (data: any) => {
+    const response = await axiosClient.post('/donations/fundraiser/mobile/', data);
+    return response.data;
+};
+
 export const getDonationSuccess = async () => {
     const response = await axiosClient.get('/donations/success/');
     return response.data;

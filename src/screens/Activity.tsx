@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import PopularPosts from '../components/PopularPosts'
 import { LightGrey, PrimaryBlue, PrimaryGrey } from '../Constants/Colors'
 import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native'
-import { ArrowLeftRight, Trophy, Heart, MessageCircle, MoreHorizontal, User, HandHeart, Users, Mountain, ArrowLeft } from 'lucide-react-native'
+import { ArrowLeftRight, Trophy, Heart, MessageCircle, MoreHorizontal, User, ArrowLeft } from 'lucide-react-native'
 import { useAuthStore } from '../store/store'
 import { useQuery, useMutation, useQueryClient, useQueries } from '@tanstack/react-query'
 import { getNotifications, markAllNotificationsAsRead } from '../services/api/notification'
@@ -184,9 +184,14 @@ export default function Activity() {
             // Extract user name for new member notifications
             let memberName = '';
             if (isNewMember && notification.body) {
+                // Try to extract name before "joined"
                 const nameMatch = notification.body.match(/^([^ ]+ [^ ]+)/);
                 if (nameMatch) {
                     memberName = nameMatch[1].trim();
+                }
+                // Remove "joined [collective]" from description to avoid duplication
+                if (collectiveName && notification.body.includes(collectiveName)) {
+                    // The description will be parsed to show names clickable, so we don't need to reconstruct it
                 }
             }
             
@@ -254,6 +259,7 @@ export default function Activity() {
                 firstName: firstName,
                 lastName: lastName,
                 username: extractedUsername,
+                color: profileUser?.color || notification.user?.color || notification.data?.color || undefined,
             };
         });
     }, [personalNotifications, userProfilesMap]);
@@ -328,6 +334,7 @@ export default function Activity() {
                 userId: userId,
                 firstName: firstName,
                 lastName: lastName,
+                color: notification.user?.color || notification.data?.color || undefined,
                 profileLink: isCurrentUser ? undefined : (userId ? `/user-profile/${userId}` : username ? `/user-profile/${username}` : undefined),
                 time: formatTimeAgo(notification.created_at || notification.updated_at),
                 org: collectiveName || null,
@@ -460,88 +467,28 @@ export default function Activity() {
                 activeOpacity={0.7}
             >
                 <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 12 }}>
-                    {/* Avatar with overlay icon */}
+                    {/* Avatar - show image if available, otherwise use fallback color like Vite */}
                     <TouchableOpacity 
                         onPress={handleAvatarPress}
                         activeOpacity={0.7}
-                        style={{ position: 'relative' }}
                     >
-                        {item.type === 'donation' ? (
-                            <>
-                                {/* Green circle with 'C' */}
-                                <View style={{
-                                    width: 48,
-                                    height: 48,
-                                    borderRadius: 24,
-                                    backgroundColor: '#10B981',
-                                    alignItems: 'center',
-                                    justifyContent: 'center'
-                                }}>
-                                    <Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 16 }}>C</Text>
-                                </View>
-                                {/* Hand icon overlay */}
-                                <View style={{
-                                    position: 'absolute',
-                                    bottom: -2,
-                                    right: -2,
-                                    width: 20,
-                                    height: 20,
-                                    borderRadius: 10,
-                                    backgroundColor: '#60A5FA',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    borderWidth: 2,
-                                    borderColor: '#FFFFFF'
-                                }}>
-                                    <HandHeart size={12} color="#FFFFFF" />
-                                </View>
-                            </>
-                        ) : item.type === 'new_member' ? (
-                            <>
-                                {/* Gray circle with landscape icon */}
-                                <View style={{
-                                    width: 48,
-                                    height: 48,
-                                    borderRadius: 24,
-                                    backgroundColor: '#E5E7EB',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    borderWidth: 2,
-                                    borderColor: '#D1D5DB'
-                                }}>
-                                    <Mountain size={24} color="#6B7280" />
-                                </View>
-                                {/* People icon overlay */}
-                                <View style={{
-                                    position: 'absolute',
-                                    bottom: -2,
-                                    right: -2,
-                                    width: 20,
-                                    height: 20,
-                                    borderRadius: 10,
-                                    backgroundColor: '#34D399',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    borderWidth: 2,
-                                    borderColor: '#FFFFFF'
-                                }}>
-                                    <Users size={12} color="#FFFFFF" />
-                                </View>
-                            </>
-                        ) : (
-                            <>
-                                {/* Default avatar */}
+                        {(() => {
+                            const bgColor = item.userId 
+                                ? (item.color || getConsistentColor(item.userId, avatarColors))
+                                : (item.username ? getConsistentColor(item.username, avatarColors) : '#E5E7EB');
+                            
+                            return (
                                 <Avatar size={48}>
                                     <AvatarImage src={item.avatarUrl} />
                                     <AvatarFallback 
-                                        style={{ backgroundColor: item.userId ? getConsistentColor(item.userId, avatarColors) : '#E5E7EB' }}
+                                        style={{ backgroundColor: bgColor }}
                                         textStyle={{ color: '#FFFFFF', fontSize: 14, fontWeight: '700' }}
                                     >
                                         {getInitials(item.firstName, item.lastName, item.username)}
                                     </AvatarFallback>
                                 </Avatar>
-                            </>
-                        )}
+                            );
+                        })()}
                     </TouchableOpacity>
 
                     {/* Content */}
@@ -554,18 +501,117 @@ export default function Activity() {
                         }}>
                             {item.title}
                         </Text>
-                        <Text style={{ 
-                            color: '#374151', 
-                            fontSize: 12, 
-                            marginBottom: 6 
-                        }}>
-                            {item.type === 'donation' 
-                                ? `Your collective ${item.collectiveName || 'Community Champions'} received a ${item.donationAmount || '$50'} donation`
-                                : item.type === 'new_member'
-                                ? `${item.memberName || 'Taylor Kim'} joined ${item.collectiveName || 'Community Champions'}`
-                                : item.description
-                            }
-                        </Text>
+                        <View style={{ marginBottom: 6 }}>
+                            {item.type === 'donation' ? (
+                                <Text style={{ color: '#374151', fontSize: 12 }}>
+                                    Your collective{' '}
+                                    {item.collectiveId && item.collectiveName ? (
+                                        <Text 
+                                            style={{ fontWeight: '600', color: '#374151' }}
+                                            onPress={() => {
+                                                if (item.collectiveId) {
+                                                    (navigation as any).navigate('GroupCRWD', { id: item.collectiveId.toString() });
+                                                }
+                                            }}
+                                        >
+                                            {item.collectiveName}
+                                        </Text>
+                                    ) : (
+                                        <Text>{item.collectiveName || 'Community Champions'}</Text>
+                                    )}
+                                    {' '}received a {item.donationAmount || '$50'} donation
+                                </Text>
+                            ) : item.type === 'new_member' ? (
+                                (() => {
+                                    // Parse description to make user and collective names clickable (like Vite)
+                                    const description = item.description || '';
+                                    if (!description) return <Text style={{ color: '#374151', fontSize: 12 }}>{description}</Text>;
+                                    
+                                    const parts: React.ReactElement[] = [];
+                                    let lastIndex = 0;
+                                    
+                                    // Find member name and make it clickable
+                                    if (item.userId && item.memberName) {
+                                        const memberPattern = new RegExp(item.memberName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+                                        let match;
+                                        while ((match = memberPattern.exec(description)) !== null) {
+                                            // Add text before match
+                                            if (match.index > lastIndex) {
+                                                parts.push(
+                                                    <Text key={`text-${match.index}`} style={{ color: '#374151', fontSize: 12 }}>
+                                                        {description.substring(lastIndex, match.index)}
+                                                    </Text>
+                                                );
+                                            }
+                                            // Add clickable link
+                                            parts.push(
+                                                <Text
+                                                    key={`member-${match.index}`}
+                                                    style={{ fontWeight: '600', color: '#374151', fontSize: 12 }}
+                                                    onPress={() => {
+                                                        (navigation as any).navigate('UserProfile', { userId: item.userId.toString() });
+                                                    }}
+                                                >
+                                                    {match[0]}
+                                                </Text>
+                                            );
+                                            lastIndex = match.index + match[0].length;
+                                        }
+                                    }
+                                    
+                                    // Find collective name and make it clickable
+                                    if (item.collectiveId && item.collectiveName) {
+                                        const collectivePattern = new RegExp(item.collectiveName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+                                        let match;
+                                        while ((match = collectivePattern.exec(description)) !== null) {
+                                            // Check if this part is already a link
+                                            if (match.index >= lastIndex) {
+                                                // Add text before match if needed
+                                                if (match.index > lastIndex) {
+                                                    parts.push(
+                                                        <Text key={`text-${match.index}`} style={{ color: '#374151', fontSize: 12 }}>
+                                                            {description.substring(lastIndex, match.index)}
+                                                        </Text>
+                                                    );
+                                                }
+                                                // Add clickable link
+                                                parts.push(
+                                                    <Text
+                                                        key={`collective-${match.index}`}
+                                                        style={{ fontWeight: '600', color: '#374151', fontSize: 12 }}
+                                                        onPress={() => {
+                                                            (navigation as any).navigate('GroupCRWD', { id: item.collectiveId.toString() });
+                                                        }}
+                                                    >
+                                                        {match[0]}
+                                                    </Text>
+                                                );
+                                                lastIndex = match.index + match[0].length;
+                                            }
+                                        }
+                                    }
+                                    
+                                    // Add remaining text
+                                    if (lastIndex < description.length) {
+                                        parts.push(
+                                            <Text key={`text-end`} style={{ color: '#374151', fontSize: 12 }}>
+                                                {description.substring(lastIndex)}
+                                            </Text>
+                                        );
+                                    }
+                                    
+                                    return parts.length > 0 ? (
+                                        <Text style={{ color: '#374151', fontSize: 12 }}>
+                                            {parts}
+                                        </Text>
+                                    ) : (
+                                        <Text style={{ color: '#374151', fontSize: 12 }}>{description}</Text>
+                                    );
+                                })()
+                            ) : (
+                                <Text style={{ color: '#374151', fontSize: 12 }}>{item.description}</Text>
+                            )}
+                        </View>
                         <Text style={{ color: '#9CA3AF', fontSize: 10 }}>
                             {item.time}
                         </Text>
@@ -592,15 +638,24 @@ export default function Activity() {
                         }}
                         activeOpacity={0.7}
                     >
-                        <Avatar size={40}>
-                            <AvatarImage src={item.avatarUrl} />
-                            <AvatarFallback
-                                style={{ backgroundColor: item.userId ? getConsistentColor(item.userId, avatarColors) : '#E5E7EB' }}
-                                textStyle={{ color: '#FFFFFF', fontSize: 12, fontWeight: '700' }}
-                            >
-                                {getInitials(item.firstName, item.lastName, item.username)}
-                            </AvatarFallback>
-                        </Avatar>
+                        {(() => {
+                            const bgColor = item.userId 
+                                ? (item.color || getConsistentColor(item.userId, avatarColors))
+                                : (item.username ? getConsistentColor(item.username, avatarColors) : '#E5E7EB');
+                            
+                            // Show image if available, otherwise use fallback color like Vite
+                            return (
+                                <Avatar size={40}>
+                                    <AvatarImage src={item.avatarUrl} />
+                                    <AvatarFallback 
+                                        style={{ backgroundColor: bgColor }}
+                                        textStyle={{ color: '#FFFFFF', fontSize: 12, fontWeight: '700' }}
+                                    >
+                                        {getInitials(item.firstName, item.lastName, item.username)}
+                                    </AvatarFallback>
+                                </Avatar>
+                            );
+                        })()}
                     </TouchableOpacity>
                     
                     <TouchableOpacity 

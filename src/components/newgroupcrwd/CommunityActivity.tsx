@@ -31,11 +31,11 @@ export default function CommunityActivity({
       <View style={styles.header}>
         <View>
           <Text style={styles.title}>Community Activity</Text>
-          {posts && posts.length > 0 && (
+          {/* {posts && posts.length > 0 && (
             <Text style={styles.subtitle}>
               {posts.length} Update{posts.length !== 1 ? 's' : ''}
             </Text>
-          )}
+          )} */}
         </View>
         {!isJoined ? (
           <View style={styles.joinButton}>
@@ -62,7 +62,7 @@ export default function CommunityActivity({
         <>
           {/* Posts Section */}
           {posts && posts.length > 0 ? (
-            <PopularPosts posts={posts} title="no title" hasMore={false} onCommentPress={onCommentPress} />
+            <PopularPosts posts={posts} title="no title" hasMore={false} onCommentPress={onCommentPress} showSimplifiedHeader={true} />
           ) : (
             <View style={styles.emptyContainer}>
               <Text style={styles.emptyText}>

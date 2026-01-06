@@ -8,7 +8,7 @@ import {
   StyleSheet,
   Dimensions,
 } from 'react-native';
-import { ChevronLeft, Plus, Trash2, User, X, ChevronDown, Search } from 'lucide-react-native';
+import { ChevronLeft, Plus, Trash2, User, X, ChevronDown, Search, Pencil } from 'lucide-react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import Slider from '@react-native-community/slider';
 import DonationStep2 from '../components/donation/DonationStep2';
@@ -29,6 +29,7 @@ import MainHeaderNav from '../components/MainHeaderNav';
 import DonationReviewBottomSheet from '../components/donation/DonationReviewBottomSheet';
 import RequestNonprofitModal from '../components/newsearch/RequestNonprofitModal';
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/Avatar';
+import EditDonationSplitBottomSheet from '../components/donation/EditDonationSplitBottomSheet';
 
 
 export default function DonationScreen() {
@@ -57,10 +58,29 @@ export default function DonationScreen() {
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{ id: string; name: string; type: 'cause' | 'collective' } | null>(null);
+  const [showEditSplitSheet, setShowEditSplitSheet] = useState(false);
   const reviewBottomSheetRef = useRef<any>(null);
   const { user: currentUser } = useAuthStore();
   const queryClient = useQueryClient();
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
+  const boxCauses = donationBox?.box_causes || [];
+  const causes = boxCauses.map((boxCause: any) => boxCause.cause).filter((cause: any) => cause != null);
+  const actualDonationAmount = parseFloat(donationBox?.monthly_amount || donationAmount.toString());
+  const totalItems = causes.length;
+
+  const getCausePercentage = (causeId: number) => {
+    const boxCause = boxCauses.find((bc: any) => bc.cause?.id === causeId);
+    const percentage = boxCause?.percentage;
+    return percentage != null ? Number(percentage) : null; // Return custom percentage as number if exists
+  };
+
+  const getAmountPerItem = (causeId: number) => {
+    const customPercentage = getCausePercentage(causeId);
+    if (customPercentage != null) {
+      return (actualDonationAmount * 0.9 * customPercentage) / 100;
+    }
+    return totalItems > 0 ? (actualDonationAmount * 0.9) / totalItems : 0;
+  };
 
   // Load current donation box
   const donationBoxQuery = useQuery({
@@ -1093,18 +1113,33 @@ export default function DonationScreen() {
                       {/* Currently Supporting Section */}
                       <View style={styles.currentlySupportingSection}>
                         <View style={styles.currentlySupportingHeader}>
-                          <Text style={styles.currentlySupportingTitle}>Currently Supporting</Text>
-                          <Text style={styles.currentlySupportingSubtitle}>
-                            Supporting {(() => {
-                              const boxCauses = donationBoxQuery.data?.box_causes || donationBox?.box_causes || [];
-                              const causes = boxCauses.map((boxCause: any) => boxCause.cause).filter((cause: any) => cause != null);
-                              return causes.length;
-                            })()} nonprofit{(() => {
-                              const boxCauses = donationBoxQuery.data?.box_causes || donationBox?.box_causes || [];
-                              const causes = boxCauses.map((boxCause: any) => boxCause.cause).filter((cause: any) => cause != null);
-                              return causes.length;
-                            })() !== 1 ? 's' : ''}
-                          </Text>
+                          <View style={{ }}>
+                            <Text style={styles.currentlySupportingTitle}>Currently Supporting</Text>
+                            <Text style={styles.currentlySupportingSubtitle}>
+                              Supporting {(() => {
+                                const boxCauses = donationBoxQuery.data?.box_causes || donationBox?.box_causes || [];
+                                const causes = boxCauses.map((boxCause: any) => boxCause.cause).filter((cause: any) => cause != null);
+                                return causes.length;
+                              })()} nonprofit{(() => {
+                                const boxCauses = donationBoxQuery.data?.box_causes || donationBox?.box_causes || [];
+                                const causes = boxCauses.map((boxCause: any) => boxCause.cause).filter((cause: any) => cause != null);
+                                return causes.length;
+                              })() !== 1 ? 's' : ''}
+                            </Text>
+                          </View>
+                          {(() => {
+                            const boxCauses = donationBoxQuery.data?.box_causes || donationBox?.box_causes || [];
+                            const causes = boxCauses.map((boxCause: any) => boxCause.cause).filter((cause: any) => cause != null);
+                            return causes.length > 1 ? (
+                              <TouchableOpacity
+                                onPress={() => setShowEditSplitSheet(true)}
+                                style={styles.editSplitButton}
+                              >
+                                <Pencil size={16} color="#374151" />
+                                <Text style={styles.editSplitButtonText}>Edit Split</Text>
+                              </TouchableOpacity>
+                            ) : null;
+                          })()}
                         </View>
 
                         {/* Causes List from box_causes */}
@@ -1161,8 +1196,16 @@ export default function DonationScreen() {
                                     </View>
                                     <View style={styles.causeActionsStep2}>
                                       <View style={styles.amountInfoStep2}>
-                                        <Text style={styles.amountPercentageStep2}>{distributionPercentage}%</Text>
-                                        <Text style={styles.amountPerMonthStep2}>${amountPerItem.toFixed(2)}/mo</Text>
+                                        {/* <Text style={styles.amountPercentageStep2}>{distributionPercentage}%</Text> */}
+                                        <Text style={styles.amountPercentageStep2}>{(() => {
+                            const customPercentage = getCausePercentage(cause.id);
+                            return customPercentage != null 
+                              ? `${Number(customPercentage).toFixed(1)}%` 
+                              : distributionPercentage != null 
+                                ? `${Number(distributionPercentage).toFixed(1)}%` 
+                                : '0%';
+                          })()}</Text>
+                                        <Text style={styles.amountPerMonthStep2}>${getAmountPerItem(cause.id).toFixed(2)}/mo</Text>
                                       </View>
                                       <TouchableOpacity
                                         onPress={() => {
@@ -1342,6 +1385,58 @@ export default function DonationScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Edit Donation Split Bottom Sheet */}
+      {(() => {
+        const boxCauses = donationBoxQuery.data?.box_causes || donationBox?.box_causes || [];
+        console.log('=== DonationScreen: Preparing causes for Edit Split ===');
+        console.log('boxCauses:', boxCauses);
+        console.log('boxCauses.length:', boxCauses?.length);
+        console.log('donationBoxQuery.data:', donationBoxQuery.data);
+        console.log('donationBox:', donationBox);
+        
+        const causesForEditSplit = (boxCauses || [])
+          .map((boxCause: any, index: number) => {
+            console.log(`Processing boxCause ${index}:`, boxCause);
+            // Handle both boxCause.cause and direct cause structure
+            const cause = boxCause?.cause || boxCause;
+            console.log(`Extracted cause ${index}:`, cause);
+            return cause;
+          })
+          .filter((cause: any) => {
+            const isValid = cause != null && cause.id != null;
+            console.log('Filtering cause:', cause, 'isValid:', isValid);
+            return isValid;
+          })
+          .map((cause: any) => {
+            const mappedCause = {
+              id: cause.id,
+              name: cause.name || 'Unknown Cause',
+              image: cause.image || cause.logo || '',
+              logo: cause.logo || cause.image || '',
+            };
+            console.log('Mapped cause:', mappedCause);
+            return mappedCause;
+          });
+        
+        console.log('Final causesForEditSplit:', causesForEditSplit);
+        console.log('causesForEditSplit.length:', causesForEditSplit.length);
+        console.log('showEditSplitSheet:', showEditSplitSheet);
+        console.log('monthlyAmount:', parseFloat((donationBoxQuery.data?.monthly_amount || donationBox?.monthly_amount || donationAmount).toString()));
+        
+        return (
+          <EditDonationSplitBottomSheet
+            isOpen={showEditSplitSheet}
+            onClose={() => {
+              console.log('Closing Edit Split sheet');
+              setShowEditSplitSheet(false);
+            }}
+            causes={causesForEditSplit}
+            monthlyAmount={parseFloat((donationBoxQuery.data?.monthly_amount || donationBox?.monthly_amount || donationAmount).toString())}
+            boxCauses={boxCauses}
+          />
+        );
+      })()}
     </SafeAreaView>
     </>
   );
@@ -1990,6 +2085,9 @@ const styles = StyleSheet.create({
   },
   currentlySupportingHeader: {
     marginBottom: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   currentlySupportingTitle: {
     fontSize: 18,
@@ -2183,5 +2281,19 @@ const styles = StyleSheet.create({
   },
   deleteModalButtonDisabled: {
     opacity: 0.5,
+  },
+  editSplitButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#F3F4F6',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  editSplitButtonText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#374151',
   },
 });

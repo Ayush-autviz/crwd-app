@@ -249,7 +249,7 @@ export default function DonationBoxSummaryCard({
         </View>
 
         {/* Donation Box Capacity */}
-        <View style={styles.capacityContainer}>
+        {/* <View style={styles.capacityContainer}>
           <View style={styles.capacityHeader}>
             <Text style={styles.capacityTitle}>Donation Box Capacity</Text>
             <Text style={styles.capacityCount}>{currentCapacity}/{maxCapacity} causes</Text>
@@ -262,7 +262,7 @@ export default function DonationBoxSummaryCard({
           <Text style={styles.capacityText}>
             You can support {remainingCapacity} more cause{remainingCapacity !== 1 ? 's' : ''} with this donation amount.
           </Text>
-        </View>
+        </View> */}
 
         {/* Add Causes Button */}
         {onAddCauses && (

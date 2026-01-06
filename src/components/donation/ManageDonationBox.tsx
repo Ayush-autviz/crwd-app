@@ -12,6 +12,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Plus, Minus, Trash2, Search, X, ChevronLeft, ChevronDown, FileText, Pencil } from 'lucide-react-native';
+import EditDonationSplitBottomSheet from './EditDonationSplitBottomSheet';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView as RNSafeAreaView, SafeAreaView } from 'react-native-safe-area-context';
 import { Organization } from '../../Constants/organizations';
@@ -124,6 +125,7 @@ export default function ManageDonationBoxScreen() {
   const [expandedCollectives, setExpandedCollectives] = useState<Set<number>>(new Set());
   const [collectiveDetails, setCollectiveDetails] = useState<Record<number, any>>({});
   const [loadingCollectives, setLoadingCollectives] = useState<Set<number>>(new Set());
+  const [showEditSplitSheet, setShowEditSplitSheet] = useState(false);
   
   // Get isActive from donationBox
   const isActive = donationBox?.is_active ?? true;
@@ -854,9 +856,20 @@ export default function ManageDonationBoxScreen() {
               const selectedCausesForDisplay = getSelectedCausesForDisplay();
               return selectedCausesForDisplay.length > 0 && (
                 <View style={styles.selectedSection}>
-                  <View style={{ marginBottom: 8 }}>
-                    <Text style={styles.sectionTitleLarge}>Your Selected Causes</Text>
-                    <Text style={styles.sectionSubtitle}>Your Donation Box. Add or remove anytime.</Text>
+                  <View style={{ marginBottom: 8, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.sectionTitleLarge}>Your Selected Causes</Text>
+                      <Text style={styles.sectionSubtitle}>Your Donation Box. Add or remove anytime.</Text>
+                    </View>
+                    {selectedCausesForDisplay.length > 1 && (
+                      <TouchableOpacity
+                        onPress={() => setShowEditSplitSheet(true)}
+                        style={styles.editSplitButton}
+                      >
+                        <Pencil size={16} color="#374151" />
+                        <Text style={styles.editSplitButtonText}>Edit Split</Text>
+                      </TouchableOpacity>
+                    )}
                   </View>
                   <View style={styles.list}>
                     {selectedCausesForDisplay.map((org) => {
@@ -1421,6 +1434,39 @@ export default function ManageDonationBoxScreen() {
           </View>
         </TouchableWithoutFeedback>
       </Modal>
+
+      {/* Edit Donation Split Bottom Sheet */}
+      {(() => {
+        // Get causes from boxCauses for the edit split sheet
+        // Use boxCauses directly and extract cause objects
+        const causesForEditSplit = (boxCauses || [])
+          .map((boxCause: any) => {
+            // Handle both boxCause.cause and direct cause structure
+            const cause = boxCause?.cause || boxCause;
+            return cause;
+          })
+          .filter((cause: any) => cause != null && cause.id != null)
+          .map((cause: any) => ({
+            id: cause.id,
+            name: cause.name || 'Unknown Cause',
+            image: cause.image || cause.logo || '',
+            logo: cause.logo || cause.image || '',
+          }));
+
+        // Only show if we have more than 1 cause and the sheet is open
+        if (causesForEditSplit.length > 1 && showEditSplitSheet) {
+          return (
+            <EditDonationSplitBottomSheet
+              isOpen={showEditSplitSheet}
+              onClose={() => setShowEditSplitSheet(false)}
+              causes={causesForEditSplit}
+              monthlyAmount={amount}
+              boxCauses={boxCauses}
+            />
+          );
+        }
+        return null;
+      })()}
       </View>
     </RNSafeAreaView>
   );
@@ -2242,5 +2288,19 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     color: '#ffffff',
+  },
+  editSplitButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#F3F4F6',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  editSplitButtonText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#374151',
   },
 });

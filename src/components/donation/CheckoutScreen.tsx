@@ -12,7 +12,7 @@ import {
   TouchableWithoutFeedback,
   ActivityIndicator,
 } from 'react-native';
-import { X, Trash2 } from 'lucide-react-native';
+import { X, Trash2, Pencil } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import { getCollectiveById } from '../../services/api/crwd';
@@ -24,6 +24,7 @@ import { getNonprofitColor } from '../../lib/getNonprofitColor';
 import RequestNonprofitModal from '../newsearch/RequestNonprofitModal';
 import { Alert } from 'react-native';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
+import EditDonationSplitBottomSheet from './EditDonationSplitBottomSheet';
 
 const { width, height } = Dimensions.get('window');
 
@@ -63,6 +64,7 @@ export default function CheckoutScreen({
   const [showPauseModal, setShowPauseModal] = useState(false);
   const [selectedPauseOption, setSelectedPauseOption] = useState<number | null>(null);
   const [showRequestModal, setShowRequestModal] = useState(false);
+  const [showEditSplitSheet, setShowEditSplitSheet] = useState(false);
 
   // Get box_causes from donation box API (main source)
   const boxCauses = donationBox?.box_causes || [];
@@ -310,7 +312,18 @@ export default function CheckoutScreen({
         {causes.length > 0 && (
           <View style={styles.causesSection}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Currently Supporting</Text>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.sectionTitle}>Currently Supporting</Text>
+              </View>
+              {causes.length > 1 && (
+                <TouchableOpacity
+                  onPress={() => setShowEditSplitSheet(true)}
+                  style={styles.editSplitButton}
+                >
+                  <Pencil size={16} color="#374151" />
+                  <Text style={styles.editSplitButtonText}>Edit Split</Text>
+                </TouchableOpacity>
+              )}
             </View>
             <Text style={styles.sectionSubtitle}>
               Supporting {causes.length} nonprofit{causes.length !== 1 ? 's' : ''}
@@ -707,6 +720,53 @@ export default function CheckoutScreen({
       onClose={() => setShowRequestModal(false)}
     />
 
+    {/* Edit Donation Split Bottom Sheet */}
+    {(() => {
+      console.log('=== CheckoutScreen: Preparing causes for Edit Split ===');
+      console.log('causes:', causes);
+      console.log('causes.length:', causes?.length);
+      console.log('causes is array:', Array.isArray(causes));
+      console.log('boxCauses:', boxCauses);
+      console.log('boxCauses.length:', boxCauses?.length);
+      console.log('donationBox:', donationBox);
+      console.log('actualDonationAmount:', actualDonationAmount);
+      console.log('showEditSplitSheet:', showEditSplitSheet);
+      
+      const causesForEditSplit = (causes || [])
+        .filter((cause: any, index: number) => {
+          console.log(`Filtering cause ${index}:`, cause);
+          const isValid = cause != null && cause.id != null;
+          console.log(`Cause ${index} isValid:`, isValid);
+          return isValid;
+        })
+        .map((cause: any, index: number) => {
+          const mappedCause = {
+            id: cause.id,
+            name: cause.name || 'Unknown Cause',
+            image: cause.image || cause.logo || '',
+            logo: cause.logo || cause.image || '',
+          };
+          console.log(`Mapped cause ${index}:`, mappedCause);
+          return mappedCause;
+        });
+      
+      console.log('Final causesForEditSplit:', causesForEditSplit);
+      console.log('causesForEditSplit.length:', causesForEditSplit.length);
+      
+      return (
+        <EditDonationSplitBottomSheet
+          isOpen={showEditSplitSheet}
+          onClose={() => {
+            console.log('Closing Edit Split sheet from CheckoutScreen');
+            setShowEditSplitSheet(false);
+          }}
+          causes={causesForEditSplit}
+          monthlyAmount={actualDonationAmount}
+          boxCauses={boxCauses}
+        />
+      );
+    })()}
+
     </>
   );
 }
@@ -858,6 +918,9 @@ const styles = StyleSheet.create({
   },
   sectionHeader: {
     marginBottom: 8,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
   },
   sectionTitle: {
     fontSize: 18,
@@ -1556,5 +1619,19 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#EF4444',
     fontWeight: '500',
+  },
+  editSplitButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#F3F4F6',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  editSplitButtonText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#374151',
   },
 });

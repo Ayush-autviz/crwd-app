@@ -50,6 +50,7 @@ interface OneTimeDonationProps {
   preselectedCausesData?: any[];
   preselectedCollectiveId?: number;
   fundraiserId?: number;
+  collectiveId?: number;
   initialDonationAmount?: string;
   show?: boolean;
 }
@@ -64,6 +65,7 @@ export default function OneTimeDonation({
   preselectedCausesData,
   preselectedCollectiveId,
   fundraiserId,
+  collectiveId,
   initialDonationAmount,
   show=true
 }: OneTimeDonationProps) {
@@ -192,15 +194,21 @@ export default function OneTimeDonation({
         setSelectedItems([]);
         setSelectedOrganizations([]);
         
-        // Invalidate fundraiser query to refresh data
+        // Invalidate queries to refresh data
         if (fundraiserId) {
           queryClient.invalidateQueries({ queryKey: ['fundraiser', fundraiserId.toString()] });
         }
+        if (collectiveId) {
+          queryClient.invalidateQueries({ queryKey: ['crwd', collectiveId.toString()] });
+        }
         
-        // Navigate back to fundraiser detail screen after a short delay
+        // Replace current screen with fundraiser detail screen after a short delay
+        // This prevents going back to the donation screen
         setTimeout(() => {
           setShowSuccessModal(false);
-          (navigation as any).navigate('FundraiserDetail', { id: fundraiserId, fundraiserId: fundraiserId });
+          if (fundraiserId) {
+            (navigation as any).replace('FundraiserDetail', { id: fundraiserId, fundraiserId: fundraiserId });
+          }
         }, 2000);
       } catch (err: any) {
         console.error('Stripe confirmation exception:', err);

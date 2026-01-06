@@ -270,10 +270,9 @@ export default function PopularPosts({
     };
 
     const handleEditFundraiser = (fundraiserId: number, collectiveId: string) => {
-        (navigation as any).navigate('CreateFundraiser', {
-            fundraiserId,
-            collectiveId,
-            isEdit: true,
+        (navigation as any).navigate('EditFundraiser', {
+            id: fundraiserId,
+            fundraiserId: fundraiserId,
         });
         setShowFundraiserMenu(null);
     };

@@ -1462,6 +1462,7 @@ const styles = StyleSheet.create({
   nonprofitAvatar: {
     width: 48,
     height: 48,
+    borderRadius: 8,
   },
   avatarText: {
     fontSize: 16,

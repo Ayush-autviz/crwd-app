@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react'
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  StyleSheet, 
-  ScrollView, 
-  KeyboardAvoidingView, 
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  KeyboardAvoidingView,
   Platform,
   Image,
   ActivityIndicator,
@@ -210,21 +210,21 @@ export default function Account() {
         )}
       </View>
 
-      <KeyboardAvoidingView 
+      <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
       >
         <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
           {/* Profile Picture */}
           <View style={styles.profilePictureContainer}>
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={isEditMode ? handleImageChange : undefined}
               disabled={!isEditMode}
               activeOpacity={isEditMode ? 0.7 : 1}
             >
               {selectedImageUri || formData.profile_picture_file ? (
-                <Image 
-                  source={{ uri: selectedImageUri || formData.profile_picture_file }} 
+                <Image
+                  source={{ uri: selectedImageUri || formData.profile_picture_file }}
                   style={styles.profilePicture}
                 />
               ) : (
@@ -267,6 +267,35 @@ export default function Account() {
                 editable={isEditMode}
                 placeholderTextColor={PrimaryGrey}
                 placeholder='Last Name'
+              />
+            </View>
+
+            {/* Username */}
+            <View style={styles.fieldContainer}>
+              <Text style={styles.fieldLabel}>Username</Text>
+              <TextInput
+                style={styles.input}
+                value={formData.username}
+                onChangeText={(text) => setFormData(prev => ({ ...prev, username: text }))}
+                editable={isEditMode}
+                placeholderTextColor={PrimaryGrey}
+                placeholder='Username'
+                autoCapitalize="none"
+              />
+              <Text style={styles.usernameHint}>
+                Username must be unique and only contain letters, numbers, and underscores.
+              </Text>
+            </View>
+
+            {/* Email */}
+            <View style={styles.fieldContainer}>
+              <Text style={styles.fieldLabel}>Email</Text>
+              <TextInput
+                style={[styles.input, { opacity: 0.7 }]}
+                value={formData.email}
+                editable={false}
+                placeholderTextColor={PrimaryGrey}
+                placeholder='Email'
               />
             </View>
 
@@ -318,7 +347,7 @@ export default function Account() {
           {/* Action Buttons */}
           {isEditMode && (
             <View style={styles.actionButtonsContainer}>
-                <TouchableOpacity
+              <TouchableOpacity
                 style={[styles.actionButton, styles.saveButton]}
                 onPress={handleSave}
                 disabled={updateProfileMutation.isPending}
@@ -336,7 +365,7 @@ export default function Account() {
               >
                 <Text style={styles.cancelButtonText}>Cancel</Text>
               </TouchableOpacity>
-              
+
             </View>
           )}
         </ScrollView>

@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
 import { categories } from '../../Constants/categories';
 
@@ -15,19 +16,20 @@ const getCategoryInfo = (categoryId: string) => {
     const foundCategories = categoryIds
       .map((id) => categories.find((cat) => cat.id === id))
       .filter((cat: any) => cat !== undefined);
-    
+
     // If we found multiple categories, return them as an array
     if (foundCategories.length > 0) {
       return foundCategories;
     }
   }
-  
+
   // Single category or default - return as array for consistency
   const category = categories.find((cat) => cat.id === categoryId) || categories[0];
   return [category];
 };
 
 export default function CauseProfile({ causeData }: CauseProfileProps) {
+  const navigation = useNavigation();
   const categoryInfo = getCategoryInfo(causeData?.category || '');
 
   // Get first letter for avatar fallback
@@ -93,15 +95,28 @@ export default function CauseProfile({ causeData }: CauseProfileProps) {
         {categoryInfo.length > 0 && (
           <View style={styles.categoriesContainer}>
             {categoryInfo.map((cat: any, index: number) => (
-              <View
+              <TouchableOpacity
                 key={index}
+                onPress={() => {
+                  (navigation as any).navigate('DrawerNav', {
+                    screen: 'MainTabs',
+                    params: {
+                      screen: 'Search',
+                      params: {
+                        searchQuery: cat.name,
+                        autoSearch: true,
+                        activeTab: 'Causes'
+                      }
+                    }
+                  });
+                }}
                 style={[
                   styles.categoryBadge,
                   { backgroundColor: cat.background },
                 ]}
               >
                 <Text style={styles.categoryText}>{cat.name}</Text>
-              </View>
+              </TouchableOpacity>
             ))}
           </View>
         )}

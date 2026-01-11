@@ -77,7 +77,7 @@ export default function CauseResultCard({ cause }: CauseResultCardProps) {
         <View style={styles.textContainer}>
           <Text style={styles.title}>{cause.name}</Text>
           {location ? <Text style={styles.location}>{location}</Text> : null}
-          <Text style={styles.description}>
+          <Text style={styles.description} numberOfLines={1}>
             {truncatedDescription}
           </Text>
         </View>
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#E5E7EB',
-    marginBottom: 12,
+    marginBottom: 0,
   },
   content: {
     flexDirection: 'row',

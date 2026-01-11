@@ -236,8 +236,9 @@ export const deleteRecentSearch = async (searchId: string) => {
 };
 
 // search API endpoints
-export const newSearch = async (tab: 'cause' | 'collective' | 'user' | 'post', query: string) => {
-    const response = await axiosClient.get(`/social/search/?tab=${tab}&q=${query}`);
+export const newSearch = async (tab: 'cause' | 'collective' | 'user' | 'post', query: string, page?: number) => {
+    const pageParam = page ? `&page=${page}` : '';
+    const response = await axiosClient.get(`/social/search/?tab=${tab}&q=${query}${pageParam}`);
     return response.data;
 };
 

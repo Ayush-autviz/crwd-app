@@ -11,7 +11,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { ArrowLeft, Search as SearchIcon, Sparkles, Plus } from 'lucide-react-native';
-import { useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import { getCausesBySearch, getCollectives } from '../services/api/crwd';
 import { getPosts, newSearch } from '../services/api/social';
 import { useAuthStore } from '../store/store';
@@ -59,10 +59,61 @@ export default function NewSearchPage() {
     }
   }, [route.params]);
 
-  // Fetch search results using the new unified search API
-  const { data: searchData, isLoading: isLoadingSearch } = useQuery({
+  // Fetch search results using useInfiniteQuery for pagination
+  // const {
+  //   data: searchData,
+  //   isLoading: isLoadingSearch,
+  //   fetchNextPage,
+  //   hasNextPage,
+  //   isFetchingNextPage
+  // } = useInfiniteQuery({
+  //   queryKey: ['new-search', activeTab, searchQuery],
+  //   queryFn: ({ pageParam = 1 }) => newSearch(getTabValue(activeTab), searchQuery, pageParam),
+  //   initialPageParam: 1,
+  //   getNextPageParam: (lastPage: any) => {
+  //     // Check if there is a next URL
+  //     if (lastPage.next) {
+  //       try {
+  //         const url = new URL(lastPage.next);
+  //         const page = url.searchParams.get('page');
+  //         return page ? parseInt(page) : undefined;
+  //       } catch (e) {
+  //         return undefined;
+  //       }
+  //     }
+  //     return undefined;
+  //   },
+  //   enabled: hasSearched && searchQuery.trim().length > 0,
+  // });
+
+
+
+  // Fetch search results using useInfiniteQuery for pagination
+  const {
+    data: searchData,
+    isLoading: isLoadingSearch,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage
+  } = useInfiniteQuery({
     queryKey: ['new-search', activeTab, searchQuery],
-    queryFn: () => newSearch(getTabValue(activeTab), searchQuery),
+    queryFn: ({ pageParam = 1 }) => newSearch(getTabValue(activeTab), searchQuery, pageParam),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage: any) => {
+      // Check if there is a next URL
+      if (lastPage.next) {
+        try {
+          // FIX: Use Regex instead of URL() to avoid crashes on relative paths in RN
+          const match = lastPage.next.match(/[?&]page=(\d+)/);
+          if (match && match[1]) {
+            return parseInt(match[1], 10);
+          }
+        } catch (e) {
+          return undefined;
+        }
+      }
+      return undefined;
+    },
     enabled: hasSearched && searchQuery.trim().length > 0,
   });
 
@@ -81,7 +132,7 @@ export default function NewSearchPage() {
   const handleSurpriseMe = () => {
     // Get categories from route params if available
     const categories = (route.params as any)?.categories;
-    
+
     if (categories && Array.isArray(categories) && categories.length > 0) {
       navigation.navigate('SurpriseMe' as never, { categories } as never);
     } else {
@@ -91,32 +142,34 @@ export default function NewSearchPage() {
 
   // Get results based on active tab from the unified search API response
   const getResults = () => {
-    if (!searchData) return [];
-    
-    // The API response structure may vary, but typically it returns results in a results array
-    // or directly as an array. Let's handle both cases.
-    if (Array.isArray(searchData)) {
-      return searchData;
-    }
-    
-    // If it's an object with a results property
-    if (searchData.results) {
-      return searchData.results;
-    }
-    
-    // If it's an object with tab-specific properties
-    switch (activeTab) {
-      case 'Causes':
-        return searchData.causes || searchData.cause || [];
-      case 'Collectives':
-        return searchData.collectives || searchData.collective || [];
-      case 'Users':
-        return searchData.users || searchData.user || [];
-      case 'Posts':
-        return searchData.posts || searchData.post || [];
-      default:
-        return [];
-    }
+    if (!searchData?.pages) return [];
+
+    return searchData.pages.flatMap((page: any) => {
+      // The API response structure may vary, but typically it returns results in a results array
+      // or directly as an array. Let's handle both cases.
+      if (Array.isArray(page)) {
+        return page;
+      }
+
+      // If it's an object with a results property
+      if (page.results) {
+        return page.results;
+      }
+
+      // If it's an object with tab-specific properties
+      switch (activeTab) {
+        case 'Causes':
+          return page.causes || page.cause || [];
+        case 'Collectives':
+          return page.collectives || page.collective || [];
+        case 'Users':
+          return page.users || page.user || [];
+        case 'Posts':
+          return page.posts || page.post || [];
+        default:
+          return [];
+      }
+    });
   };
 
   const results = getResults();
@@ -218,24 +271,43 @@ export default function NewSearchPage() {
                   <ActivityIndicator size="large" color="#9CA3AF" />
                 </View>
               ) : resultsCount > 0 ? (
-                <View style={styles.resultsList}>
-                  {activeTab === 'Causes' &&
-                    results.map((cause: any) => (
-                      <CauseResultCard key={cause.id} cause={cause} />
-                    ))}
-                  {activeTab === 'Collectives' &&
-                    results.map((collective: any) => (
-                      <CollectiveResultCard key={collective.id} collective={collective} />
-                    ))}
-                  {activeTab === 'Users' &&
-                    results.map((user: any) => (
-                      <UserResultCard key={user.id} user={user} currentUserId={currentUser?.id?.toString()} />
-                    ))}
-                  {activeTab === 'Posts' &&
-                    results.map((post: any) => (
-                      <PostResultCard key={post.id} post={post} />
-                    ))}
-                </View>
+                <>
+                  <View style={styles.resultsList}>
+                    {activeTab === 'Causes' &&
+                      results.map((cause: any) => (
+                        <CauseResultCard key={cause.id} cause={cause} />
+                      ))}
+                    {activeTab === 'Collectives' &&
+                      results.map((collective: any) => (
+                        <CollectiveResultCard key={collective.id} collective={collective} />
+                      ))}
+                    {activeTab === 'Users' &&
+                      results.map((user: any) => (
+                        <UserResultCard key={user.id} user={user} currentUserId={currentUser?.id?.toString()} />
+                      ))}
+                    {activeTab === 'Posts' &&
+                      results.map((post: any) => (
+                        <PostResultCard key={post.id} post={post} />
+                      ))}
+                  </View>
+
+                  {/* Load More Button */}
+                  {hasNextPage && (
+                    <View style={styles.browseButtonContainer}>
+                      <TouchableOpacity
+                        onPress={() => fetchNextPage()}
+                        disabled={isFetchingNextPage}
+                        style={[styles.browseButton, { marginTop: 16 }]}
+                      >
+                        {isFetchingNextPage ? (
+                          <ActivityIndicator size="small" color="#111827" />
+                        ) : (
+                          <Text style={styles.browseButtonText}>Load More</Text>
+                        )}
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </>
               ) : activeTab === 'Causes' ? (
                 <>
                   {/* Causes Empty State */}
@@ -450,6 +522,7 @@ const styles = StyleSheet.create({
   resultsSection: {
     paddingHorizontal: 12,
     paddingTop: 16,
+    paddingBottom: 80,
   },
   sectionHeader: {
     fontSize: 10,

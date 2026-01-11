@@ -19,18 +19,18 @@ export default function NewSettings() {
   const navigation = useNavigation()
   const { user: currentUser, setUser, setToken } = useAuthStore()
   const { showToast } = useToast()
-  
+
   // Bottom sheet refs
   const passwordBottomSheetRef = useRef<BottomSheet>(null)
   const emailBottomSheetRef = useRef<BottomSheet>(null)
-  
+
   // FAQ state
   const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null)
-  
+
   const toggleFAQ = (index: number) => {
     setExpandedFAQ(expandedFAQ === index ? null : index)
   }
-  
+
   const faqData = [
     {
       question: "How does the donation box capacity work?",
@@ -119,13 +119,13 @@ export default function NewSettings() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaView style={styles.container} edges={['top']}>
         <MainHeaderNav show={true} menu={false} title={'Settings'} />
-        
+
         <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
           {/* Account Component */}
           <Account />
 
           {/* Security Section */}
-          {currentUser?.id && (
+          {currentUser?.id && currentUser?.auth_method === 'email' && (
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
                 <Lock size={20} color={PrimaryBlue} />
@@ -150,15 +150,15 @@ export default function NewSettings() {
               {/* <View style={styles.divider} /> */}
               <Text style={[styles.passwordLabel, { marginTop: 10 }]}>Email</Text>
               <View style={styles.passwordInputContainer}>
-                  <TextInput
-                    style={styles.passwordInput}
-                    value={currentUser?.email}
-                    editable={false}
-                  />
-                  <Mail size={20} color={PrimaryGrey} />
-                </View>
-              <TouchableOpacity 
-                onPress={openEmailSheet} 
+                <TextInput
+                  style={styles.passwordInput}
+                  value={currentUser?.email}
+                  editable={false}
+                />
+                <Mail size={20} color={PrimaryGrey} />
+              </View>
+              <TouchableOpacity
+                onPress={openEmailSheet}
                 style={styles.changePasswordButton}
               >
                 <Text style={styles.changePasswordButtonText}>Change Email</Text>
@@ -174,11 +174,11 @@ export default function NewSettings() {
                 <Text style={styles.sectionTitle}>Payment & Receipts</Text>
               </View>
               <View style={styles.divider} />
-              <TouchableOpacity 
+              <TouchableOpacity
                 onPress={() => {
                   // @ts-ignore
                   navigation.navigate('DrawerNav', { screen: 'TransactionHistory' })
-                }} 
+                }}
                 style={styles.menuButton}
               >
                 <FileText size={20} color={PrimaryGrey} />
@@ -197,11 +197,11 @@ export default function NewSettings() {
                 <Text style={styles.sectionTitle}>Saved Content</Text>
               </View>
               <View style={styles.divider} />
-              <TouchableOpacity 
+              <TouchableOpacity
                 onPress={() => {
                   // @ts-ignore
                   navigation.navigate('DrawerNav', { screen: 'Saved' })
-                }} 
+                }}
                 style={styles.menuButton}
               >
                 <Heart size={20} color={PrimaryGrey} />
@@ -218,7 +218,7 @@ export default function NewSettings() {
               </View>
               <Text style={styles.sectionTitle}>Help & Support</Text>
             </View>
-            
+
             {/* FAQ Section */}
             <View style={styles.faqSection}>
               {faqData.map((faq, index) => (
@@ -229,9 +229,9 @@ export default function NewSettings() {
                     onPress={() => toggleFAQ(index)}
                   >
                     <Text style={styles.faqQuestion}>{faq.question}</Text>
-                    <ChevronDown 
-                      size={20} 
-                      color={PrimaryGrey} 
+                    <ChevronDown
+                      size={20}
+                      color={PrimaryGrey}
                       style={[styles.faqChevron, expandedFAQ === index && styles.faqChevronRotated]}
                     />
                   </TouchableOpacity>
@@ -243,29 +243,29 @@ export default function NewSettings() {
                 </View>
               ))}
             </View>
-            
+
             {/* Support Links Section */}
             <View style={styles.supportLinksSection}>
-              <TouchableOpacity 
-                onPress={() => navigation.navigate('ReportIssue' as never)} 
+              <TouchableOpacity
+                onPress={() => navigation.navigate('ReportIssue' as never)}
                 style={styles.supportLink}
               >
                 <Text style={styles.supportLinkText}>Contact Support</Text>
               </TouchableOpacity>
-              <TouchableOpacity 
-                onPress={() => navigation.navigate('TermsOfUse' as never)} 
+              <TouchableOpacity
+                onPress={() => navigation.navigate('TermsOfUse' as never)}
                 style={styles.supportLink}
               >
                 <Text style={styles.supportLinkText}>Terms of Service</Text>
               </TouchableOpacity>
-              <TouchableOpacity 
-                onPress={() => navigation.navigate('PrivacyPolicy' as never)} 
+              <TouchableOpacity
+                onPress={() => navigation.navigate('PrivacyPolicy' as never)}
                 style={styles.supportLink}
               >
                 <Text style={styles.supportLinkText}>Privacy Policy</Text>
               </TouchableOpacity>
-              <TouchableOpacity 
-                onPress={() => navigation.navigate('About' as never)} 
+              <TouchableOpacity
+                onPress={() => navigation.navigate('About' as never)}
                 style={styles.supportLink}
               >
                 <Text style={styles.supportLinkText}>About CRWD</Text>
@@ -276,7 +276,7 @@ export default function NewSettings() {
           {/* Delete Account Section */}
           {currentUser?.id && (
             <View style={styles.section}>
-              <TouchableOpacity 
+              <TouchableOpacity
                 onPress={handleDeleteAccount}
                 disabled={deactivateAccountMutation.isPending}
                 style={[

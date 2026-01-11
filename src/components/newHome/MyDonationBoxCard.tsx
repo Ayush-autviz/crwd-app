@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { ShoppingBag, ChevronRight } from 'lucide-react-native';
+import { ShoppingBag, ChevronRight, ArrowRight } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 
 interface MyDonationBoxCardProps {
@@ -41,7 +41,7 @@ export default function MyDonationBoxCard({
             onPress={() => navigation.navigate('Donation' as never)}
           >
             <Text style={styles.linkText}>Manage</Text>
-            <ChevronRight size={14} color="#1600ff" />
+            <ArrowRight size={14} color="#1600ff" />
           </TouchableOpacity>
         </View>
       </TouchableOpacity>
@@ -96,8 +96,8 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   bold: {
-    fontWeight: '600',
-    color: '#4B5563',
+    fontWeight: '700',
+    color: '#000000',
   },
   linkContainer: {
     flexDirection: 'row',
@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
   },
   linkText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#1600ff',
   },
 });

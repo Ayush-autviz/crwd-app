@@ -1,13 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
-  Modal,
   StyleSheet,
   TextInput,
-  ScrollView,
-  TouchableWithoutFeedback,
   ActivityIndicator,
   Dimensions,
 } from 'react-native';
@@ -18,6 +15,12 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { updateDonationBox } from '../../services/api/donation';
 import { useToast } from '../../contexts/ToastContext';
 import { PrimaryBlue } from '../../Constants/Colors';
+import {
+  BottomSheetModal,
+  BottomSheetBackdrop,
+  BottomSheetScrollView,
+  BottomSheetView,
+} from '@gorhom/bottom-sheet';
 
 interface EditDonationSplitBottomSheetProps {
   isOpen: boolean;
@@ -73,8 +76,6 @@ interface CauseCardProps {
   onInputBlur: (id: number) => void;
   onSliderChange: (id: number, value: number) => void;
   onSliderComplete: (id: number, value: number) => void;
-  setDraggingValue: (id: number, value: number) => void;
-  clearDraggingValue: (id: number) => void;
 }
 
 const CauseCard = React.memo(({
@@ -192,16 +193,44 @@ export default function EditDonationSplitBottomSheet({
   const queryClient = useQueryClient();
   const { showToast } = useToast();
 
-  // Debug: Log props when component receives them
-  console.log('=== EditDonationSplitBottomSheet Props ===');
-  console.log('isOpen:', isOpen);
-  console.log('causes:', causes);
-  console.log('causes.length:', causes?.length);
-  console.log('causes type:', typeof causes);
-  console.log('causes is array:', Array.isArray(causes));
-  console.log('monthlyAmount:', monthlyAmount);
-  console.log('boxCauses:', boxCauses);
-  console.log('boxCauses.length:', boxCauses?.length);
+  const bottomSheetModalRef = useRef<BottomSheetModal>(null);
+  const snapPoints = useMemo(() => ['85%'], []);
+
+  // Debug: Log props
+  useEffect(() => {
+    if (isOpen) {
+      console.log('=== EditDonationSplitBottomSheet Opened ===');
+      console.log('causes:', causes?.length);
+      console.log('monthlyAmount:', monthlyAmount);
+    }
+  }, [isOpen, causes, monthlyAmount]);
+
+  // Handle Sheet Visibility
+  useEffect(() => {
+    if (isOpen) {
+      bottomSheetModalRef.current?.present();
+    } else {
+      bottomSheetModalRef.current?.dismiss();
+    }
+  }, [isOpen]);
+
+  const handleSheetChanges = useCallback((index: number) => {
+    if (index === -1) {
+      onClose();
+    }
+  }, [onClose]);
+
+  const renderBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop
+        {...props}
+        disappearsOnIndex={-1}
+        appearsOnIndex={0}
+        opacity={0.5}
+      />
+    ),
+    []
+  );
 
   // Calculate minimum percentage based on $0.20 minimum donation
   const calculateMinPercentage = () => {
@@ -212,32 +241,15 @@ export default function EditDonationSplitBottomSheet({
 
   // Initialize percentages - use existing if available, otherwise equal split
   useEffect(() => {
-    console.log('=== EditDonationSplitBottomSheet useEffect ===');
-    console.log('isOpen:', isOpen);
-    console.log('causes:', causes);
-    console.log('causes.length:', causes?.length);
-    console.log('causes is array:', Array.isArray(causes));
-    
     // Reset when modal closes
     if (!isOpen) {
-      console.log('Modal is closed, resetting state');
       setPercentages({});
       setInputValues({});
       setDraggingValues({});
       return;
     }
 
-    console.log('Modal is open, checking causes...');
     if (causes && Array.isArray(causes) && causes.length > 0 && isOpen) {
-      console.log('Causes found, initializing percentages. Count:', causes.length);
-      causes.forEach((cause: any, index: number) => {
-        console.log(`Cause ${index}:`, {
-          id: cause.id,
-          name: cause.name,
-          image: cause.image,
-          logo: cause.logo,
-        });
-      });
       const minPercentage = calculateMinPercentage();
       const initialPercentages: Record<number, number> = {};
       const initialInputs: Record<number, string> = {};
@@ -282,13 +294,6 @@ export default function EditDonationSplitBottomSheet({
       
       setPercentages(initialPercentages);
       setInputValues(initialInputs);
-      console.log('Percentages initialized:', initialPercentages);
-      console.log('Input values initialized:', initialInputs);
-    } else {
-      console.log('WARNING: No causes found or causes is not an array!');
-      console.log('causes:', causes);
-      console.log('causes type:', typeof causes);
-      console.log('causes is array:', Array.isArray(causes));
     }
   }, [causes, isOpen, boxCauses, monthlyAmount]);
 
@@ -534,161 +539,126 @@ export default function EditDonationSplitBottomSheet({
     updateDonationBoxMutation.mutate(requestData);
   };
 
-  if (!isOpen) return null;
-
   const netAmount = monthlyAmount * 0.9;
 
-  // Debug: Log render state
-  console.log('=== EditDonationSplitBottomSheet Render ===');
-  console.log('isOpen:', isOpen);
-  console.log('causes in render:', causes);
-  console.log('causes.length in render:', causes?.length);
-  console.log('percentages:', percentages);
-  console.log('inputValues:', inputValues);
-
   return (
-    <Modal
-      visible={isOpen}
-      transparent
-      animationType="slide"
-      onRequestClose={onClose}
+    <BottomSheetModal
+      ref={bottomSheetModalRef}
+      index={0}
+      snapPoints={snapPoints}
+      onChange={handleSheetChanges}
+      backdropComponent={renderBackdrop}
+      enablePanDownToClose
+      keyboardBehavior="interactive"
+      handleIndicatorStyle={{ backgroundColor: '#D1D5DB' }}
+      backgroundStyle={styles.bottomSheetBackground}
     >
-      <TouchableWithoutFeedback onPress={onClose}>
-        <View style={styles.overlay}>
-          <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
-            <View style={styles.bottomSheet}>
-              {/* Header */}
-              <View style={styles.header}>
-                <View style={styles.headerContent}>
-                  <Text style={styles.headerTitle}>Edit Donation Split</Text>
-                  <Text style={styles.headerSubtitle}>
-                    Adjust how your ${monthlyAmount}/month is split across nonprofits.
-                  </Text>
-                </View>
-                <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                  <X size={20} color="#374151" />
-                </TouchableOpacity>
-              </View>
+      <View style={styles.sheetContainer}>
+        {/* Header */}
+        <View style={styles.header}>
+          <View style={styles.headerContent}>
+            <Text style={styles.headerTitle}>Edit Donation Split</Text>
+            <Text style={styles.headerSubtitle}>
+              Adjust how your ${monthlyAmount}/month is split across nonprofits.
+            </Text>
+          </View>
+          <TouchableOpacity onPress={() => { bottomSheetModalRef.current?.dismiss(); }} style={styles.closeButton}>
+            <X size={20} color="#374151" />
+          </TouchableOpacity>
+        </View>
 
-              {/* Content */}
-              <ScrollView 
-                style={styles.content} 
-                contentContainerStyle={styles.contentContainer}
-                keyboardShouldPersistTaps="handled"
-                nestedScrollEnabled={true}
-                scrollEventThrottle={16}
-                showsVerticalScrollIndicator={true}
-              >
-                {(() => {
-                  console.log('=== Rendering causes list ===');
-                  console.log('causes:', causes);
-                  console.log('causes.length:', causes?.length);
-                  console.log('causes is array:', Array.isArray(causes));
-                  
-                  if (!causes || !Array.isArray(causes) || causes.length === 0) {
-                    console.log('No causes to render, showing empty state');
-                    return (
-                      <View style={styles.emptyState}>
-                        <Text style={styles.emptyStateText}>No causes found</Text>
-                        <Text style={styles.emptyStateText}>Debug: causes = {JSON.stringify(causes)}</Text>
-                      </View>
-                    );
-                  }
-                  
-                  console.log(`Rendering ${causes.length} causes`);
-                  const minPercentage = calculateMinPercentage();
-                  const netAmount = monthlyAmount * 0.9;
+        {/* Content */}
+        <BottomSheetScrollView 
+          style={styles.content} 
+          contentContainerStyle={styles.contentContainer}
+          keyboardShouldPersistTaps="handled"
+        >
+          {(() => {
+            if (!causes || !Array.isArray(causes) || causes.length === 0) {
+              return (
+                <View style={styles.emptyState}>
+                  <Text style={styles.emptyStateText}>No causes found</Text>
+                </View>
+              );
+            }
+            
+            return (
+              <View style={styles.causesList}>
+                {causes.map((cause: any, index: number) => {
+                  const percentage = percentages[cause.id] || 0;
+                  const displayPercentage = draggingValues[cause.id] ?? percentage;
                   
                   return (
-                    <View style={styles.causesList}>
-                      {causes.map((cause: any, index: number) => {
-                        const percentage = percentages[cause.id] || 0;
-                        const displayPercentage = draggingValues[cause.id] ?? percentage;
-                        
-                        return (
-                          <CauseCard
-                            key={cause.id}
-                            cause={cause}
-                            index={index}
-                            percentage={percentage}
-                            displayPercentage={displayPercentage}
-                            inputValue={inputValues[cause.id] || '0'}
-                            draggingValue={draggingValues[cause.id]}
-                            netAmount={netAmount}
-                            minPercentage={minPercentage}
-                            onDecrease={handleDecrease}
-                            onIncrease={handleIncrease}
-                            onInputChange={handleInputChange}
-                            onInputBlur={handleInputBlur}
-                            onSliderChange={(id, value) => {
-                              // Only update dragging value - no heavy calculations
-                              setDraggingValues(prev => ({
-                                ...prev,
-                                [id]: value,
-                              }));
-                            }}
-                            onSliderComplete={(id, value) => {
-                              // Clear dragging value and trigger heavy calculation only once
-                              setDraggingValues(prev => {
-                                const copy = { ...prev };
-                                delete copy[id];
-                                return copy;
-                              });
-                              handlePercentageChange(id, value);
-                            }}
-                            setDraggingValue={() => {}}
-                            clearDraggingValue={() => {}}
-                          />
-                        );
-                      })}
-                    </View>
+                    <CauseCard
+                      key={cause.id}
+                      cause={cause}
+                      index={index}
+                      percentage={percentage}
+                      displayPercentage={displayPercentage}
+                      inputValue={inputValues[cause.id] || '0'}
+                      draggingValue={draggingValues[cause.id]}
+                      netAmount={netAmount}
+                      minPercentage={calculateMinPercentage()}
+                      onDecrease={handleDecrease}
+                      onIncrease={handleIncrease}
+                      onInputChange={handleInputChange}
+                      onInputBlur={handleInputBlur}
+                      onSliderChange={(id, value) => {
+                        setDraggingValues(prev => ({
+                          ...prev,
+                          [id]: value,
+                        }));
+                      }}
+                      onSliderComplete={(id, value) => {
+                        setDraggingValues(prev => {
+                          const copy = { ...prev };
+                          delete copy[id];
+                          return copy;
+                        });
+                        handlePercentageChange(id, value);
+                      }}
+                    />
                   );
-                })()}
-              </ScrollView>
-
-              {/* Footer */}
-              <View style={styles.footer}>
-                <TouchableOpacity onPress={handleReset} style={styles.resetButton}>
-                  <Text style={styles.resetButtonText}>Reset to equal split</Text>
-                </TouchableOpacity>
-                <View style={styles.footerButtons}>
-                  <TouchableOpacity onPress={onClose} style={styles.cancelButton}>
-                    <Text style={styles.cancelButtonText}>Cancel</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={handleSave}
-                    disabled={updateDonationBoxMutation.isPending}
-                    style={[styles.saveButton, updateDonationBoxMutation.isPending && styles.saveButtonDisabled]}
-                  >
-                    {updateDonationBoxMutation.isPending ? (
-                      <ActivityIndicator color="#FFFFFF" />
-                    ) : (
-                      <Text style={styles.saveButtonText}>Save Split</Text>
-                    )}
-                  </TouchableOpacity>
-                </View>
+                })}
               </View>
-            </View>
-          </TouchableWithoutFeedback>
+            );
+          })()}
+        </BottomSheetScrollView>
+
+        {/* Footer */}
+        <View style={styles.footer}>
+          <TouchableOpacity onPress={handleReset} style={styles.resetButton}>
+            <Text style={styles.resetButtonText}>Reset to equal split</Text>
+          </TouchableOpacity>
+          <View style={styles.footerButtons}>
+            <TouchableOpacity onPress={() => bottomSheetModalRef.current?.dismiss()} style={styles.cancelButton}>
+              <Text style={styles.cancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={handleSave}
+              disabled={updateDonationBoxMutation.isPending}
+              style={[styles.saveButton, updateDonationBoxMutation.isPending && styles.saveButtonDisabled]}
+            >
+              {updateDonationBoxMutation.isPending ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text style={styles.saveButtonText}>Save Split</Text>
+              )}
+            </TouchableOpacity>
+          </View>
         </View>
-      </TouchableWithoutFeedback>
-    </Modal>
+      </View>
+    </BottomSheetModal>
   );
 }
 
 const styles = StyleSheet.create({
-  overlay: {
+  sheetContainer: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
   },
-  bottomSheet: {
+  bottomSheetBackground: {
     backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    height: Dimensions.get('window').height * 0.8,
-    paddingBottom: 0,
-    flexDirection: 'column',
+    borderRadius: 20,
   },
   header: {
     flexDirection: 'row',
@@ -824,7 +794,7 @@ const styles = StyleSheet.create({
   footer: {
     paddingHorizontal: 12,
     paddingTop: 12,
-    paddingBottom: 16,
+    paddingBottom: 16, // Extra safe area buffer might be needed if not handled by Sheet
     borderTopWidth: 1,
     borderTopColor: '#E5E7EB',
     backgroundColor: '#FFFFFF',
@@ -882,4 +852,3 @@ const styles = StyleSheet.create({
     color: '#6B7280',
   },
 });
-

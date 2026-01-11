@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
-import { ChevronLeft, ChevronRight, Share2, Settings, Eye } from 'lucide-react-native';
+import { ChevronLeft, ChevronRight, Share2, Settings, Eye, ArrowRight } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 
 interface Collective {
@@ -25,25 +25,42 @@ export default function CollectiveCarouselCard({
   const [currentIndex, setCurrentIndex] = useState(0);
   const navigation = useNavigation();
 
-  // Reset index if collectives array changes or becomes empty
+  // 1. Sort collectives: Admin/Founder first, then others
+  const sortedCollectives = useMemo(() => {
+    if (!collectives) return [];
+
+    // Create a copy [...] to avoid mutating the prop
+    return [...collectives].sort((a, b) => {
+      const isAAdmin = a.role === 'Admin' || a.role === 'Founder';
+      const isBAdmin = b.role === 'Admin' || b.role === 'Founder';
+
+      if (isAAdmin && !isBAdmin) return -1; // a comes first
+      if (!isAAdmin && isBAdmin) return 1;  // b comes first
+      return 0; // maintain relative order
+    });
+  }, [collectives]);
+
+  // Reset index if sortedCollectives array changes or becomes empty
   useEffect(() => {
-    if (!collectives || collectives.length === 0) {
+    if (!sortedCollectives || sortedCollectives.length === 0) {
       setCurrentIndex(0);
-    } else if (currentIndex >= collectives.length) {
+    } else if (currentIndex >= sortedCollectives.length) {
       setCurrentIndex(0);
     }
-  }, [collectives, currentIndex]);
+  }, [sortedCollectives, currentIndex]);
 
-  if (!collectives || collectives.length === 0) {
+  if (!sortedCollectives || sortedCollectives.length === 0) {
     return null;
   }
 
-  const totalCollectives = collectives.length;
-  
+  const totalCollectives = sortedCollectives.length;
+
   // Ensure currentIndex is within bounds
   const safeIndex = Math.max(0, Math.min(currentIndex, totalCollectives - 1));
-  const currentCollective = collectives[safeIndex];
-  
+
+  // 2. Use sortedCollectives to get the current item
+  const currentCollective = sortedCollectives[safeIndex];
+
   // If somehow currentCollective is undefined, return null
   if (!currentCollective) {
     return null;
@@ -63,10 +80,10 @@ export default function CollectiveCarouselCard({
   // Priority: 1. Use color (with white text), 2. Use logo (image), 3. Fallback to generated color with letter
   const hasColor = !!currentCollective?.color;
   const logoOrImage = currentCollective?.logo || currentCollective?.image || '';
-  const hasLogo = !!logoOrImage && 
+  const hasLogo = !!logoOrImage &&
     (logoOrImage.startsWith('http') ||
-     logoOrImage.startsWith('/') ||
-     logoOrImage.startsWith('data:'));
+      logoOrImage.startsWith('/') ||
+      logoOrImage.startsWith('data:'));
   const iconColor = hasColor ? currentCollective.color : (!hasLogo ? '#14B8A6' : undefined); // Default color if no color/logo
   const showImage = hasLogo && !hasColor; // Show logo only if no color is available
 
@@ -76,7 +93,7 @@ export default function CollectiveCarouselCard({
   // Handle button click - navigate to edit if founder, otherwise view
   const handleButtonClick = () => {
     if (!currentCollective?.id) return;
-    
+
     if (isFounder) {
       (navigation as any).navigate('ManageCRWD', { collectiveId: currentCollective.id });
     } else {
@@ -137,7 +154,7 @@ export default function CollectiveCarouselCard({
             {/* Title and Badge */}
             <View style={styles.titleBadgeContainer}>
               <Text style={styles.title}>{currentCollective?.name || 'Unknown Collective'}</Text>
-              {currentCollective?.role && (
+              {currentCollective?.role === 'Admin' && (
                 <View
                   style={[
                     styles.badge,
@@ -177,12 +194,11 @@ export default function CollectiveCarouselCard({
               >
                 {isFounder ? (
                   <>
-                    {/* <Settings size={16} color="#111827" /> */}
-                    <Text style={styles.outlineButtonText}>Manage</Text>
+                    <Text style={[styles.outlineButtonText, { color: '#1600ff' }]}>Manage</Text>
+                    <ArrowRight size={14} color="#1600ff" />
                   </>
                 ) : (
                   <>
-                    {/* <Eye size={16} color="#111827" /> */}
                     <Text style={styles.outlineButtonText}>View</Text>
                   </>
                 )}
@@ -194,7 +210,6 @@ export default function CollectiveCarouselCard({
                   // TODO: Implement share functionality
                 }}
               >
-                {/* <Share2 size={16} color="#FFFFFF" /> */}
                 <Text style={styles.primaryButtonText}>Share</Text>
               </TouchableOpacity>
             </View>
@@ -209,7 +224,6 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
     marginBottom: 16,
-    // maxWidth: '95%',
     alignSelf: 'center',
   },
   card: {
@@ -318,8 +332,8 @@ const styles = StyleSheet.create({
     textAlign: 'left',
   },
   bold: {
-    fontWeight: '600',
-    color: '#4B5563',
+    fontWeight: '700',
+    color: '#111827',
   },
   actions: {
     flexDirection: 'row',
@@ -333,8 +347,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 6,
     backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#D1D5DB',
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 8,
@@ -342,7 +354,7 @@ const styles = StyleSheet.create({
   },
   outlineButtonText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#111827',
   },
   primaryButton: {
@@ -362,5 +374,3 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
 });
-
-

@@ -1,13 +1,13 @@
 import React, { useState } from 'react'
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  Image, 
-  StyleSheet, 
-  ScrollView, 
-  KeyboardAvoidingView, 
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Image,
+  StyleSheet,
+  ScrollView,
+  KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
 } from 'react-native'
@@ -30,22 +30,27 @@ const googleXml = `<svg viewBox="0 0 24 24">
   <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
 </svg>`
 
+const appleXml = `<svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="20" height="20" viewBox="0 0 30 30" style={{ fill: "#FFFFFF" }}>
+    <path d="M25.565,9.785c-0.123,0.077-3.051,1.702-3.051,5.305c0.138,4.109,3.695,5.55,3.756,5.55 c-0.061,0.077-0.537,1.963-1.947,3.94C23.204,26.283,21.962,28,20.076,28c-1.794,0-2.438-1.135-4.508-1.135 c-2.223,0-2.852,1.135-4.554,1.135c-1.886,0-3.22-1.809-4.4-3.496c-1.533-2.208-2.836-5.673-2.882-9 c-0.031-1.763,0.307-3.496,1.165-4.968c1.211-2.055,3.373-3.45,5.734-3.496c1.809-0.061,3.419,1.242,4.523,1.242 c1.058,0,3.036-1.242,5.274-1.242C21.394,7.041,23.97,7.332,25.565,9.785z M15.001,6.688c-0.322-1.61,0.567-3.22,1.395-4.247 c1.058-1.242,2.729-2.085,4.17-2.085c0.092,1.61-0.491,3.189-1.533,4.339C18.098,5.937,16.488,6.872,15.001,6.688z"></path>
+</svg>`
+
 export default function Login() {
   const navigation = useNavigation()
   const route = useRoute()
   const { showToast } = useToast()
   const { setUser, setToken } = useAuthStore()
-  
+
   // Get redirectTo from route params (React Navigation pattern)
   const redirectTo = (route.params as any)?.redirectTo || null;
-  
+
   const [showPassword, setShowPassword] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
+  const [isAppleLoading, setIsAppleLoading] = useState(false)
 
   // Google callback mutation
   const googleCallbackMutation = useMutation({
-    mutationFn: googleCallbackApi,
+    mutationFn: (code: string) => googleCallbackApi(code, 'google'),
     onSuccess: (response) => {
       console.log('Google callback successful:', response)
       if (response.user) setUser(response.user);
@@ -56,7 +61,7 @@ export default function Login() {
         });
       }
       showToast('Google authentication successful!');
-      
+
       // Handle redirect - use reset to prevent going back to login
       const redirectParams = (route.params as any)?.redirectParams || {};
       if (response.user && !response.user.last_login_at) {
@@ -102,7 +107,42 @@ export default function Login() {
       showToast(errorMessage)
     },
   })
-  
+
+  const appleLoginQuery = useQuery({
+    queryKey: ['appleLogin'],
+    queryFn: () => googleLogin('SignInWithApple'),
+    enabled: false,
+  })
+
+  const appleCallbackMutation = useMutation({
+    mutationFn: (code: string) => googleCallbackApi(code, 'apple'),
+    onSuccess: (response) => {
+      console.log('Apple callback successful:', response)
+
+      if (response.user) {
+        setUser(response.user)
+      }
+      if (response.access_token) {
+        setToken({
+          access_token: response.access_token,
+          refresh_token: response.refresh_token
+        })
+      }
+
+      if (response.redirectTo) {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: response.redirectTo as never }],
+        })
+      }
+    },
+    onError: (error: any) => {
+      console.error('Apple callback error:', error.response)
+      const errorMessage = error?.response?.data?.message || error.message || 'Apple callback failed'
+      showToast(errorMessage)
+    },
+  })
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -113,17 +153,17 @@ export default function Login() {
     mutationFn: login,
     onSuccess: (response) => {
       console.log('Login successful:', response)
-      
+
       if (response.user) {
         setUser(response.user)
       }
       if (response.access_token) {
-        setToken({ 
-          access_token: response.access_token, 
-          refresh_token: response.refresh_token 
+        setToken({
+          access_token: response.access_token,
+          refresh_token: response.refresh_token
         })
       }
-      
+
       // Handle redirect - use reset to prevent going back to login
       const redirectParams = (route.params as any)?.redirectParams || {};
       if (response.user && !response.user.last_login_at) {
@@ -172,9 +212,11 @@ export default function Login() {
   // Google login query
   const googleLoginQuery = useQuery({
     queryKey: ['googleLogin'],
-    queryFn: googleLogin,
+    queryFn: () => googleLogin('Google'),
     enabled: false,
   })
+
+
 
   const handleInputChange = (name: string, value: string) => {
     setFormData(prev => ({
@@ -211,7 +253,7 @@ export default function Login() {
               enableDefaultShare: false,
             }
           )
-          
+
           if (authResult.type === 'success' && authResult.url) {
             const codeMatch = authResult.url.match(/[?&]code=([^&]+)/);
             const code = codeMatch ? decodeURIComponent(codeMatch[1]) : null;
@@ -229,6 +271,40 @@ export default function Login() {
     }
   }
 
+  const handleAppleLogin = async () => {
+    setIsAppleLoading(true)
+    try {
+      const result = await appleLoginQuery.refetch()
+      if (result.data && result.data.url) {
+        if (await InAppBrowser.isAvailable()) {
+          const authResult = await InAppBrowser.openAuth(
+            result.data.url,
+            'crwd-app://appleCallback',
+            {
+              ephemeralWebSession: false,
+              showTitle: false,
+              enableUrlBarHiding: true,
+              enableDefaultShare: false,
+            }
+          )
+
+          if (authResult.type === 'success' && authResult.url) {
+            const codeMatch = authResult.url.match(/[?&]code=([^&]+)/);
+            const code = codeMatch ? decodeURIComponent(codeMatch[1]) : null;
+            if (code) {
+              appleCallbackMutation.mutate(code);
+            }
+          }
+        }
+      }
+    } catch (error: any) {
+      console.error('Apple login error:', error)
+      showToast('Apple login failed. Please try again.')
+    } finally {
+      setIsAppleLoading(false)
+    }
+  }
+
   return (
     <View style={styles.container}>
       <LinearGradient
@@ -237,7 +313,7 @@ export default function Login() {
         end={{ x: 1, y: 1 }}
         style={styles.gradient}
       >
-        <KeyboardAvoidingView 
+        <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.keyboardView}
         >
@@ -248,7 +324,7 @@ export default function Login() {
                 <Text style={styles.title}>Welcome back</Text>
                 <Text style={styles.subtitle}>
                   Don't have an account?{' '}
-                  <Text 
+                  <Text
                     style={styles.link}
                     onPress={() => navigation.navigate('ClaimProfile' as never)}
                   >
@@ -258,7 +334,7 @@ export default function Login() {
               </View>
 
               {/* Google Login Button */}
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={[styles.googleButton, (isGoogleLoading || googleCallbackMutation.isPending) && styles.googleButtonDisabled]}
                 onPress={handleGoogleLogin}
                 disabled={isGoogleLoading || googleCallbackMutation.isPending}
@@ -272,6 +348,24 @@ export default function Login() {
                 )}
                 <Text style={styles.googleButtonText}>
                   {(isGoogleLoading || googleCallbackMutation.isPending) ? 'Signing in...' : 'Continue with Google'}
+                </Text>
+              </TouchableOpacity>
+
+              {/* Apple Login Button */}
+              <TouchableOpacity
+                style={[styles.appleButton, (isAppleLoading || appleCallbackMutation.isPending) && styles.appleButtonDisabled]}
+                onPress={handleAppleLogin}
+                disabled={isAppleLoading || appleCallbackMutation.isPending}
+              >
+                {(isAppleLoading || appleCallbackMutation.isPending) ? (
+                  <ActivityIndicator size="small" color={PrimaryGrey} />
+                ) : (
+                  <View style={styles.appleIconPlaceholder}>
+                    <SvgXml xml={appleXml} width={18} height={18} />
+                  </View>
+                )}
+                <Text style={styles.appleButtonText}>
+                  {(isAppleLoading || appleCallbackMutation.isPending) ? 'Signing in...' : 'Continue with Apple'}
                 </Text>
               </TouchableOpacity>
 
@@ -329,7 +423,7 @@ export default function Login() {
 
                 {/* Remember Me & Forgot Password */}
                 <View style={styles.optionsRow}>
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     style={styles.rememberMe}
                     onPress={() => setRememberMe(!rememberMe)}
                   >
@@ -434,6 +528,31 @@ const styles = StyleSheet.create({
   googleButtonText: {
     fontSize: 14,
     color: '#374151',
+    fontWeight: '500',
+  },
+  appleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'black',
+
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+  },
+  appleButtonDisabled: {
+    opacity: 0.5,
+  },
+  appleIconPlaceholder: {
+    width: 16,
+    height: 16,
+    marginRight: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  appleButtonText: {
+    fontSize: 14,
+    color: 'white',
     fontWeight: '500',
   },
   divider: {

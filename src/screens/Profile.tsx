@@ -32,31 +32,31 @@ type RootStackParamList = {
 
 // Avatar colors for consistent fallback styling (same as NewCreateCollective.tsx)
 const avatarColors = [
-  '#FF6B6B', '#4CAF50', '#FF9800', '#9C27B0', '#2196F3',
-  '#FFC107', '#E91E63', '#00BCD4', '#8BC34A', '#FF5722',
-  '#673AB7', '#009688', '#FFEB3B', '#795548', '#607D8B',
+    '#FF6B6B', '#4CAF50', '#FF9800', '#9C27B0', '#2196F3',
+    '#FFC107', '#E91E63', '#00BCD4', '#8BC34A', '#FF5722',
+    '#673AB7', '#009688', '#FFEB3B', '#795548', '#607D8B',
 ];
 
 const getConsistentColor = (id: number | string, colors: string[]) => {
-  const hash = typeof id === 'number' ? id : id.toString().split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
-  return colors[hash % colors.length];
+    const hash = typeof id === 'number' ? id : id.toString().split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
+    return colors[hash % colors.length];
 };
 
 const getInitials = (firstName?: string, lastName?: string, name?: string, username?: string) => {
-  if (firstName && lastName) {
-    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
-  }
-  if (firstName) {
-    return firstName.charAt(0).toUpperCase();
-  }
-  if (name) {
-    const words = name.split(' ').filter(Boolean);
-    if (words.length >= 2) {
-      return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase();
+    if (firstName && lastName) {
+        return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
     }
-    return words[0]?.charAt(0).toUpperCase() || 'U';
-  }
-  return username?.charAt(0).toUpperCase() || 'U';
+    if (firstName) {
+        return firstName.charAt(0).toUpperCase();
+    }
+    if (name) {
+        const words = name.split(' ').filter(Boolean);
+        if (words.length >= 2) {
+            return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase();
+        }
+        return words[0]?.charAt(0).toUpperCase() || 'U';
+    }
+    return username?.charAt(0).toUpperCase() || 'U';
 };
 
 export default function Profile() {
@@ -70,14 +70,14 @@ export default function Profile() {
     const [activeStatsTab, setActiveStatsTab] = useState<'causes' | 'following' | 'followers' | 'crwds'>('causes');
     const [showCommentsSheet, setShowCommentsSheet] = useState(false);
     const [selectedPost, setSelectedPost] = useState<any>(null);
-    
+
     // Bottom sheet ref
     const bottomSheetRef = useRef<BottomSheet>(null);
     const screenHeight = Dimensions.get('window').height;
     const snapPoints = useMemo(() => [screenHeight * 0.75], [screenHeight]);
 
     console.log('user', token);
-    
+
 
     // Logout mutation
     const logoutMutation = useMutation({
@@ -102,8 +102,8 @@ export default function Profile() {
             'Are you sure you want to logout?',
             [
                 { text: 'Cancel', style: 'cancel' },
-                { 
-                    text: 'Logout', 
+                {
+                    text: 'Logout',
                     style: 'destructive',
                     onPress: () => {
                         queryClient.clear();
@@ -162,7 +162,7 @@ export default function Profile() {
 
     // Statistics bottom sheet queries
     const targetUserId = profileData?.id?.toString() || user?.id?.toString() || '';
-    
+
     const { data: statsCausesData, isLoading: statsCausesLoading } = useQuery({
         queryKey: ['supportedCauses', targetUserId],
         queryFn: () => getSupportedCausesByUserId(targetUserId),
@@ -237,7 +237,7 @@ export default function Profile() {
             });
         }
     };
-    
+
 
 
     // Transform posts data to match PostDetail interface - matching Vite version
@@ -263,16 +263,16 @@ export default function Profile() {
     const handleShare = async () => {
         try {
             if (!user?.id) return;
-            
+
             const webUrl = `${WEB_BASE_URL}/user-profile/${user.id}`;
             const shareMessage = `Check out my profile!\n${webUrl}`;
-            
+
             const result = await Share.share({
                 message: shareMessage,
                 title: `My Profile`,
                 url: webUrl, // iOS only
             });
-            
+
             // Copy link to clipboard when sharing
             if (result.action === Share.sharedAction) {
                 try {
@@ -326,6 +326,7 @@ export default function Profile() {
             role: item.role || 'Member',
             id: collective.id,
             description: collective.description || '',
+            member_count: collective.member_count || 0,
         };
     }) || [];
 
@@ -333,8 +334,8 @@ export default function Profile() {
         const userData = item.followee || item.following || item.user || item;
         const isFollowing = item.is_following ?? userData.is_following ?? false;
         return {
-            name: userData.first_name && userData.last_name 
-                ? `${userData.first_name} ${userData.last_name}` 
+            name: userData.first_name && userData.last_name
+                ? `${userData.first_name} ${userData.last_name}`
                 : userData.first_name || userData.name || 'Unknown User',
             username: userData.username || 'unknown',
             avatar: userData.profile_picture || userData.avatar || '',
@@ -347,8 +348,8 @@ export default function Profile() {
         const userData = item.follower || item.user || item;
         const isFollowing = item.is_following ?? userData.is_following ?? false;
         return {
-            name: userData.first_name && userData.last_name 
-                ? `${userData.first_name} ${userData.last_name}` 
+            name: userData.first_name && userData.last_name
+                ? `${userData.first_name} ${userData.last_name}`
                 : userData.first_name || userData.name || 'Unknown User',
             username: userData.username || 'unknown',
             avatar: userData.profile_picture || userData.avatar || '',
@@ -361,7 +362,7 @@ export default function Profile() {
     const getTabInfo = () => {
         switch (activeStatsTab) {
             case 'causes':
-                return { title: 'Causes', subtitle: 'Causes you support' };
+                return { title: 'All Causes', subtitle: 'All nonprofits that you support' };
             case 'crwds':
                 return { title: 'Collectives', subtitle: "Collectives you're part of" };
             case 'followers':
@@ -404,7 +405,7 @@ export default function Profile() {
                     {statsCauses.length > 0 ? statsCauses.map((cause: any, index: number) => {
                         // Generate consistent color based on cause ID
                         const causeBgColor = getConsistentColor(cause.id || cause.name || 'N', avatarColors);
-                        
+
                         return (
                             <TouchableOpacity
                                 key={cause.id || index}
@@ -450,41 +451,42 @@ export default function Profile() {
                     {statsCrwds.length > 0 ? statsCrwds.map((crwd: any, index: number) => {
                         // Priority: 1. Use color (with white text), 2. Use logo (image), 3. Fallback to generated color with letter
                         const hasColor = crwd.color;
-                        const hasLogo = crwd.logo && 
+                        const hasLogo = crwd.logo &&
                             (crwd.logo.startsWith('http') || crwd.logo.startsWith('/') || crwd.logo.startsWith('data:'));
                         const iconColor = hasColor || (!hasLogo ? '#10B981' : undefined);
                         const showImage = hasLogo && !hasColor;
                         const iconLetter = crwd.name.charAt(0).toUpperCase();
-                        
+
                         return (
-                        <View key={crwd.id || index} style={styles.statsItem}>
-                            <View style={styles.statsItemLeft}>
-                                <Avatar size={40}>
-                                    {showImage ? (
-                                        <AvatarImage src={crwd.logo} />
-                                    ) : null}
-                                    <AvatarFallback style={{ backgroundColor: iconColor || '#10B981' }} textStyle={{ color: '#FFFFFF', fontWeight: '600' }}>
-                                        {iconLetter}
-                                    </AvatarFallback>
-                                </Avatar>
-                                <View style={styles.statsItemInfo}>
-                                    <View style={[styles.badge, styles.crwdBadge]}>
-                                        <Text style={[styles.badgeText, styles.crwdText]}>Collective</Text>
-                                    </View>
-                                    <Text style={styles.statsItemName}>{crwd.name}</Text>
-                                    <Text style={styles.statsItemDescription} numberOfLines={2}>{crwd.description}</Text>
+                            <View key={crwd.id || index} style={styles.statsItem}>
+                                <View style={styles.statsItemLeft}>
+                                    <Avatar size={40} style={{ borderRadius: 10 }}>
+                                        {showImage ? (
+                                            <AvatarImage src={crwd.logo} />
+                                        ) : null}
+                                        <AvatarFallback style={{ backgroundColor: iconColor || '#10B981' }} textStyle={{ color: '#FFFFFF', fontWeight: '600' }}>
+                                            {iconLetter}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <TouchableOpacity
+                                        // style={styles.viewButton}
+                                        onPress={() => {
+                                            bottomSheetRef.current?.close();
+                                            (navigation as any).navigate('GroupCRWD', { collectiveId: crwd.id });
+                                        }}
+                                    >
+                                        <View style={styles.statsItemInfo}>
+                                            {/* <View style={[styles.badge, styles.crwdBadge]}>
+                                            <Text style={[styles.badgeText, styles.crwdText]}>Collective</Text>
+                                        </View> */}
+                                            <Text style={styles.statsItemName}>{crwd.name}</Text>
+                                            <Text style={styles.statsItemDescription} numberOfLines={1}>{crwd.member_count} members</Text>
+                                        </View>
+                                    </TouchableOpacity>
                                 </View>
+
+
                             </View>
-                            <TouchableOpacity 
-                                style={styles.viewButton}
-                                onPress={() => {
-                                    bottomSheetRef.current?.close();
-                                    (navigation as any).navigate('GroupCRWD', { collectiveId: crwd.id });
-                                }}
-                            >
-                                <Text style={styles.viewButtonText}>View Details</Text>
-                            </TouchableOpacity>
-                        </View>
                         );
                     }) : (
                         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 40 }}>
@@ -517,7 +519,7 @@ export default function Profile() {
                                 <View style={styles.memberInfo}>
                                     <Avatar size={40}>
                                         <AvatarImage src={member.avatar} />
-                                        <AvatarFallback 
+                                        <AvatarFallback
                                             style={{ backgroundColor: getConsistentColor(member.id || member.username || member.name || 'U', avatarColors) }}
                                             textStyle={{ color: '#FFFFFF', fontWeight: '600' }}
                                         >
@@ -530,7 +532,7 @@ export default function Profile() {
                                     </View>
                                 </View>
                                 {member.id !== user?.id && (
-                                    <TouchableOpacity 
+                                    <TouchableOpacity
                                         style={[styles.followButton, isFollowing && styles.followingButton]}
                                         onPress={() => handleFollowToggle(member.id.toString(), isFollowing)}
                                         disabled={followUserMutation.isPending || unfollowUserMutation.isPending}
@@ -611,14 +613,14 @@ export default function Profile() {
                     <Text style={{ fontSize: 16, color: '#ef4444' }}>
                         Error loading profile
                     </Text>
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         onPress={() => refetchProfile()}
-                        style={{ 
-                            marginTop: 16, 
-                            paddingHorizontal: 16, 
-                            paddingVertical: 8, 
-                            backgroundColor: '#374151', 
-                            borderRadius: 6 
+                        style={{
+                            marginTop: 16,
+                            paddingHorizontal: 16,
+                            paddingVertical: 8,
+                            backgroundColor: '#374151',
+                            borderRadius: 6
                         }}
                     >
                         <Text style={{ color: 'white' }}>Try Again</Text>
@@ -664,7 +666,7 @@ export default function Profile() {
                                 width: 144,
                                 zIndex: 20,
                             }}>
-                                <TouchableWithoutFeedback onPress={() => {}}>
+                                <TouchableWithoutFeedback onPress={() => { }}>
                                     <View>
                                         <TouchableOpacity
                                             onPress={handleShare}
@@ -740,8 +742,8 @@ export default function Profile() {
                 </TouchableOpacity>
             </View>
 
-            <ScrollView 
-                style={{ flex: 1 }} 
+            <ScrollView
+                style={{ flex: 1 }}
                 showsVerticalScrollIndicator={false}
                 refreshControl={
                     <RefreshControl
@@ -768,13 +770,13 @@ export default function Profile() {
                             /> */}
                             <Avatar size={64}>
                                 <AvatarImage src={profileData?.profile_picture} />
-                                <AvatarFallback 
+                                <AvatarFallback
                                     style={{ backgroundColor: profileData?.color || getConsistentColor(profileData?.id || profileData?.username || 'U', avatarColors) }}
                                     textStyle={{ color: '#FFFFFF', fontWeight: '600' }}
                                 >
                                     {getInitials(profileData?.first_name, profileData?.last_name, profileData?.username, profileData?.username)}
                                 </AvatarFallback>
-                            </Avatar> 
+                            </Avatar>
                         </TouchableOpacity>
                         <Text style={{
                             fontSize: 18,
@@ -782,8 +784,8 @@ export default function Profile() {
                             color: '#111827',
                             marginVertical: 16
                         }}>
-                            {profileData?.first_name && profileData?.last_name 
-                                ? `${profileData.first_name} ${profileData.last_name}` 
+                            {profileData?.first_name && profileData?.last_name
+                                ? `${profileData.first_name} ${profileData.last_name}`
                                 : profileData?.username || 'User'
                             }
                         </Text>
@@ -815,16 +817,16 @@ export default function Profile() {
                             <Text style={{ fontSize: 14, color: '#595959', fontWeight: '700', textAlign: 'center' }}>Edit Profile</Text>
                         </TouchableOpacity>
                         <TouchableOpacity onPress={handleShare} style={{ paddingHorizontal: 16, paddingVertical: 10, borderRadius: 8, borderWidth: 1, borderColor: '#e5e7eb', minWidth: 120 }}>
-                            <View style={{flexDirection: 'row', alignItems: 'center', gap: 4, justifyContent: 'center'}}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, justifyContent: 'center' }}>
                                 <Share2 size={16} color="#595959" />
-                            <Text style={{ fontSize: 14, color: '#595959', fontWeight: '700' }}>Share Profile</Text>
+                                <Text style={{ fontSize: 14, color: '#595959', fontWeight: '700' }}>Share Profile</Text>
                             </View>
                         </TouchableOpacity>
                     </View>
 
                     {/* Profile Stats */}
-                    <ProfileStats 
-                        causes={ profileData?.supported_causes_count || 0}
+                    <ProfileStats
+                        causes={profileData?.supported_causes_count || 0}
                         crwds={userCollectivesQuery?.data?.data?.length || profileData?.joined_collectives_count || 0}
                         followers={followersQuery?.data?.count || profileData?.followers_count || 0}
                         following={followingQuery?.data?.count || profileData?.following_count || 0}
@@ -843,121 +845,121 @@ export default function Profile() {
 
                     {/* Recently Supported Section */}
                     {profileData?.recently_supported_causes && profileData.recently_supported_causes.length > 0 && (
-                    <View style={{ marginTop: 24 }}>
-                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                            <Text style={{ fontSize: 18, fontWeight: '700', color: '#111827' }}>
-                                Supports
-                            </Text>
-                        </View>
+                        <View style={{ marginTop: 24 }}>
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                                <Text style={{ fontSize: 18, fontWeight: '700', color: '#111827' }}>
+                                    Supports
+                                </Text>
+                            </View>
 
-                        {/* Grid Layout - 2 rows, 3 columns */}
-                        <View style={{ 
-                            flexDirection: 'row', 
-                            flexWrap: 'wrap', 
-                            
-                            marginHorizontal: -6,
-                        }}>
-                            {profileData.recently_supported_causes.slice(0, 6).map((cause: any, i: number) => {
-                                // Generate consistent color based on cause ID
-                                const bgColor = getConsistentColor(cause.id || cause.name || 'N', avatarColors);
-                                
-                                return (
-                                    <TouchableOpacity 
-                                        key={cause.id || i} 
-                                        onPress={() => navigation.navigate('CauseScreen' as never)} 
-                                        style={{
-                                            width: '33.333%',
-                                            paddingHorizontal: 6,
-                                            marginBottom: 12,
-                                        }}
-                                    >
-                                        <View style={{
-                                            backgroundColor: 'white',
-                                            borderRadius: 8,
-                                            borderWidth: 1,
-                                            borderColor: '#e5e7eb',
-                                            padding: 12,
-                                            alignItems: 'center',
-                                            height: 100,
-                                            justifyContent: 'space-between',
-                                        }}>
-                                        {cause.logo ? (
+                            {/* Grid Layout - 2 rows, 3 columns */}
+                            <View style={{
+                                flexDirection: 'row',
+                                flexWrap: 'wrap',
+
+                                marginHorizontal: -6,
+                            }}>
+                                {profileData.recently_supported_causes.slice(0, 6).map((cause: any, i: number) => {
+                                    // Generate consistent color based on cause ID
+                                    const bgColor = getConsistentColor(cause.id || cause.name || 'N', avatarColors);
+
+                                    return (
+                                        <TouchableOpacity
+                                            key={cause.id || i}
+                                            onPress={() => navigation.navigate('CauseScreen' as never)}
+                                            style={{
+                                                width: '33.333%',
+                                                paddingHorizontal: 6,
+                                                marginBottom: 12,
+                                            }}
+                                        >
                                             <View style={{
-                                                width: 48,
-                                                height: 48,
+                                                backgroundColor: 'white',
                                                 borderRadius: 8,
-                                                marginBottom: 8,
-                                                overflow: 'hidden',
+                                                borderWidth: 1,
+                                                borderColor: '#e5e7eb',
+                                                padding: 12,
+                                                alignItems: 'center',
+                                                height: 100,
+                                                justifyContent: 'space-between',
                                             }}>
-                                                <Image 
-                                                    source={{ uri: cause.logo }} 
-                                                    style={{
+                                                {cause.logo ? (
+                                                    <View style={{
                                                         width: 48,
                                                         height: 48,
                                                         borderRadius: 8,
+                                                        marginBottom: 8,
+                                                        overflow: 'hidden',
+                                                    }}>
+                                                        <Image
+                                                            source={{ uri: cause.logo }}
+                                                            style={{
+                                                                width: 48,
+                                                                height: 48,
+                                                                borderRadius: 8,
+                                                            }}
+                                                            resizeMode="cover"
+                                                        />
+                                                    </View>
+                                                ) : (
+                                                    <View style={{
+                                                        width: 48,
+                                                        height: 48,
+                                                        borderRadius: 8,
+                                                        backgroundColor: bgColor,
+                                                        justifyContent: 'center',
+                                                        alignItems: 'center',
+                                                        marginBottom: 8,
+                                                    }}>
+                                                        <Text style={{
+                                                            fontSize: 20,
+                                                            fontWeight: '600',
+                                                            color: 'white',
+                                                        }}>
+                                                            {cause.name?.charAt(0)?.toUpperCase() || 'N'}
+                                                        </Text>
+                                                    </View>
+                                                )}
+                                                <Text
+                                                    numberOfLines={2}
+                                                    ellipsizeMode="tail"
+                                                    style={{
+                                                        fontSize: 12,
+                                                        fontWeight: '600',
+                                                        color: '#111827',
+                                                        textAlign: 'center',
+                                                        height: 32,
                                                     }}
-                                                    resizeMode="cover"
-                                                />
-                                            </View>
-                                        ) : (
-                                            <View style={{
-                                                width: 48,
-                                                height: 48,
-                                                borderRadius: 8,
-                                                backgroundColor: bgColor,
-                                                justifyContent: 'center',
-                                                alignItems: 'center',
-                                                marginBottom: 8,
-                                            }}>
-                                                <Text style={{
-                                                    fontSize: 20,
-                                                    fontWeight: '600',
-                                                    color: 'white',
-                                                }}>
-                                                    {cause.name?.charAt(0)?.toUpperCase() || 'N'}
+                                                >
+                                                    {cause.name}
                                                 </Text>
                                             </View>
-                                        )}
-                                        <Text 
-                                            numberOfLines={2}
-                                            ellipsizeMode="tail"
-                                            style={{ 
-                                                fontSize: 12, 
-                                                fontWeight: '600', 
-                                                color: '#111827', 
-                                                textAlign: 'center',
-                                                height: 32,
-                                            }}
-                                        >
-                                            {cause.name}
-                                        </Text>
-                                        </View>
-                                    </TouchableOpacity>
-                                );
-                            })}
-                        </View>
-
-                        {/* Show more causes text and link */}
-                        {profileData.recently_supported_causes.length > 6 && (
-                            <View style={{ alignItems: 'center', gap: 8 }}>
-                                <Text style={{ fontSize: 14, color: '#6b7280' }}>
-                                    + {profileData.recently_supported_causes.length - 6} more causes
-                                </Text>
-                                <TouchableOpacity onPress={handleMoreInterests}>
-                                    <Text style={{ 
-                                        fontSize: 14, 
-                                        color: PrimaryBlue, 
-                                        fontWeight: '500' 
-                                    }}>
-                                        See all {profileData.recently_supported_causes.length} →
-                                    </Text>
-                                </TouchableOpacity>
+                                        </TouchableOpacity>
+                                    );
+                                })}
                             </View>
-                        )}
 
-                    <View style={{ height: 1, backgroundColor: '#e5e7eb', marginTop: 16 }}></View>
+                            {/* Show more causes text and link */}
+                            {profileData.recently_supported_causes.length > 6 && (
+                                <View style={{ alignItems: 'center', gap: 8 }}>
+                                    <Text style={{ fontSize: 14, color: '#6b7280' }}>
+                                        + {profileData.recently_supported_causes.length - 6} more causes
+                                    </Text>
+                                    <TouchableOpacity onPress={handleMoreInterests}>
+                                        <Text style={{
+                                            fontSize: 14,
+                                            color: PrimaryBlue,
+                                            fontWeight: '500'
+                                        }}>
+                                            See all {profileData.recently_supported_causes.length} →
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
+                            )}
 
-                    </View>
+                            <View style={{ height: 1, backgroundColor: '#e5e7eb', marginTop: 16 }}></View>
+
+                        </View>
                     )}
 
                     {/* <View style={{ height: 1, backgroundColor: '#e5e7eb', marginHorizontal: 8, marginTop: 16 }}></View> */}
@@ -975,41 +977,41 @@ export default function Profile() {
                         ) : userPosts.length === 0 ? (
                             <View>
                                 <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 16 }}>Recent Activity</Text>
-                            <View style={{ 
-                                backgroundColor: 'white',
-                                borderRadius: 8,
-                                borderWidth: 1,
-                                borderColor: '#e5e7eb',
+                                <View style={{
+                                    backgroundColor: 'white',
+                                    borderRadius: 8,
+                                    borderWidth: 1,
+                                    borderColor: '#e5e7eb',
                                     padding: 48,
-                                alignItems: 'center',
-                            }}>
+                                    alignItems: 'center',
+                                }}>
                                     <View style={{ marginBottom: 16 }}>
                                         <MessageSquare size={48} color="#d1d5db" />
                                     </View>
-                                <Text style={{ 
-                                    fontSize: 18, 
-                                    fontWeight: '600', 
-                                    color: '#111827',
-                                    marginBottom: 8,
-                                    textAlign: 'center'
-                                }}>
-                                    No posts yet
-                                </Text>
-                                    <Text style={{ 
-                                        fontSize: 14, 
+                                    <Text style={{
+                                        fontSize: 18,
+                                        fontWeight: '600',
+                                        color: '#111827',
+                                        marginBottom: 8,
+                                        textAlign: 'center'
+                                    }}>
+                                        No posts yet
+                                    </Text>
+                                    <Text style={{
+                                        fontSize: 14,
                                         color: '#6b7280',
                                         textAlign: 'center',
                                         maxWidth: 300
                                     }}>
                                         This user hasn't shared any posts yet. Check back later to see their activity.
                                     </Text>
-                              </View>
+                                </View>
                             </View>
                         ) : (
                             <PopularPosts
                                 posts={userPosts}
                                 title="Recent Activity"
-                                onLoadMore={async () => {}}
+                                onLoadMore={async () => { }}
                                 hasMore={false}
                                 onCommentPress={(post) => {
                                     // Find the original post data to get firstName and lastName
@@ -1045,7 +1047,7 @@ export default function Profile() {
                         justifyContent: 'center',
                         alignItems: 'center'
                     }}>
-                        <TouchableWithoutFeedback onPress={() => {}}>
+                        <TouchableWithoutFeedback onPress={() => { }}>
                             <View>
                                 <TouchableOpacity
                                     style={{
@@ -1067,7 +1069,7 @@ export default function Profile() {
                                         <Text style={{ color: 'white', fontSize: 20, fontWeight: 'bold' }}>✕</Text>
                                     </View>
                                 </TouchableOpacity>
-                                
+
                                 <TouchableOpacity onPress={() => setShowImageModal(false)}>
                                     <Image
                                         source={{ uri: profileData?.profile_picture || 'https://randomuser.me/api/portraits/women/44.jpg' }}
@@ -1095,46 +1097,46 @@ export default function Profile() {
                 backgroundStyle={{ backgroundColor: 'white' }}
                 enableDynamicSizing={false}
             >
-                  
 
-                    
-                    <View style={styles.titleSection}>
-                        <Text style={styles.bottomSheetTitle}>{getTabInfo().title}</Text>
-                        <Text style={styles.bottomSheetSubtitle}>{getTabInfo().subtitle}</Text>
-                    </View>
 
-                    
-                    <View style={styles.tabsContainer}>
-                        {[
-                            { label: 'Causes', value: 'causes' },
-                            { label: 'Collectives', value: 'crwds' },
-                            { label: 'Followers', value: 'followers' },
-                            { label: 'Following', value: 'following' },
-                        ].map((tab) => (
-                            <TouchableOpacity
-                                key={tab.value}
-                                onPress={() => setActiveStatsTab(tab.value as typeof activeStatsTab)}
-                                style={[
-                                    styles.tab,
-                                    activeStatsTab === tab.value && styles.activeTab
-                                ]}
-                            >
-                                <Text style={[
-                                    styles.tabText,
-                                    activeStatsTab === tab.value && styles.activeTabText
-                                ]}>
-                                    {tab.label}
-                                </Text>
-                            </TouchableOpacity>
-                        ))}
-                    </View>
 
-                    <BottomSheetScrollView 
-                        showsVerticalScrollIndicator={false}
-                        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 80 }}
-    >
-                        {renderStatsContent()}
-                    </BottomSheetScrollView>
+                <View style={styles.titleSection}>
+                    <Text style={styles.bottomSheetTitle}>{getTabInfo().title}</Text>
+                    <Text style={styles.bottomSheetSubtitle}>{getTabInfo().subtitle}</Text>
+                </View>
+
+
+                <View style={styles.tabsContainer}>
+                    {[
+                        { label: 'Causes', value: 'causes' },
+                        { label: 'Collectives', value: 'crwds' },
+                        { label: 'Followers', value: 'followers' },
+                        { label: 'Following', value: 'following' },
+                    ].map((tab) => (
+                        <TouchableOpacity
+                            key={tab.value}
+                            onPress={() => setActiveStatsTab(tab.value as typeof activeStatsTab)}
+                            style={[
+                                styles.tab,
+                                activeStatsTab === tab.value && styles.activeTab
+                            ]}
+                        >
+                            <Text style={[
+                                styles.tabText,
+                                activeStatsTab === tab.value && styles.activeTabText
+                            ]}>
+                                {tab.label}
+                            </Text>
+                        </TouchableOpacity>
+                    ))}
+                </View>
+
+                <BottomSheetScrollView
+                    showsVerticalScrollIndicator={false}
+                    contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 80 }}
+                >
+                    {renderStatsContent()}
+                </BottomSheetScrollView>
             </BottomSheet>
 
             {/* Comments Bottom Sheet */}

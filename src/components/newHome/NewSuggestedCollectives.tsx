@@ -197,7 +197,7 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
     paddingHorizontal: 16,
-    marginTop: 24,
+    // marginTop: 24,
   },
   header: {
     flexDirection: 'row',
@@ -206,12 +206,12 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   title: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '700',
     color: '#111827',
   },
   seeAll: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '500',
     color: '#1600ff',
   },

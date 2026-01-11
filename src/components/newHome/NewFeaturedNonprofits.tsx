@@ -30,9 +30,9 @@ const getIconColor = (id: number | string): string => {
     typeof id === 'number'
       ? id
       : id
-          .toString()
-          .split('')
-          .reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
+        .toString()
+        .split('')
+        .reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
   return colors[hash % colors.length];
 };
 
@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
     paddingHorizontal: 16,
-    marginTop: 24,
+    // marginTop: 24,
   },
   header: {
     flexDirection: 'row',

@@ -632,10 +632,11 @@ export default function Profile() {
 
     return (
         <SafeAreaView style={{ backgroundColor: 'white', flex: 1, paddingBottom: 80 }} edges={['top', 'left', 'right']}>
-            <MainHeaderNav title={'Me'} menu={false} />
+            {/* <MainHeaderNav title={'Me'} menu={false} /> */}
 
             {/* Top right buttons */}
-            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingTop: 24, paddingBottom: 8 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingTop: 24, paddingBottom: 8, borderBottomWidth: 1, borderBottomColor: '#e5e7eb' }}>
+                <Text style={{ fontSize: 18, fontWeight: '600', color: '#111827' }}>Me</Text>
                 <View style={{ position: 'relative' }}>
                     <TouchableOpacity
                         onPress={() => setShowMenu(!showMenu)}
@@ -727,7 +728,7 @@ export default function Profile() {
                     )}
                 </View>
                 {/* Edit button - outside menu like crwd-vite */}
-                <TouchableOpacity
+                {/* <TouchableOpacity
                     onPress={handleEditProfile}
                     style={{
                         borderWidth: 1,
@@ -739,7 +740,7 @@ export default function Profile() {
                     }}
                 >
                     <Text style={{ fontSize: 14, color: '#111827', fontWeight: '500' }}>Edit</Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
             </View>
 
             <ScrollView
@@ -768,7 +769,7 @@ export default function Profile() {
                                     marginBottom: 16
                                 }}
                             /> */}
-                            <Avatar size={64}>
+                            <Avatar size={130}>
                                 <AvatarImage src={profileData?.profile_picture} />
                                 <AvatarFallback
                                     style={{ backgroundColor: profileData?.color || getConsistentColor(profileData?.id || profileData?.username || 'U', avatarColors) }}
@@ -940,10 +941,10 @@ export default function Profile() {
                             </View>
 
                             {/* Show more causes text and link */}
-                            {profileData.recently_supported_causes.length > 6 && (
+                            {profileData.recently_supported_causes.length > 5 && (
                                 <View style={{ alignItems: 'center', gap: 8 }}>
                                     <Text style={{ fontSize: 14, color: '#6b7280' }}>
-                                        + {profileData.recently_supported_causes.length - 6} more causes
+                                        + {profileData.supported_causes_count - 6} more causes
                                     </Text>
                                     <TouchableOpacity onPress={handleMoreInterests}>
                                         <Text style={{
@@ -951,7 +952,7 @@ export default function Profile() {
                                             color: PrimaryBlue,
                                             fontWeight: '500'
                                         }}>
-                                            See all {profileData.recently_supported_causes.length} →
+                                            See all {profileData.supported_causes_count} →
                                         </Text>
                                     </TouchableOpacity>
                                 </View>

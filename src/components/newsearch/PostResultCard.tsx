@@ -100,17 +100,17 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
   const { showToast } = useToast();
   const [isLiked, setIsLiked] = useState(post.is_liked || false);
   const [likesCount, setLikesCount] = useState(post.likes_count || 0);
-  
+
   const user = post.user;
   // Use user.color first if available, then fall back to consistent color based on ID or username
-  const avatarBgColor = user 
+  const avatarBgColor = user
     ? (user.color || getConsistentColor(user.id, user.username || user.full_name || user.first_name || 'U'))
     : '#6B7280';
 
   // Get user initials
   const initials =
     user?.first_name && user?.last_name
-      ? `${user.first_name.charAt(0)}${user.last_name.charAt(0)}`.toUpperCase()
+      ? `${user.first_name.charAt(0)}`.toUpperCase()
       : user?.username?.charAt(0).toUpperCase() || 'U';
 
   // Get full name
@@ -157,7 +157,7 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
       navigation.navigate('Login' as never);
       return;
     }
-    
+
     if (isLiked) {
       unlikeMutation.mutate();
     } else {
@@ -169,7 +169,7 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
     try {
       const webUrl = `${WEB_BASE_URL}/post/${post.id}`;
       const shareMessage = `Check out this post: ${webUrl}`;
-      
+
       const result = await Share.share({
         message: shareMessage,
         title: 'Post',
@@ -204,41 +204,41 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
             <TouchableOpacity
               onPress={(e) => {
                 e.stopPropagation();
-                    // Check if it's the current user's own profile
-                    if (currentUser?.id && user.id && currentUser.id.toString() === user.id.toString()) {
-                      // Navigate to Profile tab (index 4 in MainTabs)
-                      navigation.dispatch(
-                        CommonActions.reset({
-                          index: 0,
-                          routes: [
-                            {
-                              name: 'DrawerNav' as never,
-                              state: {
-                                routes: [
-                                  {
-                                    name: 'MainTabs' as never,
-                                    state: {
-                                      routes: [
-                                        { name: 'Home' as never },
-                                        { name: 'Search' as never },
-                                        { name: 'Donate' as never },
-                                        { name: 'Collectives' as never },
-                                        { name: 'Profile' as never },
-                                      ],
-                                      index: 4, // Profile tab index
-                                    },
-                                  },
-                                ],
-                                index: 0,
+                // Check if it's the current user's own profile
+                if (currentUser?.id && user.id && currentUser.id.toString() === user.id.toString()) {
+                  // Navigate to Profile tab (index 4 in MainTabs)
+                  navigation.dispatch(
+                    CommonActions.reset({
+                      index: 0,
+                      routes: [
+                        {
+                          name: 'DrawerNav' as never,
+                          state: {
+                            routes: [
+                              {
+                                name: 'MainTabs' as never,
+                                state: {
+                                  routes: [
+                                    { name: 'Home' as never },
+                                    { name: 'Search' as never },
+                                    { name: 'Donate' as never },
+                                    { name: 'Collectives' as never },
+                                    { name: 'Profile' as never },
+                                  ],
+                                  index: 4, // Profile tab index
+                                },
                               },
-                            },
-                          ],
-                        })
-                      );
-                    } else {
-                      // Navigate to UserProfile screen
-                      (navigation as any).navigate('UserProfile', { userId: user.id.toString() });
-                    }
+                            ],
+                            index: 0,
+                          },
+                        },
+                      ],
+                    })
+                  );
+                } else {
+                  // Navigate to UserProfile screen
+                  (navigation as any).navigate('UserProfile', { userId: user.id.toString() });
+                }
               }}
               activeOpacity={0.7}
             >
@@ -273,14 +273,14 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
                                   {
                                     name: 'MainTabs' as never,
                                     state: {
-                      routes: [
-                        { name: 'Home' as never },
-                        { name: 'Search' as never },
-                        { name: 'Donate' as never },
-                        { name: 'Collectives' as never },
-                        { name: 'Profile' as never },
-                      ],
-                      index: 4, // Profile tab index
+                                      routes: [
+                                        { name: 'Home' as never },
+                                        { name: 'Search' as never },
+                                        { name: 'Donate' as never },
+                                        { name: 'Collectives' as never },
+                                        { name: 'Profile' as never },
+                                      ],
+                                      index: 4, // Profile tab index
                                     },
                                   },
                                 ],

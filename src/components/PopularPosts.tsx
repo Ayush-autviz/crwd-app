@@ -14,61 +14,61 @@ import { WEB_BASE_URL } from '../Constants/url'
 
 // Format date to relative time or full date
 const formatPostTime = (timeString: string | undefined): string => {
-  if (!timeString) return '';
-  
-  // Check if it's already a relative time string (like "1h ago", "2d ago")
-  if (timeString.includes('ago') || timeString.includes('just now')) {
-    return timeString;
-  }
-  
-  let date: Date;
-  
-  // Handle DD/MM/YYYY format (e.g., "15/12/2025")
-  const ddmmyyyyMatch = timeString.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-  if (ddmmyyyyMatch) {
-    const [, day, month, year] = ddmmyyyyMatch;
-    // Create date in YYYY-MM-DD format for proper parsing
-    date = new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`);
-  } else {
-    // Try to parse as ISO date string or other date formats
-    date = new Date(timeString);
-  }
-  
-  // Check if date is valid
-  if (isNaN(date.getTime())) {
-    // If parsing fails, return the original string
-    return timeString;
-  }
-  
-  const now = new Date();
-  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-  const diffInMinutes = Math.floor(diffInSeconds / 60);
-  const diffInHours = Math.floor(diffInSeconds / 3600);
-  
-  // Show relative time for recent posts (within 24 hours)
-  if (diffInSeconds < 60) {
-    return 'just now';
-  } else if (diffInMinutes < 60) {
-    return `${diffInMinutes} minute${diffInMinutes === 1 ? '' : 's'} ago`;
-  } else if (diffInHours < 24) {
-    return `${diffInHours} hour${diffInHours === 1 ? '' : 's'} ago`;
-  } else {
-    // For older posts, show full date
-    const currentYear = now.getFullYear();
-    const postYear = date.getFullYear();
-    
-    const options: Intl.DateTimeFormatOptions = {
-      month: 'long',
-      day: 'numeric',
-    };
-    
-    // Add year only if it's not the current year
-    if (postYear !== currentYear) {
-      options.year = 'numeric';
+    if (!timeString) return '';
+
+    // Check if it's already a relative time string (like "1h ago", "2d ago")
+    if (timeString.includes('ago') || timeString.includes('just now')) {
+        return timeString;
     }
-    
-    return date.toLocaleDateString('en-US', options);
-  }
+
+    let date: Date;
+
+    // Handle DD/MM/YYYY format (e.g., "15/12/2025")
+    const ddmmyyyyMatch = timeString.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (ddmmyyyyMatch) {
+        const [, day, month, year] = ddmmyyyyMatch;
+        // Create date in YYYY-MM-DD format for proper parsing
+        date = new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`);
+    } else {
+        // Try to parse as ISO date string or other date formats
+        date = new Date(timeString);
+    }
+
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+        // If parsing fails, return the original string
+        return timeString;
+    }
+
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    const diffInHours = Math.floor(diffInSeconds / 3600);
+
+    // Show relative time for recent posts (within 24 hours)
+    if (diffInSeconds < 60) {
+        return 'just now';
+    } else if (diffInMinutes < 60) {
+        return `${diffInMinutes} minute${diffInMinutes === 1 ? '' : 's'} ago`;
+    } else if (diffInHours < 24) {
+        return `${diffInHours} hour${diffInHours === 1 ? '' : 's'} ago`;
+    } else {
+        // For older posts, show full date
+        const currentYear = now.getFullYear();
+        const postYear = date.getFullYear();
+
+        const options: Intl.DateTimeFormatOptions = {
+            month: 'long',
+            day: 'numeric',
+        };
+
+        // Add year only if it's not the current year
+        if (postYear !== currentYear) {
+            options.year = 'numeric';
+        }
+
+        return date.toLocaleDateString('en-US', options);
+    }
 };
 
 
@@ -129,10 +129,10 @@ interface PopularPostsProps {
 }
 
 type RootStackParamList = {
-        PostDetail: { post: Post };
-        UserProfile: { userId: string };
-        Profile: undefined;
-        GroupCRWD: { collectiveId: string };
+    PostDetail: { post: Post };
+    UserProfile: { userId: string };
+    Profile: undefined;
+    GroupCRWD: { collectiveId: string };
 };
 
 export default function PopularPosts({
@@ -282,17 +282,17 @@ export default function PopularPosts({
         if (!posts || !Array.isArray(posts)) {
             return;
         }
-        
+
         const likedSet = new Set<string>();
         const likesCount: Record<string, number> = {};
-        
+
         posts.forEach(post => {
             if (post.isLiked) {
                 likedSet.add(post.id);
             }
             likesCount[post.id] = post.likes;
         });
-        
+
         setLikedPosts(likedSet);
         setPostsLikesCount(likesCount);
     }, [posts]);
@@ -313,7 +313,7 @@ export default function PopularPosts({
 
     const handleEllipsisPress = (event: any, post: Post) => {
         const { pageX, pageY } = event.nativeEvent;
-        setTooltipPosition({ x: pageX-50, y: pageY+30 });
+        setTooltipPosition({ x: pageX - 50, y: pageY + 30 });
         setSelectedPost(post);
         setTooltipVisible(true);
     };
@@ -373,9 +373,9 @@ export default function PopularPosts({
 
     const renderFooter = () => {
         if (!hasMore) return null;
-        
+
         return (
-            <TouchableOpacity 
+            <TouchableOpacity
                 style={styles.loadMoreButton}
                 onPress={handleLoadMore}
                 disabled={isLoading}
@@ -390,41 +390,41 @@ export default function PopularPosts({
     };
 
     return (
-        <View style={{marginTop: 20, marginBottom: 0}}>
+        <View style={{ marginTop: 20, marginBottom: 0 }}>
             {shouldShowTitle && (
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                    <Text style={{fontSize: 18, fontWeight: '600'}}>{related ? 'Related Posts' : title}</Text>
-                    <TouchableOpacity
-                        onPress={() => setShowTooltip(!showTooltip)}
-                        style={{ padding: 8 }}
-                    >
-                        <View style={{
-                            width: 20,
-                            height: 20,
-                            borderRadius: 10,
-                            backgroundColor: '#6c757d',
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                        }}>
-                            <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>?</Text>
-                        </View>
-                    </TouchableOpacity>
+                        <Text style={{ fontSize: 18, fontWeight: '600' }}>{related ? 'Related Posts' : title}</Text>
+                        <TouchableOpacity
+                            onPress={() => setShowTooltip(!showTooltip)}
+                            style={{ padding: 8 }}
+                        >
+                            <View style={{
+                                width: 20,
+                                height: 20,
+                                borderRadius: 10,
+                                backgroundColor: '#6c757d',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                            }}>
+                                <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>?</Text>
+                            </View>
+                        </TouchableOpacity>
                     </View>
                     {postButton && (
-                    <TouchableOpacity
-                        onPress={handleStartConversation}
-                        style={{ padding: 8, backgroundColor: SecondaryGrey, borderRadius: 8 }}
-                    >
-                        <Text style={{ fontSize: 14,}}>Create Post
+                        <TouchableOpacity
+                            onPress={handleStartConversation}
+                            style={{ padding: 8, backgroundColor: SecondaryGrey, borderRadius: 8 }}
+                        >
+                            <Text style={{ fontSize: 14, }}>Create Post
 
-                        </Text>
-                    </TouchableOpacity>
+                            </Text>
+                        </TouchableOpacity>
                     )}
                 </View>
             )}
 
-            {subheading && <Text style={{fontSize: 12, fontStyle: 'italic', color: 'grey', marginBottom: 8}}>Members share updates, questions and articles here.</Text>}
+            {subheading && <Text style={{ fontSize: 12, fontStyle: 'italic', color: 'grey', marginBottom: 8 }}>Members share updates, questions and articles here.</Text>}
 
             {/* Loading State */}
             {isLoading && (
@@ -502,504 +502,504 @@ export default function PopularPosts({
             )}
 
             {!isLoading && !error && posts && posts.length > 0 && (
-            <FlatList
-                data={posts || []}
-                contentContainerStyle={{ paddingVertical: 8 }}
-                renderItem={({ item }) => {
-                    // Avatar colors for consistent coloring (matching Vite)
-                    const avatarColors = [
-                        '#EF4444', // Red
-                        '#8B5CF6', // Purple
-                        '#EC4899', // Pink
-                        '#F97316', // Orange
-                        '#10B981', // Green
-                        '#3B82F6', // Blue
-                    ];
-                    
-                    // Use color from API if available, otherwise generate consistent color
-                    const getConsistentColor = (id: number | string, colors: string[]) => {
-                        const hash = typeof id === 'number' ? id : id.toString().split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
-                        return colors[hash % colors.length];
-                    };
-                    
-                    const avatarBgColor = (item as any).color 
-                        || (item.userId ? getConsistentColor(item.userId, avatarColors) 
-                        : (item.username ? getConsistentColor(item.username, avatarColors) : avatarColors[0]));
-                    
-                    // Get initials from firstName/lastName or username
-                    const getInitials = (firstName?: string, lastName?: string, username?: string) => {
-                        if (firstName && lastName) {
-                            return `${firstName[0]}${lastName[0]}`.toUpperCase();
-                        }
-                        if (username) {
-                            return username.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-                        }
-                        return 'U';
-                    };
-                    
-                    const initials = getInitials((item as any).firstName, (item as any).lastName, item.username);
-                    
-                    // Generate different color for collective tag based on post ID (so same collective can have different colors)
-                    const tagColors = [
-                        '#ec4899', // pink
-                        '#3b82f6', // blue
-                        '#10b981', // green
-                        '#f59e0b', // amber
-                        '#8b5cf6', // purple
-                        '#ef4444', // red
-                        '#06b6d4', // cyan
-                        '#f97316', // orange
-                        '#84cc16', // lime
-                        '#a855f7', // violet
-                        '#14b8a6', // teal
-                        '#f43f5e', // rose
-                        '#6366f1', // indigo
-                    ];
-                    // Use post ID to generate different colors even for same collective
-                    // Handle both string and number IDs, and undefined cases
-                    let tagColorIndex = 0;
-                    if (item.id) {
-                        const idStr = String(item.id);
-                        if (idStr.length > 0) {
-                            tagColorIndex = idStr.charCodeAt(idStr.length - 1) % tagColors.length;
+                <FlatList
+                    data={posts || []}
+                    contentContainerStyle={{ paddingVertical: 8 }}
+                    renderItem={({ item }) => {
+                        // Avatar colors for consistent coloring (matching Vite)
+                        const avatarColors = [
+                            '#EF4444', // Red
+                            '#8B5CF6', // Purple
+                            '#EC4899', // Pink
+                            '#F97316', // Orange
+                            '#10B981', // Green
+                            '#3B82F6', // Blue
+                        ];
+
+                        // Use color from API if available, otherwise generate consistent color
+                        const getConsistentColor = (id: number | string, colors: string[]) => {
+                            const hash = typeof id === 'number' ? id : id.toString().split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
+                            return colors[hash % colors.length];
+                        };
+
+                        const avatarBgColor = (item as any).color
+                            || (item.userId ? getConsistentColor(item.userId, avatarColors)
+                                : (item.username ? getConsistentColor(item.username, avatarColors) : avatarColors[0]));
+
+                        // Get initials from firstName/lastName or username
+                        const getInitials = (firstName?: string, lastName?: string, username?: string) => {
+                            if (firstName && lastName) {
+                                return `${firstName[0]}${lastName[0]}`.toUpperCase();
+                            }
+                            if (username) {
+                                return username.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+                            }
+                            return 'U';
+                        };
+
+                        const initials = getInitials((item as any).firstName, (item as any).lastName, item.username);
+
+                        // Generate different color for collective tag based on post ID (so same collective can have different colors)
+                        const tagColors = [
+                            '#ec4899', // pink
+                            '#3b82f6', // blue
+                            '#10b981', // green
+                            '#f59e0b', // amber
+                            '#8b5cf6', // purple
+                            '#ef4444', // red
+                            '#06b6d4', // cyan
+                            '#f97316', // orange
+                            '#84cc16', // lime
+                            '#a855f7', // violet
+                            '#14b8a6', // teal
+                            '#f43f5e', // rose
+                            '#6366f1', // indigo
+                        ];
+                        // Use post ID to generate different colors even for same collective
+                        // Handle both string and number IDs, and undefined cases
+                        let tagColorIndex = 0;
+                        if (item.id) {
+                            const idStr = String(item.id);
+                            if (idStr.length > 0) {
+                                tagColorIndex = idStr.charCodeAt(idStr.length - 1) % tagColors.length;
+                            } else {
+                                // Fallback: use a hash of the org name or random
+                                tagColorIndex = (item.org?.charCodeAt(0) || 0) % tagColors.length;
+                            }
                         } else {
-                            // Fallback: use a hash of the org name or random
-                            tagColorIndex = (item.org?.charCodeAt(0) || 0) % tagColors.length;
+                            // Fallback: use org name or random index
+                            tagColorIndex = (item.org?.charCodeAt(0) || Math.floor(Math.random() * tagColors.length)) % tagColors.length;
                         }
-                    } else {
-                        // Fallback: use org name or random index
-                        tagColorIndex = (item.org?.charCodeAt(0) || Math.floor(Math.random() * tagColors.length)) % tagColors.length;
-                    }
-                    const tagBgColor = tagColors[tagColorIndex];
-                    
-                    return (
-                    <View style={[
-                        styles.postCard,
-                        item.fundraiser?.is_active && { backgroundColor: '#fbfcff' }
-                    ]}>
-                        {/* Pinned Fundraiser Header - Only show if active */}
-                        {item.fundraiser?.is_active && (
-                            <View style={{ 
-                                flexDirection: 'row', 
-                                alignItems: 'center', 
-                                justifyContent: 'space-between',
-                                marginBottom: 12,
-                                paddingHorizontal: 4
-                            }}>
-                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                                    <Pin size={16} color="#1600ff" />
-                                    <Text style={{ fontSize: 10, fontWeight: '500', color: '#1600ff' }}>
-                                        PINNED FUNDRAISER
-                                    </Text>
-                                </View>
-                                <View style={{ position: 'relative' }}>
-                                    <TouchableOpacity 
-                                        style={{ padding: 4 }}
-                                        onPress={() => {
-                                            setShowFundraiserMenu(showFundraiserMenu === item.fundraiser?.id ? null : item.fundraiser?.id || null);
-                                        }}
-                                    >
-                                        <MoreHorizontal size={20} color="#6b7280" />
-                                    </TouchableOpacity>
-                                    
-                                    {/* Fundraiser Menu Dropdown */}
-                                    {showFundraiserMenu === item.fundraiser?.id && (
-                                        <>
-                                            <TouchableWithoutFeedback onPress={() => setShowFundraiserMenu(null)}>
-                                                <View style={StyleSheet.absoluteFillObject} />
-                                            </TouchableWithoutFeedback>
-                                            <View style={styles.fundraiserMenu}>
-                                                <TouchableOpacity
-                                                    style={styles.fundraiserMenuItem}
-                                                    onPress={() => {
-                                                        if (item.fundraiser && item.orgUrl) {
-                                                            handleEditFundraiser(item.fundraiser.id, item.orgUrl.toString());
-                                                        }
-                                                    }}
-                                                >
-                                                    <Pencil size={16} color="#6B7280" style={{ marginRight: 8 }} />
-                                                    <Text style={styles.fundraiserMenuText}>Edit Fundraiser</Text>
-                                                </TouchableOpacity>
-                                                <View style={styles.fundraiserMenuDivider} />
-                                                <TouchableOpacity
-                                                    style={styles.fundraiserMenuItem}
-                                                    onPress={() => {
-                                                        if (item.fundraiser) {
-                                                            handleEndFundraiser(item.fundraiser.id);
-                                                        }
-                                                    }}
-                                                    disabled={endFundraiserMutation.isPending}
-                                                >
-                                                    <Flag size={16} color="#DC2626" style={{ marginRight: 8 }} />
-                                                    <Text style={[styles.fundraiserMenuText, styles.fundraiserMenuTextDanger]}>
-                                                        {endFundraiserMutation.isPending ? 'Ending...' : 'End Fundraiser'}
-                                                    </Text>
-                                                </TouchableOpacity>
-                                            </View>
-                                        </>
-                                    )}
-                                </View>
-                            </View>
-                        )}
-                        
-                        {/* Header */}
-                        <View style={styles.postHeader}>
-                            <TouchableOpacity 
-                                onPress={() => {
-                                    // If it's the current user's own profile, navigate to Profile tab
-                                    // Otherwise navigate to UserProfile page
-                                    if (user?.id && item.userId && user.id.toString() === item.userId.toString()) {
-                                        navigation.dispatch(
-                                            CommonActions.reset({
-                                                index: 0,
-                                                routes: [
-                                                    {
-                                                        name: 'DrawerNav',
-                                                        state: {
-                                                            routes: [
-                                                                {
-                                                                    name: 'MainTabs',
-                                                                    state: {
-                                                                        routes: [{ name: 'Me' }],
-                                                                        index: 0,
-                                                                    },
-                                                                },
-                                                            ],
-                                                            index: 0,
-                                                        },
-                                                    },
-                                                ],
-                                            })
-                                        );
-                                    } else {
-                                        navigation.navigate('UserProfile', { userId: item.userId || '' });
-                                    }
-                                }}
-                                style={styles.avatarContainer}
-                            >
-                                {/* Show image if available, otherwise use fallback color like Vite */}
-                                <Avatar size={40}>
-                                    <AvatarImage src={item.avatarUrl} />
-                                    <AvatarFallback 
-                                        style={{ backgroundColor: avatarBgColor }}
-                                        textStyle={{ color: 'white', fontWeight: '600', fontSize: 14 }}
-                                    >
-                                        {initials}
-                                    </AvatarFallback>
-                                </Avatar>
-                            </TouchableOpacity>
-                            <View style={styles.headerInfo}>
-                                <View style={styles.headerTop}>
-                                    <Text style={styles.username}>{item.username || 'Unknown User'}</Text>
-                                    <View style={{flexDirection: 'row', alignItems: 'center', gap: 4}}>
-                                    {showSimplifiedHeader ? (
-                                        <Text style={styles.date}>
-                                          {formatPostTime((item as any).created_at || (item as any).timestamp || item.time)}
-                                        </Text>
-                                    ) : (
-                                        <>
-                                            <Text style={styles.date}>
-                                              {formatPostTime((item as any).created_at || (item as any).timestamp || item.time)}
+                        const tagBgColor = tagColors[tagColorIndex];
+
+                        return (
+                            <View style={[
+                                styles.postCard,
+                                item.fundraiser?.is_active && { backgroundColor: '#fbfcff' }
+                            ]}>
+                                {/* Pinned Fundraiser Header - Only show if active */}
+                                {item.fundraiser?.is_active && (
+                                    <View style={{
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                        marginBottom: 12,
+                                        paddingHorizontal: 4
+                                    }}>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                                            <Pin size={16} color="#1600ff" />
+                                            <Text style={{ fontSize: 10, fontWeight: '500', color: '#1600ff' }}>
+                                                PINNED FUNDRAISER
                                             </Text>
-                                            {item.org && (
-                                                <View style={[styles.tag, { backgroundColor: tagBgColor }]}>
-                                                    <Text style={styles.tagText}>{item.org}</Text>
-                                                </View>
+                                        </View>
+                                        <View style={{ position: 'relative' }}>
+                                            <TouchableOpacity
+                                                style={{ padding: 4 }}
+                                                onPress={() => {
+                                                    setShowFundraiserMenu(showFundraiserMenu === item.fundraiser?.id ? null : item.fundraiser?.id || null);
+                                                }}
+                                            >
+                                                <MoreHorizontal size={20} color="#6b7280" />
+                                            </TouchableOpacity>
+
+                                            {/* Fundraiser Menu Dropdown */}
+                                            {showFundraiserMenu === item.fundraiser?.id && (
+                                                <>
+                                                    <TouchableWithoutFeedback onPress={() => setShowFundraiserMenu(null)}>
+                                                        <View style={StyleSheet.absoluteFillObject} />
+                                                    </TouchableWithoutFeedback>
+                                                    <View style={styles.fundraiserMenu}>
+                                                        <TouchableOpacity
+                                                            style={styles.fundraiserMenuItem}
+                                                            onPress={() => {
+                                                                if (item.fundraiser && item.orgUrl) {
+                                                                    handleEditFundraiser(item.fundraiser.id, item.orgUrl.toString());
+                                                                }
+                                                            }}
+                                                        >
+                                                            <Pencil size={16} color="#6B7280" style={{ marginRight: 8 }} />
+                                                            <Text style={styles.fundraiserMenuText}>Edit Fundraiser</Text>
+                                                        </TouchableOpacity>
+                                                        <View style={styles.fundraiserMenuDivider} />
+                                                        <TouchableOpacity
+                                                            style={styles.fundraiserMenuItem}
+                                                            onPress={() => {
+                                                                if (item.fundraiser) {
+                                                                    handleEndFundraiser(item.fundraiser.id);
+                                                                }
+                                                            }}
+                                                            disabled={endFundraiserMutation.isPending}
+                                                        >
+                                                            <Flag size={16} color="#DC2626" style={{ marginRight: 8 }} />
+                                                            <Text style={[styles.fundraiserMenuText, styles.fundraiserMenuTextDanger]}>
+                                                                {endFundraiserMutation.isPending ? 'Ending...' : 'End Fundraiser'}
+                                                            </Text>
+                                                        </TouchableOpacity>
+                                                    </View>
+                                                </>
                                             )}
-                                        </>
-                                    )}
+                                        </View>
                                     </View>
-                                </View>
-                            </View>
-                            {/* Only show ellipsis if not an active pinned fundraiser (pinned fundraiser has its own menu) */}
-                            {user?.id && user.id.toString() === item.userId?.toString() && !item.fundraiser?.is_active && (
-                            <TouchableOpacity 
-                                onPress={(event) => handleEllipsisPress(event, item)}
-                                style={styles.menuButton}
-                            >
-                                <Ellipsis size={20} color="#6b7280" />
-                            </TouchableOpacity>
-                            )}
-                        </View>
+                                )}
 
-                        {/* Content */}
-                        <TouchableOpacity 
-                            onPress={() => {
-                                if (item.fundraiser) {
-                                    (navigation as any).navigate('FundraiserDetail', { fundraiserId: item.fundraiser.id });
-                                } else {
-                                    handlePostPress(item);
-                                }
-                            }}
-                            activeOpacity={1}
-                        >
-                            {/* Fundraiser Post UI */}
-                            {item.fundraiser?.is_active ? (
-                                <>
-                                    {/* Fundraiser Cover Image/Color - rounded-t-lg only */}
-                                    <View style={{ width: '100%', height: 250, borderTopLeftRadius: 12, borderTopRightRadius: 12, overflow: 'hidden' }}>
-                                        {item.fundraiser.color ? (
-                                            <View style={{ 
-                                                width: '100%', 
-                                                height: '100%', 
-                                                backgroundColor: item.fundraiser.color,
-                                                justifyContent: 'center',
-                                                alignItems: 'center'
-                                            }}>
-                                                <Text style={{ color: 'white', fontSize: 20, fontWeight: 'bold' }}>
-                                                    {item.fundraiser.name}
-                                                </Text>
-                                            </View>
-                                        ) : item.fundraiser.image ? (
-                                            <Image
-                                                source={{ uri: item.fundraiser.image }}
-                                                style={{ width: '100%', height: '100%' }}
-                                                resizeMode="cover"
-                                            />
-                                        ) : (
-                                            <View style={{ 
-                                                width: '100%', 
-                                                height: '100%', 
-                                                backgroundColor: '#1600ff',
-                                                justifyContent: 'center',
-                                                alignItems: 'center'
-                                            }}>
-                                                <Text style={{ color: 'white', fontSize: 20, fontWeight: 'bold' }}>
-                                                    {item.fundraiser.name}
-                                                </Text>
-                                            </View>
-                                        )}
-                                    </View>
-
-                                    {/* Fundraiser Info - rounded-b-lg only, connected to cover */}
-                                    <View style={{ marginBottom: 8, backgroundColor: 'white', padding: 16, borderBottomLeftRadius: 12, borderBottomRightRadius: 12 }}>
-                                        <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#111827', marginBottom: 12 }}>
-                                            {item.fundraiser.name}
-                                        </Text>
-                                        
-                                        {/* Amount and Progress */}
-                                        <View style={{ marginBottom: 8 }}>
-                                            <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 8, marginBottom: 6 }}>
-                                                <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#1600ff' }}>
-                                                    ${parseFloat(item.fundraiser.current_amount || '0').toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                                                </Text>
-                                                <Text style={{ fontSize: 12, color: '#6b7280' }}>
-                                                    raised of ${parseFloat(item.fundraiser.target_amount || '0').toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} goal
-                                                </Text>
-                                            </View>
-                                            {/* Progress Bar - h-1.5 md:h-2 */}
-                                            <View style={{ 
-                                                width: '100%', 
-                                                height: 6, 
-                                                backgroundColor: '#e5e7eb', 
-                                                borderRadius: 999,
-                                                overflow: 'hidden',
-                                                marginBottom: 6
-                                            }}>
-                                                <View style={{ 
-                                                    height: '100%', 
-                                                    backgroundColor: '#1600ff',
-                                                    width: `${Math.min(item.fundraiser.progress_percentage || 0, 100)}%`
-                                                }} />
-                                            </View>
-                                            {/* Donors and Days Left */}
-                                            <View style={{ flexDirection: 'row', gap: 12 }}>
-                                                {item.fundraiser.total_donors !== undefined && (
-                                                    <Text style={{ fontSize: 12, color: '#111827' }}>
-                                                        <Text style={{ fontWeight: '600' }}>{item.fundraiser.total_donors}</Text> donor{item.fundraiser.total_donors !== 1 ? 's' : ''}
+                                {/* Header */}
+                                <View style={styles.postHeader}>
+                                    <TouchableOpacity
+                                        onPress={() => {
+                                            // If it's the current user's own profile, navigate to Profile tab
+                                            // Otherwise navigate to UserProfile page
+                                            if (user?.id && item.userId && user.id.toString() === item.userId.toString()) {
+                                                navigation.dispatch(
+                                                    CommonActions.reset({
+                                                        index: 0,
+                                                        routes: [
+                                                            {
+                                                                name: 'DrawerNav',
+                                                                state: {
+                                                                    routes: [
+                                                                        {
+                                                                            name: 'MainTabs',
+                                                                            state: {
+                                                                                routes: [{ name: 'Me' }],
+                                                                                index: 0,
+                                                                            },
+                                                                        },
+                                                                    ],
+                                                                    index: 0,
+                                                                },
+                                                            },
+                                                        ],
+                                                    })
+                                                );
+                                            } else {
+                                                navigation.navigate('UserProfile', { userId: item.userId || '' });
+                                            }
+                                        }}
+                                        style={styles.avatarContainer}
+                                    >
+                                        {/* Show image if available, otherwise use fallback color like Vite */}
+                                        <Avatar size={40}>
+                                            <AvatarImage src={item.avatarUrl} />
+                                            <AvatarFallback
+                                                style={{ backgroundColor: avatarBgColor }}
+                                                textStyle={{ color: 'white', fontWeight: '600', fontSize: 14 }}
+                                            >
+                                                {initials}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                    </TouchableOpacity>
+                                    <View style={styles.headerInfo}>
+                                        <View style={styles.headerTop}>
+                                            <Text style={styles.username}>{item.username || 'Unknown User'}</Text>
+                                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                                                {showSimplifiedHeader ? (
+                                                    <Text style={styles.date}>
+                                                        {formatPostTime((item as any).created_at || (item as any).timestamp || item.time)}
                                                     </Text>
-                                                )}
-                                                {item.fundraiser.end_date && (() => {
-                                                    const endDate = new Date(item.fundraiser.end_date);
-                                                    const now = new Date();
-                                                    const daysLeft = Math.max(0, Math.floor((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
-                                                    return (
-                                                        <Text style={{ fontSize: 12, color: '#111827' }}>
-                                                            <Text style={{ fontWeight: '600' }}>{daysLeft}</Text> days left
+                                                ) : (
+                                                    <>
+                                                        <Text style={styles.date}>
+                                                            {formatPostTime((item as any).created_at || (item as any).timestamp || item.time)}
                                                         </Text>
-                                                    );
-                                                })()}
+                                                        {item.org && (
+                                                            <View style={[styles.tag, { backgroundColor: tagBgColor }]}>
+                                                                <Text style={styles.tagText}>{item.org}</Text>
+                                                            </View>
+                                                        )}
+                                                    </>
+                                                )}
                                             </View>
                                         </View>
                                     </View>
-                                </>
-                            ) : item.fundraiser ? (
-                                <>
-                                    {/* Legacy Fundraiser UI for inactive fundraisers */}
-                                    <View style={{ width: '100%', height: 250, borderTopLeftRadius: 12, borderTopRightRadius: 12, overflow: 'hidden' }}>
-                                        {item.fundraiser.color ? (
-                                            <View style={{ 
-                                                width: '100%', 
-                                                height: '100%', 
-                                                backgroundColor: item.fundraiser.color,
-                                                justifyContent: 'center',
-                                                alignItems: 'center'
-                                            }}>
-                                                <Text style={{ color: 'white', fontSize: 20, fontWeight: 'bold' }}>
-                                                    {item.fundraiser.name}
-                                                </Text>
-                                            </View>
-                                        ) : item.fundraiser.image ? (
-                                            <Image
-                                                source={{ uri: item.fundraiser.image }}
-                                                style={{ width: '100%', height: '100%' }}
-                                                resizeMode="cover"
-                                            />
-                                        ) : (
-                                            <View style={{ 
-                                                width: '100%', 
-                                                height: '100%', 
-                                                backgroundColor: '#1600ff',
-                                                justifyContent: 'center',
-                                                alignItems: 'center'
-                                            }}>
-                                                <Text style={{ color: 'white', fontSize: 20, fontWeight: 'bold' }}>
-                                                    {item.fundraiser.name}
-                                                </Text>
-                                            </View>
-                                        )}
-                                    </View>
-                                    <View style={{ marginBottom: 8, backgroundColor: '#EFF6FF', padding: 16, borderBottomLeftRadius: 12, borderBottomRightRadius: 12 }}>
-                                        <Text style={{ fontSize: 12, color: '#6b7280', marginBottom: 4 }}>
-                                            Started a fundraiser
-                                        </Text>
-                                        <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#111827', marginBottom: 12 }}>
-                                            {item.fundraiser.name}
-                                        </Text>
-                                        <View style={{ marginBottom: 8 }}>
-                                            <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 8, marginBottom: 6 }}>
-                                                <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#1600ff' }}>
-                                                    ${parseFloat(item.fundraiser.current_amount || '0').toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                                                </Text>
-                                                <Text style={{ fontSize: 12, color: '#374151' }}>
-                                                    raised of ${parseFloat(item.fundraiser.target_amount || '0').toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} goal
-                                                </Text>
-                                            </View>
-                                            <View style={{ 
-                                                width: '100%', 
-                                                height: 6, 
-                                                backgroundColor: '#e5e7eb', 
-                                                borderRadius: 999,
-                                                overflow: 'hidden'
-                                            }}>
-                                                <View style={{ 
-                                                    height: '100%', 
-                                                    backgroundColor: '#1600ff',
-                                                    width: `${Math.min(item.fundraiser.progress_percentage || 0, 100)}%`
-                                                }} />
-                                            </View>
-                                        </View>
-                                    </View>
-                                </>
-                            ) : (
-                                <>
-                                    <Text style={styles.postText}>{item.text}</Text>
-                                </>
-                            )}
-                            
-                            {/* Media Section - Only show if there's actual media content and NO fundraiser */}
-                            {!item.fundraiser && item.previewDetails && (item.previewDetails.image || item.previewDetails.title || item.previewDetails.description) ? (
+                                    {/* Only show ellipsis if not an active pinned fundraiser (pinned fundraiser has its own menu) */}
+                                    {user?.id && user.id.toString() === item.userId?.toString() && !item.fundraiser?.is_active && (
+                                        <TouchableOpacity
+                                            onPress={(event) => handleEllipsisPress(event, item)}
+                                            style={styles.menuButton}
+                                        >
+                                            <Ellipsis size={20} color="#6b7280" />
+                                        </TouchableOpacity>
+                                    )}
+                                </View>
+
+                                {/* Content */}
                                 <TouchableOpacity
-                                    onPress={(e) => {
-                                        e.stopPropagation();
-                                        if (item.previewDetails?.url) {
-                                            Linking.openURL(item.previewDetails.url).catch(err => {
-                                                console.error('Failed to open URL:', err);
-                                                Alert.alert('Error', 'Failed to open link');
-                                            });
+                                    onPress={() => {
+                                        if (item.fundraiser) {
+                                            (navigation as any).navigate('FundraiserDetail', { fundraiserId: item.fundraiser.id });
+                                        } else {
+                                            handlePostPress(item);
                                         }
                                     }}
-                                    activeOpacity={0.7}
-                                    style={styles.mediaContainer}
+                                    activeOpacity={1}
                                 >
-                                    {item.previewDetails.image && (
+                                    {/* Fundraiser Post UI */}
+                                    {item.fundraiser?.is_active ? (
+                                        <>
+                                            {/* Fundraiser Cover Image/Color - rounded-t-lg only */}
+                                            <View style={{ width: '100%', height: 170, borderTopLeftRadius: 12, borderTopRightRadius: 12, overflow: 'hidden' }}>
+                                                {item.fundraiser.color ? (
+                                                    <View style={{
+                                                        width: '100%',
+                                                        height: '100%',
+                                                        backgroundColor: item.fundraiser.color,
+                                                        justifyContent: 'center',
+                                                        alignItems: 'center'
+                                                    }}>
+                                                        <Text style={{ color: 'white', fontSize: 20, fontWeight: 'bold' }}>
+                                                            {item.fundraiser.name}
+                                                        </Text>
+                                                    </View>
+                                                ) : item.fundraiser.image ? (
+                                                    <Image
+                                                        source={{ uri: item.fundraiser.image }}
+                                                        style={{ width: '100%', height: '100%' }}
+                                                        resizeMode="cover"
+                                                    />
+                                                ) : (
+                                                    <View style={{
+                                                        width: '100%',
+                                                        height: '100%',
+                                                        backgroundColor: '#1600ff',
+                                                        justifyContent: 'center',
+                                                        alignItems: 'center'
+                                                    }}>
+                                                        <Text style={{ color: 'white', fontSize: 20, fontWeight: 'bold' }}>
+                                                            {item.fundraiser.name}
+                                                        </Text>
+                                                    </View>
+                                                )}
+                                            </View>
+
+                                            {/* Fundraiser Info - rounded-b-lg only, connected to cover */}
+                                            <View style={{ marginBottom: 8, backgroundColor: 'white', padding: 16, borderBottomLeftRadius: 12, borderBottomRightRadius: 12 }}>
+                                                <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#111827', marginBottom: 12 }}>
+                                                    {item.fundraiser.name}
+                                                </Text>
+
+                                                {/* Amount and Progress */}
+                                                <View style={{ marginBottom: 8 }}>
+                                                    <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 8, marginBottom: 6 }}>
+                                                        <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#1600ff' }}>
+                                                            ${parseFloat(item.fundraiser.current_amount || '0').toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                                        </Text>
+                                                        <Text style={{ fontSize: 12, color: '#6b7280' }}>
+                                                            raised of ${parseFloat(item.fundraiser.target_amount || '0').toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} goal
+                                                        </Text>
+                                                    </View>
+                                                    {/* Progress Bar - h-1.5 md:h-2 */}
+                                                    <View style={{
+                                                        width: '100%',
+                                                        height: 6,
+                                                        backgroundColor: '#e5e7eb',
+                                                        borderRadius: 999,
+                                                        overflow: 'hidden',
+                                                        marginBottom: 6
+                                                    }}>
+                                                        <View style={{
+                                                            height: '100%',
+                                                            backgroundColor: '#1600ff',
+                                                            width: `${Math.min(item.fundraiser.progress_percentage || 0, 100)}%`
+                                                        }} />
+                                                    </View>
+                                                    {/* Donors and Days Left */}
+                                                    <View style={{ flexDirection: 'row', gap: 12 }}>
+                                                        {item.fundraiser.total_donors !== undefined && (
+                                                            <Text style={{ fontSize: 12, color: '#111827' }}>
+                                                                <Text style={{ fontWeight: '600' }}>{item.fundraiser.total_donors}</Text> donor{item.fundraiser.total_donors !== 1 ? 's' : ''}
+                                                            </Text>
+                                                        )}
+                                                        {item.fundraiser.end_date && (() => {
+                                                            const endDate = new Date(item.fundraiser.end_date);
+                                                            const now = new Date();
+                                                            const daysLeft = Math.max(0, Math.floor((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+                                                            return (
+                                                                <Text style={{ fontSize: 12, color: '#111827' }}>
+                                                                    <Text style={{ fontWeight: '600' }}>{daysLeft}</Text> days left
+                                                                </Text>
+                                                            );
+                                                        })()}
+                                                    </View>
+                                                </View>
+                                            </View>
+                                        </>
+                                    ) : item.fundraiser ? (
+                                        <>
+                                            {/* Legacy Fundraiser UI for inactive fundraisers */}
+                                            <View style={{ width: '100%', height: 170, borderTopLeftRadius: 12, borderTopRightRadius: 12, overflow: 'hidden' }}>
+                                                {item.fundraiser.color ? (
+                                                    <View style={{
+                                                        width: '100%',
+                                                        height: '100%',
+                                                        backgroundColor: item.fundraiser.color,
+                                                        justifyContent: 'center',
+                                                        alignItems: 'center'
+                                                    }}>
+                                                        <Text style={{ color: 'white', fontSize: 20, fontWeight: 'bold' }}>
+                                                            {item.fundraiser.name}
+                                                        </Text>
+                                                    </View>
+                                                ) : item.fundraiser.image ? (
+                                                    <Image
+                                                        source={{ uri: item.fundraiser.image }}
+                                                        style={{ width: '100%', height: '100%' }}
+                                                        resizeMode="cover"
+                                                    />
+                                                ) : (
+                                                    <View style={{
+                                                        width: '100%',
+                                                        height: '100%',
+                                                        backgroundColor: '#1600ff',
+                                                        justifyContent: 'center',
+                                                        alignItems: 'center'
+                                                    }}>
+                                                        <Text style={{ color: 'white', fontSize: 20, fontWeight: 'bold' }}>
+                                                            {item.fundraiser.name}
+                                                        </Text>
+                                                    </View>
+                                                )}
+                                            </View>
+                                            <View style={{ marginBottom: 8, backgroundColor: '#EFF6FF', padding: 16, borderBottomLeftRadius: 12, borderBottomRightRadius: 12 }}>
+                                                <Text style={{ fontSize: 12, color: '#6b7280', marginBottom: 4 }}>
+                                                    Started a fundraiser
+                                                </Text>
+                                                <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#111827', marginBottom: 12 }}>
+                                                    {item.fundraiser.name}
+                                                </Text>
+                                                <View style={{ marginBottom: 8 }}>
+                                                    <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 8, marginBottom: 6 }}>
+                                                        <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#1600ff' }}>
+                                                            ${parseFloat(item.fundraiser.current_amount || '0').toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                                        </Text>
+                                                        <Text style={{ fontSize: 12, color: '#374151' }}>
+                                                            raised of ${parseFloat(item.fundraiser.target_amount || '0').toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} goal
+                                                        </Text>
+                                                    </View>
+                                                    <View style={{
+                                                        width: '100%',
+                                                        height: 6,
+                                                        backgroundColor: '#e5e7eb',
+                                                        borderRadius: 999,
+                                                        overflow: 'hidden'
+                                                    }}>
+                                                        <View style={{
+                                                            height: '100%',
+                                                            backgroundColor: '#1600ff',
+                                                            width: `${Math.min(item.fundraiser.progress_percentage || 0, 100)}%`
+                                                        }} />
+                                                    </View>
+                                                </View>
+                                            </View>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Text style={styles.postText}>{item.text}</Text>
+                                        </>
+                                    )}
+
+                                    {/* Media Section - Only show if there's actual media content and NO fundraiser */}
+                                    {!item.fundraiser && item.previewDetails && (item.previewDetails.image || item.previewDetails.title || item.previewDetails.description) ? (
+                                        <TouchableOpacity
+                                            onPress={(e) => {
+                                                e.stopPropagation();
+                                                if (item.previewDetails?.url) {
+                                                    Linking.openURL(item.previewDetails.url).catch(err => {
+                                                        console.error('Failed to open URL:', err);
+                                                        Alert.alert('Error', 'Failed to open link');
+                                                    });
+                                                }
+                                            }}
+                                            activeOpacity={0.7}
+                                            style={styles.mediaContainer}
+                                        >
+                                            {item.previewDetails.image && (
+                                                <Image
+                                                    source={{ uri: item.previewDetails.image }}
+                                                    style={styles.mediaImage}
+                                                    resizeMode="cover"
+                                                />
+                                            )}
+                                            <View style={styles.previewContent}>
+                                                {item.previewDetails.site_name && (
+                                                    <Text style={styles.previewSiteName}>
+                                                        {item.previewDetails.site_name.toUpperCase()}
+                                                    </Text>
+                                                )}
+                                                {item.previewDetails.title && (
+                                                    <Text style={styles.previewTitle} numberOfLines={2}>
+                                                        {item.previewDetails.title}
+                                                    </Text>
+                                                )}
+                                                {item.previewDetails.description && (
+                                                    <Text style={styles.previewDescription} numberOfLines={2}>
+                                                        {item.previewDetails.description}
+                                                    </Text>
+                                                )}
+                                                {item.previewDetails.domain && (
+                                                    <Text style={styles.previewDomain} numberOfLines={1}>
+                                                        {item.previewDetails.domain}
+                                                    </Text>
+                                                )}
+                                            </View>
+                                        </TouchableOpacity>
+                                    ) : !item.fundraiser && item.imageUrl ? (
                                         <Image
-                                            source={{ uri: item.previewDetails.image }}
+                                            source={{ uri: item.imageUrl }}
                                             style={styles.mediaImage}
                                             resizeMode="cover"
                                         />
-                                    )}
-                                    <View style={styles.previewContent}>
-                                        {item.previewDetails.site_name && (
-                                            <Text style={styles.previewSiteName}>
-                                                {item.previewDetails.site_name.toUpperCase()}
-                                            </Text>
-                                        )}
-                                        {item.previewDetails.title && (
-                                            <Text style={styles.previewTitle} numberOfLines={2}>
-                                                {item.previewDetails.title}
-                                            </Text>
-                                        )}
-                                        {item.previewDetails.description && (
-                                            <Text style={styles.previewDescription} numberOfLines={2}>
-                                                {item.previewDetails.description}
-                                            </Text>
-                                        )}
-                                        {item.previewDetails.domain && (
-                                            <Text style={styles.previewDomain} numberOfLines={1}>
-                                                {item.previewDetails.domain}
-                                            </Text>
-                                        )}
+                                    ) : null}
+
+                                    {/* Footer */}
+                                    <View style={styles.postFooter}>
+                                        <View style={styles.footerLeft}>
+                                            <TouchableOpacity
+                                                style={styles.footerButton}
+                                                onPress={() => handleLikePress(item.id)}
+                                                disabled={likeMutation.isPending || unlikeMutation.isPending}
+                                            >
+                                                <Heart
+                                                    size={18}
+                                                    color={likedPosts.has(item.id) ? '#ef4444' : '#6b7280'}
+                                                    fill={likedPosts.has(item.id) ? '#ef4444' : 'none'}
+                                                />
+                                                <Text style={styles.footerCount}>
+                                                    {postsLikesCount[item.id] !== undefined ? postsLikesCount[item.id] : item.likes}
+                                                </Text>
+                                            </TouchableOpacity>
+                                            <TouchableOpacity
+                                                style={styles.footerButton}
+                                                onPress={() => {
+                                                    console.log('Comment button pressed for post:', item.id);
+                                                    console.log('onCommentPress callback exists:', !!onCommentPress);
+                                                    if (onCommentPress) {
+                                                        console.log('Calling onCommentPress with item:', item);
+                                                        onCommentPress(item);
+                                                    } else {
+                                                        console.log('onCommentPress is not defined');
+                                                    }
+                                                }}
+                                            >
+                                                <MessageCircle size={18} color="#6b7280" />
+                                                <Text style={styles.footerCount}>{item.comments}</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                        <TouchableOpacity
+                                            onPress={() => {
+                                                setSelectedPost(item);
+                                                handleShare(item.id);
+                                            }}
+                                            style={styles.shareButton}
+                                        >
+                                            <Share2 size={18} color="#6b7280" />
+                                        </TouchableOpacity>
                                     </View>
                                 </TouchableOpacity>
-                            ) : !item.fundraiser && item.imageUrl ? (
-                                <Image 
-                                    source={{ uri: item.imageUrl }} 
-                                    style={styles.mediaImage}
-                                    resizeMode="cover"
-                                />
-                            ) : null}
-
-                            {/* Footer */}
-                            <View style={styles.postFooter}>
-                                <View style={styles.footerLeft}>
-                                    <TouchableOpacity 
-                                        style={styles.footerButton}
-                                        onPress={() => handleLikePress(item.id)}
-                                        disabled={likeMutation.isPending || unlikeMutation.isPending}
-                                    >
-                                        <Heart 
-                                            size={18} 
-                                            color={likedPosts.has(item.id) ? '#ef4444' : '#6b7280'}
-                                            fill={likedPosts.has(item.id) ? '#ef4444' : 'none'}
-                                        />
-                                        <Text style={styles.footerCount}>
-                                            {postsLikesCount[item.id] !== undefined ? postsLikesCount[item.id] : item.likes}
-                                        </Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity 
-                                        style={styles.footerButton}
-                                        onPress={() => {
-                                            console.log('Comment button pressed for post:', item.id);
-                                            console.log('onCommentPress callback exists:', !!onCommentPress);
-                                            if (onCommentPress) {
-                                                console.log('Calling onCommentPress with item:', item);
-                                                onCommentPress(item);
-                                            } else {
-                                                console.log('onCommentPress is not defined');
-                                            }
-                                        }}
-                                    >
-                                        <MessageCircle size={18} color="#6b7280" />
-                                        <Text style={styles.footerCount}>{item.comments}</Text>
-                                    </TouchableOpacity>
-                                </View>
-                                <TouchableOpacity 
-                                    onPress={() => {
-                                        setSelectedPost(item);
-                                        handleShare(item.id);
-                                    }}
-                                    style={styles.shareButton}
-                                >
-                                    <Share2 size={18} color="#6b7280" />
-                                </TouchableOpacity>
                             </View>
-                        </TouchableOpacity>
-                    </View>
-                    );
-                }}
-                ListFooterComponent={renderFooter}
-            />
+                        );
+                    }}
+                    ListFooterComponent={renderFooter}
+                />
             )}
 
             <Modal
@@ -1009,9 +1009,9 @@ export default function PopularPosts({
             >
                 <TouchableWithoutFeedback onPress={() => setTooltipVisible(false)}>
                     <View style={StyleSheet.absoluteFill}>
-                        <TouchableWithoutFeedback onPress={() => {}}>
+                        <TouchableWithoutFeedback onPress={() => { }}>
                             <View style={[
-                                styles.tooltip, 
+                                styles.tooltip,
                                 {
                                     position: 'absolute',
                                     left: tooltipPosition.x - 100,
@@ -1019,7 +1019,7 @@ export default function PopularPosts({
                                 }
                             ]}>
                                 {/* {selectedPost && user?.id && selectedPost.userId && selectedPost.userId === user.id.toString() && ( */}
-                                <TouchableOpacity 
+                                <TouchableOpacity
                                     style={styles.tooltipItem}
                                     onPress={() => {
                                         setTooltipVisible(false);
@@ -1047,7 +1047,7 @@ export default function PopularPosts({
                 </TouchableWithoutFeedback>
             </Modal>
 
-            <SocialShare 
+            <SocialShare
                 visible={shareModalVisible}
                 onClose={() => setShareModalVisible(false)}
                 title={selectedPost?.username + "'s post"}
@@ -1070,7 +1070,7 @@ export default function PopularPosts({
                         alignItems: 'center',
                         padding: 20
                     }}>
-                        <TouchableWithoutFeedback onPress={() => {}}>
+                        <TouchableWithoutFeedback onPress={() => { }}>
                             <View style={{
                                 backgroundColor: 'white',
                                 borderRadius: 12,

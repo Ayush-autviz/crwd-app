@@ -9,10 +9,11 @@ interface ProfileBioProps {
 export default function ProfileBio({ bio }: ProfileBioProps) {
   return (
     <View style={{}}>
-      <Text style={{ 
-        fontSize: 14, 
-        color: PrimaryGrey, 
-        lineHeight: 20
+      <Text style={{
+        fontSize: 14,
+        color: '#000',
+        // lineHeight: 20,
+        textAlign: 'center',
       }}>
         {bio}
       </Text>

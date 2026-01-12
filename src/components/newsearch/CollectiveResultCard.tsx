@@ -19,6 +19,7 @@ interface CollectiveResultCardProps {
       last_name?: string;
       username?: string;
       profile_picture?: string;
+      color?: string;
     };
     causes_count?: number;
     supported_causes_count?: number;
@@ -91,8 +92,8 @@ export default function CollectiveResultCard({ collective }: CollectiveResultCar
   // Get founder initials from first name and last name
   const founderInitials = founder
     ? (founder.first_name && founder.last_name
-        ? `${founder.first_name.charAt(0)}${founder.last_name.charAt(0)}`.toUpperCase()
-        : founder.first_name
+      ? `${founder.first_name.charAt(0)}`.toUpperCase()
+      : founder.first_name
         ? founder.first_name.charAt(0).toUpperCase()
         : getInitials(founderName))
     : 'U';
@@ -132,7 +133,7 @@ export default function CollectiveResultCard({ collective }: CollectiveResultCar
           <Text style={styles.title}>{collective.name}</Text>
 
           {/* Description */}
-          <Text style={styles.description} numberOfLines={2}>
+          <Text style={styles.description} numberOfLines={1}>
             {collective.description || 'No description available'}
           </Text>
 
@@ -142,20 +143,20 @@ export default function CollectiveResultCard({ collective }: CollectiveResultCar
               <Avatar size={20}>
                 <AvatarImage src={founder.profile_picture} />
                 <AvatarFallback
-                  style={{ backgroundColor: getConsistentColor(founder.id || founderName, avatarColors) }}
+                  style={{ backgroundColor: founder.color || getConsistentColor(founder.id || founderName, avatarColors) }}
                   textStyle={{ color: '#FFFFFF', fontSize: 10, fontWeight: '700' }}
                 >
                   {founderInitials}
                 </AvatarFallback>
               </Avatar>
+
               <Text style={styles.founderText}>
                 Founded by{' '}
                 {founder.id ? (
-                  <TouchableOpacity
+                  <Text
                     onPress={() => {
                       // Check if it's the current user's own profile
                       if (currentUser?.id && founder.id && currentUser.id.toString() === founder.id.toString()) {
-                        // Navigate to Profile tab (Me tab in MainTabs)
                         navigation.dispatch(
                           CommonActions.reset({
                             index: 0,
@@ -185,14 +186,14 @@ export default function CollectiveResultCard({ collective }: CollectiveResultCar
                           })
                         );
                       } else {
-                        // Navigate to UserProfile screen
                         (navigation as any).navigate('UserProfile', { userId: founder.id!.toString() });
                       }
                     }}
-                    activeOpacity={0.7}
+                    style={styles.founderNameLink}
+                    suppressHighlighting={false} // Optional: adds a default highlight on press
                   >
-                    <Text style={styles.founderNameLink}>{founderName}</Text>
-                  </TouchableOpacity>
+                    {founderName}
+                  </Text>
                 ) : (
                   <Text>{founderName}</Text>
                 )}
@@ -216,7 +217,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#E5E7EB',
-    marginBottom: 12,
+    // marginBottom: 12,
   },
   content: {
     flexDirection: 'row',
@@ -270,6 +271,7 @@ const styles = StyleSheet.create({
   founderNameLink: {
     color: '#1600ff',
     fontWeight: '600',
+    fontSize: 12,
   },
   nonprofitCount: {
     fontSize: 12,

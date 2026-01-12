@@ -113,7 +113,7 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
   });
 
   // Check if user has already joined this collective
-  const hasJoinedCollective = joinedCollectivesData?.data?.some((item: any) => 
+  const hasJoinedCollective = joinedCollectivesData?.data?.some((item: any) =>
     item.collective?.id?.toString() === update.collective?.id?.toString()
   ) || false;
 
@@ -157,7 +157,7 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
     if (update.collective?.id) {
       (navigation as any).navigate('GroupCRWD', { id: update.collective.id });
     } else if (update.collective?.name) {
-      (navigation as any).navigate('Search', { 
+      (navigation as any).navigate('Search', {
         searchQuery: update.collective.name,
         searchType: 'collective'
       });
@@ -175,7 +175,7 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
   };
 
   // Get user display name
-  const userName = update.user.firstName && update.user.lastName 
+  const userName = update.user.firstName && update.user.lastName
     ? `${update.user.firstName} ${update.user.lastName}`
     : update.user.name || update.user.username;
 
@@ -195,6 +195,9 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
       cleanActionText = actionText.replace(/\s*Supporting\s+\d+\s+nonprofit[s]?/i, '').trim();
     }
 
+    console.log('user in update', update.user);
+
+
     return (
       <View style={styles.notificationCard}>
         {/* Top Section: Profile and Action Button */}
@@ -208,9 +211,7 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
                 textStyle={{ color: '#FFFFFF', fontSize: 12 }}
               >
                 {update.user.name
-                  .split(' ')
-                  .map((n) => n.charAt(0))
-                  .join('')
+                  .charAt(0)
                   .toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -224,13 +225,13 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
                   }
                   activeOpacity={0.7}
                 >
-                  <Text style={styles.userName}>{userName}</Text>
+                  <Text style={styles.userName}>{update.user.name}</Text>
                 </TouchableOpacity>
                 <Text style={styles.username}>@{update.user.username}</Text>
               </View>
             </View>
           </View>
-          
+
           {/* Join Button - Only show if user hasn't joined */}
           {update.collective && !hasJoinedCollective && (
             <TouchableOpacity
@@ -296,16 +297,16 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
                 }
                 activeOpacity={0.7}
               >
-                <Text style={styles.userName}>{userName}</Text>
+                <Text style={styles.userName}>{update.user.name}</Text>
               </TouchableOpacity>
               <Text style={styles.username}>@{update.user.username}</Text>
             </View>
-            {update.collective && (
+            {/* {update.collective && (
               <Text style={styles.collectiveName}>{update.collective.name}</Text>
-            )}
+            )} */}
           </View>
         </View>
-        
+
         {/* Action Button - Follow for donation notifications */}
         {isDonationNotification && update.user.id && currentUser?.id !== update.user.id && (
           <TouchableOpacity
@@ -369,7 +370,7 @@ export default function CommunityUpdates({
         {updates.map((update) => {
           // If postId exists, fetch and display the full post
           const PostContent = update.postId ? PostWithData : NotificationSummary;
-          
+
           return (
             <PostContent key={update.id} update={update} />
           );

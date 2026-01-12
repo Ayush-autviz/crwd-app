@@ -1,10 +1,10 @@
-import { View, Text, ScrollView, TouchableOpacity, Share, Alert, StyleSheet, ActivityIndicator, Clipboard, TouchableWithoutFeedback, Dimensions } from 'react-native'
+import { View, Text, ScrollView, TouchableOpacity, Share, Alert, StyleSheet, ActivityIndicator, Clipboard, TouchableWithoutFeedback, Dimensions, Image } from 'react-native'
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query'
 import BottomSheet, { BottomSheetView, BottomSheetBackdrop, BottomSheetScrollView } from '@gorhom/bottom-sheet'
 import { useRoute, useNavigation } from '@react-navigation/native'
-import { ArrowLeft, Ellipsis, Share2, Flag } from 'lucide-react-native'
+import { ArrowLeft, Ellipsis, Share2, Flag, MapPin } from 'lucide-react-native'
 import { getUserProfileById, followUserById, unfollowUserById, getPosts, getSupportedCausesByUserId, getUserFollowers, getUserFollowing } from '../services/api/social'
 import { getJoinCollective } from '../services/api/crwd'
 import { useAuthStore } from '../store/store'
@@ -19,43 +19,43 @@ import CommentsBottomSheet from '../components/post/CommentsBottomSheet'
 
 // Helper function to get consistent color based on ID or name
 const getConsistentColor = (id: string | number | undefined, fallbackName?: string): string => {
-  const avatarColors = [
-    '#10b981', // green
-    '#3b82f6', // blue
-    '#8b5cf6', // purple
-    '#f59e0b', // amber
-    '#ef4444', // red
-    '#ec4899', // pink
-    '#06b6d4', // cyan
-    '#84cc16', // lime
-  ];
-  
-  if (id !== undefined && id !== null) {
-    const idStr = String(id);
-    const hash = idStr.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    return avatarColors[hash % avatarColors.length];
-  }
-  
-  if (fallbackName) {
-    const hash = fallbackName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    return avatarColors[hash % avatarColors.length];
-  }
-  
-  return avatarColors[0]; // Default to first color
+    const avatarColors = [
+        '#10b981', // green
+        '#3b82f6', // blue
+        '#8b5cf6', // purple
+        '#f59e0b', // amber
+        '#ef4444', // red
+        '#ec4899', // pink
+        '#06b6d4', // cyan
+        '#84cc16', // lime
+    ];
+
+    if (id !== undefined && id !== null) {
+        const idStr = String(id);
+        const hash = idStr.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+        return avatarColors[hash % avatarColors.length];
+    }
+
+    if (fallbackName) {
+        const hash = fallbackName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+        return avatarColors[hash % avatarColors.length];
+    }
+
+    return avatarColors[0]; // Default to first color
 };
 
 // Helper function to get initials from name
 const getInitials = (firstName?: string, lastName?: string, username?: string): string => {
-  if (firstName && lastName) {
-    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
-  }
-  if (firstName) {
-    return firstName.charAt(0).toUpperCase();
-  }
-  if (username) {
-    return username.charAt(0).toUpperCase();
-  }
-  return 'U';
+    // if (firstName && lastName) {
+    //     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+    // }
+    if (firstName) {
+        return firstName.charAt(0).toUpperCase();
+    }
+    if (username) {
+        return username.charAt(0).toUpperCase();
+    }
+    return 'U';
 };
 
 export default function UserProfile() {
@@ -75,7 +75,7 @@ export default function UserProfile() {
 
     // Use userId if available
     const targetUserId = userId || '';
-    
+
     // Check if viewing own profile
     const isOwnProfile = currentUser?.id?.toString() === targetUserId;
 
@@ -163,14 +163,14 @@ export default function UserProfile() {
     const handleShareProfile = async () => {
         try {
             if (!targetUserId) return;
-            
+
             const profileUrl = `${WEB_BASE_URL}/user-profile/${targetUserId}`;
             const result = await Share.share({
                 message: `Check out ${userProfile?.first_name} ${userProfile?.last_name}'s profile!\n${profileUrl}`,
                 title: `${userProfile?.first_name} ${userProfile?.last_name}'s Profile`,
                 url: profileUrl, // iOS only
             });
-            
+
             if (result.action === Share.sharedAction) {
                 try {
                     await Clipboard.setString(profileUrl);
@@ -431,12 +431,12 @@ export default function UserProfile() {
                             const collective = item.collective || item;
                             // Priority: 1. Use color (with white text), 2. Use logo (image), 3. Fallback to generated color with letter
                             const hasColor = collective.color;
-                            const hasLogo = collective.logo && 
+                            const hasLogo = collective.logo &&
                                 (collective.logo.startsWith('http') || collective.logo.startsWith('/') || collective.logo.startsWith('data:'));
                             const iconColor = hasColor || (!hasLogo ? '#10B981' : undefined);
                             const showImage = hasLogo && !hasColor;
                             const iconLetter = collective.name?.charAt(0)?.toUpperCase() || 'N';
-                            
+
                             return (
                                 <View key={collective.id || index} style={styles.statsItem}>
                                     <View style={styles.statsItemLeft}>
@@ -496,11 +496,11 @@ export default function UserProfile() {
                 <View>
                     {members.length > 0 ? (
                         members.map((item: any, index: number) => {
-                            const userData = isFollowingTab 
+                            const userData = isFollowingTab
                                 ? (item.followee || item.following || item.user || item)
                                 : (item.follower || item.user || item);
                             const isCurrentlyFollowing = isFollowingTab ? true : (item.is_following ?? userData.is_following ?? false);
-                            
+
                             return (
                                 <View key={userData.id || index} style={styles.memberItem}>
                                     <View style={styles.memberInfo}>
@@ -613,7 +613,7 @@ export default function UserProfile() {
                 <View style={styles.content}>
                     {/* Profile Header */}
                     <View style={styles.profileHeader}>
-                        <Avatar size={80}>
+                        <Avatar size={130}>
                             <AvatarImage src={userProfile.profile_picture} />
                             <AvatarFallback
                                 style={{ backgroundColor: userProfile.color || getConsistentColor(userProfile.id, userProfile.username || userProfile.first_name) }}
@@ -630,18 +630,17 @@ export default function UserProfile() {
                         <View style={styles.profileMeta}>
                             {userProfile.location && (
                                 <View style={styles.metaItem}>
+                                    <MapPin size={14} color="#000" />
                                     <Text style={styles.metaText}>{userProfile.location}</Text>
                                 </View>
-                            )}
-                            {userProfile.username && (
-                                <Text style={[styles.metaText, { color: PrimaryBlue }]}>
-                                    @{userProfile.username}
-                                </Text>
-                            )}
-                            <Text style={styles.metaText}>
-                                Active since {userProfile.date_joined ? new Date(userProfile.date_joined).getFullYear() : '2023'}
-                            </Text>
+                            )
+                            }
                         </View>
+                    </View>
+
+                    {/* Profile Bio */}
+                    <View style={userProfile.bio ? { marginBottom: 10 } : {}}>
+                        <ProfileBio bio={userProfile.bio} />
                     </View>
 
                     {/* Follow Button */}
@@ -684,77 +683,131 @@ export default function UserProfile() {
                     <View style={styles.divider} />
 
                     {/* Supports Section */}
+                    {/* Supports Section */}
                     {userProfile.recently_supported_causes && userProfile.recently_supported_causes.length > 0 && (
-                        <>
-                            <View style={styles.supportsSection}>
-                                <Text style={styles.supportsTitle}>Supports</Text>
-                                
-                                {/* Grid Layout - 2 cols mobile, 3 cols tablet, 4 cols desktop */}
-                                <View style={styles.supportsGrid}>
-                                    {userProfile.recently_supported_causes.slice(0, 6).map((cause: any, i: number) => {
-                                        const colors = [
-                                            '#f97316', // orange
-                                            '#ec4899', // pink
-                                            '#3b82f6', // blue
-                                            '#ef4444', // red
-                                            '#10b981', // green
-                                            '#f97316', // orange (repeat)
-                                        ];
-                                        const bgColor = colors[i % colors.length];
+                        <View style={{ marginTop: 24, paddingHorizontal: 0 }}>
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                                <Text style={{ fontSize: 18, fontWeight: '700', color: '#111827' }}>
+                                    Supports
+                                </Text>
+                            </View>
 
-                                        return (
-                                            <TouchableOpacity
-                                                key={cause.id || i}
-                                                style={styles.supportsCard}
-                                                onPress={() => (navigation as any).navigate('CauseScreen', { id: cause.id })}
-                                                activeOpacity={0.7}
-                                            >
+                            {/* Grid Layout - 2 rows, 3 columns */}
+                            <View style={{
+                                flexDirection: 'row',
+                                flexWrap: 'wrap',
+                                marginHorizontal: -6,
+                            }}>
+                                {userProfile.recently_supported_causes.slice(0, 6).map((cause: any, i: number) => {
+                                    // Generate consistent color based on cause ID
+                                    const bgColor = getConsistentColor(cause.id || cause.name || 'N', cause.name);
+
+                                    return (
+                                        <TouchableOpacity
+                                            key={cause.id || i}
+                                            onPress={() => navigation.navigate('CauseScreen' as never, { id: cause.id } as never)}
+                                            style={{
+                                                width: '33.333%',
+                                                paddingHorizontal: 6,
+                                                marginBottom: 12,
+                                            }}
+                                        >
+                                            <View style={{
+                                                backgroundColor: 'white',
+                                                borderRadius: 8,
+                                                borderWidth: 1,
+                                                borderColor: '#e5e7eb',
+                                                padding: 12,
+                                                alignItems: 'center',
+                                                height: 100,
+                                                justifyContent: 'space-between',
+                                            }}>
                                                 {cause.logo ? (
-                                                    <Avatar size={48}>
-                                                        <AvatarImage src={cause.logo} />
-                                                        <AvatarFallback style={{ backgroundColor: '#dbeafe' }} textStyle={{ color: '#2563eb', fontWeight: '600' }}>
-                                                            {cause.name?.charAt(0)?.toUpperCase() || 'N'}
-                                                        </AvatarFallback>
-                                                    </Avatar>
+                                                    <View style={{
+                                                        width: 48,
+                                                        height: 48,
+                                                        borderRadius: 8,
+                                                        marginBottom: 8,
+                                                        overflow: 'hidden',
+                                                    }}>
+                                                        <Image
+                                                            source={{ uri: cause.logo }}
+                                                            style={{
+                                                                width: 48,
+                                                                height: 48,
+                                                                borderRadius: 8,
+                                                            }}
+                                                            resizeMode="cover"
+                                                        />
+                                                    </View>
                                                 ) : (
-                                                    <View style={[styles.supportsIcon, { backgroundColor: bgColor }]}>
-                                                        <Text style={styles.supportsIconText}>
+                                                    <View style={{
+                                                        width: 48,
+                                                        height: 48,
+                                                        borderRadius: 8,
+                                                        backgroundColor: bgColor,
+                                                        justifyContent: 'center',
+                                                        alignItems: 'center',
+                                                        marginBottom: 8,
+                                                    }}>
+                                                        <Text style={{
+                                                            fontSize: 20,
+                                                            fontWeight: '600',
+                                                            color: 'white',
+                                                        }}>
                                                             {cause.name?.charAt(0)?.toUpperCase() || 'N'}
                                                         </Text>
                                                     </View>
                                                 )}
-                                                <Text style={styles.supportsName} numberOfLines={2}>
+                                                <Text
+                                                    numberOfLines={2}
+                                                    ellipsizeMode="tail"
+                                                    style={{
+                                                        fontSize: 12,
+                                                        fontWeight: '600',
+                                                        color: '#111827',
+                                                        textAlign: 'center',
+                                                        height: 32,
+                                                    }}
+                                                >
                                                     {cause.name}
                                                 </Text>
-                                            </TouchableOpacity>
-                                        );
-                                    })}
-                                </View>
-
-                                {/* Show more causes text and link */}
-                                {userProfile.recently_supported_causes.length > 6 && (
-                                    <View style={styles.supportsMore}>
-                                        <Text style={styles.supportsMoreText}>
-                                            + {userProfile.recently_supported_causes.length - 6} more causes
-                                        </Text>
-                                        <TouchableOpacity onPress={() => (navigation as any).navigate('Interests')}>
-                                            <Text style={styles.supportsMoreLink}>
-                                                See all {userProfile.recently_supported_causes.length} →
-                                            </Text>
+                                            </View>
                                         </TouchableOpacity>
-                                    </View>
-                                )}
+                                    );
+                                })}
                             </View>
 
-                            {/* Divider */}
-                            <View style={styles.divider} />
-                        </>
+                            {/* Show more causes text and link */}
+                            {userProfile.recently_supported_causes.length > 5 && (
+                                <View style={{ alignItems: 'center', gap: 8 }}>
+                                    <Text style={{ fontSize: 14, color: '#6b7280' }}>
+                                        + {userProfile.supported_causes_count - 6} more causes
+                                    </Text>
+                                    <TouchableOpacity
+                                        onPress={() => {
+                                            setActiveStatsTab('causes');
+                                            bottomSheetRef.current?.snapToIndex(0);
+                                            setShowStatsSheet(true);
+                                        }}
+                                    >
+                                        <Text style={{
+                                            fontSize: 14,
+                                            color: PrimaryBlue,
+                                            fontWeight: '500'
+                                        }}>
+                                            See all {userProfile.supported_causes_count} →
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
+                            )}
+
+                            <View style={{ height: 1, backgroundColor: '#e5e7eb', marginTop: 16 }}></View>
+
+                        </View>
                     )}
 
-                    {/* Profile Bio */}
-                    <View style={userProfile.bio ? { marginTop: 20 } : {}}>
-                    <ProfileBio bio={userProfile.bio} />
-                    </View>
+
 
                     {/* Recent Activity */}
                     <View style={styles.activitySection}>
@@ -964,7 +1017,7 @@ const styles = StyleSheet.create({
     },
     profileHeader: {
         alignItems: 'center',
-        paddingBottom: 16,
+        paddingBottom: 8,
     },
     profileName: {
         fontSize: 20,
@@ -983,20 +1036,21 @@ const styles = StyleSheet.create({
     metaItem: {
         flexDirection: 'row',
         alignItems: 'center',
+        gap: 4,
     },
     metaText: {
         fontSize: 12,
-        color: '#6B7280',
+        color: '#000',
     },
     followButtonMain: {
         backgroundColor: PrimaryBlue,
-        paddingVertical: 12,
-        paddingHorizontal: 40,
+        paddingVertical: 8,
+        paddingHorizontal: 20,
         borderRadius: 8,
         alignItems: 'center',
         justifyContent: 'center',
         alignSelf: 'center',
-        marginTop: 16,
+        // marginTop: 16,
         minWidth: 120,
     },
     followButtonMainOutline: {

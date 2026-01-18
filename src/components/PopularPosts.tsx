@@ -430,7 +430,7 @@ export default function PopularPosts({
             {isLoading && (
                 <View style={styles.loadingContainer}>
                     <ActivityIndicator size="large" color={PrimaryBlue} />
-                    <Text style={styles.loadingText}>Loading posts...</Text>
+                    <Text style={styles.loadingText}>Loading...</Text>
                 </View>
             )}
 

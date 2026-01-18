@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Modal, Pressable } from 'react-native';
-import { ArrowLeft, Star, MoreHorizontal, Share2, Link2, Flag } from 'lucide-react-native';
+import { ArrowLeft, Star, MoreHorizontal, Share2, Link2, Flag, CreditCard } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { favoriteCause, unfavoriteCause } from '../../services/api/social';
@@ -13,6 +13,7 @@ interface CauseHeaderProps {
   causeId?: string;
   isFavorite?: boolean;
   onShare?: () => void;
+  onOneTimeDonation?: () => void;
 }
 
 export default function CauseHeader({
@@ -20,6 +21,7 @@ export default function CauseHeader({
   causeId,
   isFavorite: initialIsFavorite = false,
   onShare,
+  onOneTimeDonation,
 }: CauseHeaderProps) {
   const navigation = useNavigation();
   const queryClient = useQueryClient();
@@ -190,6 +192,18 @@ export default function CauseHeader({
                   <Text style={styles.dropdownText}>
                     {isFavorite ? 'Remove favorite' : 'Add to favorites'}
                   </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => {
+                    setShowDropdown(false);
+                    onOneTimeDonation?.();
+                  }}
+                  disabled={!onOneTimeDonation}
+                  style={[styles.dropdownItem, !onOneTimeDonation && styles.disabled]}
+                  activeOpacity={0.7}
+                >
+                  <CreditCard size={16} color="#111827" strokeWidth={2.5} />
+                  <Text style={styles.dropdownText}>One Time Donation</Text>
                 </TouchableOpacity>
                 <View style={styles.separator} />
                 <TouchableOpacity

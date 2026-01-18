@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { View, Image, Text, StyleSheet, ViewStyle, TextStyle } from 'react-native';
+import { View, Image, Text, StyleSheet, ViewStyle, TextStyle, ImageStyle, StyleProp } from 'react-native';
 
 interface AvatarProps {
   size?: number;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   className?: string;
   children: React.ReactNode;
 }
@@ -11,14 +11,14 @@ interface AvatarProps {
 interface AvatarImageProps {
   src?: string;
   alt?: string;
-  style?: ViewStyle;
+  style?: StyleProp<ImageStyle>;
   onError?: () => void;
 }
 
 interface AvatarFallbackProps {
   children: React.ReactNode;
-  style?: ViewStyle;
-  textStyle?: TextStyle;
+  style?: StyleProp<ViewStyle>;
+  textStyle?: StyleProp<TextStyle>;
 }
 
 export function Avatar({ size = 40, style, children, ...props }: AvatarProps) {

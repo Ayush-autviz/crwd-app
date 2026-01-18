@@ -12,7 +12,7 @@ import {
 import { Heart, ArrowRight, Loader2, Plus, Minus } from 'lucide-react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
-import { Button } from '../ui/button';
+
 import { categories } from '../../Constants/categories';
 import { useMutation } from '@tanstack/react-query';
 import { postCauseInterests } from '../../services/api/social';
@@ -49,10 +49,10 @@ export default function NonProfitInterests() {
     "Society",
     "Sports"
   ];
-  
-  const mainCategories = categories.filter((cat) => 
-    cat.id !== "" && 
-    cat.name !== "All" && 
+
+  const mainCategories = categories.filter((cat) =>
+    cat.id !== "" &&
+    cat.name !== "All" &&
     allowedCategoryNames.includes(cat.name)
   );
 
@@ -80,20 +80,23 @@ export default function NonProfitInterests() {
         });
         // Then navigate to CreateCRWD within DrawerNav
         setTimeout(() => {
-          (navigation as any).navigate('DrawerNav', { screen: 'CreateCRWD' });
+          (navigation as any).navigate('DrawerNav', {
+            screen: 'CreateCRWD',
+            params: { from: 'NewNonprofitInterests' }
+          });
         }, 100);
       } else if (redirectTo === 'GroupCRWD') {
         // Navigate directly to GroupCRWD with params
         console.log('NonProfitInterests - Navigating to GroupCRWD with params:', redirectParams);
         navigation.reset({
           index: 0,
-          routes: [{ name: redirectTo as never, params: redirectParams }],
+          routes: [{ name: redirectTo as never, params: { ...redirectParams, from: 'NewNonprofitInterests' } }],
         });
       } else {
-        navigation.navigate('CompleteOnboard', { 
+        navigation.navigate('CompleteOnboard', {
           redirectTo,
           redirectParams,
-          selectedCategories 
+          selectedCategories
         });
       }
     },
@@ -121,14 +124,17 @@ export default function NonProfitInterests() {
       });
       // Then navigate to CreateCRWD within DrawerNav
       setTimeout(() => {
-        (navigation as any).navigate('DrawerNav', { screen: 'CreateCRWD' });
+        (navigation as any).navigate('DrawerNav', {
+          screen: 'CreateCRWD',
+          params: { from: 'NewNonprofitInterests' }
+        });
       }, 100);
     } else if (redirectTo === 'GroupCRWD') {
       // Navigate directly to GroupCRWD with params
       console.log('NonProfitInterests (skip) - Navigating to GroupCRWD with params:', redirectParams);
       navigation.reset({
         index: 0,
-        routes: [{ name: redirectTo as never, params: redirectParams }],
+        routes: [{ name: redirectTo as never, params: { ...redirectParams, from: 'NewNonprofitInterests' } }],
       });
     } else {
       navigation.navigate('CompleteOnboard', { redirectTo, redirectParams });
@@ -143,7 +149,7 @@ export default function NonProfitInterests() {
         end={{ x: 1, y: 1 }}
         style={{ flex: 1 }}
       >
-        <ScrollView 
+        <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
@@ -161,7 +167,7 @@ export default function NonProfitInterests() {
             {/* Heart Icon */}
             <View style={styles.iconContainer}>
               <View style={styles.iconCircle}>
-                <Heart size={32} color="#9333ea" fill="#9333ea" />
+                <Heart size={32} color="#9333ea" />
               </View>
             </View>
 

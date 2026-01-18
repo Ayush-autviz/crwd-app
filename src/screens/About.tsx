@@ -1,15 +1,15 @@
 import React, { useState } from 'react'
-import { 
-  View, 
-  Text, 
-  TouchableOpacity, 
-  ScrollView, 
-  StyleSheet, 
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  StyleSheet,
   Alert
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { 
-  ChevronLeft, 
+import {
+  ChevronLeft,
   Users,
   Heart,
   DollarSign,
@@ -76,8 +76,12 @@ export default function About() {
       description: 'Your donation is split evenly across all nonprofits in your box. CRWD processes the payment and distributes funds on your behalf.'
     },
     {
+      title: 'Transparent fee structure',
+      description: 'At least 90% of your donation goes directly to the nonprofits you\'ve chosen. No more than 10% supports CRWD\'s operations (including payment processing, verification, and platform maintenance).'
+    },
+    {
       title: 'We send the funds',
-      description: 'CRWD distributes donations to nonprofits within 45 days, bundled as a single payment that includes all contributions made to that nonprofit across the platform.'
+      description: 'CRWD Foundation Inc. disburses donations to nonprofits within 60 days of receipt. This window allows for payment processing, verification, and operational requirements.'
     },
     {
       title: 'Track your giving',
@@ -160,12 +164,26 @@ export default function About() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>About CRWD</Text>
           <Text style={styles.paragraphText}>
-            CRWD makes it easy to give to multiple nonprofits in one place.
+            CRWD is a collective giving platform that makes it easy to support multiple causes you care about with a single monthly donation. Our mission is to transform how people give by removing barriers and creating communities of changemakers who show up consistently for the causes that matter.
           </Text>
           <Text style={styles.paragraphText}>
-            You can build a personalized donation box, add nonprofits you care about, and give once or monthly. CRWD handles the rest—including distributing your donation and keeping everything organized.
+            CRWD operates through two entities:
           </Text>
-          <Text style={[styles.paragraphText, styles.boldText]}>
+          <View style={styles.bulletList}>
+            <View style={styles.bulletItem}>
+              <View style={styles.bullet} />
+              <Text style={styles.bulletText}>
+                <Text style={{ fontWeight: 'bold' }}>CRWD Foundation Inc.</Text>, a 501(c)(3) nonprofit organization (EIN: 41-2423690) that receives and distributes donations to qualified nonprofits.
+              </Text>
+            </View>
+            <View style={styles.bulletItem}>
+              <View style={styles.bullet} />
+              <Text style={styles.bulletText}>
+                <Text style={{ fontWeight: 'bold' }}>CRWD Collective Giving LLC</Text>, which provides the technology platform and services.
+              </Text>
+            </View>
+          </View>
+          <Text style={[styles.paragraphText, styles.boldText, { marginTop: 16 }]}>
             We're here to simplify generosity.
           </Text>
         </View>
@@ -194,7 +212,7 @@ export default function About() {
           <Text style={styles.paragraphText}>
             Because CRWD uses a collective giving model, where donations are pooled and distributed on your behalf, most donations are not currently tax deductible, even if they support 501(c)(3) organizations.
           </Text>
-          
+
           <Text style={styles.subsectionTitle}>That's changing.</Text>
           <Text style={styles.paragraphText}>
             Some nonprofits on CRWD have already enrolled to receive direct payments, which makes donations to them tax deductible and helps reduce processing time and costs. These nonprofits are clearly labeled across the platform, and you'll receive a tax receipt when you give to them.
@@ -209,7 +227,7 @@ export default function About() {
               <View style={styles.bulletItem}>
                 <View style={styles.bullet} />
                 <Text style={styles.bulletText}>
-                  Nonprofits still receive 100% of your donation (minus processing fees)
+                  Nonprofits receive at least 90% of your donation
                 </Text>
               </View>
               <View style={styles.bulletItem}>

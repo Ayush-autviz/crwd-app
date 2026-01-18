@@ -1,137 +1,234 @@
-import { View, Text, SafeAreaView, ScrollView, StyleSheet } from 'react-native'
-import React from 'react'
-import MainHeaderNav from '../MainHeaderNav'
-import { PrimaryBlue, PrimaryGrey, SecondaryGrey } from '../../Constants/Colors'
+import React from 'react';
+import { StyleSheet, Text, View, ScrollView, SafeAreaView } from 'react-native';
+import MainHeaderNav from '../MainHeaderNav';
+
 
 export default function TermsOfUse() {
   return (
     <SafeAreaView style={styles.container}>
       <MainHeaderNav show={true} title={'Terms of Use'} menu={false} />
       <ScrollView style={styles.scrollView}>
-        <Text style={styles.title}>Terms of Use</Text>
-        
-        <Text style={styles.lastUpdated}>Last updated: March 15, 2024</Text>
-        
+        <Text style={styles.title}>Terms of Service</Text>
+
+        <Text style={styles.lastUpdated}>Effective Date: January 15, 2026</Text>
+
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>1. Acceptance of Terms</Text>
+          <Text style={styles.sectionTitle}>Welcome to CRWD</Text>
           <Text style={styles.paragraph}>
-            By accessing and using CRWD, you agree to be bound by these Terms of Use and all applicable laws and regulations.
-            If you do not agree with any of these terms, you are prohibited from using or accessing this platform.
+            Thank you for using CRWD! These Terms of Service govern your use of the CRWD platform and services. By creating an account or making a donation through CRWD, you agree to these Terms and our Privacy Policy.
+          </Text>
+          <Text style={styles.paragraph}>
+            CRWD is a collective giving platform that makes it easy to support multiple causes you care about with a single monthly donation. Our mission is to transform how people give by removing barriers and creating communities of changemakers who show up consistently for the causes that matter.
           </Text>
         </View>
-        
+
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>2. Use License</Text>
+          <Text style={styles.sectionTitle}>About CRWD</Text>
           <Text style={styles.paragraph}>
-            Permission is granted to temporarily use CRWD for personal, non-commercial purposes. This is the grant of a license,
-            not a transfer of title, and under this license you may not:
+            CRWD operates through two entities:
           </Text>
           <View style={styles.bulletList}>
-            <Text style={styles.bulletItem}>• Modify or copy the materials</Text>
-            <Text style={styles.bulletItem}>• Use the materials for any commercial purpose</Text>
-            <Text style={styles.bulletItem}>• Attempt to decompile or reverse engineer any software contained on CRWD</Text>
-            <Text style={styles.bulletItem}>• Remove any copyright or other proprietary notations from the materials</Text>
-            <Text style={styles.bulletItem}>• Transfer the materials to another person or "mirror" the materials on any other server</Text>
+            <Text style={styles.bulletItem}>• CRWD Foundation Inc., a 501(c)(3) nonprofit organization (EIN: 41-2423690) that receives and distributes donations to qualified nonprofits</Text>
+            <Text style={styles.bulletItem}>• CRWD Collective Giving LLC, which provides the technology platform and services</Text>
           </View>
-        </View>
-        
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>3. User Accounts</Text>
           <Text style={styles.paragraph}>
-            To access certain features of CRWD, you must register for an account. You agree to:
+            When you make a donation through CRWD, you are making a tax-deductible contribution to CRWD Foundation Inc., which then grants funds to the nonprofits you've selected.
+          </Text>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>How Donations Work</Text>
+
+          <Text style={styles.subSectionTitle}>Fee Structure</Text>
+          <Text style={styles.paragraph}>
+            For every donation you make through CRWD:
           </Text>
           <View style={styles.bulletList}>
-            <Text style={styles.bulletItem}>• Provide accurate and complete information</Text>
-            <Text style={styles.bulletItem}>• Maintain the security of your account and password</Text>
-            <Text style={styles.bulletItem}>• Accept responsibility for all activities that occur under your account</Text>
-            <Text style={styles.bulletItem}>• Notify us immediately of any unauthorized use of your account</Text>
+            <Text style={styles.bulletItem}>• At least 90% goes directly to the nonprofits you've chosen to support</Text>
+            <Text style={styles.bulletItem}>• No more than 10% supports CRWD's operations, including platform maintenance, nonprofit verification, payment processing, marketing to reach more donors and nonprofits, and our team</Text>
           </View>
-        </View>
-        
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>4. User Conduct</Text>
           <Text style={styles.paragraph}>
-            You agree not to:
+            This fee structure is transparent and applied consistently to all donations. Payment processing fees (charged by third-party processors like Stripe) are included in CRWD's operational fee.
+          </Text>
+
+          <Text style={styles.subSectionTitle}>Disbursement Timeline</Text>
+          <Text style={styles.paragraph}>
+            CRWD Foundation Inc. disburses donations to nonprofits within 60 days of receipt. Most disbursements occur within 45 days, but the 60-day window accounts for payment processing, verification, and operational requirements.
+          </Text>
+
+          <Text style={styles.subSectionTitle}>Nonprofit Selection</Text>
+          <Text style={styles.paragraph}>
+            The nonprofits listed on CRWD are verified 501(c)(3) organizations selected by CRWD based on public IRS records and our verification process. Nonprofits listed on CRWD:
           </Text>
           <View style={styles.bulletList}>
-            <Text style={styles.bulletItem}>• Use CRWD for any illegal purpose</Text>
-            <Text style={styles.bulletItem}>• Harass, abuse, or harm another person</Text>
-            <Text style={styles.bulletItem}>• Post or transmit unauthorized commercial communications</Text>
-            <Text style={styles.bulletItem}>• Collect users' information without their consent</Text>
-            <Text style={styles.bulletItem}>• Interfere with the proper functioning of CRWD</Text>
+            <Text style={styles.bulletItem}>• Do not have a partnership or endorsement relationship with CRWD</Text>
+            <Text style={styles.bulletItem}>• Have not signed agreements with CRWD</Text>
+            <Text style={styles.bulletItem}>• Are beneficiaries of donations made through the platform</Text>
+            <Text style={styles.bulletItem}>• May not know they are listed on CRWD until they receive a donation</Text>
           </View>
-        </View>
-        
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>5. Content and Intellectual Property</Text>
           <Text style={styles.paragraph}>
-            All content on CRWD, including text, graphics, logos, and software, is the property of CRWD or its content suppliers
-            and is protected by international copyright laws. You may not reproduce, distribute, or create derivative works from
-            this content without express permission.
+            CRWD is not responsible for how nonprofits use donated funds after disbursement. If a nonprofit loses its 501(c)(3) status, closes, or becomes inactive after you've selected it, CRWD Foundation will reallocate your designated funds to similar qualified nonprofits.
           </Text>
         </View>
-        
+
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>6. Donations and Payments</Text>
+          <Text style={styles.sectionTitle}>Your Account and Responsibilities</Text>
+
+          <Text style={styles.subSectionTitle}>Eligibility</Text>
           <Text style={styles.paragraph}>
-            When making donations through CRWD:
+            You must be at least 13 years old to use CRWD. If you are under 18, you must have permission from a parent or legal guardian.
+          </Text>
+
+          <Text style={styles.subSectionTitle}>Account Information</Text>
+          <Text style={styles.paragraph}>
+            You agree to:
           </Text>
           <View style={styles.bulletList}>
-            <Text style={styles.bulletItem}>• You must provide accurate payment information</Text>
-            <Text style={styles.bulletItem}>• All donations are final and non-refundable</Text>
-            <Text style={styles.bulletItem}>• We reserve the right to refuse or cancel any donation</Text>
-            <Text style={styles.bulletItem}>• You are responsible for any applicable taxes</Text>
+            <Text style={styles.bulletItem}>• Provide accurate and current information when creating your account</Text>
+            <Text style={styles.bulletItem}>• Maintain the security of your account credentials</Text>
+            <Text style={styles.bulletItem}>• Update your information promptly if it changes</Text>
+            <Text style={styles.bulletItem}>• Notify us immediately of any unauthorized access to your account</Text>
           </View>
-        </View>
-        
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>7. Disclaimer</Text>
+
+          <Text style={styles.subSectionTitle}>Acceptable Use</Text>
           <Text style={styles.paragraph}>
-            CRWD is provided "as is" without any warranties, expressed or implied. We do not warrant that:
+            You agree to use CRWD lawfully and ethically. You will not:
           </Text>
           <View style={styles.bulletList}>
-            <Text style={styles.bulletItem}>• The platform will be uninterrupted or error-free</Text>
-            <Text style={styles.bulletItem}>• Defects will be corrected</Text>
-            <Text style={styles.bulletItem}>• The platform is free of viruses or other harmful components</Text>
+            <Text style={styles.bulletItem}>• Post, upload, or transmit harmful, illegal, defamatory, harassing, or misleading content</Text>
+            <Text style={styles.bulletItem}>• Use automated tools, bots, or scripts to access the platform</Text>
+            <Text style={styles.bulletItem}>• Attempt to gain unauthorized access to CRWD's systems or other users' accounts</Text>
+            <Text style={styles.bulletItem}>• Engage in fraudulent activity or misrepresent yourself</Text>
+            <Text style={styles.bulletItem}>• Use the platform in any way that could harm CRWD, its users, or its reputation</Text>
           </View>
         </View>
-        
+
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>8. Limitation of Liability</Text>
+          <Text style={styles.sectionTitle}>Intellectual Property</Text>
           <Text style={styles.paragraph}>
-            In no event shall CRWD or its suppliers be liable for any damages arising out of the use or inability to use the
-            platform, even if we have been notified of the possibility of such damages.
+            All content on CRWD—including designs, logos, text, software, databases, and trademarks—is owned by CRWD or its licensors and protected by intellectual property laws. You may use CRWD's content for personal, non-commercial purposes only. Any unauthorized reproduction, modification, or distribution is prohibited.
           </Text>
         </View>
-        
+
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>9. Changes to Terms</Text>
+          <Text style={styles.sectionTitle}>User-Generated Content</Text>
+          <Text style={styles.subSectionTitle}>Your Submissions</Text>
           <Text style={styles.paragraph}>
-            We reserve the right to modify these terms at any time. We will notify users of any material changes by posting the
-            new Terms of Use on this page. Your continued use of CRWD after such modifications constitutes your acceptance of
-            the new terms.
+            If you submit content to CRWD (such as comments, reviews, feedback, or ideas), you grant CRWD a worldwide, non-exclusive, royalty-free license to use, modify, reproduce, and distribute your submissions for operational or promotional purposes.
+          </Text>
+          <Text style={styles.paragraph}>
+            You confirm that:
+          </Text>
+          <View style={styles.bulletList}>
+            <Text style={styles.bulletItem}>• Your submissions are original or you have the rights to share them</Text>
+            <Text style={styles.bulletItem}>• Your content does not violate others' rights or contain unlawful material</Text>
+            <Text style={styles.bulletItem}>• You give CRWD permission to use your content as described above</Text>
+          </View>
+          <Text style={styles.paragraph}>
+            CRWD reserves the right to edit, remove, or report content that violates these Terms without prior notice.
+          </Text>
+
+          <Text style={styles.subSectionTitle}>Copyright Claims</Text>
+          <Text style={styles.paragraph}>
+            If you believe content on CRWD infringes your intellectual property rights, contact us at info@crwdfund.org with:
+          </Text>
+          <View style={styles.bulletList}>
+            <Text style={styles.bulletItem}>• A description of the copyrighted material</Text>
+            <Text style={styles.bulletItem}>• The location of the infringing content on our platform</Text>
+            <Text style={styles.bulletItem}>• A statement that your claim is made in good faith</Text>
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Disclaimers and Limitations of Liability</Text>
+          <Text style={styles.subSectionTitle}>"As Is" Service</Text>
+          <Text style={styles.paragraph}>
+            CRWD is provided "as is" without warranties of any kind, express or implied. While we work to provide a reliable and secure platform, we do not guarantee:
+          </Text>
+          <View style={styles.bulletList}>
+            <Text style={styles.bulletItem}>• Uninterrupted or error-free access</Text>
+            <Text style={styles.bulletItem}>• That the platform will meet all your requirements</Text>
+            <Text style={styles.bulletItem}>• The accuracy or reliability of nonprofit information</Text>
+            <Text style={styles.bulletItem}>• The tax-deductibility of your specific donation (consult your tax advisor)</Text>
+          </View>
+
+          <Text style={styles.subSectionTitle}>Limitation of Liability</Text>
+          <Text style={styles.paragraph}>
+            To the fullest extent permitted by law, CRWD, its affiliates, and team members shall not be liable for:
+          </Text>
+          <View style={styles.bulletList}>
+            <Text style={styles.bulletItem}>• Indirect, incidental, consequential, or punitive damages</Text>
+            <Text style={styles.bulletItem}>• Loss of data, profits, or revenue</Text>
+            <Text style={styles.bulletItem}>• Service interruptions or errors</Text>
+            <Text style={styles.bulletItem}>• Actions or inactions of nonprofits receiving donations</Text>
+            <Text style={styles.bulletItem}>• Delays in donation disbursement due to circumstances beyond our control</Text>
+          </View>
+          <Text style={styles.paragraph}>
+            CRWD's total liability to you shall not exceed the total amount of donations you have made through the platform in the preceding 12 months.
           </Text>
         </View>
-        
+
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>10. Governing Law</Text>
+          <Text style={styles.sectionTitle}>Indemnification</Text>
           <Text style={styles.paragraph}>
-            These terms shall be governed by and construed in accordance with the laws of the jurisdiction in which CRWD operates,
-            without regard to its conflict of law provisions.
+            You agree to indemnify and hold harmless CRWD, CRWD Foundation Inc., CRWD Collective Giving LLC, and their affiliates, officers, directors, employees, and agents from any claims, liabilities, damages, or expenses (including legal fees) arising from:
+          </Text>
+          <View style={styles.bulletList}>
+            <Text style={styles.bulletItem}>• Your use of the platform</Text>
+            <Text style={styles.bulletItem}>• Your content submissions</Text>
+            <Text style={styles.bulletItem}>• Your breach of these Terms</Text>
+            <Text style={styles.bulletItem}>• Your violation of any law or third-party rights</Text>
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Changes to Terms</Text>
+          <Text style={styles.paragraph}>
+            CRWD may update these Terms at any time. We will notify you of material changes through the platform or via email. Continued use of CRWD after changes are posted constitutes acceptance of the updated Terms.
+          </Text>
+          <Text style={styles.paragraph}>
+            If you do not agree to the changes, you must stop using the platform.
           </Text>
         </View>
-        
+
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>11. Contact Information</Text>
+          <Text style={styles.sectionTitle}>Account Termination</Text>
           <Text style={styles.paragraph}>
-            If you have any questions about these Terms of Use, please contact us at:
+            CRWD may suspend or terminate your account if you:
+          </Text>
+          <View style={styles.bulletList}>
+            <Text style={styles.bulletItem}>• Breach these Terms</Text>
+            <Text style={styles.bulletItem}>• Engage in unlawful or harmful behavior</Text>
+            <Text style={styles.bulletItem}>• Provide false or misleading information</Text>
+          </View>
+          <Text style={styles.paragraph}>
+            Upon termination, your access to CRWD will cease immediately. Provisions that by their nature should survive termination (including intellectual property rights, indemnification, and limitation of liability) will remain in effect.
           </Text>
           <Text style={styles.paragraph}>
-            Email: legal@crwd.com{'\n'}
-            Address: 123 CRWD Street, City, Country
+            You may close your account at any time by contacting us at info@crwdfund.org.
           </Text>
         </View>
-        
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Governing Law and Disputes</Text>
+          <Text style={styles.paragraph}>
+            These Terms are governed by the laws of the State of Georgia and the United States, without regard to conflict of law principles.
+          </Text>
+          <Text style={styles.paragraph}>
+            Any disputes arising from these Terms or your use of CRWD will be subject to the exclusive jurisdiction of the courts located in Georgia.
+          </Text>
+          <Text style={styles.paragraph}>
+            If any provision of these Terms is found to be unenforceable, the remaining provisions will continue in full force and effect.
+          </Text>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Contact Us</Text>
+          <Text style={styles.paragraph}>
+            For questions about these Terms of Service, contact us at: Email: info@crwdfund.org
+          </Text>
+        </View>
+
         <View style={styles.bottomPadding} />
       </ScrollView>
     </SafeAreaView>
@@ -140,49 +237,56 @@ export default function TermsOfUse() {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: 'white',
+    backgroundColor: '#fff',
     flex: 1,
   },
   scrollView: {
     paddingHorizontal: 20,
-    marginTop: 10,
+    marginTop: 20,
   },
   title: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 10,
+    marginBottom: 8,
     textAlign: 'center',
   },
   lastUpdated: {
-    fontSize: 12,
-    color: PrimaryGrey,
-    marginBottom: 20,
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 24,
     textAlign: 'center',
   },
   section: {
-    marginBottom: 20,
+    marginBottom: 24,
   },
   sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 12,
+    color: '#333',
+  },
+  subSectionTitle: {
     fontSize: 16,
     fontWeight: '600',
-    marginBottom: 10,
-    // color: PrimaryBlue,
+    marginBottom: 8,
+    marginTop: 12,
+    color: '#444',
   },
   paragraph: {
     fontSize: 14,
-    color: PrimaryGrey,
-    marginBottom: 10,
-    lineHeight: 20,
+    lineHeight: 22,
+    color: '#444',
+    marginBottom: 12,
   },
   bulletList: {
-    marginLeft: 10,
-    marginTop: 5,
+    marginLeft: 8,
+    marginBottom: 12,
   },
   bulletItem: {
     fontSize: 14,
-    color: PrimaryGrey,
-    marginBottom: 5,
-    lineHeight: 20,
+    lineHeight: 22,
+    color: '#444',
+    marginBottom: 6,
   },
   bottomPadding: {
     height: 40,

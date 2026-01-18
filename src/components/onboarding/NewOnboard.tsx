@@ -157,7 +157,7 @@ export default function NewOnboard() {
     try {
       setIsGoogleLoading(true);
       const result = await googleLoginQuery.refetch();
-      
+
       if (result.data && result.data.url) {
         if (await InAppBrowser.isAvailable()) {
           const authResult = await InAppBrowser.openAuth(
@@ -218,8 +218,8 @@ export default function NewOnboard() {
       >
         {/* Logo */}
         {/* <View style={styles.logoWrapper}> */}
-          {/* <NewLogo size="lg" /> */}
-          <Image source={require('../../assets/newLogo/FullLogo.png')} style={styles.logo} resizeMode='contain'/>
+        <NewLogo size="lg" />
+        {/* <Image source={require('../../assets/newLogo/FullLogo.png')} style={styles.logo} resizeMode='contain'/> */}
         {/* </View> */}
 
         {/* Headings */}

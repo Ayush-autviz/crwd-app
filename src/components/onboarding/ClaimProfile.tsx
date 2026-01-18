@@ -19,7 +19,7 @@ export default function ClaimProfile() {
     const { setUser, setToken } = useAuthStore()
     const redirectTo = (route.params as any)?.redirectTo || null
     const redirectParams = (route.params as any)?.redirectParams || {}
-    
+
     const [formData, setFormData] = useState({
         firstName: "",
         lastName: "",
@@ -29,7 +29,7 @@ export default function ClaimProfile() {
         profileImage: null as string | null,
         termsAccepted: false,
     })
-    
+
     const [errors, setErrors] = useState<Record<string, string>>({})
     const [showOTPModal, setShowOTPModal] = useState(false)
     const [otp, setOtp] = useState("")
@@ -41,7 +41,7 @@ export default function ClaimProfile() {
         hasNumber: false,
         hasSpecialChar: false,
     })
-    
+
     const [open, setOpen] = useState(false)
     const scrollViewRef = useRef<ScrollView>(null)
     const passwordStrengthRef = useRef<View>(null)
@@ -155,18 +155,18 @@ export default function ClaimProfile() {
         mutationFn: login,
         onSuccess: (response) => {
             console.log('Login successful:', response)
-            
+
             // Store user data and token in the store
             if (response.user) {
                 setUser(response.user)
             }
             if (response.access_token) {
-                setToken({ 
-                    access_token: response.access_token, 
-                    refresh_token: response.refresh_token 
+                setToken({
+                    access_token: response.access_token,
+                    refresh_token: response.refresh_token
                 })
             }
-            
+
             // Handle redirect - use reset to prevent going back to signup
             if (response.user && !response.user.last_login_at) {
                 // New user - go through onboarding with redirectTo and redirectParams
@@ -226,7 +226,7 @@ export default function ClaimProfile() {
             console.error("Registration error:", error)
             console.error("Error response:", error.response?.data)
             console.error("Error status:", error.response?.status)
-            
+
             // Handle validation errors
             const errorData = error.response?.data
             if (errorData?.errors) {
@@ -250,16 +250,16 @@ export default function ClaimProfile() {
                     setErrors((prev) => ({ ...prev, ...fieldErrors }))
                 }
             }
-            
+
             // Show toast with main message or first error
             const errorMessage = errorData?.message || error.message
-            const firstError = errorData?.errors 
-                ? Object.values(errorData.errors)[0] 
+            const firstError = errorData?.errors
+                ? Object.values(errorData.errors)[0]
                 : null
-            const displayMessage = Array.isArray(firstError) 
-                ? firstError[0] 
+            const displayMessage = Array.isArray(firstError)
+                ? firstError[0]
                 : firstError || errorMessage
-            
+
             showToast(displayMessage || "Registration failed")
         },
     })
@@ -341,7 +341,7 @@ export default function ClaimProfile() {
         formDataToSend.append('email', formData.email.trim())
         formDataToSend.append('password', formData.password)
         // formDataToSend.append('date_of_birth', formData.dateOfBirth ? formData.dateOfBirth.toISOString().split('T')[0] : '')
-        
+
         // Add profile picture if available
         if (formData.profileImage) {
             formDataToSend.append('profile_picture_file', {
@@ -395,8 +395,8 @@ export default function ClaimProfile() {
                     behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                     style={{ flex: 1, paddingVertical: 50 }}
                 >
-                    <ScrollView 
-                        ref={scrollViewRef} 
+                    <ScrollView
+                        ref={scrollViewRef}
                         showsVerticalScrollIndicator={false}
                         contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 32 }}
                     >
@@ -440,9 +440,9 @@ export default function ClaimProfile() {
                                     <Text style={styles.label}>
                                         First Name <Text style={styles.required}>*</Text>
                                     </Text>
-                                    <TextInput 
-                                        placeholder="Enter your first name" 
-                                        style={[styles.input, errors.firstName && { borderColor: '#ef4444' }]} 
+                                    <TextInput
+                                        placeholder="Enter your first name"
+                                        style={[styles.input, errors.firstName && { borderColor: '#ef4444' }]}
                                         placeholderTextColor="#9ca3af"
                                         value={formData.firstName}
                                         onChangeText={(text) => {
@@ -460,9 +460,9 @@ export default function ClaimProfile() {
                                     <Text style={styles.label}>
                                         Last Name <Text style={styles.required}>*</Text>
                                     </Text>
-                                    <TextInput 
-                                        placeholder="Enter your last name" 
-                                        style={[styles.input, errors.lastName && { borderColor: '#ef4444' }]} 
+                                    <TextInput
+                                        placeholder="Enter your last name"
+                                        style={[styles.input, errors.lastName && { borderColor: '#ef4444' }]}
                                         placeholderTextColor="#9ca3af"
                                         value={formData.lastName}
                                         onChangeText={(text) => {
@@ -480,9 +480,9 @@ export default function ClaimProfile() {
                                     <Text style={styles.label}>
                                         Email <Text style={styles.required}>*</Text>
                                     </Text>
-                                    <TextInput 
-                                        placeholder="janedoe@example.com" 
-                                        style={[styles.input, errors.email && { borderColor: '#ef4444' }]} 
+                                    <TextInput
+                                        placeholder="janedoe@example.com"
+                                        style={[styles.input, errors.email && { borderColor: '#ef4444' }]}
                                         placeholderTextColor="#9ca3af"
                                         value={formData.email}
                                         onChangeText={(text) => {
@@ -502,9 +502,9 @@ export default function ClaimProfile() {
                                         Password <Text style={styles.required}>*</Text>
                                     </Text>
                                     <View style={styles.passwordContainer}>
-                                        <TextInput 
-                                            placeholder="Enter your password" 
-                                            style={[styles.passwordInput, errors.password && { borderColor: '#ef4444' }]} 
+                                        <TextInput
+                                            placeholder="Enter your password"
+                                            style={[styles.passwordInput, errors.password && { borderColor: '#ef4444' }]}
                                             placeholderTextColor="#9ca3af"
                                             value={formData.password}
                                             onChangeText={(text) => {
@@ -514,17 +514,17 @@ export default function ClaimProfile() {
                                             onFocus={handlePasswordFocus}
                                             secureTextEntry={!showPassword}
                                         />
-                                        <TouchableOpacity 
+                                        <TouchableOpacity
                                             style={styles.eyeButton}
                                             onPress={() => setShowPassword(!showPassword)}
                                         >
                                             {showPassword ? <Eye size={20} color="#9ca3af" /> : <EyeOff size={20} color="#9ca3af" />}
                                         </TouchableOpacity>
                                     </View>
-                                    
+
                                     {/* Password Strength Indicator */}
-                                    <View 
-                                        ref={passwordStrengthRef} 
+                                    <View
+                                        ref={passwordStrengthRef}
                                         style={[
                                             styles.passwordStrengthContainer,
                                             !formData.password && { opacity: 0.6 }
@@ -534,9 +534,9 @@ export default function ClaimProfile() {
                                         <Text style={styles.passwordStrengthTitle}>Password must contain:</Text>
                                         <View style={styles.passwordStrengthList}>
                                             <View style={styles.passwordStrengthItem}>
-                                                <Check 
-                                                    size={12} 
-                                                    color={passwordStrength.hasMinLength ? '#16a34a' : '#d1d5db'} 
+                                                <Check
+                                                    size={12}
+                                                    color={passwordStrength.hasMinLength ? '#16a34a' : '#d1d5db'}
                                                 />
                                                 <Text style={[
                                                     styles.passwordStrengthText,
@@ -546,9 +546,9 @@ export default function ClaimProfile() {
                                                 </Text>
                                             </View>
                                             <View style={styles.passwordStrengthItem}>
-                                                <Check 
-                                                    size={12} 
-                                                    color={passwordStrength.hasUppercase ? '#16a34a' : '#d1d5db'} 
+                                                <Check
+                                                    size={12}
+                                                    color={passwordStrength.hasUppercase ? '#16a34a' : '#d1d5db'}
                                                 />
                                                 <Text style={[
                                                     styles.passwordStrengthText,
@@ -558,9 +558,9 @@ export default function ClaimProfile() {
                                                 </Text>
                                             </View>
                                             <View style={styles.passwordStrengthItem}>
-                                                <Check 
-                                                    size={12} 
-                                                    color={passwordStrength.hasLowercase ? '#16a34a' : '#d1d5db'} 
+                                                <Check
+                                                    size={12}
+                                                    color={passwordStrength.hasLowercase ? '#16a34a' : '#d1d5db'}
                                                 />
                                                 <Text style={[
                                                     styles.passwordStrengthText,
@@ -570,9 +570,9 @@ export default function ClaimProfile() {
                                                 </Text>
                                             </View>
                                             <View style={styles.passwordStrengthItem}>
-                                                <Check 
-                                                    size={12} 
-                                                    color={passwordStrength.hasNumber ? '#16a34a' : '#d1d5db'} 
+                                                <Check
+                                                    size={12}
+                                                    color={passwordStrength.hasNumber ? '#16a34a' : '#d1d5db'}
                                                 />
                                                 <Text style={[
                                                     styles.passwordStrengthText,
@@ -582,9 +582,9 @@ export default function ClaimProfile() {
                                                 </Text>
                                             </View>
                                             <View style={styles.passwordStrengthItem}>
-                                                <Check 
-                                                    size={12} 
-                                                    color={passwordStrength.hasSpecialChar ? '#16a34a' : '#d1d5db'} 
+                                                <Check
+                                                    size={12}
+                                                    color={passwordStrength.hasSpecialChar ? '#16a34a' : '#d1d5db'}
                                                 />
                                                 <Text style={[
                                                     styles.passwordStrengthText,
@@ -595,7 +595,7 @@ export default function ClaimProfile() {
                                             </View>
                                         </View>
                                     </View>
-                                    
+
                                     {errors.password && (
                                         <Text style={styles.errorText}>{errors.password}</Text>
                                     )}
@@ -654,9 +654,9 @@ export default function ClaimProfile() {
                             <View style={styles.signInContainer}>
                                 <Text style={styles.signInText}>
                                     Already have an account?{' '}
-                                    <Text 
+                                    <Text
                                         style={styles.signInLink}
-                                        onPress={() => navigation.navigate('Login' as never)}
+                                        onPress={() => navigation.navigate('Login' as never, { redirectTo, redirectParams } as never)}
                                     >
                                         Sign In
                                     </Text>

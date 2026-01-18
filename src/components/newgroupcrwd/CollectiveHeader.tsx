@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Modal, Pressable } from 'react-native';
-import { ArrowLeft, Star, Share2, MoreHorizontal, Edit, Link2, Flag, Plus } from 'lucide-react-native';
+import { ArrowLeft, Star, Share2, MoreHorizontal, Edit2, Link, Flag, Plus } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { favoriteCollective, unfavoriteCollective } from '../../services/api/social';
@@ -16,6 +16,7 @@ interface CollectiveHeaderProps {
   onShare?: () => void;
   onManageCollective?: () => void;
   onCreateFundraiser?: () => void;
+  onBack?: () => void;
 }
 
 export default function CollectiveHeader({
@@ -26,6 +27,7 @@ export default function CollectiveHeader({
   onShare,
   onManageCollective,
   onCreateFundraiser,
+  onBack,
 }: CollectiveHeaderProps) {
   const navigation = useNavigation();
   const queryClient = useQueryClient();
@@ -132,7 +134,13 @@ export default function CollectiveHeader({
   return (
     <View style={styles.container}>
       <TouchableOpacity
-        onPress={() => navigation.navigate('DrawerNav' as never, { screen: 'Home' } as never)}
+        onPress={() => {
+          if (onBack) {
+            onBack();
+          } else {
+            navigation.navigate('DrawerNav' as never, { screen: 'Home' } as never);
+          }
+        }}
         style={styles.backButton}
         activeOpacity={0.7}
       >

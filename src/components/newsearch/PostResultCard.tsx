@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, Linking, ActivityIndicator, Share, Clipboard } from 'react-native';
 import { useNavigation, CommonActions } from '@react-navigation/native';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
-import { Heart, MessageCircle, Share2 } from 'lucide-react-native';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { likePost, unlikePost } from '../../services/api/social';
+import { Heart, MessageCircle, Share2, MapPin } from 'lucide-react-native';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
+import { likePost, unlikePost, followUserById, unfollowUserById, getUserProfileById } from '../../services/api/social';
 import { useAuthStore } from '../../store/store';
 import { WEB_BASE_URL } from '../../Constants/url';
 import { useToast } from '../../contexts/ToastContext';
@@ -43,9 +43,23 @@ interface PostResultCardProps {
       name: string;
       description?: string;
     };
+    fundraiser?: {
+      id: number;
+      name: string;
+      description?: string;
+      image?: string | null;
+      color?: string | null;
+      target_amount: string;
+      current_amount: string;
+      progress_percentage: number;
+      is_active?: boolean;
+      total_donors?: number;
+      end_date?: string;
+    };
   };
   onCommentPress?: (post: PostResultCardProps['post']) => void;
   showSimplifiedHeader?: boolean; // When true, only show name and timestamp (for collective view)
+  isHomeFeed?: boolean;
 }
 
 // Generate vibrant avatar colors
@@ -93,10 +107,10 @@ const formatTimeAgo = (dateString: string): string => {
   return date.toLocaleDateString();
 };
 
-export default function PostResultCard({ post, onCommentPress, showSimplifiedHeader = false }: PostResultCardProps) {
+export default function PostResultCard({ post, onCommentPress, showSimplifiedHeader = false, isHomeFeed = false }: PostResultCardProps) {
   const navigation = useNavigation();
   const queryClient = useQueryClient();
-  const { user: currentUser } = useAuthStore();
+  const { user: currentUser, token } = useAuthStore();
   const { showToast } = useToast();
   const [isLiked, setIsLiked] = useState(post.is_liked || false);
   const [likesCount, setLikesCount] = useState(post.likes_count || 0);
@@ -132,7 +146,7 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
       queryClient.invalidateQueries({ queryKey: ['posts'] });
       queryClient.invalidateQueries({ queryKey: ['post', post.id] });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error('Error liking post:', error);
     },
   });
@@ -146,10 +160,56 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
       queryClient.invalidateQueries({ queryKey: ['posts'] });
       queryClient.invalidateQueries({ queryKey: ['post', post.id] });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error('Error unliking post:', error);
     },
   });
+
+  // Fetch user profile to check follow status
+  const { data: userProfile, isLoading: isLoadingProfile } = useQuery({
+    queryKey: ['userProfile', String(user?.id)],
+    queryFn: () => getUserProfileById(user?.id?.toString() || ''),
+    enabled: !!user?.id && !!token?.access_token && isHomeFeed && user?.id.toString() !== currentUser?.id?.toString(),
+    staleTime: 0,
+  });
+
+  const isFollowing = userProfile?.is_following || false;
+
+  // Follow user mutation
+  const followMutation = useMutation({
+    mutationFn: (userId: string) => followUserById(userId),
+    onSuccess: () => {
+      showToast('Following user');
+      queryClient.invalidateQueries({ queryKey: ['userProfile', String(user?.id)] });
+    },
+    onError: (error: any) => {
+      console.error('Error following user:', error);
+      showToast('Failed to follow user');
+    },
+  });
+
+  // Unfollow user mutation
+  const unfollowMutation = useMutation({
+    mutationFn: (userId: string) => unfollowUserById(userId),
+    onSuccess: () => {
+      showToast('Unfollowed user');
+      queryClient.invalidateQueries({ queryKey: ['userProfile', String(user?.id)] });
+    },
+    onError: (error: any) => {
+      console.error('Error unfollowing user:', error);
+      showToast('Failed to unfollow user');
+    },
+  });
+
+  const handleFollowPress = () => {
+    if (user?.id) {
+      if (isFollowing) {
+        unfollowMutation.mutate(user.id.toString());
+      } else {
+        followMutation.mutate(user.id.toString());
+      }
+    }
+  };
 
   const handleLikePress = () => {
     if (!currentUser?.id) {
@@ -167,12 +227,16 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
 
   const handleShare = async () => {
     try {
-      const webUrl = `${WEB_BASE_URL}/post/${post.id}`;
-      const shareMessage = `Check out this post: ${webUrl}`;
+      const webUrl = post.fundraiser
+        ? `${WEB_BASE_URL}/fundraiser/${post.fundraiser.id}`
+        : `${WEB_BASE_URL}/post/${post.id}`;
+
+      const title = post.fundraiser?.name || 'Post';
+      const shareMessage = `Check out this ${post.fundraiser ? 'fundraiser' : 'post'}: ${webUrl}`;
 
       const result = await Share.share({
         message: shareMessage,
-        title: 'Post',
+        title: title,
         url: webUrl, // iOS only
       });
 
@@ -191,13 +255,30 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
     }
   };
 
+  const handleCardPress = () => {
+    if (post.fundraiser) {
+      (navigation as any).navigate('FundraiserDetail', { id: post.fundraiser.id });
+    } else {
+      (navigation as any).navigate('PostDetail', { postId: post.id });
+    }
+  };
+
   return (
     <TouchableOpacity
-      onPress={() => (navigation as any).navigate('PostDetail', { postId: post.id })}
+      onPress={handleCardPress}
       style={styles.card}
       activeOpacity={0.7}
     >
-      <View style={styles.content}>
+      <View style={[styles.content, post.fundraiser?.is_active && styles.activeFundraiserContent]}>
+        {/* Pinned Fundraiser Header */}
+        {post.fundraiser?.is_active && !isHomeFeed && (
+          <View style={styles.pinnedHeader}>
+            <View style={styles.pinnedBadge}>
+              <MapPin size={12} color="#1600ff" />
+              <Text style={styles.pinnedText}>PINNED FUNDRAISER</Text>
+            </View>
+          </View>
+        )}
         {/* User Header */}
         <View style={styles.header}>
           {user && (
@@ -205,7 +286,7 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
               onPress={(e) => {
                 e.stopPropagation();
                 // Check if it's the current user's own profile
-                if (currentUser?.id && user.id && currentUser.id.toString() === user.id.toString()) {
+                if (currentUser?.id && user?.id && currentUser.id.toString() === user.id.toString()) {
                   // Navigate to Profile tab (index 4 in MainTabs)
                   navigation.dispatch(
                     CommonActions.reset({
@@ -255,86 +336,175 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
           )}
           <View style={styles.userInfo}>
             <View style={styles.nameRow}>
-              {user && (
-                <TouchableOpacity
-                  onPress={(e) => {
-                    e.stopPropagation();
-                    // Check if it's the current user's own profile
-                    if (currentUser?.id && user.id && currentUser.id.toString() === user.id.toString()) {
-                      // Navigate to Profile tab (Me tab in MainTabs)
-                      navigation.dispatch(
-                        CommonActions.reset({
-                          index: 0,
-                          routes: [
-                            {
-                              name: 'DrawerNav' as never,
-                              state: {
-                                routes: [
-                                  {
-                                    name: 'MainTabs' as never,
-                                    state: {
-                                      routes: [
-                                        { name: 'Home' as never },
-                                        { name: 'Search' as never },
-                                        { name: 'Donate' as never },
-                                        { name: 'Collectives' as never },
-                                        { name: 'Profile' as never },
-                                      ],
-                                      index: 4, // Profile tab index
-                                    },
+              <TouchableOpacity
+                onPress={(e) => {
+                  e.stopPropagation();
+                  // Check if it's the current user's own profile
+                  if (currentUser?.id && user?.id && currentUser.id.toString() === user.id.toString()) {
+                    // Navigate to Profile tab (Me tab in MainTabs)
+                    navigation.dispatch(
+                      CommonActions.reset({
+                        index: 0,
+                        routes: [
+                          {
+                            name: 'DrawerNav' as never,
+                            state: {
+                              routes: [
+                                {
+                                  name: 'MainTabs' as never,
+                                  state: {
+                                    routes: [
+                                      { name: 'Home' as never },
+                                      { name: 'Search' as never },
+                                      { name: 'Donate' as never },
+                                      { name: 'Collectives' as never },
+                                      { name: 'Profile' as never },
+                                    ],
+                                    index: 4, // Profile tab index
                                   },
-                                ],
-                                index: 0,
-                              },
+                                },
+                              ],
+                              index: 0,
                             },
-                          ],
-                        })
-                      );
-                    } else {
-                      // Navigate to UserProfile screen
-                      (navigation as any).navigate('UserProfile', { userId: user.id.toString() });
-                    }
-                  }}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.name}>{fullName}</Text>
-                </TouchableOpacity>
-              )}
+                          },
+                        ],
+                      })
+                    );
+                  } else if (user?.id) {
+                    // Navigate to UserProfile screen
+                    (navigation as any).navigate('UserProfile', { userId: user.id.toString() });
+                  }
+                }}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.name}>{fullName}</Text>
+              </TouchableOpacity>
               {!showSimplifiedHeader && user?.username && (
                 <>
                   <Text style={styles.separator}>•</Text>
                   <Text style={styles.username}>@{user.username}</Text>
                 </>
               )}
+              {/* Follow Button - Only show if in home feed and not current user */}
+              {isHomeFeed && user?.id && user.id.toString() !== currentUser?.id?.toString() && (
+                <TouchableOpacity
+                  onPress={handleFollowPress}
+                  disabled={followMutation.isPending || unfollowMutation.isPending || isLoadingProfile}
+                  style={[
+                    styles.followButton,
+                    isFollowing && styles.followingButton,
+                  ]}
+                  activeOpacity={0.7}
+                >
+                  {followMutation.isPending || unfollowMutation.isPending || isLoadingProfile ? (
+                    <ActivityIndicator size="small" color={isFollowing ? "#FFFFFF" : "#1600ff"} />
+                  ) : (
+                    <Text style={[
+                      styles.followButtonText,
+                      isFollowing && styles.followingButtonText,
+                    ]}>
+                      {isFollowing ? 'Following' : 'Follow'}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              )}
             </View>
-            {!showSimplifiedHeader && post.collective && (
-              <TouchableOpacity
-                onPress={(e) => {
-                  e.stopPropagation();
-                  if (post.collective?.id) {
-                    (navigation as any).navigate('GroupCRWD', { id: post.collective.id.toString() });
-                  }
-                }}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.collectiveName}>{post.collective.name}</Text>
-              </TouchableOpacity>
-            )}
-            {showSimplifiedHeader && (
-              <Text style={styles.time}>{timeAgo}</Text>
+            {post.fundraiser?.is_active && (
+              <View style={styles.founderBadge}>
+                <Text style={styles.founderText}>Founder</Text>
+              </View>
             )}
           </View>
+          {!showSimplifiedHeader && post.collective && (
+            <TouchableOpacity
+              onPress={(e) => {
+                e.stopPropagation();
+                if (post.collective?.id) {
+                  (navigation as any).navigate('GroupCRWD', { id: post.collective.id.toString() });
+                }
+              }}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.collectiveName}>{post.collective.name}</Text>
+            </TouchableOpacity>
+          )}
+          {post.fundraiser && !isHomeFeed && (
+            <Text style={styles.startedFundraiser}>Started a fundraiser</Text>
+          )}
+          {showSimplifiedHeader && (
+            <Text style={styles.time}>{timeAgo}</Text>
+          )}
         </View>
+      </View>
 
-        {/* Post Content */}
-        {post.content ? (
-          <Text style={styles.postContent} numberOfLines={3}>
-            {post.content}
-          </Text>
-        ) : null}
+      {/* Post Content */}
+      {post.content ? (
+        <Text style={styles.postContent} numberOfLines={3}>
+          {post.content}
+        </Text>
+      ) : null}
 
-        {/* Preview Card or Media */}
-        {post.preview_details && (post.preview_details.url || post.preview_details.title || post.preview_details.image) ? (
+      {/* Fundraiser UI */}
+      {post.fundraiser ? (
+        <TouchableOpacity
+          onPress={handleCardPress}
+          activeOpacity={0.9}
+          style={styles.fundraiserCard}
+        >
+          <View style={[styles.fundraiserImageContainer, { backgroundColor: post.fundraiser.color || '#1600ff' }]}>
+            {post.fundraiser.image ? (
+              <Image source={{ uri: post.fundraiser.image }} style={styles.fundraiserImage} resizeMode="cover" />
+            ) : (
+              <View style={styles.fundraiserPlaceholder}>
+                <Text style={styles.fundraiserPlaceholderText}>{post.fundraiser.name}</Text>
+              </View>
+            )}
+          </View>
+          <View style={styles.fundraiserInfo}>
+            <Text style={styles.fundraiserTitle} numberOfLines={2}>{post.fundraiser.name}</Text>
+
+            <View style={styles.fundingProgress}>
+              <View style={styles.amountRow}>
+                <Text style={styles.raisedAmount}>
+                  ${parseFloat(post.fundraiser.current_amount || '0').toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                </Text>
+                <Text style={styles.goalText}>
+                  raised of ${parseFloat(post.fundraiser.target_amount || '0').toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} goal
+                </Text>
+              </View>
+              <View style={styles.progressBar}>
+                <View
+                  style={[
+                    styles.progressFill,
+                    { width: `${Math.min(post.fundraiser.progress_percentage || 0, 100)}%` }
+                  ]}
+                />
+              </View>
+              <View style={styles.fundraiserStats}>
+                {post.fundraiser.total_donors !== undefined && (
+                  <Text style={styles.statsText}>
+                    <Text style={styles.statsBold}>{post.fundraiser.total_donors}</Text> donor{post.fundraiser.total_donors !== 1 ? 's' : ''}
+                  </Text>
+                )}
+                {post.fundraiser.end_date && post.fundraiser.is_active && (
+                  <Text style={styles.statsText}>
+                    • <Text style={styles.statsBold}>
+                      {Math.max(0, Math.ceil((new Date(post.fundraiser.end_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))}
+                    </Text> days left
+                  </Text>
+                )}
+                {!post.fundraiser.is_active && (
+                  <Text style={[styles.statsText, { color: '#666', marginLeft: 8, fontWeight: '500' }]}>
+                    Fundraiser Ended
+                  </Text>
+                )}
+              </View>
+            </View>
+          </View>
+        </TouchableOpacity>
+      ) : (
+        /* Preview Card or Media */
+        post.preview_details && (post.preview_details.url || post.preview_details.title || post.preview_details.image) ? (
           <TouchableOpacity
             onPress={() => {
               if (post.preview_details?.url) {
@@ -388,58 +558,59 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
           >
             <Image source={{ uri: post.media }} style={styles.media} resizeMode="cover" />
           </TouchableOpacity>
-        ) : null}
+        ) : null
+      )}
 
-        {/* Like, Comment, and Share */}
-        <View style={styles.engagement}>
-          <View style={styles.engagementLeft}>
-            <TouchableOpacity
-              style={styles.engagementItem}
-              onPress={handleLikePress}
-              activeOpacity={0.7}
-              disabled={likeMutation.isPending || unlikeMutation.isPending}
-            >
-              {likeMutation.isPending || unlikeMutation.isPending ? (
-                <ActivityIndicator size={14} color="#4B5563" />
-              ) : (
-                <Heart
-                  size={14}
-                  color={isLiked ? '#EF4444' : '#4B5563'}
-                  {...(isLiked && { fill: '#EF4444' })}
-                />
-              )}
-              <Text style={[styles.engagementText, isLiked && styles.likedText]}>
-                {likesCount}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.engagementItem}
-              onPress={() => {
-                if (onCommentPress) {
-                  onCommentPress(post);
-                } else {
-                  (navigation as any).navigate('PostDetail', { postId: post.id });
-                }
-              }}
-              activeOpacity={0.7}
-            >
-              <MessageCircle size={14} color="#4B5563" />
-              <Text style={styles.engagementText}>{post.comments_count}</Text>
-            </TouchableOpacity>
-          </View>
+      {/* Like, Comment, and Share */}
+      <View style={styles.engagement}>
+        <View style={styles.engagementLeft}>
           <TouchableOpacity
-            style={styles.shareButton}
-            onPress={(e) => {
-              e.stopPropagation();
-              handleShare();
+            style={styles.engagementItem}
+            onPress={handleLikePress}
+            activeOpacity={0.7}
+            disabled={likeMutation.isPending || unlikeMutation.isPending}
+          >
+            {likeMutation.isPending || unlikeMutation.isPending ? (
+              <ActivityIndicator size={14} color="#4B5563" />
+            ) : (
+              <Heart
+                size={14}
+                color={isLiked ? '#EF4444' : '#4B5563'}
+                {...(isLiked && { fill: '#EF4444' })}
+              />
+            )}
+            <Text style={[styles.engagementText, isLiked && styles.likedText]}>
+              {likesCount}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.engagementItem}
+            onPress={() => {
+              if (onCommentPress) {
+                onCommentPress(post);
+              } else {
+                (navigation as any).navigate('PostDetail', { postId: post.id });
+              }
             }}
             activeOpacity={0.7}
           >
-            <Share2 size={14} color="#4B5563" />
+            <MessageCircle size={14} color="#4B5563" />
+            <Text style={styles.engagementText}>{post.comments_count}</Text>
           </TouchableOpacity>
         </View>
+        <TouchableOpacity
+          style={styles.shareButton}
+          onPress={(e) => {
+            e.stopPropagation();
+            handleShare();
+          }}
+          activeOpacity={0.7}
+        >
+          <Share2 size={14} color="#4B5563" />
+        </TouchableOpacity>
       </View>
-    </TouchableOpacity>
+      {/* </View> */}
+    </TouchableOpacity >
   );
 }
 
@@ -453,6 +624,151 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 12,
+  },
+  activeFundraiserContent: {
+    backgroundColor: '#fbfcff',
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+  },
+  pinnedHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  pinnedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  pinnedText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#1600ff',
+  },
+  founderBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    backgroundColor: '#1600ff',
+    borderRadius: 9999,
+  },
+  founderText: {
+    color: '#FFFFFF',
+    fontSize: 8,
+    fontWeight: '500',
+  },
+  startedFundraiser: {
+    fontSize: 10,
+    color: '#6B7280',
+    marginTop: 2,
+  },
+  fundraiserCard: {
+    marginBottom: 12,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  inactiveFundraiserCard: {
+    backgroundColor: '#eff6ff', // blue-50 equivalent
+    borderWidth: 0,
+  },
+  fundraiserImageContainer: {
+    height: 180,
+    width: '100%',
+  },
+  fundraiserImage: {
+    width: '100%',
+    height: '100%',
+  },
+  fundraiserPlaceholder: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  fundraiserPlaceholderText: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  fundraiserInfo: {
+    padding: 12,
+  },
+  startedFundraiserText: {
+    fontSize: 10,
+    color: '#6B7280',
+    marginBottom: 4,
+  },
+  fundraiserTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#111827',
+    marginBottom: 12,
+  },
+  fundingProgress: {
+    gap: 6,
+  },
+  amountRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 4,
+  },
+  raisedAmount: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1600ff',
+  },
+  goalText: {
+    fontSize: 12,
+    color: '#6B7280',
+  },
+  progressBar: {
+    height: 6,
+    backgroundColor: '#E5E7EB',
+    borderRadius: 9999,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: '#1600ff',
+  },
+  fundraiserStats: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  statsText: {
+    fontSize: 12,
+    color: '#111827',
+  },
+  statsBold: {
+    fontWeight: '600',
+  },
+  followButton: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#1600ff',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 20,
+    marginLeft: 8,
+    minWidth: 70,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  followingButton: {
+    backgroundColor: '#1600ff',
+    borderColor: '#1600ff',
+  },
+  followButtonText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#1600ff',
+  },
+  followingButtonText: {
+    color: '#FFFFFF',
   },
   header: {
     flexDirection: 'row',

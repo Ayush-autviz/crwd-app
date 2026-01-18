@@ -1,6 +1,8 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, Modal, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useAuthStore } from '../../store/store';
+import { MessageCircle, Calendar, Heart } from 'lucide-react-native';
 import PopularPosts from '../PopularPosts';
 import ActivityCard from './ActivityCard';
 
@@ -22,7 +24,10 @@ export default function CommunityActivity({
   onCommentPress,
 }: CommunityActivityProps) {
   const navigation = useNavigation();
-  
+  const { user } = useAuthStore();
+  const [modalVisible, setModalVisible] = useState(false);
+  const isFounder = user?.id === collectiveData?.user?.id || user?.id === collectiveData?.created_by?.id;
+
   // Get recent activities from collective data
   const recentActivities = collectiveData?.recent_activities || [];
 
@@ -42,15 +47,57 @@ export default function CommunityActivity({
             <Text style={styles.joinButtonText}>Join to post updates</Text>
           </View>
         ) : (
-          <TouchableOpacity
-            onPress={() =>
-              navigation.navigate('Post' as never, { collectiveData } as never)
-            }
-            style={styles.postButton}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.postButtonText}>Create Post</Text>
-          </TouchableOpacity>
+          <View>
+            <TouchableOpacity
+              onPress={() => isFounder ? setModalVisible(true) : navigation.navigate('Post' as never, { collectiveData } as never)}
+              style={styles.postButton}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.postButtonText}>{isFounder ? '+ Create' : 'Create Post'}</Text>
+            </TouchableOpacity>
+
+            <Modal
+              transparent={true}
+              visible={modalVisible}
+              onRequestClose={() => setModalVisible(false)}
+              animationType="fade"
+            >
+              <Pressable style={styles.modalOverlay} onPress={() => setModalVisible(false)}>
+                <View style={styles.dropdownMenu}>
+                  <TouchableOpacity
+                    style={styles.dropdownItem}
+                    onPress={() => {
+                      setModalVisible(false);
+                      navigation.navigate('Post' as never, { collectiveData } as never);
+                    }}
+                  >
+                    <MessageCircle size={20} color="#4B5563" />
+                    <Text style={styles.dropdownText}>Create Post</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.dropdownItem}
+                    onPress={() => {
+                      setModalVisible(false);
+                      navigation.navigate('CreateEvent' as never, { collectiveData } as never);
+                    }}
+                  >
+                    <Calendar size={20} color="#4B5563" />
+                    <Text style={styles.dropdownText}>Create Event</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.dropdownItem}
+                    onPress={() => {
+                      setModalVisible(false);
+                      navigation.navigate('CreateFundraiser' as never, { collectiveData } as never);
+                    }}
+                  >
+                    <Heart size={20} color="#4B5563" />
+                    <Text style={styles.dropdownText}>Create Fundraiser</Text>
+                  </TouchableOpacity>
+                </View>
+              </Pressable>
+            </Modal>
+          </View>
         )}
       </View>
 
@@ -70,7 +117,7 @@ export default function CommunityActivity({
               </Text>
             </View>
           )}
-          
+
           {/* Recent Activities Section */}
           {recentActivities.length > 0 && (
             <View style={styles.activitiesContainer}>
@@ -155,6 +202,40 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#111827',
     marginBottom: 12,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.2)',
+    justifyContent: 'flex-start',
+    alignItems: 'flex-end',
+    paddingTop: 60,
+    paddingRight: 16,
+  },
+  dropdownMenu: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    width: 200,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    paddingVertical: 8,
+  },
+  dropdownItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    gap: 12,
+  },
+  dropdownText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#111827',
   },
 });
 

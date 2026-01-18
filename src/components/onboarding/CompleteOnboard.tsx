@@ -21,7 +21,7 @@ import { getSurpriseMe, getCausesBySearch } from '../../services/api/crwd';
 import { addCausesToBox } from '../../services/api/donation';
 import { useToast } from '../../contexts/ToastContext';
 import { categories } from '../../Constants/categories';
-import { Sparkles } from 'lucide-react-native';
+import { Star } from 'lucide-react-native';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
 
 type ViewType = 'initial' | 'surprise' | 'browse';
@@ -61,7 +61,7 @@ export default function CompleteOnboard() {
   const [selectedCauses, setSelectedCauses] = useState<number[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchTrigger, setSearchTrigger] = useState(0);
-  
+
   // Get selected categories from route params
   const selectedCategoryIds = (route.params as any)?.selectedCategories || [];
   const selectedCategoryObjects = selectedCategoryIds
@@ -100,7 +100,10 @@ export default function CompleteOnboard() {
         });
         // Then navigate to CreateCRWD within DrawerNav
         setTimeout(() => {
-          (navigation as any).navigate('DrawerNav', { screen: 'CreateCRWD' });
+          (navigation as any).navigate('DrawerNav', {
+            screen: 'CreateCRWD',
+            params: { from: 'NewCompleteDonation' }
+          });
         }, 100);
       } else {
         navigation.reset({
@@ -187,7 +190,7 @@ export default function CompleteOnboard() {
       console.log('CompleteOnboard - Navigating to GroupCRWD with params:', redirectParams);
       navigation.reset({
         index: 0,
-        routes: [{ name: redirectTo as never, params: redirectParams }],
+        routes: [{ name: redirectTo as never, params: { ...redirectParams, from: 'NewCompleteDonation' } }],
       });
       return;
     }
@@ -195,17 +198,17 @@ export default function CompleteOnboard() {
     if (selectedCauses.length > 0) {
       // Get full cause data for selected causes based on current view
       let selectedCausesData: any[] = [];
-      
+
       if (view === 'surprise') {
-        selectedCausesData = surpriseCauses.filter((cause: any) => 
+        selectedCausesData = surpriseCauses.filter((cause: any) =>
           selectedCauses.includes(cause.id)
         );
       } else if (view === 'browse') {
-        selectedCausesData = browseCauses.filter((cause: any) => 
+        selectedCausesData = browseCauses.filter((cause: any) =>
           selectedCauses.includes(cause.id)
         );
       }
-      
+
       // Navigate to bottom tab "Donate" with preselected causes
       // Use reset to show bottom tabs and navigate to Donate tab
       navigation.reset({
@@ -257,7 +260,7 @@ export default function CompleteOnboard() {
         // Navigate directly to GroupCRWD with params
         navigation.reset({
           index: 0,
-          routes: [{ name: redirectTo as never, params: redirectParams }],
+          routes: [{ name: redirectTo as never, params: { ...redirectParams, from: 'NewCompleteDonation' } }],
         });
       } else {
         // Navigate to home
@@ -289,7 +292,7 @@ export default function CompleteOnboard() {
       // Navigate directly to GroupCRWD with params
       navigation.reset({
         index: 0,
-        routes: [{ name: redirectTo as never, params: redirectParams }],
+        routes: [{ name: redirectTo as never, params: { ...redirectParams, from: 'NewCompleteDonation' } }],
       });
     } else if (redirectTo) {
       // Navigate to redirectTo using reset
@@ -312,13 +315,13 @@ export default function CompleteOnboard() {
       const foundCategories = categoryIds
         .map((id) => categories.find((cat) => cat.id === id))
         .filter((cat) => cat !== undefined);
-      
+
       // If we found multiple categories, return them as an array
       if (foundCategories.length > 0) {
         return foundCategories;
       }
     }
-    
+
     // Single category or default - return as array for consistency
     const category = categories.find((cat) => cat.id === categoryId) || categories[0];
     return [category];
@@ -327,8 +330,8 @@ export default function CompleteOnboard() {
   // Get surprise causes
   const surpriseCauses = surpriseData
     ? (Array.isArray(surpriseData)
-        ? surpriseData
-        : surpriseData.data || surpriseData.results || [])
+      ? surpriseData
+      : surpriseData.data || surpriseData.results || [])
     : [];
 
   // Get browse causes
@@ -344,7 +347,7 @@ export default function CompleteOnboard() {
           end={{ x: 1, y: 1 }}
           style={{ flex: 1 }}
         >
-          <ScrollView 
+          <ScrollView
             contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}
           >
@@ -404,7 +407,7 @@ export default function CompleteOnboard() {
                   <View style={styles.optionIconContainer}>
                     <View style={styles.surpriseIconCircle}>
                       {/* <Text style={{ fontSize: 24, color: 'white' }}>✨</Text> */}
-                      <Sparkles size={32} color="white" />
+                      <Zap size={32} color="white" />
                     </View>
                   </View>
                   <Text style={styles.optionTitle}>Surprise Me</Text>
@@ -468,7 +471,7 @@ export default function CompleteOnboard() {
           end={{ x: 1, y: 1 }}
           style={{ flex: 1 }}
         >
-          <ScrollView 
+          <ScrollView
             contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}
           >
@@ -501,14 +504,14 @@ export default function CompleteOnboard() {
               <View style={styles.section}>
                 <View style={styles.sectionHeader}>
                   <Text style={styles.sectionTitle}>Your Random Selection</Text>
-                  
+
                 </View>
                 <TouchableOpacity
-                    onPress={handleChangeMethod}
-                    style={[styles.changeMethodButton, { marginBottom: 16, width: '50%', }]}
-                  >
-                    <Text style={[styles.changeMethodText, { textAlign: 'center' }]}>Change Method</Text>
-                  </TouchableOpacity>
+                  onPress={handleChangeMethod}
+                  style={[styles.changeMethodButton, { marginBottom: 16, width: '50%', }]}
+                >
+                  <Text style={[styles.changeMethodText, { textAlign: 'center' }]}>Change Method</Text>
+                </TouchableOpacity>
 
                 {isLoadingSurprise ? (
                   <View style={styles.loadingContainer}>
@@ -626,7 +629,7 @@ export default function CompleteOnboard() {
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={{ flex: 1 }}
         >
-          <ScrollView 
+          <ScrollView
             contentContainerStyle={styles.scrollContentBrowse}
             showsVerticalScrollIndicator={false}
           >

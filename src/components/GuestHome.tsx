@@ -523,7 +523,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   heroTitle: {
-    fontSize: 32,
+    fontSize: 36,
     fontWeight: '900',
     color: '#111827',
     textAlign: 'center',

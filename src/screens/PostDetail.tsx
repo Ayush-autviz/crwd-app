@@ -73,11 +73,11 @@ export default function PostDetail() {
   const { showToast } = useToast()
   const { user: currentUser } = useAuthStore()
   const queryClient = useQueryClient()
-  
+
   // Get post ID from route params
   const postId = (route.params as any)?.postId || (route.params as RouteParams)?.post?.id
   console.log('PostDetail - Post ID:', postId)
-  
+
   const [comment, setComment] = useState('')
   const screenWidth = Dimensions.get('window').width
   const [showExitConfirmation, setShowExitConfirmation] = useState(false)
@@ -96,7 +96,7 @@ export default function PostDetail() {
     id: postData.id,
     text: postData.content || '',
     username: postData.user?.username || postData.user?.full_name || 'Unknown User',
-    avatarUrl: postData.user?.profile_picture ,
+    avatarUrl: postData.user?.profile_picture,
     imageUrl: postData.media || undefined,
     previewDetails: postData.preview_details || null,
     time: postData.created_at || new Date().toISOString(), // Pass raw timestamp for proper relative time calculation
@@ -124,7 +124,7 @@ export default function PostDetail() {
   // Transform API comments to CommentData format
   const apiComments = React.useMemo(() => {
     if (!commentsData?.results) return [];
-    
+
     return commentsData.results.map((comment: any) => ({
       id: comment.id,
       username: comment.user?.username || comment.user?.full_name || 'Unknown User',
@@ -142,6 +142,8 @@ export default function PostDetail() {
 
   // Use API comments only
   const [comments, setComments] = useState<CommentData[]>(apiComments);
+  const [replyingTo, setReplyingTo] = useState<CommentData | null>(null);
+  const inputRef = React.useRef<TextInput>(null);
 
   // Update comments when API data changes
   React.useEffect(() => {
@@ -155,6 +157,7 @@ export default function PostDetail() {
     mutationFn: (data: { content: string }) => createPostComment(postId || '', { content: data.content }),
     onSuccess: () => {
       setComment("");
+      setReplyingTo(null);
       showToast('Comment added successfully!', 3000);
       queryClient.invalidateQueries({ queryKey: ['postComments', postId] });
     },
@@ -165,11 +168,17 @@ export default function PostDetail() {
 
   // Create reply mutation
   const createReplyMutation = useMutation({
-    mutationFn: ({ commentId, data }: { commentId: number; data: { content: string } }) => 
+    mutationFn: ({ commentId, data }: { commentId: number; data: { content: string } }) =>
       createPostComment(postId || '', { content: data.content, parent_comment_id: commentId }),
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
       showToast('Reply added successfully!', 3000);
       queryClient.invalidateQueries({ queryKey: ['postComments', postId] });
+      // Fetch replies for the parent comment to ensure they are displayed
+      // We need to find the top-level parent if this was a nested reply, or just the parent
+      // For simplicity, we just invalidate queries which should refresh the list
+      // But we might want to expand the parent
+      setComment("");
+      setReplyingTo(null);
     },
     onError: () => {
       showToast('Failed to add reply. Please try again.', 3000);
@@ -192,7 +201,32 @@ export default function PostDetail() {
 
   const handleAddComment = (content: string) => {
     if (content.trim()) {
-      createCommentMutation.mutate({ content: content.trim() });
+      if (replyingTo) {
+        createReplyMutation.mutate({ commentId: replyingTo.id, data: { content: content.trim() } });
+      } else {
+        createCommentMutation.mutate({ content: content.trim() });
+      }
+    }
+  };
+
+  const handleReplyAction = (commentId: number) => {
+    // Find the comment object
+    const findComment = (commentsList: CommentData[]): CommentData | undefined => {
+      for (const c of commentsList) {
+        if (c.id === commentId) return c;
+        if (c.replies && c.replies.length > 0) {
+          const found = findComment(c.replies);
+          if (found) return found;
+        }
+      }
+      return undefined;
+    };
+
+    const targetComment = findComment(comments);
+
+    if (targetComment) {
+      setReplyingTo(targetComment);
+      inputRef.current?.focus();
     }
   };
 
@@ -260,19 +294,19 @@ export default function PostDetail() {
   };
 
   // Comment component definition
-  const Comment = ({ 
-    comment, 
-    onReply, 
-    onLike, 
+  const Comment = ({
+    comment,
+    onReply,
+    onLike,
     onToggleReplies,
     onFetchReplies,
     onDelete,
     isExpanded = false,
     isLoadingReplies = false,
-    level = 0 
-  }: { 
-    comment: CommentData; 
-    onReply: (commentId: number, content: string) => void;
+    level = 0
+  }: {
+    comment: CommentData;
+    onReply: (commentId: number) => void;
     onLike: (commentId: number) => void;
     onToggleReplies?: (commentId: number) => void;
     onFetchReplies?: (commentId: number) => void;
@@ -281,19 +315,13 @@ export default function PostDetail() {
     isLoadingReplies?: boolean;
     level?: number;
   }) => {
-    const [isReplying, setIsReplying] = useState(false);
-    const [replyContent, setReplyContent] = useState('');
     const [showMenu, setShowMenu] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-    
+
     const isOwnComment = currentUser?.id && comment.userId && (currentUser.id.toString() === comment.userId.toString());
 
-    const handleReply = () => {
-      if (replyContent.trim()) {
-        onReply(comment.id, replyContent);
-        setReplyContent('');
-        setIsReplying(false);
-      }
+    const handleReplyClick = () => {
+      onReply(comment.id);
     };
 
     const handleLike = () => {
@@ -441,24 +469,29 @@ export default function PostDetail() {
               <Text style={{ fontSize: 12, color: PrimaryGrey }}>
                 {formatDistanceToNow(comment.timestamp, { addSuffix: true })}
               </Text>
+              {/* <button
+              onClick={handleLike}
+              className="flex items-center gap-1 text-muted-foreground hover:text-primary transition-colors"
+            >
+              <Heart className={`h-4 w-4 ${isLiked ? 'fill-primary text-primary' : ''}`} />
+              {likes}
+            </button> */}
               {/* Only show reply button for main comments (not replies) */}
-              {!comment.parentComment && (
-                <TouchableOpacity 
-                  onPress={() => setIsReplying(!isReplying)}
-                  style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
-                >
-                  <MessageCircle size={16} color={PrimaryGrey} />
-                  <Text style={{ fontSize: 12, color: PrimaryGrey }}>Reply</Text>
-                </TouchableOpacity>
-              )}
+              <TouchableOpacity
+                onPress={handleReplyClick}
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
+              >
+                <MessageCircle size={16} color={PrimaryGrey} />
+                <Text style={{ fontSize: 12, color: PrimaryGrey }}>Reply</Text>
+              </TouchableOpacity>
               {comment.repliesCount && comment.repliesCount > 0 && (
-                <TouchableOpacity 
+                <TouchableOpacity
                   onPress={handleToggleReplies}
                   style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
                 >
-                  <ChevronRight 
-                    size={16} 
-                    color={PrimaryGrey} 
+                  <ChevronRight
+                    size={16}
+                    color={PrimaryGrey}
                     style={{ transform: [{ rotate: isExpanded ? '90deg' : '0deg' }] }}
                   />
                   <Text style={{ fontSize: 12, color: PrimaryGrey }}>
@@ -467,42 +500,6 @@ export default function PostDetail() {
                 </TouchableOpacity>
               )}
             </View>
-
-            {isReplying && (
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 12 }}>
-                <Image 
-                  source={{ uri: comment.avatarUrl }} 
-                  style={{ width: 24, height: 24, borderRadius: 12 }} 
-                />
-                <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                  <TextInput
-                    value={replyContent}
-                    onChangeText={setReplyContent}
-                    placeholder="Write a reply..."
-                    placeholderTextColor={PrimaryGrey}
-                    style={{
-                      flex: 1,
-                      backgroundColor: LightGrey,
-                      borderRadius: 20,
-                      paddingHorizontal: 16,
-                      paddingVertical: 8,
-                      fontSize: 14
-                    }}
-                  />
-                  <TouchableOpacity
-                    onPress={handleReply}
-                    style={{
-                      backgroundColor: PrimaryBlue,
-                      paddingHorizontal: 12,
-                      paddingVertical: 6,
-                      borderRadius: 20
-                    }}
-                  >
-                    <Text style={{ color: 'white', fontSize: 14 }}>Reply</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            )}
 
             {/* Render replies if expanded */}
             {isExpanded && comment.replies && comment.replies.length > 0 && (
@@ -541,7 +538,7 @@ export default function PostDetail() {
               alignItems: 'center',
               padding: 20
             }}>
-              <TouchableWithoutFeedback onPress={() => {}}>
+              <TouchableWithoutFeedback onPress={() => { }}>
                 <View style={{
                   backgroundColor: 'white',
                   borderRadius: 12,
@@ -613,19 +610,13 @@ export default function PostDetail() {
     );
   };
 
-  const handleReply = (commentId: number, content: string) => {
-    if (content.trim()) {
-      createReplyMutation.mutate({ commentId, data: { content: content.trim() } });
-    }
-  };
-
   const handleDeleteComment = (commentId: number) => {
     deleteCommentMutation.mutate(commentId.toString());
     // Remove comment from local state
     setComments(prev => {
       // First, try to remove it as a main comment
       const filteredComments = prev.filter(c => c.id !== commentId);
-      
+
       // If not found, it might be a reply - remove from parent comment's replies
       if (filteredComments.length === prev.length) {
         return prev.map(comment => ({
@@ -634,7 +625,7 @@ export default function PostDetail() {
           repliesCount: comment.replies.filter(reply => reply.id !== commentId).length,
         }));
       }
-      
+
       return filteredComments;
     });
   };
@@ -657,8 +648,8 @@ export default function PostDetail() {
         userId: reply.user?.id?.toString(),
       })) || [];
 
-      setComments(prev => prev.map(comment => 
-        comment.id === commentId 
+      setComments(prev => prev.map(comment =>
+        comment.id === commentId
           ? { ...comment, replies: transformedReplies }
           : comment
       ));
@@ -743,11 +734,11 @@ export default function PostDetail() {
   // Loading state
   if (isLoadingPost) {
     return (
-      <SafeAreaView style={{backgroundColor: 'white', flex: 1}}>
+      <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }}>
         <MainHeaderNav show menu={false} title={'Post'} />
-        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <ActivityIndicator size="large" color={PrimaryBlue} />
-          <Text style={{marginTop: 16, color: PrimaryGrey}}>Loading post...</Text>
+          <Text style={{ marginTop: 16, color: PrimaryGrey }}>Loading...</Text>
         </View>
       </SafeAreaView>
     )
@@ -756,14 +747,14 @@ export default function PostDetail() {
   // Error state
   if (postError) {
     return (
-      <SafeAreaView style={{backgroundColor: 'white', flex: 1}}>
+      <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }}>
         <MainHeaderNav show menu={false} title={'Post'} />
-        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20}}>
-          <Text style={{fontSize: 18, fontWeight: '600', marginBottom: 8}}>Error loading post</Text>
-          <Text style={{color: PrimaryGrey, textAlign: 'center', marginBottom: 16}}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+          <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 8 }}>Error loading post</Text>
+          <Text style={{ color: PrimaryGrey, textAlign: 'center', marginBottom: 16 }}>
             {postError.message || 'Something went wrong. Please try again.'}
           </Text>
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={() => queryClient.invalidateQueries({ queryKey: ['post', postId] })}
             style={{
               backgroundColor: PrimaryBlue,
@@ -772,7 +763,7 @@ export default function PostDetail() {
               borderRadius: 8
             }}
           >
-            <Text style={{color: 'white', fontWeight: '500'}}>Try Again</Text>
+            <Text style={{ color: 'white', fontWeight: '500' }}>Try Again</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -781,9 +772,9 @@ export default function PostDetail() {
 
   if (!post) {
     return (
-      <SafeAreaView style={{backgroundColor: 'white', flex: 1}}>
+      <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }}>
         <MainHeaderNav show menu={false} title={'Post'} />
-        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <Text>Post not found</Text>
         </View>
       </SafeAreaView>
@@ -791,16 +782,16 @@ export default function PostDetail() {
   }
 
   return (
-    <SafeAreaView style={{backgroundColor: 'white', flex: 1}}>
-       <MainHeaderNav show menu={false} title={'Post'} />
-      <KeyboardAvoidingView 
+    <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }}>
+      <MainHeaderNav show menu={false} title={'Post'} />
+      <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={{flex: 1}}
+        style={{ flex: 1 }}
       >
-        <ScrollView style={{flex: 1}}>
+        <ScrollView style={{ flex: 1 }}>
           {/* Post Content */}
-          <View style={{padding: 20}}>
-            <View style={{flexDirection: 'row', gap: 12}}>
+          <View style={{ padding: 20 }}>
+            <View style={{ flexDirection: 'row', gap: 12 }}>
               <TouchableOpacity onPress={() => {
                 // If it's the current user's own profile, navigate to Profile tab
                 // Otherwise navigate to UserProfile page
@@ -844,8 +835,8 @@ export default function PostDetail() {
                   </AvatarFallback>
                 </Avatar>
               </TouchableOpacity>
-              <View style={{flex: 1}}>
-                <View style={{flexDirection: 'row', alignItems: 'center', gap: 5}}>
+              <View style={{ flex: 1 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                   <TouchableOpacity onPress={() => {
                     // If it's the current user's own profile, navigate to Profile tab
                     // Otherwise navigate to UserProfile page
@@ -878,16 +869,16 @@ export default function PostDetail() {
                       (navigation as any).navigate('UserProfile', { userId: post.user.id.toString() });
                     }
                   }}>
-                    <Text style={{fontSize: 14, fontWeight: '500'}}>{post.username}</Text>
+                    <Text style={{ fontSize: 14, fontWeight: '500' }}>{post.username}</Text>
                   </TouchableOpacity>
-                  <Text style={{fontSize: 14, color: PrimaryGrey}}>•</Text>
-                  <Text style={{fontSize: 12, color: PrimaryGrey}}>{post.time}</Text>
+                  <Text style={{ fontSize: 14, color: PrimaryGrey }}>•</Text>
+                  <Text style={{ fontSize: 12, color: PrimaryGrey }}>{post.time}</Text>
                 </View>
-                <Text style={{fontSize: 12, color: PrimaryBlue, marginTop: 5}}>{post.org}</Text>
+                <Text style={{ fontSize: 12, color: PrimaryBlue, marginTop: 5 }}>{post.org}</Text>
               </View>
             </View>
 
-            <Text style={{fontSize: 14, marginTop: 12, lineHeight: 20}}>{post.text}</Text>
+            <Text style={{ fontSize: 14, marginTop: 12, lineHeight: 20 }}>{post.text}</Text>
 
             {/* Show preview card if previewDetails exists, otherwise show image */}
             {post.previewDetails ? (
@@ -939,8 +930,8 @@ export default function PostDetail() {
                 </View>
               </TouchableOpacity>
             ) : post.imageUrl ? (
-              <Image 
-                source={{ uri: post.imageUrl }} 
+              <Image
+                source={{ uri: post.imageUrl }}
                 style={{
                   width: '100%',
                   height: 200,
@@ -959,40 +950,40 @@ export default function PostDetail() {
               borderTopWidth: 1,
               borderTopColor: '#E5E5E5'
             }}>
-              <View style={{flexDirection: 'row', gap: 24}}>
-                <TouchableOpacity 
+              <View style={{ flexDirection: 'row', gap: 24 }}>
+                <TouchableOpacity
                   onPress={handlePostLike}
                   disabled={likePostMutation.isPending || unlikePostMutation.isPending}
-                  style={{flexDirection: 'row', alignItems: 'center', gap: 4, opacity: (likePostMutation.isPending || unlikePostMutation.isPending) ? 0.5 : 1}}
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: 4, opacity: (likePostMutation.isPending || unlikePostMutation.isPending) ? 0.5 : 1 }}
                 >
                   <Heart size={18} color={post.isLiked ? 'red' : PrimaryGrey} fill={post.isLiked ? 'red' : 'none'} />
-                  <Text style={{fontSize: 12, color: post.isLiked ? 'red' : PrimaryGrey}}>
+                  <Text style={{ fontSize: 12, color: post.isLiked ? 'red' : PrimaryGrey }}>
                     {likePostMutation.isPending || unlikePostMutation.isPending ? '' : post.likes}
                   </Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={{flexDirection: 'row', alignItems: 'center', gap: 4}}>
+                <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                   <MessageCircle size={18} color={PrimaryGrey} />
-                  <Text style={{fontSize: 12, color: PrimaryGrey}}>{comments.length}</Text>
+                  <Text style={{ fontSize: 12, color: PrimaryGrey }}>{comments.length}</Text>
                 </TouchableOpacity>
               </View>
-              <TouchableOpacity 
-                style={{flexDirection: 'row', alignItems: 'center', gap: 4}}
+              <TouchableOpacity
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
                 onPress={handleShare}
               >
-                <Image 
-                  source={require('../assets/icons/forward.png')} 
-                  style={{ width: 18, height: 18 }} 
+                <Image
+                  source={require('../assets/icons/forward.png')}
+                  style={{ width: 18, height: 18 }}
                 />
               </TouchableOpacity>
             </View>
           </View>
 
           {/* Comments Section */}
-          <View style={{padding: 20, borderTopWidth: 1, borderTopColor: '#E5E5E5'}}>
-            <Text style={{fontSize: 16, fontWeight: '600', marginBottom: 16}}>
+          <View style={{ padding: 20, borderTopWidth: 1, borderTopColor: '#E5E5E5' }}>
+            <Text style={{ fontSize: 16, fontWeight: '600', marginBottom: 16 }}>
               {comments.length} {comments.length === 1 ? 'comment' : 'comments'}
             </Text>
-            
+
             {comments.length === 0 ? (
               <View style={{
                 alignItems: 'center',
@@ -1042,6 +1033,31 @@ export default function PostDetail() {
           padding: 16,
           backgroundColor: 'white'
         }}>
+          {replyingTo && (
+            <View style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              backgroundColor: '#F3F4F6',
+              padding: 12,
+              marginBottom: 12,
+              borderRadius: 8,
+              borderLeftWidth: 4,
+              borderLeftColor: PrimaryBlue
+            }}>
+              <View style={{ flex: 1, marginRight: 8 }}>
+                <Text style={{ fontSize: 12, fontWeight: '600', color: PrimaryBlue, marginBottom: 2 }}>
+                  Replying to @{replyingTo.username}
+                </Text>
+                <Text numberOfLines={1} style={{ fontSize: 12, color: PrimaryGrey }}>
+                  {replyingTo.content}
+                </Text>
+              </View>
+              <TouchableOpacity onPress={() => setReplyingTo(null)}>
+                <X size={16} color={PrimaryGrey} />
+              </TouchableOpacity>
+            </View>
+          )}
           <View style={{
             flexDirection: 'row',
             alignItems: 'center',
@@ -1063,7 +1079,7 @@ export default function PostDetail() {
             </Avatar>
             <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
               <TextInput
-                placeholder="Share your thoughts..."
+                placeholder={replyingTo ? `Reply to @${replyingTo.username}...` : "Share your thoughts..."}
                 placeholderTextColor={PrimaryGrey}
                 value={comment}
                 onChangeText={setComment}
@@ -1077,7 +1093,7 @@ export default function PostDetail() {
                 }}
               />
               {comment.length > 0 && (
-                <TouchableOpacity 
+                <TouchableOpacity
                   onPress={() => setComment('')}
                   style={{
                     padding: 4,
@@ -1088,7 +1104,7 @@ export default function PostDetail() {
                 </TouchableOpacity>
               )}
             </View>
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={handleAddCommentSubmit}
               style={{
                 opacity: comment.trim() ? 1 : 0.5,
@@ -1101,7 +1117,7 @@ export default function PostDetail() {
                 justifyContent: 'center',
               }}
             >
-              <Text style={{fontSize: 14}}>Reply</Text>
+              <Text style={{ fontSize: 14 }}>Reply</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -1121,7 +1137,7 @@ export default function PostDetail() {
               alignItems: 'center',
               padding: 20
             }}>
-              <TouchableWithoutFeedback onPress={() => {}}>
+              <TouchableWithoutFeedback onPress={() => { }}>
                 <View style={{
                   backgroundColor: 'white',
                   borderRadius: 12,

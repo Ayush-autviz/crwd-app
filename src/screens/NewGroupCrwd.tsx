@@ -11,7 +11,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRoute, useNavigation } from '@react-navigation/native';
+import { useRoute, useNavigation, CommonActions } from '@react-navigation/native';
 import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Check, Share2, Loader2, X } from 'lucide-react-native';
 import BottomSheet, { BottomSheetView, BottomSheetBackdrop, BottomSheetScrollView } from '@gorhom/bottom-sheet';
@@ -54,7 +54,24 @@ export default function NewGroupCrwdPage() {
   const [showCommentsSheet, setShowCommentsSheet] = useState(false);
   const [selectedPost, setSelectedPost] = useState<any>(null);
   const [showJoinModal, setShowJoinModal] = useState(false);
-  
+
+  const handleBack = () => {
+    const params = route.params as any;
+    const fromScreen = params?.from || params?.fromScreen;
+    const specialFlows = ['NewNonprofitInterests', 'NewCompleteDonation', 'Login'];
+
+    if (fromScreen && specialFlows.includes(fromScreen)) {
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: 'DrawerNav', state: { routes: [{ name: 'MainTabs', state: { routes: [{ name: 'Home' }] } }] } }],
+        })
+      );
+    } else {
+      navigation.goBack();
+    }
+  };
+
   // Bottom sheet ref for statistics
   const statisticsBottomSheetRef = useRef<BottomSheet>(null);
   const screenHeight = Dimensions.get('window').height;
@@ -84,7 +101,7 @@ export default function NewGroupCrwdPage() {
 
   // Get collective ID from route params
   const crwdId = String((route.params as any)?.id || (route.params as any)?.collectiveId || (route.params as any)?.crwdId || '');
-  
+
   // Debug: Log params to troubleshoot
   useEffect(() => {
     console.log('NewGroupCrwd - Route params:', JSON.stringify(route.params, null, 2));
@@ -163,15 +180,15 @@ export default function NewGroupCrwdPage() {
   // Flatten posts
   const posts = postsData
     ? {
-        results: postsData.pages.flatMap((page) => page.results || []),
-        next: postsData.pages[postsData.pages.length - 1]?.next || null,
-        count: postsData.pages[0]?.count || 0,
-      }
+      results: postsData.pages.flatMap((page) => page.results || []),
+      next: postsData.pages[postsData.pages.length - 1]?.next || null,
+      count: postsData.pages[0]?.count || 0,
+    }
     : undefined;
 
   // Transform causes data for SupportedNonprofits component
   const nonprofits = causesData?.results || causesData || [];
-  
+
   // Transform inactive causes data for PreviouslySupported component
   const inactiveCauses = crwdData?.inactive_causes || [];
 
@@ -185,20 +202,20 @@ export default function NewGroupCrwdPage() {
     mutationFn: joinCollective,
     onSuccess: async (response) => {
       console.log('Join collective successful:', response);
-      
+
       // Invalidate queries to refresh data
       queryClient.invalidateQueries({ queryKey: ['crwd', crwdId] });
       queryClient.invalidateQueries({ queryKey: ['joined-collectives'] });
       queryClient.invalidateQueries({ queryKey: ['joined-collectives', currentUser?.id] });
       queryClient.invalidateQueries({ queryKey: ['joined-collectives-manage'] });
       queryClient.invalidateQueries({ queryKey: ['joinedCollectives'] });
-      
+
       // Refetch donation box to get latest data including capacity
       await refetchDonationBox();
-      
+
       // Show success toast
       showToast("You've joined the collective!", 3000);
-      
+
       // Always show the drawer sheet after joining
       setShowJoinModal(true);
     },
@@ -293,7 +310,7 @@ export default function NewGroupCrwdPage() {
         return;
       }
       console.log('Navigating to OnBoard with redirectTo: GroupCRWD, id:', crwdId);
-      (navigation as any).navigate('OnBoard', { 
+      (navigation as any).navigate('OnBoard', {
         redirectTo: 'GroupCRWD',
         redirectParams: { id: String(crwdId), collectiveId: String(crwdId) }
       });
@@ -334,7 +351,7 @@ export default function NewGroupCrwdPage() {
 
       // Close the drawer
       setShowJoinModal(false);
-      
+
       // Navigate to donation setup with preselected causes
       (navigation as any).reset({
         index: 0,
@@ -356,6 +373,7 @@ export default function NewGroupCrwdPage() {
                           preselectedCauses: preselectedCauseIds,
                           preselectedCausesData: preselectedCauses,
                           preselectedCollectiveId: parseInt(collectiveId),
+                          collectiveName: crwdData.name,
                         },
                       },
                       { name: 'Collectives' as never },
@@ -384,7 +402,7 @@ export default function NewGroupCrwdPage() {
         };
         return causeEntry;
       });
-      
+
       try {
         await addCausesToBox({ causes });
         queryClient.invalidateQueries({ queryKey: ['donationBox'] });
@@ -417,7 +435,7 @@ export default function NewGroupCrwdPage() {
         return;
       }
       console.log('Navigating to OnBoard with redirectTo: GroupCRWD, id:', crwdId);
-      (navigation as any).navigate('OnBoard', { 
+      (navigation as any).navigate('OnBoard', {
         redirectTo: 'GroupCRWD',
         redirectParams: { id: String(crwdId), collectiveId: String(crwdId) }
       });
@@ -511,7 +529,7 @@ export default function NewGroupCrwdPage() {
       }
       // Get inactive causes for previously supported section
       const inactiveCauses = crwdData?.inactive_causes || [];
-      
+
       return (
         <View>
           {/* Currently Active Section */}
@@ -718,7 +736,7 @@ export default function NewGroupCrwdPage() {
               const firstName = user.first_name || '';
               const lastName = user.last_name || '';
               const fullName = `${firstName} ${lastName}`.trim() || user.username || 'Unknown User';
-              const initials = firstName && lastName 
+              const initials = firstName && lastName
                 ? `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase()
                 : fullName.charAt(0).toUpperCase();
               const avatar = user.profile_picture || '';
@@ -731,7 +749,7 @@ export default function NewGroupCrwdPage() {
                 const date = new Date(dateString);
                 const now = new Date();
                 const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-                
+
                 if (diffInSeconds < 60) return 'Just now';
                 if (diffInSeconds < 3600) {
                   const minutes = Math.floor(diffInSeconds / 60);
@@ -801,6 +819,7 @@ export default function NewGroupCrwdPage() {
         isAdmin={isAdmin}
         onShare={handleShare}
         onManageCollective={handleManageCollective}
+        onBack={handleBack}
         onCreateFundraiser={handleCreateFundraiser}
       />
 
@@ -828,7 +847,7 @@ export default function NewGroupCrwdPage() {
               if (!currentUser || !token?.access_token) {
                 // Navigate to onboarding with redirectTo (React Navigation pattern)
                 // Ensure crwdId is a string and pass both id and collectiveId for compatibility
-                (navigation as any).navigate('OnBoard', { 
+                (navigation as any).navigate('OnBoard', {
                   redirectTo: 'GroupCRWD',
                   redirectParams: { id: String(crwdId), collectiveId: String(crwdId) }
                 });
@@ -931,8 +950,8 @@ export default function NewGroupCrwdPage() {
             )}
           </View>
 
-          <SupportedNonprofits 
-            nonprofits={nonprofits} 
+          <SupportedNonprofits
+            nonprofits={nonprofits}
             isLoading={isLoadingCauses}
             onSeeAllClick={() => {
               if (!currentUser || !token?.access_token) {
@@ -952,8 +971,8 @@ export default function NewGroupCrwdPage() {
             posts={posts?.results ? posts.results.map((post: any) => ({
               id: post.id?.toString() || '',
               userId: post.user?.id?.toString(),
-              username: post.user?.username || post.user?.full_name || post.user?.first_name && post.user?.last_name 
-                ? `${post.user.first_name} ${post.user.last_name}` 
+              username: post.user?.username || post.user?.full_name || post.user?.first_name && post.user?.last_name
+                ? `${post.user.first_name} ${post.user.last_name}`
                 : 'Unknown User',
               avatarUrl: post.user?.profile_picture || '',
               color: post.user?.color || undefined, // Add color field for fallback avatar
@@ -1064,18 +1083,20 @@ export default function NewGroupCrwdPage() {
       </Modal>
 
       {/* Comments Bottom Sheet - Always render to ensure ref is available */}
-      {selectedPost && (
-        <CommentsBottomSheet
-          key={selectedPost.id} // Force remount when post changes
-          isOpen={showCommentsSheet}
-          onClose={() => {
-            console.log('CommentsBottomSheet onClose called');
-            setShowCommentsSheet(false);
-            setSelectedPost(null);
-          }}
-          post={selectedPost}
-        />
-      )}
+      {
+        selectedPost && (
+          <CommentsBottomSheet
+            key={selectedPost.id} // Force remount when post changes
+            isOpen={showCommentsSheet}
+            onClose={() => {
+              console.log('CommentsBottomSheet onClose called');
+              setShowCommentsSheet(false);
+              setSelectedPost(null);
+            }}
+            post={selectedPost}
+          />
+        )
+      }
 
       {/* Join Collective Bottom Sheet */}
       <JoinCollectiveBottomSheet
@@ -1126,7 +1147,6 @@ export default function NewGroupCrwdPage() {
                 <Text style={[styles.tabText, statisticsTab === tab && styles.activeTabText]}>
                   {tab}
                 </Text>
-                {statisticsTab === tab && <View style={styles.tabIndicator} />}
               </TouchableOpacity>
             ))}
           </View>
@@ -1348,18 +1368,26 @@ const styles = StyleSheet.create({
   },
   tabsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    gap: 8,
+    backgroundColor: '#f3f4f6',
+    padding: 4,
+    borderRadius: 16,
     marginBottom: 16,
-    paddingBottom: 12,
   },
   tab: {
-    paddingBottom: 8,
-    position: 'relative',
+    flex: 1,
+    paddingVertical: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 12,
   },
   activeTab: {
-    // Active tab styling
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
   },
   tabText: {
     fontSize: 14,
@@ -1368,16 +1396,9 @@ const styles = StyleSheet.create({
   },
   activeTabText: {
     color: '#111827',
+    fontWeight: '700',
   },
-  tabIndicator: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 2,
-    backgroundColor: '#111827',
-    borderRadius: 1,
-  },
+  // tabIndicator removed
   bottomSheetScrollView: {
     flex: 1,
   },

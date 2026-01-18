@@ -89,7 +89,7 @@ export default function NewSavedScreen() {
         <View style={styles.tabs}>
           <TouchableOpacity
             onPress={() => setActiveTab('Nonprofits')}
-            style={styles.tab}
+            style={[styles.tab, activeTab === 'Nonprofits' && styles.activeTab]}
             activeOpacity={0.7}
           >
             <Text
@@ -100,11 +100,10 @@ export default function NewSavedScreen() {
             >
               Nonprofits
             </Text>
-            {activeTab === 'Nonprofits' && <View style={styles.tabIndicator} />}
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => setActiveTab('Collectives')}
-            style={styles.tab}
+            style={[styles.tab, activeTab === 'Collectives' && styles.activeTab]}
             activeOpacity={0.7}
           >
             <Text
@@ -115,7 +114,6 @@ export default function NewSavedScreen() {
             >
               Collectives
             </Text>
-            {activeTab === 'Collectives' && <View style={styles.tabIndicator} />}
           </TouchableOpacity>
         </View>
       </View>
@@ -173,7 +171,7 @@ export default function NewSavedScreen() {
           <View style={styles.listContainer}>
             {favoriteCollectives.map((item: any, index: number) => {
               const collective = item.collective || item;
-              
+
               // Generate color for icon if not provided
               const getIconColor = (index: number): string => {
                 const colors = [
@@ -198,7 +196,7 @@ export default function NewSavedScreen() {
               const iconColor = hasColor ? collective.color : (!hasLogo ? getIconColor(index) : undefined);
               const iconLetter = getIconLetter(collective.name || 'C');
               const showImage = !hasColor && hasLogo;
-              
+
               const founder = collective.created_by;
               const memberCount = collective.member_count || 0;
 
@@ -292,34 +290,39 @@ const styles = StyleSheet.create({
     width: 36,
   },
   tabsContainer: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
     paddingHorizontal: 16,
     marginTop: 16,
   },
   tabs: {
     flexDirection: 'row',
-    gap: 24,
+    gap: 8,
+    backgroundColor: '#f3f4f6',
+    padding: 4,
+    borderRadius: 16,
   },
   tab: {
-    paddingBottom: 12,
+    flex: 1,
+    paddingVertical: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 12,
+  },
+  activeTab: {
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
   },
   tabText: {
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: '600',
     color: '#6B7280',
   },
   tabTextActive: {
-    color: PrimaryBlue,
-  },
-  tabIndicator: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 3,
-    backgroundColor: PrimaryBlue,
-    borderRadius: 1.5,
+    color: '#111827',
+    fontWeight: '700',
   },
   content: {
     flex: 1,

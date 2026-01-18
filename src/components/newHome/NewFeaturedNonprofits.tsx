@@ -36,6 +36,15 @@ const getIconColor = (id: number | string): string => {
   return colors[hash % colors.length];
 };
 
+const truncateAtFirstPeriod = (text: string): string => {
+  if (!text) return text;
+  if (text.length < 30) return text;
+  const periodIndex = text.indexOf('.');
+  const newText = periodIndex !== -1 ? text.substring(0, periodIndex + 1) : text;
+  if (newText.length < 30) return text;
+  else return newText
+};
+
 export default function NewFeaturedNonprofits({
   nonprofits = [],
   seeAllLink = '/search',
@@ -45,6 +54,7 @@ export default function NewFeaturedNonprofits({
   if (!nonprofits || nonprofits.length === 0) {
     return null;
   }
+
 
   return (
     <View style={styles.container}>
@@ -93,7 +103,7 @@ export default function NewFeaturedNonprofits({
 
                 {/* Description */}
                 <Text style={styles.description} numberOfLines={3}>
-                  {description}
+                  {truncateAtFirstPeriod(description)}
                 </Text>
               </View>
             </TouchableOpacity>

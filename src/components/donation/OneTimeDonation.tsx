@@ -67,7 +67,7 @@ export default function OneTimeDonation({
   fundraiserId,
   collectiveId,
   initialDonationAmount,
-  show=true
+  show = true
 }: OneTimeDonationProps) {
   const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
   const initialAmount = initialDonationAmount ? parseFloat(initialDonationAmount) : 5;
@@ -100,7 +100,7 @@ export default function OneTimeDonation({
   useEffect(() => {
     if (preselectedCauses && preselectedCauses.length > 0 && !preselectedCausesProcessed && !preselectedItemAdded) {
       console.log('OneTimeDonation: Setting preselected causes:', preselectedCauses, preselectedCausesData);
-      
+
       // If we have the full cause data, use it directly
       if (preselectedCausesData && preselectedCausesData.length > 0) {
         const causesAsItems: SelectedItem[] = preselectedCausesData.map((cause: any) => ({
@@ -110,7 +110,7 @@ export default function OneTimeDonation({
           // Mark causes from collective with the collective ID
           attributedCollectiveId: preselectedCollectiveId && preselectedCollectiveId > 0 ? preselectedCollectiveId : undefined,
         }));
-        
+
         setSelectedItems(causesAsItems);
         setSelectedOrganizations(causesAsItems.map(item => item.id));
         setPreselectedCausesProcessed(true);
@@ -123,7 +123,7 @@ export default function OneTimeDonation({
           // Mark causes from collective with the collective ID
           attributedCollectiveId: preselectedCollectiveId && preselectedCollectiveId > 0 ? preselectedCollectiveId : undefined,
         }));
-        
+
         setSelectedItems(causesAsItems);
         setSelectedOrganizations(causesAsItems.map(item => item.id));
         setPreselectedCausesProcessed(true);
@@ -193,7 +193,7 @@ export default function OneTimeDonation({
         }, 300);
         setSelectedItems([]);
         setSelectedOrganizations([]);
-        
+
         // Invalidate queries to refresh data
         if (fundraiserId) {
           queryClient.invalidateQueries({ queryKey: ['fundraiser', fundraiserId.toString()] });
@@ -201,7 +201,7 @@ export default function OneTimeDonation({
         if (collectiveId) {
           queryClient.invalidateQueries({ queryKey: ['crwd', collectiveId.toString()] });
         }
-        
+
         // Replace current screen with fundraiser detail screen after a short delay
         // This prevents going back to the donation screen
         setTimeout(() => {
@@ -314,19 +314,19 @@ export default function OneTimeDonation({
   const decrementDonation = () => {
     if (donationAmount > 5) {
       const newAmount = donationAmount - 5;
-      
+
       // Calculate max capacity for new amount
       const fees = calculateFees(newAmount);
       const net = fees.net;
       const newMaxCapacity = Math.floor(net / 0.20);
       const currentCapacity = selectedItems.length;
-      
+
       // Check if new amount would reduce capacity below current causes
       if (currentCapacity > newMaxCapacity) {
         Alert.alert('Error', `You have ${currentCapacity} cause${currentCapacity !== 1 ? 's' : ''} selected. Please remove ${currentCapacity - newMaxCapacity} cause${currentCapacity - newMaxCapacity !== 1 ? 's' : ''} to lower the donation amount to $${newAmount}.`);
         return;
       }
-      
+
       setDonationAmount(newAmount);
       setInputValue(newAmount.toString());
     }
@@ -340,7 +340,7 @@ export default function OneTimeDonation({
   const handleInputBlur = () => {
     const numValue = parseInt(inputValue) || 1;
     const finalValue = numValue < 5 ? 5 : numValue;
-    
+
     // Only validate if the amount is being lowered
     if (finalValue < donationAmount) {
       // Calculate max capacity for new amount
@@ -348,7 +348,7 @@ export default function OneTimeDonation({
       const net = fees.net;
       const newMaxCapacity = Math.floor(net / 0.20);
       const currentCapacity = selectedItems.length;
-      
+
       // Check if new amount would reduce capacity below current causes
       if (currentCapacity > newMaxCapacity) {
         Alert.alert('Error', `You have ${currentCapacity} cause${currentCapacity !== 1 ? 's' : ''} selected. Please remove ${currentCapacity - newMaxCapacity} cause${currentCapacity - newMaxCapacity !== 1 ? 's' : ''} to lower the donation amount to $${finalValue}.`);
@@ -357,17 +357,17 @@ export default function OneTimeDonation({
         return;
       }
     }
-    
+
     setDonationAmount(finalValue);
     setInputValue(finalValue.toString());
   };
 
   const handleSelectItem = (item: SelectedItem) => {
     // Check if item is already selected to prevent duplicates
-    const isAlreadySelected = selectedItems.some(selectedItem => 
+    const isAlreadySelected = selectedItems.some(selectedItem =>
       selectedItem.id === item.id && selectedItem.type === item.type
     );
-    
+
     if (!isAlreadySelected) {
       // Calculate max capacity before adding
       const actualDonationAmount = parseFloat(donationAmount.toString());
@@ -375,13 +375,13 @@ export default function OneTimeDonation({
       const net = fees.net;
       const maxCapacity = Math.floor(net / 0.20);
       const currentCapacity = selectedItems.length;
-      
+
       // Check if adding this item would exceed capacity
       if (currentCapacity >= maxCapacity) {
         Alert.alert('Error', `You can only add up to ${maxCapacity} cause${maxCapacity !== 1 ? 's' : ''} for $${donationAmount}. Increase your donation amount to support more causes.`);
         return;
       }
-      
+
       setSelectedItems((prev: SelectedItem[]) => [...prev, item]);
       // Also update the legacy selectedOrganizations for backward compatibility
       setSelectedOrganizations([...selectedOrganizations, item.id]);
@@ -408,31 +408,31 @@ export default function OneTimeDonation({
     if (selectedItems.length === 0) {
       return 'CRWD';
     }
-    
+
     if (selectedItems.length === 1) {
       // Single organization: show its name
       return selectedItems[0].data?.name || 'CRWD';
     }
-    
+
     // Multiple organizations: show them in a readable format
     // Apple Pay has display limits, so we'll show up to 2-3 names or use a summary
     const names = selectedItems
       .map(item => item.data?.name)
       .filter(Boolean)
       .slice(0, 3); // Limit to first 3 to avoid truncation
-    
+
     if (names.length === 0) {
       return 'CRWD';
     }
-    
+
     if (names.length === 2) {
       return `${names[0]} & ${names[1]}`;
     }
-    
+
     if (names.length === 3 && selectedItems.length === 3) {
       return `${names[0]}, ${names[1]} & ${names[2]}`;
     }
-    
+
     // More than 3 selected, show first 2 and count
     const remainingCount = selectedItems.length - 2;
     return `${names[0]} & ${names[1]} +${remainingCount} more`;
@@ -468,7 +468,7 @@ export default function OneTimeDonation({
         const causeEntry: { cause_id: number; attributed_collective?: number } = {
           cause_id: causeId,
         };
-        
+
         // Only include attributed_collective if this cause came from a collective (has attributedCollectiveId)
         // Causes added from search will not have attributedCollectiveId
         // Always preserve the collective ID for causes that came from a collective
@@ -478,7 +478,7 @@ export default function OneTimeDonation({
           // Also check if the cause data itself has an attributed_collective field and preserve it
           causeEntry.attributed_collective = item.data.attributed_collective;
         }
-        
+
         causes.push(causeEntry);
       }
       // Note: For one-time donations, we're only handling causes, not collectives directly
@@ -531,9 +531,9 @@ export default function OneTimeDonation({
 
   // Get causes list (search results or default)
   const causes = showSearchResults ? (causesData?.results || []) : (defaultCausesData?.results || []);
-  
+
   // Filter out already selected items
-  const filteredCauses = causes.filter((cause: any) => 
+  const filteredCauses = causes.filter((cause: any) =>
     !selectedItems.some(item => item.id === cause.id.toString() && item.type === 'cause')
   ).slice(0, 20); // Show up to 20 causes
 
@@ -559,7 +559,7 @@ export default function OneTimeDonation({
           {/* Your One-Time Impact Section */}
           <View style={styles.impactSection}>
             <Text style={styles.impactTitle}>Your One-Time Impact</Text>
-            
+
             {/* Amount Selector */}
             <View style={styles.amountSelectorContainer}>
               <TouchableOpacity
@@ -611,7 +611,7 @@ export default function OneTimeDonation({
                 <Text style={styles.selectedCausesBadgeText}>{selectedItems.filter(item => item.type === 'cause').length}</Text>
               </View>
             </View>
-            
+
             <View style={styles.selectedCausesList}>
               {selectedItems
                 .filter(item => item.type === 'cause')
@@ -622,7 +622,7 @@ export default function OneTimeDonation({
                   const initials = getInitials(cause.name || '');
                   return (
                     <View key={item.id} style={styles.selectedCauseItem}>
-                      <Avatar size={48} style={{ borderRadius: 8, overflow: 'hidden', marginRight:  4 }}>
+                      <Avatar size={48} style={{ borderRadius: 8, overflow: 'hidden', marginRight: 4 }}>
                         <AvatarImage src={cause.image || cause.logo} />
                         <AvatarFallback
                           style={{ backgroundColor: avatarBgColor }}
@@ -654,143 +654,143 @@ export default function OneTimeDonation({
 
         {/* Add More Causes Section - Hide for fundraiser donations */}
         {!fundraiserId && (
-        <View style={styles.addMoreSection}>
-          <Text style={styles.addMoreTitle}>Add More Causes</Text>
+          <View style={styles.addMoreSection}>
+            <Text style={styles.addMoreTitle}>Add More Causes</Text>
 
-          {/* Search Section */}
-          <View style={styles.searchBarContainer}>
-            <View style={styles.searchInputWrapper}>
-              <Search size={20} color="#9ca3af" style={styles.searchIcon} />
-              <TextInput
-                placeholder="Search for causes..."
-                placeholderTextColor="#9ca3af"
-                value={searchQuery}
-                onChangeText={(text) => {
-                  setSearchQuery(text);
-                  if (text.trim()) {
-                    setShowSearchResults(true);
-                  } else {
-                    setShowSearchResults(false);
-                  }
-                }}
-                onSubmitEditing={handleSearch}
-                returnKeyType="search"
-                style={styles.searchInput}
-              />
-              {searchQuery ? (
-                <TouchableOpacity
-                  onPress={() => {
-                    setSearchQuery('');
-                    setShowSearchResults(false);
+            {/* Search Section */}
+            <View style={styles.searchBarContainer}>
+              <View style={styles.searchInputWrapper}>
+                <Search size={20} color="#9ca3af" style={styles.searchIcon} />
+                <TextInput
+                  placeholder="Search for causes..."
+                  placeholderTextColor="#9ca3af"
+                  value={searchQuery}
+                  onChangeText={(text) => {
+                    setSearchQuery(text);
+                    if (text.trim()) {
+                      setShowSearchResults(true);
+                    } else {
+                      setShowSearchResults(false);
+                    }
                   }}
-                  style={styles.clearButton}
-                >
-                  <X size={16} color="#9ca3af" />
-                </TouchableOpacity>
-              ) : null}
+                  onSubmitEditing={handleSearch}
+                  returnKeyType="search"
+                  style={styles.searchInput}
+                />
+                {searchQuery ? (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setSearchQuery('');
+                      setShowSearchResults(false);
+                    }}
+                    style={styles.clearButton}
+                  >
+                    <X size={16} color="#9ca3af" />
+                  </TouchableOpacity>
+                ) : null}
+              </View>
+            </View>
+
+            <TouchableOpacity
+              onPress={() => setShowRequestModal(true)}
+              style={styles.requestLinkContainer}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.requestLink}>Can't find your nonprofit? Request it here</Text>
+            </TouchableOpacity>
+
+            {/* Causes List */}
+            <View style={styles.causesList}>
+              {showSearchResults ? (
+                causesLoading ? (
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="small" color={PrimaryBlue} />
+                    <Text style={styles.loadingText}>Loading causes...</Text>
+                  </View>
+                ) : filteredCauses.length > 0 ? (
+                  filteredCauses.map((cause: any) => {
+                    const avatarBgColor = getConsistentColor(cause.id, avatarColors);
+                    const initials = getInitials(cause.name || '');
+                    return (
+                      <TouchableOpacity
+                        key={cause.id}
+                        style={styles.causeItem}
+                        onPress={() => handleSelectItem({ id: String(cause.id), type: 'cause', data: cause })}
+                      >
+                        <Avatar size={48} style={[styles.causeAvatar, { borderRadius: 8 }]}>
+                          <AvatarImage src={cause.image || cause.logo} />
+                          <AvatarFallback
+                            style={{ backgroundColor: avatarBgColor }}
+                            textStyle={{ color: '#FFFFFF', fontSize: 16, fontWeight: '700' }}
+                          >
+                            {initials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <View style={styles.causeInfo}>
+                          <Text style={styles.causeName}>{cause.name}</Text>
+                          <Text style={styles.causeDescription} numberOfLines={1}>
+                            {cause.description || cause.mission || 'Supporting this nonprofit\'s mission'}
+                          </Text>
+                        </View>
+                        <View style={styles.addCauseButton}>
+                          <Plus size={16} color="#ec4899" strokeWidth={3} />
+                        </View>
+                      </TouchableOpacity>
+                    );
+                  })
+                ) : (
+                  <View style={styles.loadingContainer}>
+                    <Text style={styles.noCausesText}>No causes found</Text>
+                  </View>
+                )
+              ) : (
+                defaultCausesLoading ? (
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="small" color={PrimaryBlue} />
+                    <Text style={styles.loadingText}>Loading causes...</Text>
+                  </View>
+                ) : filteredCauses.length > 0 ? (
+                  filteredCauses.map((cause: any) => {
+                    const avatarBgColor = getConsistentColor(cause.id, avatarColors);
+                    const initials = getInitials(cause.name || '');
+                    return (
+                      <TouchableOpacity
+                        key={cause.id}
+                        style={styles.causeItem}
+                        onPress={() => handleSelectItem({ id: String(cause.id), type: 'cause', data: cause })}
+                      >
+                        <Avatar size={48} style={[styles.causeAvatar, { borderRadius: 8 }]}>
+                          <AvatarImage src={cause.image || cause.logo} />
+                          <AvatarFallback
+                            style={{ backgroundColor: avatarBgColor }}
+                            textStyle={{ color: '#FFFFFF', fontSize: 16, fontWeight: '700' }}
+                          >
+                            {initials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <View style={styles.causeInfo}>
+                          <Text style={styles.causeName}>{cause.name}</Text>
+                          <Text style={styles.causeDescription} numberOfLines={1}>
+                            {cause.description || cause.mission || 'Supporting this nonprofit\'s mission'}
+                          </Text>
+                        </View>
+                        <View style={styles.addCauseButton}>
+                          <Plus size={16} color="#ec4899" strokeWidth={3} />
+                        </View>
+                      </TouchableOpacity>
+                    );
+                  })
+                ) : (
+                  <View style={styles.loadingContainer}>
+                    <Text style={styles.noCausesText}>No causes available</Text>
+                  </View>
+                )
+              )}
             </View>
           </View>
-          
-          <TouchableOpacity
-            onPress={() => setShowRequestModal(true)}
-            style={styles.requestLinkContainer}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.requestLink}>Can't find your nonprofit? Request it here</Text>
-          </TouchableOpacity>
-
-          {/* Causes List */}
-          <View style={styles.causesList}>
-            {showSearchResults ? (
-              causesLoading ? (
-                <View style={styles.loadingContainer}>
-                  <ActivityIndicator size="small" color={PrimaryBlue} />
-                  <Text style={styles.loadingText}>Loading causes...</Text>
-                </View>
-              ) : filteredCauses.length > 0 ? (
-                filteredCauses.map((cause: any) => {
-                  const avatarBgColor = getConsistentColor(cause.id, avatarColors);
-                  const initials = getInitials(cause.name || '');
-                  return (
-                    <TouchableOpacity
-                      key={cause.id}
-                      style={styles.causeItem}
-                      onPress={() => handleSelectItem({ id: String(cause.id), type: 'cause', data: cause })}
-                    >
-                      <Avatar size={48} style={[styles.causeAvatar, { borderRadius: 8 }]}>
-                        <AvatarImage src={cause.image || cause.logo} />
-                        <AvatarFallback
-                          style={{ backgroundColor: avatarBgColor }}
-                          textStyle={{ color: '#FFFFFF', fontSize: 16, fontWeight: '700' }}
-                        >
-                          {initials}
-                        </AvatarFallback>
-                      </Avatar>
-                      <View style={styles.causeInfo}>
-                        <Text style={styles.causeName}>{cause.name}</Text>
-                        <Text style={styles.causeDescription} numberOfLines={1}>
-                          {cause.description || cause.mission || 'Supporting this nonprofit\'s mission'}
-                        </Text>
-                      </View>
-                      <View style={styles.addCauseButton}>
-                        <Plus size={16} color="#ec4899" strokeWidth={3} />
-                      </View>
-                    </TouchableOpacity>
-                  );
-                })
-              ) : (
-                <View style={styles.loadingContainer}>
-                  <Text style={styles.noCausesText}>No causes found</Text>
-                </View>
-              )
-            ) : (
-              defaultCausesLoading ? (
-                <View style={styles.loadingContainer}>
-                  <ActivityIndicator size="small" color={PrimaryBlue} />
-                  <Text style={styles.loadingText}>Loading causes...</Text>
-                </View>
-              ) : filteredCauses.length > 0 ? (
-                filteredCauses.map((cause: any) => {
-                  const avatarBgColor = getConsistentColor(cause.id, avatarColors);
-                  const initials = getInitials(cause.name || '');
-                  return (
-                    <TouchableOpacity
-                      key={cause.id}
-                      style={styles.causeItem}
-                      onPress={() => handleSelectItem({ id: String(cause.id), type: 'cause', data: cause })}
-                    >
-                      <Avatar size={48} style={[styles.causeAvatar, { borderRadius: 8 }]}>
-                        <AvatarImage src={cause.image || cause.logo} />
-                        <AvatarFallback
-                          style={{ backgroundColor: avatarBgColor }}
-                          textStyle={{ color: '#FFFFFF', fontSize: 16, fontWeight: '700' }}
-                        >
-                          {initials}
-                        </AvatarFallback>
-                      </Avatar>
-                      <View style={styles.causeInfo}>
-                        <Text style={styles.causeName}>{cause.name}</Text>
-                        <Text style={styles.causeDescription} numberOfLines={1}>
-                          {cause.description || cause.mission || 'Supporting this nonprofit\'s mission'}
-                        </Text>
-                      </View>
-                      <View style={styles.addCauseButton}>
-                        <Plus size={16} color="#ec4899" strokeWidth={3} />
-                      </View>
-                    </TouchableOpacity>
-                  );
-                })
-              ) : (
-                <View style={styles.loadingContainer}>
-                  <Text style={styles.noCausesText}>No causes available</Text>
-                </View>
-              )
-            )}
-          </View>
-        </View>
         )}
-        </ScrollView>
-      
+      </ScrollView>
+
       {/* Checkout Button Footer - Always visible at bottom */}
       <View style={styles.footer}>
         <TouchableOpacity
@@ -829,8 +829,8 @@ export default function OneTimeDonation({
                 fadeOut
               />
             </View>
-            
-            <TouchableWithoutFeedback onPress={() => {}}>
+
+            <TouchableWithoutFeedback onPress={() => { }}>
               <View style={styles.modalContent}>
                 <TouchableOpacity
                   style={styles.closeButton}
@@ -838,7 +838,7 @@ export default function OneTimeDonation({
                 >
                   <Text style={styles.closeButtonText}>×</Text>
                 </TouchableOpacity>
-                
+
                 <View style={styles.modalBody}>
                   <Text style={styles.modalTitle}>Donation Successful! 🎉</Text>
                   <Text style={styles.modalDescription}>

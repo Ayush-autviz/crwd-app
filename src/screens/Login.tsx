@@ -191,7 +191,7 @@ export default function Login() {
         } else {
           navigation.reset({
             index: 0,
-            routes: [{ name: redirectTo as never, params: redirectParams }],
+            routes: [{ name: redirectTo as never, params: { ...redirectParams, from: 'Login' } }],
           });
         }
       } else {
@@ -326,7 +326,7 @@ export default function Login() {
                   Don't have an account?{' '}
                   <Text
                     style={styles.link}
-                    onPress={() => navigation.navigate('ClaimProfile' as never)}
+                    onPress={() => navigation.navigate('ClaimProfile' as never, { redirectTo, redirectParams } as never)}
                   >
                     Sign up
                   </Text>

@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  ScrollView, 
-  TouchableOpacity, 
-  TextInput, 
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  TextInput,
   ActivityIndicator,
   Alert,
   Share,
@@ -15,24 +15,22 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation, CommonActions } from '@react-navigation/native';
-import { 
-  ArrowLeft, 
-  HelpCircle, 
-  Search, 
-  X, 
-  Loader2, 
-  Edit2, 
-  Palette, 
-  Camera, 
-  Users, 
-  Check, 
-  Minus, 
-  Plus, 
-  Heart, 
-  Eye, 
-  Share2, 
-  Sparkles 
+import { useNavigation, CommonActions, useRoute } from '@react-navigation/native';
+import {
+  ArrowLeft,
+  Check,
+  Minus,
+  Plus,
+  Heart,
+  Eye,
+  Share2,
+  User,
+  Search,
+  X,
+  Loader2,
+  Edit2,
+  Camera,
+  Flag
 } from 'lucide-react-native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createCollective, getCausesBySearch } from '../services/api/crwd';
@@ -56,7 +54,7 @@ const getCategoryById = (categoryId: string | undefined) => {
 // Get category names as an array for multi-letter categories (e.g., "MK" -> ["Relief", "Food"])
 const getCategoryNames = (categoryId: string | undefined): string[] => {
   if (!categoryId) return ['Uncategorized'];
-  
+
   // If category is multiple letters, split and get names for each
   if (categoryId.length > 1) {
     const categoryNames = categoryId
@@ -66,10 +64,10 @@ const getCategoryNames = (categoryId: string | undefined): string[] => {
         return category?.name || char;
       })
       .filter(Boolean);
-    
+
     return categoryNames.length > 0 ? categoryNames : ['Uncategorized'];
   }
-  
+
   // Single letter category
   const category = getCategoryById(categoryId);
   return category?.name ? [category.name] : ['Uncategorized'];
@@ -78,12 +76,12 @@ const getCategoryNames = (categoryId: string | undefined): string[] => {
 // Get category IDs as an array (for getting individual colors)
 const getCategoryIds = (categoryId: string | undefined): string[] => {
   if (!categoryId) return [];
-  
+
   // If category is multiple letters, split into individual IDs
   if (categoryId.length > 1) {
     return categoryId.split('');
   }
-  
+
   // Single letter category
   return [categoryId];
 };
@@ -91,7 +89,7 @@ const getCategoryIds = (categoryId: string | undefined): string[] => {
 // Get category background color for display (use first category's background for multi-letter)
 const getCategoryColor = (categoryId: string | undefined): string => {
   if (!categoryId) return '#10B981';
-  
+
   // For multi-letter categories, use the first category's background color
   const firstChar = categoryId.charAt(0);
   const category = getCategoryById(firstChar);
@@ -101,7 +99,7 @@ const getCategoryColor = (categoryId: string | undefined): string => {
 // Get category text color for display
 const getCategoryTextColor = (categoryId: string | undefined): string => {
   if (!categoryId) return '#FFFFFF';
-  
+
   // For multi-letter categories, use the first category's text color
   const firstChar = categoryId.charAt(0);
   const category = getCategoryById(firstChar);
@@ -133,6 +131,28 @@ export default function NewCreateCollective() {
   const { user: currentUser, token } = useAuthStore();
   const { showToast } = useToast();
   const confettiRef = React.useRef<ConfettiCannon>(null);
+  const route = useRoute();
+
+  const handleBack = () => {
+    const params = route.params as any;
+    const fromScreen = params?.from || params?.fromScreen;
+    // Check if we came from specific flows (NewNonprofitInterests, NewCompleteDonation)
+    // Note: In React Native navigation, we might need to check how these screens are named in the stack.
+    // Assuming the params are passed explicitly as 'from'.
+    const specialFlows = ['NewNonprofitInterests', 'NewCompleteDonation', 'Login'];
+
+    if (fromScreen && specialFlows.includes(fromScreen)) {
+      // Reset to Home/Root
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: 'DrawerNav', state: { routes: [{ name: 'MainTabs', state: { routes: [{ name: 'Home' }] } }] } }],
+        })
+      );
+    } else {
+      navigation.goBack();
+    }
+  };
 
   // Form state
   const [name, setName] = useState('');
@@ -152,11 +172,11 @@ export default function NewCreateCollective() {
   const [uploadedLogo, setUploadedLogo] = useState<string | null>(null);
   const [uploadedLogoPreview, setUploadedLogoPreview] = useState<string | null>(null);
   const [showLogoCustomization, setShowLogoCustomization] = useState(false);
-  
+
   // Dropdown state for sections
   const [isYourCausesOpen, setIsYourCausesOpen] = useState(true);
   const [isSuggestedCausesOpen, setIsSuggestedCausesOpen] = useState(true);
-  
+
   // Loading dots state
   const [dotCount, setDotCount] = useState(0);
   const [showAnimationComplete, setShowAnimationComplete] = useState(false);
@@ -228,7 +248,7 @@ export default function NewCreateCollective() {
   // Create collective mutation
   const createCollectiveMutation = useMutation({
     mutationFn: createCollective,
-    onSuccess: (response) => {
+    onSuccess: (response: any) => {
       console.log('Create collective successful:', response);
       setCreatedCollective(response);
       // Wait for animation to complete (3 seconds for one full cycle) before showing success
@@ -246,13 +266,13 @@ export default function NewCreateCollective() {
     },
     onError: (error: any) => {
       console.error('Create collective error:', error);
-      
+
       // Check for logo_file validation error
       if (error.response?.data?.logo_file && Array.isArray(error.response.data.logo_file) && error.response.data.logo_file.length > 0) {
         showToast(error.response.data.logo_file[0], 4000);
         return;
       }
-      
+
       // Check for other field-specific errors
       const errorData = error.response?.data;
       if (errorData) {
@@ -265,7 +285,7 @@ export default function NewCreateCollective() {
           }
         }
       }
-      
+
       // Fallback to general error message
       const errorMessage =
         error.response?.data?.message ||
@@ -285,7 +305,7 @@ export default function NewCreateCollective() {
     try {
       // Check if donation box exists
       const donationBox = await getDonationBox();
-      
+
       // If donation box doesn't exist or has no ID, navigate to setup
       if (!donationBox || !donationBox.id) {
         // Prepare causes data for preselection
@@ -422,7 +442,7 @@ export default function NewCreateCollective() {
       const preselectedCauseIds = preselectedCauses.map((cause) => cause.id);
 
       setShowAddToBoxModal(false);
-      
+
       // Navigate to donation setup with preselected causes
       (navigation as any).reset({
         index: 0,
@@ -471,11 +491,11 @@ export default function NewCreateCollective() {
           attributed_collective: parseInt(collectiveId),
         };
       });
-      
+
       try {
         await addCausesToBox({ causes });
         showToast('Nonprofits added to your donation box!', 3000);
-        
+
         await queryClient.invalidateQueries({ queryKey: ['donationBox', currentUser?.id] });
         await queryClient.refetchQueries({ queryKey: ['donationBox', currentUser?.id] });
 
@@ -700,7 +720,7 @@ export default function NewCreateCollective() {
         </View>
         <View style={styles.promptContainer}>
           <View style={styles.promptIconContainer}>
-            <Users size={32} color="#A855F7" />
+            <User size={32} color="#A855F7" />
           </View>
           <Text style={styles.promptTitle}>Lead a Giving Community</Text>
           <Text style={styles.promptDescription}>
@@ -740,7 +760,7 @@ export default function NewCreateCollective() {
         </View>
         <View style={styles.promptContainer}>
           <View style={styles.promptIconContainer}>
-            <Users size={32} color="#A855F7" />
+            <User size={32} color="#A855F7" />
           </View>
           <Text style={styles.promptTitle}>Lead a Giving Community</Text>
           <Text style={styles.promptDescription}>
@@ -829,7 +849,7 @@ export default function NewCreateCollective() {
                   const categoryIds = getCategoryIds(categoryId);
                   const avatarBgColor = getConsistentColor(causeData.id, avatarColors);
                   const initials = getInitials(causeData.name || 'N');
-                  
+
                   return (
                     <View key={cause.id} style={styles.reviewCauseCard}>
                       <View style={styles.reviewCauseContent}>
@@ -930,7 +950,7 @@ export default function NewCreateCollective() {
             {/* Success Icon */}
             <View style={styles.successIconContainer}>
               <View style={styles.successIcon}>
-                <Sparkles size={40} color="white" strokeWidth={2.5} />
+                <Heart size={40} color="white" />
               </View>
             </View>
 
@@ -968,7 +988,7 @@ export default function NewCreateCollective() {
                   </Text>
                 </TouchableOpacity>
               )}
-              
+
               <TouchableOpacity
                 onPress={() => (navigation as any).navigate('GroupCRWD', { id: createdCollective.id })}
                 style={styles.successSecondaryButton}
@@ -976,7 +996,7 @@ export default function NewCreateCollective() {
                 <Eye size={20} color="#111827" />
                 <Text style={styles.successSecondaryButtonText}>View My Collective</Text>
               </TouchableOpacity>
-              
+
               <TouchableOpacity
                 onPress={async () => {
                   try {
@@ -1053,8 +1073,8 @@ export default function NewCreateCollective() {
         style={styles.keyboardView}
         keyboardVerticalOffset={100}
       >
-        <ScrollView 
-          style={styles.scrollView} 
+        <ScrollView
+          style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
@@ -1071,7 +1091,7 @@ export default function NewCreateCollective() {
                   [{ text: 'OK' }]
                 )}
               >
-                <HelpCircle size={16} color="#9CA3AF" />
+                <Flag size={16} color="#9CA3AF" />
               </TouchableOpacity>
             </View>
             <TextInput
@@ -1096,7 +1116,7 @@ export default function NewCreateCollective() {
                   [{ text: 'OK' }]
                 )}
               >
-                <HelpCircle size={16} color="#9CA3AF" />
+                <Flag size={16} color="#9CA3AF" />
               </TouchableOpacity>
             </View>
             <TextInput
@@ -1160,7 +1180,7 @@ export default function NewCreateCollective() {
                       logoType === 'letter' && styles.logoTypeButtonActive
                     ]}
                   >
-                    <Palette size={16} color={logoType === 'letter' ? 'white' : '#111827'} />
+                    <Edit2 size={16} color={logoType === 'letter' ? 'white' : '#111827'} />
                     <Text style={[
                       styles.logoTypeButtonText,
                       logoType === 'letter' && styles.logoTypeButtonTextActive
@@ -1229,7 +1249,7 @@ export default function NewCreateCollective() {
                     Selected Causes ({selectedCauses.length})
                   </Text>
                   <View style={styles.readyBadge}>
-                    <Check size={16} color="white" strokeWidth={3} />
+                    <Check size={16} color="white" />
                   </View>
                 </View>
                 <View style={styles.selectedCausesList}>
@@ -1240,7 +1260,7 @@ export default function NewCreateCollective() {
                     const categoryIds = getCategoryIds(categoryId);
                     const avatarBgColor = getConsistentColor(causeData.id, avatarColors);
                     const initials = getInitials(causeData.name || 'N');
-                    
+
                     return (
                       <View key={cause.id} style={styles.selectedCauseCard}>
                         <View style={styles.selectedCauseContent}>
@@ -1297,7 +1317,7 @@ export default function NewCreateCollective() {
               <Text style={styles.addCausesTitle}>
                 Add or Remove Causes <Text style={styles.required}>*</Text>
               </Text>
-              
+
               {/* Search Bar */}
               <View style={styles.searchContainer}>
                 <Search size={20} color="#9CA3AF" style={styles.searchIcon} />
@@ -1345,7 +1365,7 @@ export default function NewCreateCollective() {
                           const isSelected = isCauseSelected(cause.id);
                           const avatarBgColor = getConsistentColor(cause.id, avatarColors);
                           const initials = getInitials(cause.name || 'N');
-                          
+
                           return (
                             <TouchableOpacity
                               key={cause.id}
@@ -1406,7 +1426,7 @@ export default function NewCreateCollective() {
                 const causes = searchTrigger > 0 && searchQuery.trim()
                   ? (causesData?.results || [])
                   : (defaultCausesData?.results || []);
-                
+
                 // Get favorite cause IDs to exclude from search results
                 const favoriteCauseIds = new Set(
                   favoriteCauses.map((item: any) => {
@@ -1414,17 +1434,17 @@ export default function NewCreateCollective() {
                     return cause.id;
                   })
                 );
-                
+
                 // Filter out favorite causes and already selected causes
                 const filteredCauses = causes.filter((cause: any) => {
                   const causeId = cause.id;
                   return causeId && !favoriteCauseIds.has(causeId) && !selectedCauses.some(selected => selected.id === causeId);
                 });
-                
+
                 if (filteredCauses.length === 0 && !(searchTrigger > 0 && searchQuery.trim()) && defaultCausesData?.results?.length === 0) {
                   return null;
                 }
-                
+
                 return (
                   <TouchableOpacity
                     onPress={() => setIsSuggestedCausesOpen(!isSuggestedCausesOpen)}
@@ -1457,7 +1477,7 @@ export default function NewCreateCollective() {
                       const causes = searchTrigger > 0 && searchQuery.trim()
                         ? (causesData?.results || [])
                         : (defaultCausesData?.results || []);
-                      
+
                       // Get favorite cause IDs to exclude from search results
                       const favoriteCauseIds = new Set(
                         favoriteCauses.map((item: any) => {
@@ -1465,7 +1485,7 @@ export default function NewCreateCollective() {
                           return cause.id;
                         })
                       );
-                      
+
                       // Filter out favorite causes and already selected causes
                       const availableCauses = causes.filter((cause: any) => {
                         const causeId = cause.id;
@@ -1485,7 +1505,7 @@ export default function NewCreateCollective() {
                         const isSelected = isCauseSelected(cause.id);
                         const avatarBgColor = getConsistentColor(cause.id, avatarColors);
                         const initials = getInitials(cause.name || 'N');
-                        
+
                         return (
                           <TouchableOpacity
                             key={cause.id}
@@ -1548,7 +1568,7 @@ export default function NewCreateCollective() {
       <View style={styles.footer}>
         {(() => {
           const isFormComplete = name.trim() !== '' && description.trim() !== '' && selectedCauses.length > 0;
-          
+
           if (!isFormComplete) {
             return (
               <TouchableOpacity
@@ -1559,7 +1579,7 @@ export default function NewCreateCollective() {
               </TouchableOpacity>
             );
           }
-          
+
           return (
             <TouchableOpacity
               onPress={handleContinueToReview}
@@ -2110,7 +2130,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom:  10,
+    marginBottom: 10,
   },
   footerButtonText: {
     color: 'white',
@@ -2123,7 +2143,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom:  10,
+    marginBottom: 10,
   },
   footerButtonTextDisabled: {
     color: 'white',
@@ -2222,6 +2242,11 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     marginBottom: 8,
   },
+  reviewCauseCategoriesContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
   reviewCauseCategory: {
     paddingHorizontal: 8,
     paddingVertical: 2,
@@ -2259,7 +2284,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom:  10,
+    marginBottom: 10,
   },
   reviewCreateButtonDisabled: {
     opacity: 0.5,

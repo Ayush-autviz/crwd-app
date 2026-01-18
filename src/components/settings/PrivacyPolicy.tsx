@@ -9,102 +9,80 @@ export default function PrivacyPolicy() {
       <MainHeaderNav show={true} title={'Privacy Policy'} menu={false} />
       <ScrollView style={styles.scrollView}>
         <Text style={styles.title}>Privacy Policy</Text>
-        
+
+        <Text style={styles.lastUpdated}>Effective Date: January 15, 2026</Text>
+
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>1. Introduction</Text>
           <Text style={styles.paragraph}>
-            At CRWD, we take your privacy seriously. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform.
+            At CRWD, we are committed to protecting your privacy. CRWD operates through CRWD Foundation Inc. (a 501(c)(3) nonprofit) and CRWD Collective Giving LLC. This Privacy Policy outlines how we collect, use, and safeguard your data.
           </Text>
         </View>
-        
+
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>2. Information We Collect</Text>
-          
+
           <Text style={styles.subSectionTitle}>2.1 Personal Information</Text>
           <View style={styles.bulletList}>
-            <Text style={styles.bulletItem}>• Name and contact information</Text>
-            <Text style={styles.bulletItem}>• Email address</Text>
-            <Text style={styles.bulletItem}>• Payment information</Text>
-            <Text style={styles.bulletItem}>• Profile information</Text>
-            <Text style={styles.bulletItem}>• Communication preferences</Text>
+            <Text style={styles.bulletItem}>• Name and contact info</Text>
+            <Text style={styles.bulletItem}>• Account credentials</Text>
+            <Text style={styles.bulletItem}>• Payment information (securely processed)</Text>
+            <Text style={styles.bulletItem}>• Transaction history</Text>
           </View>
-          
+
           <Text style={styles.subSectionTitle}>2.2 Usage Information</Text>
           <View style={styles.bulletList}>
             <Text style={styles.bulletItem}>• Device information</Text>
-            <Text style={styles.bulletItem}>• IP address</Text>
-            <Text style={styles.bulletItem}>• Browser type</Text>
-            <Text style={styles.bulletItem}>• Pages visited</Text>
-            <Text style={styles.bulletItem}>• Time spent on pages</Text>
+            <Text style={styles.bulletItem}>• IP address and location data</Text>
+            <Text style={styles.bulletItem}>• App usage statistics</Text>
           </View>
         </View>
-        
+
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>3. How We Use Your Information</Text>
-          <Text style={styles.paragraph}>
-            We use the information we collect to:
-          </Text>
           <View style={styles.bulletList}>
-            <Text style={styles.bulletItem}>• Provide and maintain our services</Text>
-            <Text style={styles.bulletItem}>• Process your transactions</Text>
-            <Text style={styles.bulletItem}>• Send you important updates</Text>
-            <Text style={styles.bulletItem}>• Improve our platform</Text>
-            <Text style={styles.bulletItem}>• Protect against fraud</Text>
+            <Text style={styles.bulletItem}>• To facilitate account creation</Text>
+            <Text style={styles.bulletItem}>• To process donations and disbursements</Text>
+            <Text style={styles.bulletItem}>• To send giving summaries and tax receipts</Text>
+            <Text style={styles.bulletItem}>• To protect our services and legal rights</Text>
           </View>
         </View>
-        
+
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>4. Information Sharing</Text>
+          <Text style={styles.sectionTitle}>4. Sharing Your Information</Text>
           <Text style={styles.paragraph}>
-            We may share your information with:
+            We may share info with:
           </Text>
           <View style={styles.bulletList}>
-            <Text style={styles.bulletItem}>• Service providers</Text>
-            <Text style={styles.bulletItem}>• Payment processors</Text>
+            <Text style={styles.bulletItem}>• Service providers (e.g., payment processors)</Text>
             <Text style={styles.bulletItem}>• Legal authorities when required</Text>
           </View>
-        </View>
-        
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>5. Your Rights</Text>
           <Text style={styles.paragraph}>
-            You have the right to:
+            Note: We generally do not share personal contact info with nonprofits unless you opt-in. We may share aggregated, anonymous data.
           </Text>
-          <View style={styles.bulletList}>
-            <Text style={styles.bulletItem}>• Access your personal information</Text>
-            <Text style={styles.bulletItem}>• Correct inaccurate data</Text>
-            <Text style={styles.bulletItem}>• Request deletion of your data</Text>
-            <Text style={styles.bulletItem}>• Opt-out of marketing communications</Text>
-          </View>
         </View>
-        
+
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>6. Security</Text>
+          <Text style={styles.sectionTitle}>5. Data Security</Text>
           <Text style={styles.paragraph}>
             We implement appropriate security measures to protect your personal information. However, no method of transmission over the internet is 100% secure.
           </Text>
         </View>
-        
+
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>7. Changes to This Policy</Text>
+          <Text style={styles.sectionTitle}>6. Your Rights</Text>
           <Text style={styles.paragraph}>
-            We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page.
+            You have the right to access, correct, or delete your data. You may review your account settings at any time or contact us to delete your account.
           </Text>
         </View>
-        
+
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>8. Contact Us</Text>
+          <Text style={styles.sectionTitle}>7. Contact Us</Text>
           <Text style={styles.paragraph}>
-            If you have any questions about this Privacy Policy, please contact us at:
-          </Text>
-          <Text style={styles.paragraph}>
-            Email: privacy@crwd.com{'\n'}
-            Address: 123 Privacy Street, Security City, SC 12345
+            Email: info@crwdfund.org
           </Text>
         </View>
-        
-        <Text style={styles.lastUpdated}>Last updated: March 15, 2024</Text>
-        
+
         <View style={styles.bottomPadding} />
       </ScrollView>
     </SafeAreaView>

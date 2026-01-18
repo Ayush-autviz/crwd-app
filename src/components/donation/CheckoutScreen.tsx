@@ -65,6 +65,8 @@ export default function CheckoutScreen({
   const [selectedPauseOption, setSelectedPauseOption] = useState<number | null>(null);
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [showEditSplitSheet, setShowEditSplitSheet] = useState(false);
+  const [showCancelConfirmModal, setShowCancelConfirmModal] = useState(false);
+  const [showPauseConfirmModal, setShowPauseConfirmModal] = useState(false);
 
   // Get box_causes from donation box API (main source)
   const boxCauses = donationBox?.box_causes || [];
@@ -75,7 +77,7 @@ export default function CheckoutScreen({
   const manualCauses = donationBox?.manual_causes || [];
   const attributingCollectives = donationBox?.attributing_collectives || [];
   const actualDonationAmount = parseFloat(donationBox?.monthly_amount || donationAmount.toString());
-  
+
   // Use API data if available, otherwise fall back to selectedOrganizations
   const hasApiData = causes.length > 0 || manualCauses.length > 0 || attributingCollectives.length > 0;
   const totalCauses = causes.length || manualCauses.length;
@@ -104,7 +106,7 @@ export default function CheckoutScreen({
   const fees = calculateFees(actualDonationAmount);
   const net = fees.net;
   const maxCapacity = Math.floor(net / 0.20);
-  
+
   // Get current capacity from box_causes only
   const uniqueCauseIds = new Set(boxCauses.map((bc: any) => bc.cause?.id).filter(Boolean));
   const currentCapacity = uniqueCauseIds.size;
@@ -162,21 +164,13 @@ export default function CheckoutScreen({
   };
 
   const handleCancelSubscription = () => {
-    Alert.alert(
-      'Cancel Subscription',
-      'Are you sure you want to cancel your subscription completely?',
-      [
-        { text: 'No', style: 'cancel' },
-        {
-          text: 'Yes, Cancel',
-          style: 'destructive',
-          onPress: () => {
-            cancelDonationBoxMutation.mutate();
-            setSelectedPauseOption(null);
-          },
-        },
-      ]
-    );
+    setShowCancelConfirmModal(true);
+  };
+
+  const handleConfirmCancel = () => {
+    cancelDonationBoxMutation.mutate();
+    setSelectedPauseOption(null);
+    setShowCancelConfirmModal(false);
   };
 
   // Helper for consistent avatar colors
@@ -212,16 +206,16 @@ export default function CheckoutScreen({
       // Show confetti modal
       setShowCongratulationsModal(true);
       confettiShownRef.current = true;
-      
+
       // Refetch donation box data
       queryClient.invalidateQueries({ queryKey: ['donationBox'] });
       queryClient.refetchQueries({ queryKey: ['donationBox'] });
-      
+
       // Fire confetti after modal appears
       setTimeout(() => {
         confettiRef.current?.start();
       }, 300);
-      
+
       // Notify parent that confetti has been shown (to clear the flag)
       if (onConfettiShown) {
         onConfettiShown();
@@ -236,7 +230,7 @@ export default function CheckoutScreen({
   const handleToggleCollectiveDropdown = async (collectiveId: number) => {
     const isExpanded = expandedCollectives.has(collectiveId);
     const newExpanded = new Set(expandedCollectives);
-    
+
     if (isExpanded) {
       newExpanded.delete(collectiveId);
       setLoadingCollectives(prev => {
@@ -280,7 +274,7 @@ export default function CheckoutScreen({
   const selectedOrganizationsList = hasApiData ? [] : selectedOrganizations;
 
   // Calculate equal distribution percentage and amount per item
-  const totalItems = hasApiData 
+  const totalItems = hasApiData
     ? (totalCauses + totalCollectives)
     : selectedOrganizationsList.length;
   const distributionPercentage =
@@ -292,159 +286,159 @@ export default function CheckoutScreen({
 
   return (
     <>
-    <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Donation Box Summary Card */}
-        <View style={{ marginHorizontal: 16, }}>
-        <DonationBoxSummaryCard
-          monthlyAmount={Math.round(actualDonationAmount)}
-          lifetimeAmount={Math.round(lifetimeAmount)}
-          causesCount={totalCauses}
-          collectivesCount={totalCollectives}
-          currentCapacity={currentCapacity}
-          maxCapacity={maxCapacity}
-          donationBox={donationBox}
-          onAddCauses={() => navigation.navigate('ManageDonationBox' as never)}
-        />
-        </View>
+      <SafeAreaView style={styles.container}>
+        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+          {/* Donation Box Summary Card */}
+          <View style={{ marginHorizontal: 16, }}>
+            <DonationBoxSummaryCard
+              monthlyAmount={Math.round(actualDonationAmount)}
+              lifetimeAmount={Math.round(lifetimeAmount)}
+              causesCount={totalCauses}
+              collectivesCount={totalCollectives}
+              currentCapacity={currentCapacity}
+              maxCapacity={maxCapacity}
+              donationBox={donationBox}
+              onAddCauses={() => navigation.navigate('ManageDonationBox' as never)}
+            />
+          </View>
 
-        {/* Currently Supporting Section */}
-        {causes.length > 0 && (
-          <View style={styles.causesSection}>
-            <View style={styles.sectionHeader}>
-              <View style={{ flex: 1 }}>
+          {/* Currently Supporting Section */}
+          {causes.length > 0 && (
+            <View style={styles.causesSection}>
+              <View style={styles.sectionHeader}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.sectionTitle}>Currently Supporting</Text>
+                </View>
+                {causes.length > 1 && (
+                  <TouchableOpacity
+                    onPress={() => setShowEditSplitSheet(true)}
+                    style={styles.editSplitButton}
+                  >
+                    <Pencil size={16} color="#374151" />
+                    <Text style={styles.editSplitButtonText}>Edit Split</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+              <Text style={styles.sectionSubtitle}>
+                Supporting {causes.length} nonprofit{causes.length !== 1 ? 's' : ''}
+              </Text>
+
+              {/* Causes List from box_causes */}
+              <View style={styles.causesList}>
+                {causes.map((cause: any) => {
+                  const avatarBgColor = getConsistentColor(cause.id, avatarColors);
+                  const initials = getInitials(cause.name || 'N');
+                  return (
+                    <View key={cause.id} style={styles.causeCard}>
+                      <View style={styles.causeCardContent}>
+                        {/* Avatar */}
+                        <Avatar size={48} style={{ ...styles.causeIcon, borderRadius: 8 }}>
+                          <AvatarImage src={cause.image} />
+                          <AvatarFallback
+                            style={{ backgroundColor: avatarBgColor }}
+                            textStyle={{ color: '#FFFFFF', fontSize: 16, fontWeight: '700' }}
+                          >
+                            {initials}
+                          </AvatarFallback>
+                        </Avatar>
+
+                        {/* Cause Info */}
+                        <View style={styles.causeInfo}>
+                          <Text style={styles.causeName}>{cause.name}</Text>
+                          <Text style={styles.causeDescription} numberOfLines={1}>
+                            {cause.mission || cause.description || 'Making a positive impact in the community'}
+                          </Text>
+                        </View>
+
+                        {/* Donation Info & Remove Button */}
+                        <View style={styles.causeActions}>
+                          <View style={styles.amountInfo}>
+                            <Text style={styles.amountPercentage}>{distributionPercentage}%</Text>
+                            <Text style={styles.amountPerMonth}>${amountPerItem.toFixed(2)}/mo</Text>
+                          </View>
+                          <TouchableOpacity
+                            onPress={() => handleRemoveCause(cause)}
+                            style={styles.trashButton}
+                            activeOpacity={0.7}
+                          >
+                            <Trash2 size={18} color="#EF4444" />
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    </View>
+                  );
+                })}
+              </View>
+            </View>
+          )}
+
+          {/* Fallback to selectedOrganizations if no API data */}
+          {!hasApiData && selectedOrganizationsList.length > 0 && (
+            <View style={styles.causesSection}>
+              <View style={styles.sectionHeader}>
                 <Text style={styles.sectionTitle}>Currently Supporting</Text>
               </View>
-              {causes.length > 1 && (
-                <TouchableOpacity
-                  onPress={() => setShowEditSplitSheet(true)}
-                  style={styles.editSplitButton}
-                >
-                  <Pencil size={16} color="#374151" />
-                  <Text style={styles.editSplitButtonText}>Edit Split</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-            <Text style={styles.sectionSubtitle}>
-              Supporting {causes.length} nonprofit{causes.length !== 1 ? 's' : ''}
-            </Text>
-
-            {/* Causes List from box_causes */}
-            <View style={styles.causesList}>
-              {causes.map((cause: any) => {
-                const avatarBgColor = getConsistentColor(cause.id, avatarColors);
-                const initials = getInitials(cause.name || 'N');
-                return (
-                  <View key={cause.id} style={styles.causeCard}>
-                    <View style={styles.causeCardContent}>
-                      {/* Avatar */}
-                      <Avatar size={48} style={{ ...styles.causeIcon, borderRadius: 8 }}>
-                        <AvatarImage src={cause.image} />
-                        <AvatarFallback
-                          style={{ backgroundColor: avatarBgColor }}
-                          textStyle={{ color: '#FFFFFF', fontSize: 16, fontWeight: '700' }}
-                        >
-                          {initials}
-                        </AvatarFallback>
-                      </Avatar>
-
-                      {/* Cause Info */}
-                      <View style={styles.causeInfo}>
-                        <Text style={styles.causeName}>{cause.name}</Text>
-                        <Text style={styles.causeDescription} numberOfLines={1}>
-                          {cause.mission || cause.description || 'Making a positive impact in the community'}
-                        </Text>
-                      </View>
-
-                      {/* Donation Info & Remove Button */}
-                      <View style={styles.causeActions}>
-                        <View style={styles.amountInfo}>
-                          <Text style={styles.amountPercentage}>{distributionPercentage}%</Text>
-                          <Text style={styles.amountPerMonth}>${amountPerItem.toFixed(2)}/mo</Text>
+              <Text style={styles.sectionSubtitle}>
+                Supporting {selectedOrganizationsList.length} nonprofit{selectedOrganizationsList.length !== 1 ? 's' : ''}
+              </Text>
+              <View style={styles.causesList}>
+                {selectedOrganizationsList.map((orgName: string, index: number) => {
+                  const avatarBgColor = getConsistentColor(orgName, avatarColors);
+                  const initials = getInitials(orgName);
+                  return (
+                    <View key={`${orgName}-${index}`} style={styles.causeCard}>
+                      <View style={styles.causeCardContent}>
+                        <View style={[styles.causeIcon, { backgroundColor: avatarBgColor }]}>
+                          <Text style={styles.causeIconText}>
+                            {initials}
+                          </Text>
                         </View>
-                        <TouchableOpacity
-                          onPress={() => handleRemoveCause(cause)}
-                          style={styles.trashButton}
-                          activeOpacity={0.7}
-                        >
-                          <Trash2 size={18} color="#EF4444" />
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-                  </View>
-                );
-              })}
-            </View>
-          </View>
-        )}
-
-        {/* Fallback to selectedOrganizations if no API data */}
-        {!hasApiData && selectedOrganizationsList.length > 0 && (
-          <View style={styles.causesSection}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Currently Supporting</Text>
-            </View>
-            <Text style={styles.sectionSubtitle}>
-              Supporting {selectedOrganizationsList.length} nonprofit{selectedOrganizationsList.length !== 1 ? 's' : ''}
-            </Text>
-            <View style={styles.causesList}>
-              {selectedOrganizationsList.map((orgName: string, index: number) => {
-                const avatarBgColor = getConsistentColor(orgName, avatarColors);
-                const initials = getInitials(orgName);
-                return (
-                  <View key={`${orgName}-${index}`} style={styles.causeCard}>
-                    <View style={styles.causeCardContent}>
-                      <View style={[styles.causeIcon, { backgroundColor: avatarBgColor }]}>
-                        <Text style={styles.causeIconText}>
-                          {initials}
-                        </Text>
-                      </View>
-                      <View style={styles.causeInfo}>
-                        <Text style={styles.causeName}>{orgName}</Text>
-                        <Text style={styles.causeDescription} numberOfLines={1}>
-                          {getOrganizationDescription(orgName)}
-                        </Text>
-                      </View>
-                      <View style={styles.causeActions}>
-                        <View style={styles.amountInfo}>
-                          <Text style={styles.amountPercentage}>{distributionPercentage}%</Text>
-                          <Text style={styles.amountPerMonth}>${amountPerItem.toFixed(2)}/mo</Text>
+                        <View style={styles.causeInfo}>
+                          <Text style={styles.causeName}>{orgName}</Text>
+                          <Text style={styles.causeDescription} numberOfLines={1}>
+                            {getOrganizationDescription(orgName)}
+                          </Text>
+                        </View>
+                        <View style={styles.causeActions}>
+                          <View style={styles.amountInfo}>
+                            <Text style={styles.amountPercentage}>{distributionPercentage}%</Text>
+                            <Text style={styles.amountPerMonth}>${amountPerItem.toFixed(2)}/mo</Text>
+                          </View>
                         </View>
                       </View>
                     </View>
-                  </View>
-                );
-              })}
+                  );
+                })}
+              </View>
             </View>
+          )}
+
+          {/* Request Nonprofit Section */}
+          <View style={styles.requestSection}>
+            <TouchableOpacity
+              onPress={() => setShowRequestModal(true)}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.requestText}>
+                Don't see your nonprofit? Request it
+              </Text>
+            </TouchableOpacity>
           </View>
-        )}
 
-        {/* Request Nonprofit Section */}
-        <View style={styles.requestSection}>
-          <TouchableOpacity
-            onPress={() => setShowRequestModal(true)}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.requestText}>
-              Don't see your nonprofit? Request it
-            </Text>
-          </TouchableOpacity>
-        </View>
+          {/* Pause Donations Section */}
+          <View style={styles.pauseSection}>
+            <TouchableOpacity
+              onPress={() => setShowPauseConfirmModal(true)}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.pauseText}>Pause Donations</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
 
-        {/* Pause Donations Section */}
-        <View style={styles.pauseSection}>
-          <TouchableOpacity
-            onPress={() => setShowPauseModal(true)}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.pauseText}>Pause Donations</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
+      </SafeAreaView>
 
-    </SafeAreaView>
-
-          {/* <View style={styles.footer}>
+      {/* <View style={styles.footer}>
           <TouchableOpacity style={styles.confirmButton}>
             <Text style={styles.confirmButtonText}>
               Confirm ${donationAmount}/month
@@ -452,61 +446,61 @@ export default function CheckoutScreen({
           </TouchableOpacity>
           </View> */}
 
-    {/* Congratulations Modal */}
-    <Modal
-      visible={showCongratulationsModal}
-      transparent={true}
-      animationType="fade"
-      onRequestClose={handleCloseCongratulationsModal}
-    >
-      <TouchableWithoutFeedback onPress={handleCloseCongratulationsModal}>
-        <View style={styles.modalOverlay}>
-          {/* Confetti */}
-          <View style={styles.confettiContainer}>
-            <ConfettiCannon
-              ref={confettiRef}
-              count={200}
-              origin={{ x: width / 2, y: 0 }}
-              autoStart={false}
-              colors={['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8']}
-              fadeOut
-            />
-          </View>
-          
-          <TouchableWithoutFeedback onPress={() => {}}>
-            <View style={styles.modalContent}>
-              <TouchableOpacity
-                style={styles.closeButton}
-                onPress={handleCloseCongratulationsModal}
-              >
-                <Text style={styles.closeButtonText}>x</Text>
-              </TouchableOpacity>
-              
+      {/* Congratulations Modal */}
+      <Modal
+        visible={showCongratulationsModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={handleCloseCongratulationsModal}
+      >
+        <TouchableWithoutFeedback onPress={handleCloseCongratulationsModal}>
+          <View style={styles.modalOverlay}>
+            {/* Confetti */}
+            <View style={styles.confettiContainer}>
+              <ConfettiCannon
+                ref={confettiRef}
+                count={200}
+                origin={{ x: width / 2, y: 0 }}
+                autoStart={false}
+                colors={['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8']}
+                fadeOut
+              />
+            </View>
+
+            <TouchableWithoutFeedback onPress={() => { }}>
+              <View style={styles.modalContent}>
+                <TouchableOpacity
+                  style={styles.closeButton}
+                  onPress={handleCloseCongratulationsModal}
+                >
+                  <Text style={styles.closeButtonText}>x</Text>
+                </TouchableOpacity>
+
                 <View style={styles.modalBody}>
                   <Text style={styles.modalTitle}>Welcome to Checkout!</Text>
                   <Text style={styles.modalDescription}>
                     Here's your donation summary:
                   </Text>
 
-                {/* Donation Summary Card */}
-                <View style={styles.summaryCard}>
-                  <View style={styles.summaryCardContent}>
-                    <View style={styles.summaryIcon}>
-                      <Text style={styles.heartEmoji}>💝</Text>
-                    </View>
-                    <View style={styles.summaryTextContainer}>
-                      <Text style={styles.summaryCardTitle}>Monthly Donation Box</Text>
-                      <Text style={styles.summaryCardAmount}>${actualDonationAmount}/month</Text>
+                  {/* Donation Summary Card */}
+                  <View style={styles.summaryCard}>
+                    <View style={styles.summaryCardContent}>
+                      <View style={styles.summaryIcon}>
+                        <Text style={styles.heartEmoji}>💝</Text>
+                      </View>
+                      <View style={styles.summaryTextContainer}>
+                        <Text style={styles.summaryCardTitle}>Monthly Donation Box</Text>
+                        <Text style={styles.summaryCardAmount}>${actualDonationAmount}/month</Text>
+                      </View>
                     </View>
                   </View>
-                </View>
 
                   <Text style={styles.supportingText}>
                     Supporting {totalItems} {totalItems === 1 ? 'organization' : 'organizations'} with your monthly donation.
                   </Text>
 
-                {/* Explore CRWD Button */}
-                {/* <TouchableOpacity
+                  {/* Explore CRWD Button */}
+                  {/* <TouchableOpacity
                   style={styles.exploreButton}
                   onPress={() => navigation.navigate('Home' as never)}
                 >
@@ -515,171 +509,227 @@ export default function CheckoutScreen({
                   </Text>
                 </TouchableOpacity> */}
 
-                {/* Download App Text */}
-                {/* <Text style={styles.downloadText}>
+                  {/* Download App Text */}
+                  {/* <Text style={styles.downloadText}>
                   Download the app to track and update anytime.
                 </Text> */}
+                </View>
               </View>
-            </View>
-          </TouchableWithoutFeedback>
-        </View>
-      </TouchableWithoutFeedback>
-    </Modal>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
 
-    {/* Remove Cause Modal */}
-    <Modal
-      visible={showRemoveModal}
-      transparent={true}
-      animationType="slide"
-      onRequestClose={() => {
-        setShowRemoveModal(false);
-        setCauseToRemove(null);
-      }}
-    >
-      <TouchableWithoutFeedback onPress={() => {
-        setShowRemoveModal(false);
-        setCauseToRemove(null);
-      }}>
-        <View style={styles.modalOverlay}>
-          <TouchableWithoutFeedback onPress={() => {}}>
-            <View style={styles.removeModalContent}>
-              {/* Handle Bar */}
-              <View style={styles.modalHandleBar}>
-                <View style={styles.modalHandle} />
-              </View>
+      {/* Remove Cause Modal */}
+      <Modal
+        visible={showRemoveModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => {
+          setShowRemoveModal(false);
+          setCauseToRemove(null);
+        }}
+      >
+        <TouchableWithoutFeedback onPress={() => {
+          setShowRemoveModal(false);
+          setCauseToRemove(null);
+        }}>
+          <View style={styles.modalOverlay}>
+            <TouchableWithoutFeedback onPress={() => { }}>
+              <View style={styles.removeModalContent}>
+                {/* Handle Bar */}
+                <View style={styles.modalHandleBar}>
+                  <View style={styles.modalHandle} />
+                </View>
 
-              {/* Content */}
-              <View style={styles.removeModalBody}>
-                <Text style={styles.removeModalTitle}>Remove Cause?</Text>
-                <Text style={styles.removeModalDescription}>
-                  Are you sure you want to remove <Text style={styles.removeModalBold}>{causeToRemove?.name}</Text> from your donation box? This action cannot be undone.
-                </Text>
-              </View>
-              
-              {/* Footer Buttons */}
-              <View style={styles.removeModalFooter}>
-                <TouchableOpacity
-                  onPress={() => {
-                    setShowRemoveModal(false);
-                    setCauseToRemove(null);
-                  }}
-                  disabled={removeCauseMutation.isPending}
-                  style={[styles.removeModalButton, styles.removeModalCancelButton]}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.removeModalCancelText}>Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={handleConfirmRemove}
-                  disabled={removeCauseMutation.isPending}
-                  style={[styles.removeModalButton, styles.removeModalConfirmButton]}
-                  activeOpacity={0.7}
-                >
-                  {removeCauseMutation.isPending ? (
-                    <>
-                      <ActivityIndicator size="small" color="#FFFFFF" style={{ marginRight: 8 }} />
-                      <Text style={styles.removeModalConfirmText}>Removing...</Text>
-                    </>
-                  ) : (
-                    <Text style={styles.removeModalConfirmText}>Remove</Text>
-                  )}
-                </TouchableOpacity>
-              </View>
-            </View>
-          </TouchableWithoutFeedback>
-        </View>
-      </TouchableWithoutFeedback>
-    </Modal>
-
-    {/* Pause Donations Modal */}
-    <Modal
-      visible={showPauseModal}
-      transparent={true}
-      animationType="slide"
-      onRequestClose={() => {
-        setShowPauseModal(false);
-        setSelectedPauseOption(null);
-      }}
-    >
-      <TouchableWithoutFeedback onPress={() => {
-        setShowPauseModal(false);
-        setSelectedPauseOption(null);
-      }}>
-        <View style={styles.modalOverlay}>
-          <TouchableWithoutFeedback onPress={() => {}}>
-            <View style={styles.pauseModalContent}>
-              {/* Header */}
-              <View style={styles.pauseModalHeader}>
-                <View style={styles.pauseModalHeaderContent}>
-                  <Text style={styles.pauseModalTitle}>Pause Your Donations</Text>
-                  <Text style={styles.pauseModalSubtitle}>
-                    We understand that life happens. Choose how long you'd like to pause your recurring donations.
+                {/* Content */}
+                <View style={styles.removeModalBody}>
+                  <Text style={styles.removeModalTitle}>Remove Cause?</Text>
+                  <Text style={styles.removeModalDescription}>
+                    Are you sure you want to remove <Text style={styles.removeModalBold}>{causeToRemove?.name}</Text> from your donation box? This action cannot be undone.
                   </Text>
                 </View>
-                <TouchableOpacity
-                  onPress={() => {
-                    setShowPauseModal(false);
-                    setSelectedPauseOption(null);
-                  }}
-                  style={styles.pauseModalCloseButton}
-                  activeOpacity={0.7}
-                >
-                  <X size={18} color="#6B7280" />
-                </TouchableOpacity>
+
+                {/* Footer Buttons */}
+                <View style={styles.removeModalFooter}>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setShowRemoveModal(false);
+                      setCauseToRemove(null);
+                    }}
+                    disabled={removeCauseMutation.isPending}
+                    style={[styles.removeModalButton, styles.removeModalCancelButton]}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.removeModalCancelText}>Cancel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={handleConfirmRemove}
+                    disabled={removeCauseMutation.isPending}
+                    style={[styles.removeModalButton, styles.removeModalConfirmButton]}
+                    activeOpacity={0.7}
+                  >
+                    {removeCauseMutation.isPending ? (
+                      <>
+                        <ActivityIndicator size="small" color="#FFFFFF" style={{ marginRight: 8 }} />
+                        <Text style={styles.removeModalConfirmText}>Removing...</Text>
+                      </>
+                    ) : (
+                      <Text style={styles.removeModalConfirmText}>Remove</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
               </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
 
-              {/* Content */}
-              <View style={styles.pauseModalBody}>
-                {/* Pause Options */}
-                <View style={styles.pauseOptionsContainer}>
-                  {/* Option 1: Skip this month */}
+      {/* Cancel Confirmation Modal */}
+      <Modal
+        visible={showCancelConfirmModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowCancelConfirmModal(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setShowCancelConfirmModal(false)}>
+          <View style={styles.modalOverlay}>
+            <TouchableWithoutFeedback onPress={() => { }}>
+              <View style={styles.removeModalContent}>
+                {/* Handle Bar */}
+                <View style={styles.modalHandleBar}>
+                  <View style={styles.modalHandle} />
+                </View>
+
+                {/* Content */}
+                <View style={styles.removeModalBody}>
+                  <Text style={styles.removeModalTitle}>Cancel Subscription?</Text>
+                  <Text style={styles.removeModalDescription}>
+                    Are you sure you want to cancel your subscription completely?
+                  </Text>
+                </View>
+
+                {/* Footer Buttons */}
+                <View style={styles.removeModalFooter}>
                   <TouchableOpacity
-                    onPress={() => setSelectedPauseOption(1)}
-                    style={[
-                      styles.pauseOption,
-                      selectedPauseOption === 1 && styles.pauseOptionSelected,
-                    ]}
+                    onPress={() => setShowCancelConfirmModal(false)}
+                    disabled={cancelDonationBoxMutation.isPending}
+                    style={[styles.removeModalButton, styles.removeModalCancelButton]}
                     activeOpacity={0.7}
                   >
-                    <View style={styles.pauseOptionContent}>
-                      <Text style={styles.pauseOptionText}>Skip this month</Text>
-                      <Text style={styles.pauseOptionSubtext}>Resume next month</Text>
-                    </View>
+                    <Text style={styles.removeModalCancelText}>No</Text>
                   </TouchableOpacity>
-
-                  {/* Option 2: Pause for 2 months */}
                   <TouchableOpacity
-                    onPress={() => setSelectedPauseOption(2)}
-                    style={[
-                      styles.pauseOption,
-                      selectedPauseOption === 2 && styles.pauseOptionSelected,
-                    ]}
+                    onPress={handleConfirmCancel}
+                    disabled={cancelDonationBoxMutation.isPending}
+                    style={[styles.removeModalButton, styles.removeModalConfirmButton]}
                     activeOpacity={0.7}
                   >
-                    <View style={styles.pauseOptionContent}>
-                      <Text style={styles.pauseOptionText}>Pause for 2 months</Text>
-                      <Text style={styles.pauseOptionSubtext}>Resume in 2 months</Text>
-                    </View>
+                    {cancelDonationBoxMutation.isPending ? (
+                      <>
+                        <ActivityIndicator size="small" color="#FFFFFF" style={{ marginRight: 8 }} />
+                        <Text style={styles.removeModalConfirmText}>Cancelling...</Text>
+                      </>
+                    ) : (
+                      <Text style={styles.removeModalConfirmText}>Yes, Cancel</Text>
+                    )}
                   </TouchableOpacity>
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
 
-                  {/* Option 3: Pause for 3 months */}
+      {/* Pause Donations Modal */}
+      <Modal
+        visible={showPauseModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => {
+          setShowPauseModal(false);
+          setSelectedPauseOption(null);
+        }}
+      >
+        <TouchableWithoutFeedback onPress={() => {
+          setShowPauseModal(false);
+          setSelectedPauseOption(null);
+        }}>
+          <View style={styles.modalOverlay}>
+            <TouchableWithoutFeedback onPress={() => { }}>
+              <View style={styles.pauseModalContent}>
+                {/* Header */}
+                <View style={styles.pauseModalHeader}>
+                  <View style={styles.pauseModalHeaderContent}>
+                    <Text style={styles.pauseModalTitle}>Pause Your Donations</Text>
+                    <Text style={styles.pauseModalSubtitle}>
+                      We understand that life happens. Choose how long you'd like to pause your recurring donations.
+                    </Text>
+                  </View>
                   <TouchableOpacity
-                    onPress={() => setSelectedPauseOption(3)}
-                    style={[
-                      styles.pauseOption,
-                      selectedPauseOption === 3 && styles.pauseOptionSelected,
-                    ]}
+                    onPress={() => {
+                      setShowPauseModal(false);
+                      setSelectedPauseOption(null);
+                    }}
+                    style={styles.pauseModalCloseButton}
                     activeOpacity={0.7}
                   >
-                    <View style={styles.pauseOptionContent}>
-                      <Text style={styles.pauseOptionText}>Pause for 3 months</Text>
-                      <Text style={styles.pauseOptionSubtext}>Resume in 3 months</Text>
-                    </View>
+                    <X size={18} color="#6B7280" />
                   </TouchableOpacity>
                 </View>
 
-                {/* Cancel Subscription Link */}
-                {/* <View style={styles.pauseCancelSection}>
+                {/* Content */}
+                <View style={styles.pauseModalBody}>
+                  {/* Pause Options */}
+                  <View style={styles.pauseOptionsContainer}>
+                    {/* Option 1: Skip this month */}
+                    <TouchableOpacity
+                      onPress={() => setSelectedPauseOption(1)}
+                      style={[
+                        styles.pauseOption,
+                        selectedPauseOption === 1 && styles.pauseOptionSelected,
+                      ]}
+                      activeOpacity={0.7}
+                    >
+                      <View style={styles.pauseOptionContent}>
+                        <Text style={styles.pauseOptionText}>Skip this month</Text>
+                        <Text style={styles.pauseOptionSubtext}>Resume next month</Text>
+                      </View>
+                    </TouchableOpacity>
+
+                    {/* Option 2: Pause for 2 months */}
+                    <TouchableOpacity
+                      onPress={() => setSelectedPauseOption(2)}
+                      style={[
+                        styles.pauseOption,
+                        selectedPauseOption === 2 && styles.pauseOptionSelected,
+                      ]}
+                      activeOpacity={0.7}
+                    >
+                      <View style={styles.pauseOptionContent}>
+                        <Text style={styles.pauseOptionText}>Pause for 2 months</Text>
+                        <Text style={styles.pauseOptionSubtext}>Resume in 2 months</Text>
+                      </View>
+                    </TouchableOpacity>
+
+                    {/* Option 3: Pause for 3 months */}
+                    <TouchableOpacity
+                      onPress={() => setSelectedPauseOption(3)}
+                      style={[
+                        styles.pauseOption,
+                        selectedPauseOption === 3 && styles.pauseOptionSelected,
+                      ]}
+                      activeOpacity={0.7}
+                    >
+                      <View style={styles.pauseOptionContent}>
+                        <Text style={styles.pauseOptionText}>Pause for 3 months</Text>
+                        <Text style={styles.pauseOptionSubtext}>Resume in 3 months</Text>
+                      </View>
+                    </TouchableOpacity>
+                  </View>
+
+                  {/* Cancel Subscription Link */}
+                  {/* <View style={styles.pauseCancelSection}>
                   <TouchableOpacity
                     onPress={handleCancelSubscription}
                     disabled={cancelDonationBoxMutation.isPending}
@@ -691,81 +741,81 @@ export default function CheckoutScreen({
                     </Text>
                   </TouchableOpacity>
                 </View> */}
+                </View>
+
+                {/* Footer */}
+                <View style={styles.pauseModalFooter}>
+                  <TouchableOpacity
+                    onPress={handleCancelSubscription}
+                    disabled={cancelDonationBoxMutation.isPending}
+                    style={styles.pauseModalCancelButton}
+                    activeOpacity={0.7}
+                  >
+                    {cancelDonationBoxMutation.isPending ? (
+                      <Text style={styles.pauseModalCancelText}>Cancelling...</Text>
+                    ) : (
+                      <Text style={styles.pauseModalCancelText}>Cancel subscription completely</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
               </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
 
-              {/* Footer */}
-              <View style={styles.pauseModalFooter}>
-                <TouchableOpacity
-                  onPress={handleCancelSubscription}
-                  disabled={cancelDonationBoxMutation.isPending}
-                  style={styles.pauseModalCancelButton}
-                  activeOpacity={0.7}
-                >
-                  {cancelDonationBoxMutation.isPending ? (
-                    <Text style={styles.pauseModalCancelText}>Cancelling...</Text>
-                  ) : (
-                    <Text style={styles.pauseModalCancelText}>Cancel subscription completely</Text>
-                  )}
-                </TouchableOpacity>
-              </View>
-            </View>
-          </TouchableWithoutFeedback>
-        </View>
-      </TouchableWithoutFeedback>
-    </Modal>
+      {/* Request Nonprofit Modal */}
+      <RequestNonprofitModal
+        isOpen={showRequestModal}
+        onClose={() => setShowRequestModal(false)}
+      />
 
-    {/* Request Nonprofit Modal */}
-    <RequestNonprofitModal
-      isOpen={showRequestModal}
-      onClose={() => setShowRequestModal(false)}
-    />
+      {/* Edit Donation Split Bottom Sheet */}
+      {(() => {
+        console.log('=== CheckoutScreen: Preparing causes for Edit Split ===');
+        console.log('causes:', causes);
+        console.log('causes.length:', causes?.length);
+        console.log('causes is array:', Array.isArray(causes));
+        console.log('boxCauses:', boxCauses);
+        console.log('boxCauses.length:', boxCauses?.length);
+        console.log('donationBox:', donationBox);
+        console.log('actualDonationAmount:', actualDonationAmount);
+        console.log('showEditSplitSheet:', showEditSplitSheet);
 
-    {/* Edit Donation Split Bottom Sheet */}
-    {(() => {
-      console.log('=== CheckoutScreen: Preparing causes for Edit Split ===');
-      console.log('causes:', causes);
-      console.log('causes.length:', causes?.length);
-      console.log('causes is array:', Array.isArray(causes));
-      console.log('boxCauses:', boxCauses);
-      console.log('boxCauses.length:', boxCauses?.length);
-      console.log('donationBox:', donationBox);
-      console.log('actualDonationAmount:', actualDonationAmount);
-      console.log('showEditSplitSheet:', showEditSplitSheet);
-      
-      const causesForEditSplit = (causes || [])
-        .filter((cause: any, index: number) => {
-          console.log(`Filtering cause ${index}:`, cause);
-          const isValid = cause != null && cause.id != null;
-          console.log(`Cause ${index} isValid:`, isValid);
-          return isValid;
-        })
-        .map((cause: any, index: number) => {
-          const mappedCause = {
-            id: cause.id,
-            name: cause.name || 'Unknown Cause',
-            image: cause.image || cause.logo || '',
-            logo: cause.logo || cause.image || '',
-          };
-          console.log(`Mapped cause ${index}:`, mappedCause);
-          return mappedCause;
-        });
-      
-      console.log('Final causesForEditSplit:', causesForEditSplit);
-      console.log('causesForEditSplit.length:', causesForEditSplit.length);
-      
-      return (
-        <EditDonationSplitBottomSheet
-          isOpen={showEditSplitSheet}
-          onClose={() => {
-            console.log('Closing Edit Split sheet from CheckoutScreen');
-            setShowEditSplitSheet(false);
-          }}
-          causes={causesForEditSplit}
-          monthlyAmount={actualDonationAmount}
-          boxCauses={boxCauses}
-        />
-      );
-    })()}
+        const causesForEditSplit = (causes || [])
+          .filter((cause: any, index: number) => {
+            console.log(`Filtering cause ${index}:`, cause);
+            const isValid = cause != null && cause.id != null;
+            console.log(`Cause ${index} isValid:`, isValid);
+            return isValid;
+          })
+          .map((cause: any, index: number) => {
+            const mappedCause = {
+              id: cause.id,
+              name: cause.name || 'Unknown Cause',
+              image: cause.image || cause.logo || '',
+              logo: cause.logo || cause.image || '',
+            };
+            console.log(`Mapped cause ${index}:`, mappedCause);
+            return mappedCause;
+          });
+
+        console.log('Final causesForEditSplit:', causesForEditSplit);
+        console.log('causesForEditSplit.length:', causesForEditSplit.length);
+
+        return (
+          <EditDonationSplitBottomSheet
+            isOpen={showEditSplitSheet}
+            onClose={() => {
+              console.log('Closing Edit Split sheet from CheckoutScreen');
+              setShowEditSplitSheet(false);
+            }}
+            causes={causesForEditSplit}
+            monthlyAmount={actualDonationAmount}
+            boxCauses={boxCauses}
+          />
+        );
+      })()}
 
     </>
   );
@@ -1260,7 +1310,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     paddingHorizontal: 16,
     paddingVertical: 20,
-    paddingBottom:30,
+    paddingBottom: 30,
     borderTopWidth: 1,
     borderTopColor: '#f3f4f6',
     shadowColor: '#000',

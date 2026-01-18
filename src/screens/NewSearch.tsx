@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { ArrowLeft, Search as SearchIcon, Sparkles, Plus } from 'lucide-react-native';
+import { ArrowLeft, Search as SearchIcon, Heart, Plus } from 'lucide-react-native';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { getCausesBySearch, getCollectives } from '../services/api/crwd';
 import { getPosts, newSearch } from '../services/api/social';
@@ -50,43 +50,24 @@ export default function NewSearchPage() {
   const [hasSearched, setHasSearched] = useState(false);
   const [showRequestModal, setShowRequestModal] = useState(false);
 
-  // Initialize search query from route params if available
+  // Get category ID from route params
+  const params = route.params as any;
+  const categoryId = params?.categoryId;
+
+  // Initialize search query and category from route params if available
   useEffect(() => {
-    const params = route.params as any;
     if (params?.searchQuery) {
       setSearchQuery(params.searchQuery);
       setHasSearched(true);
     }
-  }, [route.params]);
-
-  // Fetch search results using useInfiniteQuery for pagination
-  // const {
-  //   data: searchData,
-  //   isLoading: isLoadingSearch,
-  //   fetchNextPage,
-  //   hasNextPage,
-  //   isFetchingNextPage
-  // } = useInfiniteQuery({
-  //   queryKey: ['new-search', activeTab, searchQuery],
-  //   queryFn: ({ pageParam = 1 }) => newSearch(getTabValue(activeTab), searchQuery, pageParam),
-  //   initialPageParam: 1,
-  //   getNextPageParam: (lastPage: any) => {
-  //     // Check if there is a next URL
-  //     if (lastPage.next) {
-  //       try {
-  //         const url = new URL(lastPage.next);
-  //         const page = url.searchParams.get('page');
-  //         return page ? parseInt(page) : undefined;
-  //       } catch (e) {
-  //         return undefined;
-  //       }
-  //     }
-  //     return undefined;
-  //   },
-  //   enabled: hasSearched && searchQuery.trim().length > 0,
-  // });
-
-
+    // Handle category filtering
+    if (params?.categoryId || params?.categoryName) {
+      const categoryName = params.categoryName || params.searchQuery;
+      setSearchQuery(categoryName);
+      setActiveTab('Causes'); // Set to Causes tab for category search
+      setHasSearched(true);
+    }
+  }, [params]);
 
   // Fetch search results using useInfiniteQuery for pagination
   const {
@@ -96,8 +77,17 @@ export default function NewSearchPage() {
     hasNextPage,
     isFetchingNextPage
   } = useInfiniteQuery({
-    queryKey: ['new-search', activeTab, searchQuery],
-    queryFn: ({ pageParam = 1 }) => newSearch(getTabValue(activeTab), searchQuery, pageParam),
+    queryKey: categoryId
+      ? ['causes-by-category', categoryId, searchQuery, activeTab]
+      : ['new-search', activeTab, searchQuery],
+    queryFn: ({ pageParam = 1 }) => {
+      if (categoryId && activeTab === 'Causes') {
+        // Use getCausesBySearch for category filtering
+        return getCausesBySearch(searchQuery || '', categoryId, pageParam);
+      }
+      // Use newSearch for other cases
+      return newSearch(getTabValue(activeTab), searchQuery, pageParam);
+    },
     initialPageParam: 1,
     getNextPageParam: (lastPage: any) => {
       // Check if there is a next URL
@@ -114,7 +104,7 @@ export default function NewSearchPage() {
       }
       return undefined;
     },
-    enabled: hasSearched && searchQuery.trim().length > 0,
+    enabled: hasSearched && (searchQuery.trim().length > 0 || !!categoryId),
   });
 
   const handleSearch = () => {
@@ -151,24 +141,28 @@ export default function NewSearchPage() {
         return page;
       }
 
-      // If it's an object with a results property
+      // Check for tab-specific properties first
+      switch (activeTab) {
+        case 'Causes':
+          if (page.causes || page.cause) return page.causes || page.cause;
+          break;
+        case 'Collectives':
+          if (page.collectives || page.collective) return page.collectives || page.collective;
+          break;
+        case 'Users':
+          if (page.users || page.user) return page.users || page.user;
+          break;
+        case 'Posts':
+          if (page.posts || page.post) return page.posts || page.post;
+          break;
+      }
+
+      // If it's an object with a results property (fallback)
       if (page.results) {
         return page.results;
       }
 
-      // If it's an object with tab-specific properties
-      switch (activeTab) {
-        case 'Causes':
-          return page.causes || page.cause || [];
-        case 'Collectives':
-          return page.collectives || page.collective || [];
-        case 'Users':
-          return page.users || page.user || [];
-        case 'Posts':
-          return page.posts || page.post || [];
-        default:
-          return [];
-      }
+      return [];
     });
   };
 
@@ -232,9 +226,9 @@ export default function NewSearchPage() {
                 <View style={styles.surpriseContent}>
                   {/* Purple Gradient Icon with Star and Plus */}
                   <View style={styles.iconContainer}>
-                    <Sparkles size={20} color="#FFFFFF" />
+                    <Heart size={20} color="#FFFFFF" />
                     <View style={styles.plusBadge}>
-                      <Plus size={8} color="#A855F7" strokeWidth={3} />
+                      <Plus size={8} color="#A855F7" />
                     </View>
                   </View>
 

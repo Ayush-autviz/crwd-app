@@ -88,10 +88,10 @@ export default function NewCausePage() {
     mutationFn: async () => {
       if (!causeId) throw new Error('Cause ID is missing');
       // Use correct API format: { causes: [{ cause_id: 0 }] } without attributed_collective
-      return addCausesToBox({ 
-        causes: [{ 
-          cause_id: parseInt(causeId) 
-        }] 
+      return addCausesToBox({
+        causes: [{
+          cause_id: parseInt(causeId)
+        }]
       });
     },
     onSuccess: async () => {
@@ -99,10 +99,10 @@ export default function NewCausePage() {
       // Invalidate and refetch donation box to update isCauseInBox
       await queryClient.invalidateQueries({ queryKey: ['donationBox', currentUser?.id] });
       await refetchDonationBox();
-      
+
       // Show custom toast
       showToast('Cause added to donation box!', 3000);
-      
+
       // Navigate to bottom tab "Donate" with setup tab
       (navigation as any).reset({
         index: 0,
@@ -190,7 +190,7 @@ export default function NewCausePage() {
     // Check if donation box exists first
     try {
       const donationBox = await getDonationBox();
-      
+
       // If donation box is not set up, navigate to donation page with cause preselected
       if (!donationBox || !donationBox.id || donationBox.message === "Donation box not found") {
         setShowAddToBoxModal(false);
@@ -241,7 +241,7 @@ export default function NewCausePage() {
         });
         return;
       }
-      
+
       // If donation box exists, check capacity before adding cause
       // Calculate fees and capacity
       const calculateFees = (grossAmount: number) => {
@@ -267,18 +267,18 @@ export default function NewCausePage() {
       const fees = calculateFees(monthlyAmount);
       const net = fees.net;
       const maxCapacity = Math.floor(net / 0.20);
-      
+
       // Count current causes in the box
       const boxCauses = donationBox.box_causes || [];
       const currentCapacity = boxCauses.length;
-      
+
       // Check if adding this cause would exceed capacity
       if (currentCapacity >= maxCapacity) {
         showToast(`Your donation box is full. You can only support up to ${maxCapacity} cause${maxCapacity !== 1 ? 's' : ''} for $${monthlyAmount} per month. Please increase your donation amount or remove a cause to add this one.`, 5000);
         setShowAddToBoxModal(false);
         return;
       }
-      
+
       // If capacity check passes, proceed with adding
       addToDonationBoxMutation.mutate();
     } catch (error) {
@@ -338,42 +338,13 @@ export default function NewCausePage() {
       navigation.navigate('SplashScreen' as never);
       return;
     }
-    // Navigate to one-time donation flow - navigate to bottom tab "Donate" with onetime tab
-    (navigation as any).reset({
-      index: 0,
-      routes: [
-        {
-          name: 'DrawerNav',
-          state: {
-            routes: [
-              {
-                name: 'MainTabs',
-                state: {
-                  routes: [
-                    { name: 'Home' },
-                    { name: 'Search' },
-                    {
-                      name: 'Donate',
-                      params: {
-                        initialTab: 'onetime',
-                        preselectedItem: {
-                          id: causeId,
-                          type: 'cause',
-                          data: causeData,
-                        },
-                      },
-                    },
-                    { name: 'Collectives' },
-                    { name: 'Profile' },
-                  ],
-                  index: 2, // Donate tab index
-                },
-              },
-            ],
-            index: 0,
-          },
-        },
-      ],
+    // Navigate to OneTimeDonationScreen directly
+    (navigation as any).navigate('OneTimeDonationScreen', {
+      preselectedItem: {
+        id: causeId,
+        type: 'cause',
+        data: causeData,
+      },
     });
   };
 
@@ -396,6 +367,7 @@ export default function NewCausePage() {
         causeId={causeId}
         isFavorite={causeData.is_favorite}
         onShare={handleShare}
+        onOneTimeDonation={handleDonate}
       />
 
       <ScrollView

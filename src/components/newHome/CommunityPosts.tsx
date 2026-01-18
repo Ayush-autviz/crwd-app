@@ -86,13 +86,27 @@ export default function CommunityPosts({
               name: post.collective.name,
               description: post.collective.description,
             } : undefined,
+            fundraiser: post.fundraiser ? {
+              id: post.fundraiser.id,
+              name: post.fundraiser.name,
+              description: post.fundraiser.description,
+              image: post.fundraiser.image,
+              color: post.fundraiser.color,
+              target_amount: post.fundraiser.target_amount,
+              current_amount: post.fundraiser.current_amount,
+              progress_percentage: post.fundraiser.progress_percentage,
+              is_active: post.fundraiser.is_active,
+              total_donors: post.fundraiser.total_donors,
+              end_date: post.fundraiser.end_date,
+            } : undefined,
           };
 
           return (
-            <PostResultCard 
-              key={post.id} 
+            <PostResultCard
+              key={post.id}
               post={transformedPost}
               onCommentPress={onCommentPress ? () => onCommentPress(post) : undefined}
+              isHomeFeed={true}
             />
           );
         })}

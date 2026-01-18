@@ -973,7 +973,7 @@ export default function Profile() {
                         {postsQuery.isLoading ? (
                             <View style={{ padding: 20, alignItems: 'center' }}>
                                 <ActivityIndicator size="large" color={PrimaryBlue} />
-                                <Text style={{ marginTop: 10, color: PrimaryGrey }}>Loading posts...</Text>
+                                <Text style={{ marginTop: 10, color: PrimaryGrey }}>Loading...</Text>
                             </View>
                         ) : userPosts.length === 0 ? (
                             <View>

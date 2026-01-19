@@ -271,7 +271,7 @@ export default function Account() {
             </View>
 
             {/* Username */}
-            <View style={styles.fieldContainer}>
+            {/* <View style={styles.fieldContainer}>
               <Text style={styles.fieldLabel}>Username</Text>
               <TextInput
                 style={styles.input}
@@ -285,7 +285,7 @@ export default function Account() {
               <Text style={styles.usernameHint}>
                 Username must be unique and only contain letters, numbers, and underscores.
               </Text>
-            </View>
+            </View> */}
 
             {/* Email */}
             <View style={styles.fieldContainer}>
@@ -306,7 +306,7 @@ export default function Account() {
             <View style={styles.fieldContainer}>
               <Text style={styles.fieldLabel}>Location</Text>
               <View style={styles.locationInputContainer}>
-                <MapPin size={16} color={PrimaryGrey} style={styles.locationIcon} />
+                {/* <MapPin size={16} color={PrimaryGrey} style={styles.locationIcon} /> */}
                 <TextInput
                   style={[styles.input, styles.locationInput]}
                   value={formData.location}

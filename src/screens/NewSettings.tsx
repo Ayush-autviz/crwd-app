@@ -7,6 +7,7 @@ import MainHeaderNav from '../components/MainHeaderNav'
 import Account from '../components/account/Account'
 import ChangePasswordSheet from '../components/newsettings/ChangePasswordSheet'
 import ChangeEmailSheet from '../components/newsettings/ChangeEmailSheet'
+import RequestNonprofitModal from '../components/newsearch/RequestNonprofitModal'
 import { CircleHelp, CreditCard, FileText, Info, Lock, Mail, MessageSquare, Shield, Trash2, Eye, Bookmark, Heart, ChevronDown, UserPlus } from 'lucide-react-native'
 import { LightGrey, PrimaryBlue, PrimaryGrey, SecondaryGrey } from '../Constants/Colors'
 import { useNavigation } from '@react-navigation/native'
@@ -24,8 +25,9 @@ export default function NewSettings() {
   const passwordBottomSheetRef = useRef<BottomSheet>(null)
   const emailBottomSheetRef = useRef<BottomSheet>(null)
 
-  // FAQ state
+  // State
   const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null)
+  const [showRequestModal, setShowRequestModal] = useState(false)
 
   const toggleFAQ = (index: number) => {
     setExpandedFAQ(expandedFAQ === index ? null : index)
@@ -77,6 +79,7 @@ export default function NewSettings() {
     },
   })
 
+  // ... (handleDeleteAccount, openPasswordSheet, openEmailSheet stay the same) ...
   const handleDeleteAccount = () => {
     Alert.alert(
       'Delete Account',
@@ -177,6 +180,16 @@ export default function NewSettings() {
               <TouchableOpacity
                 onPress={() => {
                   // @ts-ignore
+                  navigation.navigate('PaymentMethods')
+                }}
+                style={styles.menuButton}
+              >
+                <CreditCard size={20} color={PrimaryGrey} />
+                <Text style={styles.menuButtonText}>Manage Payment Methods</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  // @ts-ignore
                   navigation.navigate('DrawerNav', { screen: 'TransactionHistory' })
                 }}
                 style={styles.menuButton}
@@ -253,6 +266,12 @@ export default function NewSettings() {
                 <Text style={styles.supportLinkText}>Contact Support</Text>
               </TouchableOpacity>
               <TouchableOpacity
+                onPress={() => setShowRequestModal(true)}
+                style={styles.supportLink}
+              >
+                <Text style={styles.supportLinkText}>Suggest a Nonprofit</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
                 onPress={() => navigation.navigate('TermsOfUse' as never)}
                 style={styles.supportLink}
               >
@@ -301,6 +320,12 @@ export default function NewSettings() {
 
         {/* Change Email Bottom Sheet */}
         <ChangeEmailSheet bottomSheetRef={emailBottomSheetRef} />
+
+        {/* Suggest Nonprofit Modal */}
+        <RequestNonprofitModal
+          isOpen={showRequestModal}
+          onClose={() => setShowRequestModal(false)}
+        />
       </SafeAreaView>
     </GestureHandlerRootView>
   )

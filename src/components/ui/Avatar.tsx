@@ -84,12 +84,11 @@ const styles = StyleSheet.create({
     aspectRatio: 1,
   },
   avatarFallback: {
-    flex: 1,
-    width: '100%',
-    height: '100%',
+    ...StyleSheet.absoluteFillObject,
     backgroundColor: '#f3f4f6', // bg-muted equivalent
     justifyContent: 'center',
     alignItems: 'center',
+    zIndex: -1,
   },
   avatarFallbackText: {
     fontSize: 14,

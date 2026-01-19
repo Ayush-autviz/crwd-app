@@ -10,7 +10,7 @@ interface Article {
   title: string;
   description: string;
   readTime: string;
-  image: string;
+  image: any;
   slug?: string;
 }
 
@@ -28,7 +28,7 @@ export default function LearnAndGetInspired({ articles }: LearnAndGetInspiredPro
       title: 'How to donate to multiple charities at once',
       description: "Learn how CRWD's donation box makes it easy to support all your favorite causes",
       readTime: '5 min read',
-      image: 'https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?w=1200&h=600&fit=crop',
+      image: require('../../assets/learn/learn4.jpeg'),
       slug: 'how-to-donate-to-multiple-charities-at-once',
     },
     {
@@ -36,7 +36,7 @@ export default function LearnAndGetInspired({ articles }: LearnAndGetInspiredPro
       title: 'Why Small Donations Matter',
       description: 'Every contribution counts toward lasting change',
       readTime: '4 min read',
-      image: 'https://images.unsplash.com/photo-1733809701005-0b1c0ad53c90?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkb25hdGlvbiUyMGltcGFjdCUyMGNoYXJpdHl8ZW58MXx8fHwxNzYxODAzMDA4fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
+      image: require('../../assets/learn/learn1.jpeg'),
       slug: 'why-small-donations-matter',
     },
     {
@@ -44,7 +44,7 @@ export default function LearnAndGetInspired({ articles }: LearnAndGetInspiredPro
       title: 'What is a CRWD Collective?',
       description: 'Learn how collectives amplify your giving power',
       readTime: '5 min read',
-      image: 'https://images.unsplash.com/photo-1758599668125-e154250f24bd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx2b2x1bnRlZXJzJTIwaGVscGluZyUyMGNvbW11bml0eXxlbnwxfHx8fDE3NjE3NTE1NTF8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
+      image: require('../../assets/learn/learn3.jpeg'),
       slug: 'what-is-a-crwd-collective',
     },
   ];
@@ -57,7 +57,7 @@ export default function LearnAndGetInspired({ articles }: LearnAndGetInspiredPro
         {/* Header with Title and Link */}
         <View style={styles.header}>
           <Text style={styles.title}>Learn & Get Inspired</Text>
-      
+
         </View>
 
         {/* Article Cards Grid */}
@@ -70,7 +70,11 @@ export default function LearnAndGetInspired({ articles }: LearnAndGetInspiredPro
             >
               {/* Article Image */}
               <View style={styles.imageContainer}>
-                <Image source={{ uri: article.image }} style={styles.image} resizeMode="cover" />
+                <Image
+                  source={typeof article.image === 'string' ? { uri: article.image } : article.image}
+                  style={styles.image}
+                  resizeMode="cover"
+                />
               </View>
 
               {/* Article Content */}

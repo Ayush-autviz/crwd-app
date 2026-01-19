@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import MainHeaderNav from '../components/MainHeaderNav'
 import { PrimaryGrey, PrimaryBlue, LightGrey } from '../Constants/Colors'
-import { Heart, MessageCircle, ChevronRight, Trash2, Ellipsis } from 'lucide-react-native'
+import { Heart, MessageCircle, ChevronRight, Trash2, Ellipsis, X } from 'lucide-react-native'
 import { useNavigation, useRoute, useFocusEffect, NavigationProp, CommonActions } from '@react-navigation/native'
 import { useToast } from '../contexts/ToastContext'
 import { formatDistanceToNow } from 'date-fns'
@@ -24,6 +24,7 @@ interface CommentData {
   parentComment?: number;
   isLiked?: boolean;
   userId?: string | number; // User ID to check if comment belongs to current user
+  color?: string;
 }
 
 interface PreviewDetails {
@@ -48,10 +49,13 @@ interface Post {
   comments: number;
   shares: number;
   isLiked?: boolean;
+  created_at?: string;
+  timestamp?: string | Date;
   user?: {
     id: string;
     username: string;
     profile_picture: string;
+    color: string;
   };
 }
 
@@ -74,6 +78,16 @@ export default function PostDetail() {
   const { user: currentUser } = useAuthStore()
   const queryClient = useQueryClient()
 
+  // Helper function for avatar colors
+  const stringToColor = (str: string) => {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const c = (hash & 0x00FFFFFF).toString(16).toUpperCase();
+    return '#' + '00000'.substring(0, 6 - c.length) + c;
+  }
+
   // Get post ID from route params
   const postId = (route.params as any)?.postId || (route.params as RouteParams)?.post?.id
   console.log('PostDetail - Post ID:', postId)
@@ -95,7 +109,7 @@ export default function PostDetail() {
   const post: Post | undefined = postData ? {
     id: postData.id,
     text: postData.content || '',
-    username: postData.user?.username || postData.user?.full_name || 'Unknown User',
+    username: postData.user?.full_name || (postData.user?.first_name && postData.user?.last_name ? `${postData.user.first_name} ${postData.user.last_name}` : null) || postData.user?.username || 'Unknown User',
     avatarUrl: postData.user?.profile_picture,
     imageUrl: postData.media || undefined,
     previewDetails: postData.preview_details || null,
@@ -111,6 +125,7 @@ export default function PostDetail() {
       id: postData.user?.id?.toString() || '',
       username: postData.user?.username || postData.user?.full_name || 'Unknown User',
       profile_picture: postData.user?.profile_picture || '',
+      color: postData.user?.color || stringToColor(postData.user?.username || postData.user?.full_name || 'Unknown User'),
     },
   } : (route.params as RouteParams)?.post;
 
@@ -127,8 +142,9 @@ export default function PostDetail() {
 
     return commentsData.results.map((comment: any) => ({
       id: comment.id,
-      username: comment.user?.username || comment.user?.full_name || 'Unknown User',
+      username: comment.user?.full_name || (comment.user?.first_name && comment.user?.last_name ? `${comment.user.first_name} ${comment.user.last_name}` : null) || comment.user?.username || 'Unknown User',
       avatarUrl: comment.user?.profile_picture,
+      color: comment.user?.color || stringToColor(comment.user?.full_name || (comment.user?.first_name && comment.user?.last_name ? `${comment.user.first_name} ${comment.user.last_name}` : null) || comment.user?.username || 'Unknown User'),
       content: comment.content,
       timestamp: new Date(comment.created_at),
       likes: comment.likes_count || 0,
@@ -170,7 +186,7 @@ export default function PostDetail() {
   const createReplyMutation = useMutation({
     mutationFn: ({ commentId, data }: { commentId: number; data: { content: string } }) =>
       createPostComment(postId || '', { content: data.content, parent_comment_id: commentId }),
-    onSuccess: (data, variables) => {
+    onSuccess: () => {
       showToast('Reply added successfully!', 3000);
       queryClient.invalidateQueries({ queryKey: ['postComments', postId] });
       // Fetch replies for the parent comment to ensure they are displayed
@@ -375,7 +391,7 @@ export default function PostDetail() {
           }}>
             <Avatar size={40}>
               <AvatarImage src={comment.avatarUrl} />
-              <AvatarFallback>
+              <AvatarFallback style={{ backgroundColor: comment.color || stringToColor(comment.username) }} textStyle={{ color: 'white' }}>
                 {comment.username.split(' ')[0][0].toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -415,7 +431,7 @@ export default function PostDetail() {
                     (navigation as any).navigate('UserProfile', { userId: comment.userId.toString() });
                   }
                 }}>
-                  <Text style={{ fontWeight: '500', fontSize: 14 }}>@{comment.username}</Text>
+                  <Text style={{ fontWeight: '500', fontSize: 14 }}>{comment.username}</Text>
                 </TouchableOpacity>
                 {isOwnComment && (
                   <View style={{ position: 'relative' }}>
@@ -640,6 +656,7 @@ export default function PostDetail() {
         avatarUrl: reply.user?.profile_picture,
         content: reply.content,
         timestamp: new Date(reply.created_at),
+        color: reply.user?.color || stringToColor(reply.user?.full_name || (reply.user?.first_name && reply.user?.last_name ? `${reply.user.first_name} ${reply.user.last_name}` : null) || reply.user?.username || 'Unknown User'),
         likes: reply.likes_count || 0,
         replies: [],
         repliesCount: 0,
@@ -708,6 +725,7 @@ export default function PostDetail() {
   };
 
   const handleShare = async () => {
+    if (!post) return;
     try {
       const result = await Share.share({
         message: post.text,
@@ -783,7 +801,7 @@ export default function PostDetail() {
 
   return (
     <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }}>
-      <MainHeaderNav show menu={false} title={'Post'} />
+      <MainHeaderNav show menu={false} title={post?.org || 'Post'} />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
@@ -830,8 +848,8 @@ export default function PostDetail() {
                 /> */}
                 <Avatar size={40}>
                   <AvatarImage src={post.avatarUrl} />
-                  <AvatarFallback>
-                    {post.username.split(' ')[0][0].toUpperCase()}
+                  <AvatarFallback style={{ backgroundColor: post?.user?.color || stringToColor(post.username) }} textStyle={{ color: 'white' }}>
+                    {(post.username || '?').charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
               </TouchableOpacity>
@@ -871,10 +889,18 @@ export default function PostDetail() {
                   }}>
                     <Text style={{ fontSize: 14, fontWeight: '500' }}>{post.username}</Text>
                   </TouchableOpacity>
-                  <Text style={{ fontSize: 14, color: PrimaryGrey }}>•</Text>
-                  <Text style={{ fontSize: 12, color: PrimaryGrey }}>{post.time}</Text>
+                  {/* <Text style={{ fontSize: 14, color: PrimaryGrey }}>•</Text> */}
+                  {/* <Text style={{ fontSize: 12, color: PrimaryGrey }}>
+                    {post.created_at || post.timestamp
+                      ? formatDistanceToNow(new Date(post.created_at || post.timestamp as string), { addSuffix: true })
+                      : post.time}
+                  </Text> */}
                 </View>
-                <Text style={{ fontSize: 12, color: PrimaryBlue, marginTop: 5 }}>{post.org}</Text>
+                <Text style={{ fontSize: 12, color: PrimaryGrey, marginTop: 5 }}>
+                  {post.created_at || post.timestamp
+                    ? formatDistanceToNow(new Date(post.created_at || post.timestamp as string), { addSuffix: true })
+                    : post.time}
+                </Text>
               </View>
             </View>
 
@@ -956,7 +982,7 @@ export default function PostDetail() {
                   disabled={likePostMutation.isPending || unlikePostMutation.isPending}
                   style={{ flexDirection: 'row', alignItems: 'center', gap: 4, opacity: (likePostMutation.isPending || unlikePostMutation.isPending) ? 0.5 : 1 }}
                 >
-                  <Heart size={18} color={post.isLiked ? 'red' : PrimaryGrey} fill={post.isLiked ? 'red' : 'none'} />
+                  <Heart size={18} color={post.isLiked ? 'red' : PrimaryGrey} />
                   <Text style={{ fontSize: 12, color: post.isLiked ? 'red' : PrimaryGrey }}>
                     {likePostMutation.isPending || unlikePostMutation.isPending ? '' : post.likes}
                   </Text>
@@ -1012,7 +1038,7 @@ export default function PostDetail() {
                   <Comment
                     key={comment.id}
                     comment={comment}
-                    onReply={handleReply}
+                    onReply={handleReplyAction}
                     onLike={handleCommentLike}
                     onToggleReplies={toggleReplies}
                     onFetchReplies={fetchReplies}
@@ -1027,100 +1053,101 @@ export default function PostDetail() {
         </ScrollView>
 
         {/* Join Conversation Input */}
-        <View style={{
-          borderTopWidth: 1,
-          borderTopColor: '#E5E5E5',
-          padding: 16,
-          backgroundColor: 'white'
-        }}>
-          {replyingTo && (
+        {currentUser?.id && (
+          <View style={{
+            borderTopWidth: 1,
+            borderTopColor: '#E5E5E5',
+            padding: 16,
+            backgroundColor: 'white'
+          }}>
+            {replyingTo && (
+              <View style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                backgroundColor: '#F3F4F6',
+                padding: 12,
+                marginBottom: 12,
+                borderRadius: 8,
+                borderLeftWidth: 4,
+                borderLeftColor: PrimaryBlue
+              }}>
+                <View style={{ flex: 1, marginRight: 8 }}>
+                  <Text style={{ fontSize: 12, fontWeight: '600', color: PrimaryBlue, marginBottom: 2 }}>
+                    Replying to @{replyingTo.username}
+                  </Text>
+                  <Text numberOfLines={1} style={{ fontSize: 12, color: PrimaryGrey }}>
+                    {replyingTo.content}
+                  </Text>
+                </View>
+                <TouchableOpacity onPress={() => setReplyingTo(null)}>
+                  <X size={16} color={PrimaryGrey} />
+                </TouchableOpacity>
+              </View>
+            )}
             <View style={{
               flexDirection: 'row',
               alignItems: 'center',
-              justifyContent: 'space-between',
               backgroundColor: '#F3F4F6',
-              padding: 12,
-              marginBottom: 12,
-              borderRadius: 8,
-              borderLeftWidth: 4,
-              borderLeftColor: PrimaryBlue
+              borderRadius: 20,
+              paddingHorizontal: 16,
+              paddingVertical: 8,
+              gap: 8
             }}>
-              <View style={{ flex: 1, marginRight: 8 }}>
-                <Text style={{ fontSize: 12, fontWeight: '600', color: PrimaryBlue, marginBottom: 2 }}>
-                  Replying to @{replyingTo.username}
-                </Text>
-                <Text numberOfLines={1} style={{ fontSize: 12, color: PrimaryGrey }}>
-                  {replyingTo.content}
-                </Text>
+              {/* <Image 
+                source={{ uri: post.avatarUrl }} 
+                style={{width: 24, height: 24, borderRadius: 12}}
+              /> */}
+              <Avatar size={20}>
+                <AvatarImage src={currentUser.profile_picture} />
+                <AvatarFallback style={{ backgroundColor: stringToColor(currentUser.username || 'User') }} textStyle={{ color: 'white', fontSize: 10 }}>
+                  {(currentUser.username || currentUser.first_name || '?').charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
+                <TextInput
+                  placeholder={replyingTo ? `Reply to @${replyingTo.username}...` : "Share your thoughts..."}
+                  placeholderTextColor={PrimaryGrey}
+                  value={comment}
+                  onChangeText={setComment}
+                  multiline
+                  style={{
+                    flex: 1,
+                    fontSize: 14,
+                    color: PrimaryGrey,
+                    maxHeight: 100,
+                    paddingTop: Platform.OS === 'ios' ? 0 : 0
+                  }}
+                />
+                {comment.length > 0 && (
+                  <TouchableOpacity
+                    onPress={() => setComment('')}
+                    style={{
+                      padding: 4,
+                      marginRight: 4
+                    }}
+                  >
+                    <Trash2 size={16} color={PrimaryGrey} />
+                  </TouchableOpacity>
+                )}
               </View>
-              <TouchableOpacity onPress={() => setReplyingTo(null)}>
-                <X size={16} color={PrimaryGrey} />
+              <TouchableOpacity
+                onPress={handleAddCommentSubmit}
+                disabled={!comment.trim()}
+                style={{
+                  backgroundColor: comment.trim() ? PrimaryBlue : LightGrey,
+                  borderRadius: 20,
+                  paddingHorizontal: 20,
+                  paddingVertical: 8,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Text style={{ fontSize: 14, fontWeight: '600', color: comment.trim() ? 'white' : PrimaryGrey }}>Reply</Text>
               </TouchableOpacity>
             </View>
-          )}
-          <View style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            backgroundColor: '#F3F4F6',
-            borderRadius: 20,
-            paddingHorizontal: 16,
-            paddingVertical: 8,
-            gap: 8
-          }}>
-            {/* <Image 
-              source={{ uri: post.avatarUrl }} 
-              style={{width: 24, height: 24, borderRadius: 12}}
-            /> */}
-            <Avatar size={20}>
-              <AvatarImage src={post.avatarUrl} />
-              <AvatarFallback>
-                {post.username.split(' ')[0][0].toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
-              <TextInput
-                placeholder={replyingTo ? `Reply to @${replyingTo.username}...` : "Share your thoughts..."}
-                placeholderTextColor={PrimaryGrey}
-                value={comment}
-                onChangeText={setComment}
-                multiline
-                style={{
-                  flex: 1,
-                  fontSize: 14,
-                  color: PrimaryGrey,
-                  maxHeight: 100,
-                  paddingTop: Platform.OS === 'ios' ? 0 : 0
-                }}
-              />
-              {comment.length > 0 && (
-                <TouchableOpacity
-                  onPress={() => setComment('')}
-                  style={{
-                    padding: 4,
-                    marginRight: 4
-                  }}
-                >
-                  <Trash2 size={16} color={PrimaryGrey} />
-                </TouchableOpacity>
-              )}
-            </View>
-            <TouchableOpacity
-              onPress={handleAddCommentSubmit}
-              style={{
-                opacity: comment.trim() ? 1 : 0.5,
-                padding: 4,
-                borderColor: PrimaryBlue,
-                borderWidth: 1,
-                borderRadius: 20,
-                paddingHorizontal: 8,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Text style={{ fontSize: 14 }}>Reply</Text>
-            </TouchableOpacity>
           </View>
-        </View>
+        )}
 
         {/* Exit Confirmation Modal */}
         <Modal

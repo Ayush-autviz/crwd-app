@@ -1,15 +1,17 @@
 import React from 'react';
-import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { Heart, MessageCircle } from 'lucide-react-native';
 import { getPosts } from '../../services/api/social';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
+import { useNavigation } from '@react-navigation/native';
 
 interface CommunityTestimonialsProps {
   limit?: number;
 }
 
 export default function CommunityTestimonials({ limit = 3 }: CommunityTestimonialsProps) {
+  const navigation = useNavigation();
   // Fetch posts data using React Query
   const { data: postsData, isLoading } = useQuery({
     queryKey: ['community-testimonials'],
@@ -21,7 +23,7 @@ export default function CommunityTestimonials({ limit = 3 }: CommunityTestimonia
   // Get user initials
   const getInitials = (user: any) => {
     if (user?.first_name && user?.last_name) {
-      return `${user.first_name.charAt(0)}${user.last_name.charAt(0)}`.toUpperCase();
+      return `${user.first_name.charAt(0)}`.toUpperCase();
     }
     if (user?.first_name) {
       return user.first_name.charAt(0).toUpperCase();
@@ -98,7 +100,7 @@ export default function CommunityTestimonials({ limit = 3 }: CommunityTestimonia
                       <AvatarImage src={post.user?.profile_picture} />
                       <AvatarFallback
                         textStyle={{ fontSize: 14, color: 'white', fontWeight: '600' }}
-                        style={{ backgroundColor: avatarColor.bg }}
+                        style={{ backgroundColor: post.user.color || avatarColor.bg }}
                       >
                         {getInitials(post.user)}
                       </AvatarFallback>
@@ -112,7 +114,12 @@ export default function CommunityTestimonials({ limit = 3 }: CommunityTestimonia
                   </View>
 
                   {/* Post Content */}
-                  <Text style={styles.postContent}>{post.content}</Text>
+                  <TouchableOpacity
+                    onPress={() => (navigation as any).navigate('PostDetail', { postId: post.id })}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.postContent}>{post.content}</Text>
+                  </TouchableOpacity>
 
                   {/* Engagement Metrics */}
                   <View style={styles.engagementRow}>

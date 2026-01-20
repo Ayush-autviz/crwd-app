@@ -255,6 +255,7 @@ const styles = StyleSheet.create({
     color: '#666',
     marginBottom: 24,
     textAlign: 'center',
+    fontWeight: '500',
   },
   section: {
     marginBottom: 24,
@@ -275,7 +276,7 @@ const styles = StyleSheet.create({
   paragraph: {
     fontSize: 14,
     lineHeight: 22,
-    color: '#444',
+    color: '#666',
     marginBottom: 12,
   },
   bulletList: {
@@ -285,7 +286,7 @@ const styles = StyleSheet.create({
   bulletItem: {
     fontSize: 14,
     lineHeight: 22,
-    color: '#444',
+    color: '#666',
     marginBottom: 6,
   },
   bottomPadding: {

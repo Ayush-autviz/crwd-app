@@ -71,8 +71,6 @@ export const Comment: React.FC<CommentProps> = ({
   };
 
   const initials = getInitials();
-  const [isReplying, setIsReplying] = useState(false);
-  const [replyContent, setReplyContent] = useState('');
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef<View>(null);
   const queryClient = useQueryClient();
@@ -93,12 +91,10 @@ export const Comment: React.FC<CommentProps> = ({
     },
   });
 
-  const handleReplySubmit = () => {
-    if (replyContent.trim()) {
-      onReply(id, replyContent);
-      setReplyContent('');
-      setIsReplying(false);
-    }
+  const handleReplyClick = () => {
+    // Call onReply with the comment ID to trigger the bottom input box in CommentsBottomSheet
+    // The content parameter is not used anymore, but kept for compatibility
+    onReply(id, '');
   };
 
   const handleLikePress = () => {
@@ -176,7 +172,7 @@ export const Comment: React.FC<CommentProps> = ({
               <Text style={styles.actionText}>{likes}</Text>
             </TouchableOpacity>
             {showReplyButton && (
-              <TouchableOpacity onPress={() => setIsReplying(!isReplying)} style={styles.actionButton}>
+              <TouchableOpacity onPress={handleReplyClick} style={styles.actionButton}>
                 <MessageCircle size={14} color="#6B7280" />
                 <Text style={styles.actionText}>Reply</Text>
               </TouchableOpacity>
@@ -198,21 +194,6 @@ export const Comment: React.FC<CommentProps> = ({
               </TouchableOpacity>
             )}
           </View>
-          {isReplying && (
-            <View style={styles.replyInputContainer}>
-              <TextInput
-                value={replyContent}
-                onChangeText={setReplyContent}
-                placeholder="Write a reply..."
-                style={styles.replyInput}
-                onSubmitEditing={handleReplySubmit}
-                returnKeyType="send"
-              />
-              <TouchableOpacity onPress={handleReplySubmit} style={styles.replyButton}>
-                <Text style={styles.replyButtonText}>Reply</Text>
-              </TouchableOpacity>
-            </View>
-          )}
         </View>
       </View>
 
@@ -321,32 +302,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#6B7280',
     fontWeight: '500',
-  },
-  replyInputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 12,
-    gap: 8,
-  },
-  replyInput: {
-    flex: 1,
-    backgroundColor: '#F3F4F6',
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    fontSize: 14,
-    color: '#111827',
-  },
-  replyButton: {
-    backgroundColor: '#1600ff',
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
-  replyButtonText: {
-    color: 'white',
-    fontSize: 14,
-    fontWeight: '600',
   },
   repliesContainer: {
     marginLeft: 40,

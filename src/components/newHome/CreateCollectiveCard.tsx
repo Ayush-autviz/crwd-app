@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
     textAlign: 'left',
   },
   cardSubtitle: {
-    fontSize: 11,
+    fontSize: 12,
     color: '#4B5563',
     marginBottom: 8,
     marginTop: 4,
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   blackLink: {
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: '600',
     color: '#111827',
   },

@@ -241,7 +241,10 @@ export default function PostDetail() {
     const targetComment = findComment(comments);
 
     if (targetComment) {
+      // Set the comment we are replying to and prefill the bottom input,
+      // so replies always go through the same bottom input box.
       setReplyingTo(targetComment);
+      setComment(`@${targetComment.username} `);
       inputRef.current?.focus();
     }
   };
@@ -650,16 +653,35 @@ export default function PostDetail() {
     setLoadingReplies(prev => new Set(prev).add(commentId));
     try {
       const repliesData = await getCommentReplies(commentId.toString());
-      const transformedReplies: CommentData[] = repliesData?.replies?.map((reply: any) => ({
+
+      // Support multiple possible response shapes: {replies: [...]}, {results: [...]}, or a bare array
+      const repliesArray =
+        repliesData?.replies ||
+        repliesData?.results ||
+        (Array.isArray(repliesData) ? repliesData : []);
+
+      const transformedReplies: CommentData[] = repliesArray.map((reply: any) => ({
         id: reply.id,
-        username: reply.user?.username || reply.user?.full_name || 'Unknown User',
+        username: reply.user?.full_name ||
+          (reply.user?.first_name && reply.user?.last_name
+            ? `${reply.user.first_name} ${reply.user.last_name}`
+            : null) ||
+          reply.user?.username ||
+          'Unknown User',
         avatarUrl: reply.user?.profile_picture,
         content: reply.content,
         timestamp: new Date(reply.created_at),
-        color: reply.user?.color || stringToColor(reply.user?.full_name || (reply.user?.first_name && reply.user?.last_name ? `${reply.user.first_name} ${reply.user.last_name}` : null) || reply.user?.username || 'Unknown User'),
+        color: reply.user?.color || stringToColor(
+          reply.user?.full_name ||
+          (reply.user?.first_name && reply.user?.last_name
+            ? `${reply.user.first_name} ${reply.user.last_name}`
+            : null) ||
+          reply.user?.username ||
+          'Unknown User'
+        ),
         likes: reply.likes_count || 0,
         replies: [],
-        repliesCount: 0,
+        repliesCount: reply.replies_count || 0,
         parentComment: commentId,
         isLiked: reply.is_liked || false,
         userId: reply.user?.id?.toString(),
@@ -694,7 +716,7 @@ export default function PostDetail() {
       });
     } else {
       setExpandedComments(prev => new Set(prev).add(commentId));
-      if (comment.replies.length === 0 && (comment.repliesCount || 0) > 0) {
+      if ((comment.replies?.length || 0) === 0 && (comment.repliesCount || 0) > 0) {
         fetchReplies(commentId);
       }
     }
@@ -1006,11 +1028,12 @@ export default function PostDetail() {
 
           {/* Comments Section */}
           <View style={{ padding: 20, borderTopWidth: 1, borderTopColor: '#E5E5E5' }}>
+            {/* Only count and render top-level comments (no parentComment) */}
             <Text style={{ fontSize: 16, fontWeight: '600', marginBottom: 16 }}>
-              {comments.length} {comments.length === 1 ? 'comment' : 'comments'}
+              {comments.filter(c => !c.parentComment).length} {comments.filter(c => !c.parentComment).length === 1 ? 'comment' : 'comments'}
             </Text>
 
-            {comments.length === 0 ? (
+            {comments.filter(c => !c.parentComment).length === 0 ? (
               <View style={{
                 alignItems: 'center',
                 padding: 20,
@@ -1034,7 +1057,9 @@ export default function PostDetail() {
               </View>
             ) : (
               <View style={{ marginBottom: 20 }}>
-                {comments.map((comment) => (
+                {comments
+                  .filter((comment) => !comment.parentComment)
+                  .map((comment) => (
                   <Comment
                     key={comment.id}
                     comment={comment}

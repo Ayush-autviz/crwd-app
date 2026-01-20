@@ -7,6 +7,7 @@ import { getPostComments, createPostComment, getCommentReplies, likeComment, unl
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
 import { useAuthStore } from '../../store/store';
 import { Comment, CommentData } from './Comment';
+import { PrimaryBlue, PrimaryGrey } from '../../Constants/Colors';
 
 interface CommentsBottomSheetProps {
   isOpen: boolean;
@@ -31,10 +32,12 @@ export default function CommentsBottomSheet({
 }: CommentsBottomSheetProps) {
   console.log('CommentsBottomSheet rendered with props:', { isOpen, post });
   const bottomSheetRef = useRef<BottomSheetModal>(null);
+  const inputRef = useRef<TextInput>(null);
   const [commentText, setCommentText] = useState('');
   const [comments, setComments] = useState<CommentData[]>([]);
   const [expandedComments, setExpandedComments] = useState<Set<number>>(new Set());
   const [loadingReplies, setLoadingReplies] = useState<Set<number>>(new Set());
+  const [replyingTo, setReplyingTo] = useState<CommentData | null>(null);
   const { user: currentUser } = useAuthStore();
   const queryClient = useQueryClient();
 
@@ -74,6 +77,7 @@ export default function CommentsBottomSheet({
     bottomSheetRef.current?.dismiss();
     onClose();
     setCommentText('');
+    setReplyingTo(null);
     setExpandedComments(new Set());
   }, [onClose]);
 
@@ -172,6 +176,7 @@ export default function CommentsBottomSheet({
     mutationFn: (data: { content: string }) => createPostComment(post.id.toString(), { content: data.content }),
     onSuccess: () => {
       setCommentText('');
+      setReplyingTo(null);
       queryClient.invalidateQueries({ queryKey: ['postComments', post.id] });
       queryClient.invalidateQueries({ queryKey: ['posts'] });
     },
@@ -184,8 +189,12 @@ export default function CommentsBottomSheet({
   const createReplyMutation = useMutation({
     mutationFn: ({ commentId, data }: { commentId: number; data: { content: string } }) =>
       createPostComment(post.id.toString(), { content: data.content, parent_comment_id: commentId }),
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
+      setCommentText('');
+      setReplyingTo(null);
       queryClient.invalidateQueries({ queryKey: ['postComments', post.id] });
+      // Fetch replies to show the new one and expand
+      fetchReplies(variables.commentId);
     },
     onError: () => {
       console.error('Failed to add reply');
@@ -214,8 +223,28 @@ export default function CommentsBottomSheet({
   });
 
   const handleReply = (commentId: number, content: string) => {
-    if (content.trim()) {
-      createReplyMutation.mutate({ commentId, data: { content: content.trim() } });
+    // Find the comment object to get username properly
+    const findComment = (commentsList: CommentData[]): CommentData | undefined => {
+      for (const c of commentsList) {
+        if (c.id === commentId) return c;
+        if (c.replies && c.replies.length > 0) {
+          const found = findComment(c.replies);
+          if (found) return found;
+        }
+      }
+      return undefined;
+    };
+
+    const targetComment = findComment(comments);
+
+    if (targetComment) {
+      // Set replyingTo to show the "Replying to" banner, but don't prefill the input
+      setReplyingTo(targetComment);
+      setCommentText(''); // Clear any existing text
+      // Focus the input after a short delay to ensure the bottom sheet is ready
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
     }
   };
 
@@ -231,7 +260,12 @@ export default function CommentsBottomSheet({
     setLoadingReplies(prev => new Set(prev).add(commentId));
     try {
       const repliesData = await getCommentReplies(commentId.toString());
-      const repliesArray = repliesData?.results || (Array.isArray(repliesData) ? repliesData : []);
+      
+      // Support multiple possible response shapes: {replies: [...]}, {results: [...]}, or a bare array
+      const repliesArray =
+        repliesData?.replies ||
+        repliesData?.results ||
+        (Array.isArray(repliesData) ? repliesData : []);
 
       const transformedReplies: CommentData[] = repliesArray.map((reply: any) => ({
         id: reply.id,
@@ -258,6 +292,7 @@ export default function CommentsBottomSheet({
         );
       });
 
+      // Also add to expanded comments set after replies are loaded
       setExpandedComments(prev => new Set(prev).add(commentId));
     } catch (error) {
       console.error('Error fetching replies:', error);
@@ -305,8 +340,12 @@ export default function CommentsBottomSheet({
   };
 
   const handleSubmit = () => {
-    if (commentText.trim() && !createCommentMutation.isPending) {
-      createCommentMutation.mutate({ content: commentText.trim() });
+    if (commentText.trim()) {
+      if (replyingTo) {
+        createReplyMutation.mutate({ commentId: replyingTo.id, data: { content: commentText.trim() } });
+      } else if (!createCommentMutation.isPending) {
+        createCommentMutation.mutate({ content: commentText.trim() });
+      }
     }
   };
 
@@ -417,34 +456,45 @@ export default function CommentsBottomSheet({
           {/* Input Bar */}
           {currentUser && (
             <View style={styles.inputBarContainer}>
+              {replyingTo && (
+                <View style={styles.replyingToContainer}>
+                  <View style={styles.replyingToContent}>
+                    <Text style={styles.replyingToLabel}>Replying to @{replyingTo.username}</Text>
+                    <Text numberOfLines={1} style={styles.replyingToText}>{replyingTo.content}</Text>
+                  </View>
+                  <TouchableOpacity onPress={() => setReplyingTo(null)} style={styles.replyingToClose}>
+                    <X size={16} color={PrimaryGrey} />
+                  </TouchableOpacity>
+                </View>
+              )}
               <View style={styles.inputWrapper}>
                 <View style={styles.blueAccentBar} />
-                <BottomSheetTextInput
+                <TextInput
+                  ref={inputRef}
+                  placeholder={replyingTo ? `Reply to @${replyingTo.username}...` : "Share your thoughts..."}
+                  placeholderTextColor={PrimaryGrey}
                   value={commentText}
                   onChangeText={setCommentText}
-                  placeholder="Join the conversation"
-                  placeholderTextColor="#6B7280"
+                  multiline
                   style={styles.commentInput}
-                  onSubmitEditing={handleSubmit}
-                  returnKeyType="send"
-                  editable={!createCommentMutation.isPending}
+                  editable={!createCommentMutation.isPending && !createReplyMutation.isPending}
                 />
               </View>
               <View style={styles.footerRow}>
                 <TouchableOpacity
                   onPress={handleSubmit}
-                  disabled={!commentText.trim() || createCommentMutation.isPending}
+                  disabled={!commentText.trim() || createCommentMutation.isPending || createReplyMutation.isPending}
                   style={[
                     styles.replyPillButton,
-                    (!commentText.trim() || createCommentMutation.isPending) && styles.replyButtonDisabled
+                    (!commentText.trim() || createCommentMutation.isPending || createReplyMutation.isPending) && styles.replyButtonDisabled
                   ]}
                 >
-                  {createCommentMutation.isPending ? (
+                  {(createCommentMutation.isPending || createReplyMutation.isPending) ? (
                     <ActivityIndicator size="small" color="white" />
                   ) : (
                     <Text style={[
                       styles.replyButtonText,
-                      (!commentText.trim() || createCommentMutation.isPending) && styles.replyButtonTextDisabled
+                      (!commentText.trim() || createCommentMutation.isPending || createReplyMutation.isPending) && styles.replyButtonTextDisabled
                     ]}>Reply</Text>
                   )}
                 </TouchableOpacity>
@@ -570,6 +620,34 @@ const styles = StyleSheet.create({
     borderTopColor: '#E5E7EB',
     backgroundColor: 'white',
   },
+  replyingToContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#F3F4F6',
+    padding: 12,
+    marginBottom: 12,
+    borderRadius: 8,
+    borderLeftWidth: 4,
+    borderLeftColor: PrimaryBlue,
+  },
+  replyingToContent: {
+    flex: 1,
+    marginRight: 8,
+  },
+  replyingToLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: PrimaryBlue,
+    marginBottom: 2,
+  },
+  replyingToText: {
+    fontSize: 12,
+    color: PrimaryGrey,
+  },
+  replyingToClose: {
+    padding: 4,
+  },
   inputWrapper: {
     flexDirection: 'row',
     backgroundColor: '#F9FAFB',
@@ -579,15 +657,16 @@ const styles = StyleSheet.create({
   },
   blueAccentBar: {
     width: 4,
-    backgroundColor: '#1600ff',
+    backgroundColor: PrimaryBlue,
   },
   commentInput: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
-    paddingHorizontal: 12,
-    paddingVertical: Platform.OS === 'ios' ? 12 : 8,
     fontSize: 14,
     color: '#111827',
+    paddingHorizontal: 12,
+    paddingVertical: Platform.OS === 'ios' ? 12 : 8,
+    maxHeight: 100,
+    backgroundColor: '#F9FAFB',
   },
   footerRow: {
     flexDirection: 'row',

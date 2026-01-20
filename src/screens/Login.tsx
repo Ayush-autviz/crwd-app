@@ -129,11 +129,49 @@ export default function Login() {
         })
       }
 
+      // Handle redirect - similar to Google Callback
+      const redirectParams = (route.params as any)?.redirectParams || {};
+
       if (response.redirectTo) {
         navigation.reset({
           index: 0,
           routes: [{ name: response.redirectTo as never }],
         })
+      } else if (response.user && !response.user.last_login_at) {
+        // New user - go through onboarding with redirectTo and redirectParams
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'NonProfitInterests' as never, params: { fromAuth: true, redirectTo: redirectTo || null, redirectParams } }],
+        });
+      } else if (redirectTo && redirectTo !== 'DrawerNav') {
+        // Existing user - navigate to redirectTo using reset
+        if (redirectTo === 'CreateCRWD') {
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'DrawerNav' as never }],
+          });
+          setTimeout(() => {
+            (navigation as any).navigate('DrawerNav', { screen: 'CreateCRWD' });
+          }, 100);
+        } else if (redirectTo === 'GroupCRWD') {
+          // Navigate to GroupCRWD with id param
+          console.log('Login - Navigating to GroupCRWD with params:', redirectParams);
+          navigation.reset({
+            index: 0,
+            routes: [{ name: redirectTo as never, params: redirectParams }],
+          });
+        } else {
+          navigation.reset({
+            index: 0,
+            routes: [{ name: redirectTo as never, params: redirectParams }],
+          });
+        }
+      } else {
+        // Default - go to main app
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'DrawerNav' as never }],
+        });
       }
     },
     onError: (error: any) => {

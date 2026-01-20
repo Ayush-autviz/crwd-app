@@ -110,6 +110,7 @@ export default function NewOnboard() {
   const { setUser, setToken } = useAuthStore();
   const { showToast } = useToast();
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isAppleLoading, setIsAppleLoading] = useState(false);
 
   // Get redirectTo from route params
   const redirectTo = (route.params as any)?.redirectTo || '/';
@@ -118,12 +119,12 @@ export default function NewOnboard() {
 
   const googleLoginQuery = useQuery({
     queryKey: ['googleLogin'],
-    queryFn: googleLogin,
+    queryFn: () => googleLogin('Google'),
     enabled: false,
   });
 
   const googleCallbackMutation = useMutation({
-    mutationFn: googleCallbackApi,
+    mutationFn: (code: string) => googleCallbackApi(code, 'google'),
     onSuccess: (response) => {
       console.log('Google callback successful:', response);
       if (response.user) setUser(response.user);
@@ -136,11 +137,11 @@ export default function NewOnboard() {
       showToast('Google authentication successful!');
 
       // Handle redirect
-      if (redirectTo && redirectTo !== '/' && redirectTo !== 'DrawerNav') {
+      if (response.user && !response.user.last_login_at) {
+        (navigation as any).navigate('NonProfitInterests', { fromAuth: true, redirectTo, redirectParams: (route.params as any)?.redirectParams });
+      } else if (redirectTo && redirectTo !== '/' && redirectTo !== 'DrawerNav') {
         // Navigate to specific route if provided
         (navigation as any).navigate(redirectTo);
-      } else if (response.user && !response.user.last_login_at) {
-        (navigation as any).navigate('NonProfitInterests', { fromAuth: true });
       } else {
         navigation.navigate('DrawerNav' as never);
       }
@@ -152,6 +153,44 @@ export default function NewOnboard() {
       setIsGoogleLoading(false);
     },
   });
+
+  const appleLoginQuery = useQuery({
+    queryKey: ['appleLogin'],
+    queryFn: () => googleLogin('SignInWithApple'),
+    enabled: false,
+  })
+
+  const appleCallbackMutation = useMutation({
+    mutationFn: (code: string) => googleCallbackApi(code, 'apple'),
+    onSuccess: (response) => {
+      console.log('Apple callback successful:', response)
+
+      if (response.user) {
+        setUser(response.user)
+      }
+      if (response.access_token) {
+        setToken({
+          access_token: response.access_token,
+          refresh_token: response.refresh_token
+        })
+      }
+
+      // Handle redirect
+      if (response.user && !response.user.last_login_at) {
+        (navigation as any).navigate('NonProfitInterests', { fromAuth: true, redirectTo, redirectParams: (route.params as any)?.redirectParams });
+      } else if (redirectTo && redirectTo !== '/' && redirectTo !== 'DrawerNav') {
+        // Navigate to specific route if provided
+        (navigation as any).navigate(redirectTo);
+      } else {
+        navigation.navigate('DrawerNav' as never);
+      }
+    },
+    onError: (error: any) => {
+      console.error('Apple callback error:', error.response)
+      const errorMessage = error?.response?.data?.message || error.message || 'Apple callback failed'
+      showToast(errorMessage)
+    },
+  })
 
   const handleGoogleLogin = async () => {
     try {
@@ -205,9 +244,38 @@ export default function NewOnboard() {
     (navigation as any).navigate('Login', { redirectTo });
   };
 
-  const handleAppleLogin = () => {
-    // TODO: Implement Apple Sign In
-    showToast('Apple Sign In coming soon!');
+  const handleAppleLogin = async () => {
+    setIsAppleLoading(true)
+    try {
+      const result = await appleLoginQuery.refetch()
+      if (result.data && result.data.url) {
+        if (await InAppBrowser.isAvailable()) {
+          const authResult = await InAppBrowser.openAuth(
+            result.data.url,
+            'crwd-app://appleCallback',
+            {
+              ephemeralWebSession: false,
+              showTitle: false,
+              enableUrlBarHiding: true,
+              enableDefaultShare: false,
+            }
+          )
+
+          if (authResult.type === 'success' && authResult.url) {
+            const codeMatch = authResult.url.match(/[?&]code=([^&]+)/);
+            const code = codeMatch ? decodeURIComponent(codeMatch[1]) : null;
+            if (code) {
+              appleCallbackMutation.mutate(code);
+            }
+          }
+        }
+      }
+    } catch (error: any) {
+      console.error('Apple login error:', error)
+      showToast('Apple login failed. Please try again.')
+    } finally {
+      setIsAppleLoading(false)
+    }
   };
 
   return (
@@ -246,11 +314,18 @@ export default function NewOnboard() {
         <View style={styles.buttonsContainer}>
           {/* Apple Button */}
           <TouchableOpacity
-            style={styles.appleButton}
+            style={[styles.appleButton, (isAppleLoading || appleCallbackMutation.isPending) && styles.buttonDisabled]}
             onPress={handleAppleLogin}
+            disabled={isAppleLoading || appleCallbackMutation.isPending}
           >
-            <SvgXml xml={appleXml} width={20} height={20} />
-            <Text style={styles.appleButtonText}>Continue with Apple</Text>
+            {(isAppleLoading || appleCallbackMutation.isPending) ? (
+              <ActivityIndicator size="small" color="#FFFFFF" />
+            ) : (
+              <SvgXml xml={appleXml} width={20} height={20} />
+            )}
+            <Text style={styles.appleButtonText}>
+              {(isAppleLoading || appleCallbackMutation.isPending) ? 'Signing in...' : 'Continue with Apple'}
+            </Text>
           </TouchableOpacity>
 
           {/* Google Button */}

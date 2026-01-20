@@ -8,6 +8,7 @@ import { likePost, unlikePost, followUserById, unfollowUserById, getUserProfileB
 import { useAuthStore } from '../../store/store';
 import { WEB_BASE_URL } from '../../Constants/url';
 import { useToast } from '../../contexts/ToastContext';
+import { LightGrey, PrimaryGrey } from '../../Constants/Colors';
 
 interface PreviewDetails {
   title?: string | null;
@@ -285,9 +286,7 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
             <TouchableOpacity
               onPress={(e) => {
                 e.stopPropagation();
-                // Check if it's the current user's own profile
                 if (currentUser?.id && user?.id && currentUser.id.toString() === user.id.toString()) {
-                  // Navigate to Profile tab (index 4 in MainTabs)
                   navigation.dispatch(
                     CommonActions.reset({
                       index: 0,
@@ -306,7 +305,7 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
                                     { name: 'Collectives' as never },
                                     { name: 'Profile' as never },
                                   ],
-                                  index: 4, // Profile tab index
+                                  index: 4,
                                 },
                               },
                             ],
@@ -317,7 +316,6 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
                     })
                   );
                 } else {
-                  // Navigate to UserProfile screen
                   (navigation as any).navigate('UserProfile', { userId: user.id.toString() });
                 }
               }}
@@ -327,21 +325,21 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
                 <AvatarImage src={user.profile_picture} />
                 <AvatarFallback
                   style={{ backgroundColor: avatarBgColor }}
-                  textStyle={{ color: '#FFFFFF', fontSize: 12, fontWeight: '700' }}
+                  textStyle={{ color: '#FFFFFF', fontSize: 14, fontWeight: '700' }}
                 >
                   {initials}
                 </AvatarFallback>
               </Avatar>
             </TouchableOpacity>
           )}
+
           <View style={styles.userInfo}>
-            <View style={styles.nameRow}>
+            {/* Top Row: Name and Follow Button */}
+            <View style={styles.topRow}>
               <TouchableOpacity
                 onPress={(e) => {
                   e.stopPropagation();
-                  // Check if it's the current user's own profile
                   if (currentUser?.id && user?.id && currentUser.id.toString() === user.id.toString()) {
-                    // Navigate to Profile tab (Me tab in MainTabs)
                     navigation.dispatch(
                       CommonActions.reset({
                         index: 0,
@@ -360,7 +358,7 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
                                       { name: 'Collectives' as never },
                                       { name: 'Profile' as never },
                                     ],
-                                    index: 4, // Profile tab index
+                                    index: 4,
                                   },
                                 },
                               ],
@@ -371,21 +369,16 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
                       })
                     );
                   } else if (user?.id) {
-                    // Navigate to UserProfile screen
                     (navigation as any).navigate('UserProfile', { userId: user.id.toString() });
                   }
                 }}
                 activeOpacity={0.7}
+                style={{ flex: 1 }}
               >
-                <Text style={styles.name}>{fullName}</Text>
+                <Text style={styles.name} numberOfLines={1}>{fullName}</Text>
               </TouchableOpacity>
-              {!showSimplifiedHeader && user?.username && (
-                <>
-                  <Text style={styles.separator}>•</Text>
-                  <Text style={styles.username}>@{user.username}</Text>
-                </>
-              )}
-              {/* Follow Button - Only show if in home feed and not current user */}
+
+              {/* Follow Button */}
               {isHomeFeed && user?.id && user.id.toString() !== currentUser?.id?.toString() && (
                 <TouchableOpacity
                   onPress={handleFollowPress}
@@ -409,31 +402,32 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
                 </TouchableOpacity>
               )}
             </View>
-            {post.fundraiser?.is_active && (
-              <View style={styles.founderBadge}>
-                <Text style={styles.founderText}>Founder</Text>
-              </View>
+
+            {/* Bottom Row: Collective Name and Time */}
+            <View style={styles.metaRow}>
+              {!showSimplifiedHeader && post.collective && (
+                <TouchableOpacity
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    if (post.collective?.id) {
+                      (navigation as any).navigate('GroupCRWD', { id: post.collective.id.toString() });
+                    }
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.collectiveName}>{post.collective.name}</Text>
+                </TouchableOpacity>
+              )}
+              {/* {!showSimplifiedHeader && post.collective && (
+                <Text style={styles.separator}>•</Text>
+              )}
+
+              <Text style={styles.time}>{timeAgo}</Text> */}
+            </View>
+            {post.fundraiser && !isHomeFeed && (
+              <Text style={styles.startedFundraiser}>Started a fundraiser</Text>
             )}
           </View>
-          {!showSimplifiedHeader && post.collective && (
-            <TouchableOpacity
-              onPress={(e) => {
-                e.stopPropagation();
-                if (post.collective?.id) {
-                  (navigation as any).navigate('GroupCRWD', { id: post.collective.id.toString() });
-                }
-              }}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.collectiveName}>{post.collective.name}</Text>
-            </TouchableOpacity>
-          )}
-          {post.fundraiser && !isHomeFeed && (
-            <Text style={styles.startedFundraiser}>Started a fundraiser</Text>
-          )}
-          {showSimplifiedHeader && (
-            <Text style={styles.time}>{timeAgo}</Text>
-          )}
         </View>
       </View>
 
@@ -623,7 +617,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   content: {
-    padding: 12,
+    // padding: 12,
   },
   activeFundraiserContent: {
     backgroundColor: '#fbfcff',
@@ -784,6 +778,13 @@ const styles = StyleSheet.create({
     flex: 1,
     minWidth: 0,
   },
+  topRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: 2,
+  },
   nameRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -792,7 +793,7 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   name: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '700',
     color: '#111827',
   },
@@ -804,20 +805,25 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#6B7280',
   },
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
   collectiveName: {
     fontSize: 12,
-    color: '#6B7280',
-    marginTop: 0,
+    color: PrimaryGrey, // Blue for collective name
+    fontWeight: '500',
   },
   time: {
-    fontSize: 10,
+    fontSize: 12,
     color: '#6B7280',
-    marginTop: 0,
   },
   postContent: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#111827',
     marginBottom: 10,
+    marginTop: 5,
     lineHeight: 18,
   },
   media: {

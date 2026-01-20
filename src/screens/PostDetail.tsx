@@ -1085,65 +1085,52 @@ export default function PostDetail() {
                 </TouchableOpacity>
               </View>
             )}
+
             <View style={{
               flexDirection: 'row',
-              alignItems: 'center',
-              backgroundColor: '#F3F4F6',
-              borderRadius: 20,
-              paddingHorizontal: 16,
-              paddingVertical: 8,
-              gap: 8
+              backgroundColor: '#F9FAFB',
+              borderRadius: 8,
+              overflow: 'hidden',
+              marginBottom: 8
             }}>
-              {/* <Image 
-                source={{ uri: post.avatarUrl }} 
-                style={{width: 24, height: 24, borderRadius: 12}}
-              /> */}
-              <Avatar size={20}>
-                <AvatarImage src={currentUser.profile_picture} />
-                <AvatarFallback style={{ backgroundColor: stringToColor(currentUser.username || 'User') }} textStyle={{ color: 'white', fontSize: 10 }}>
-                  {(currentUser.username || currentUser.first_name || '?').charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
-                <TextInput
-                  placeholder={replyingTo ? `Reply to @${replyingTo.username}...` : "Share your thoughts..."}
-                  placeholderTextColor={PrimaryGrey}
-                  value={comment}
-                  onChangeText={setComment}
-                  multiline
-                  style={{
-                    flex: 1,
-                    fontSize: 14,
-                    color: PrimaryGrey,
-                    maxHeight: 100,
-                    paddingTop: Platform.OS === 'ios' ? 0 : 0
-                  }}
-                />
-                {comment.length > 0 && (
-                  <TouchableOpacity
-                    onPress={() => setComment('')}
-                    style={{
-                      padding: 4,
-                      marginRight: 4
-                    }}
-                  >
-                    <Trash2 size={16} color={PrimaryGrey} />
-                  </TouchableOpacity>
-                )}
-              </View>
+              <View style={{ width: 4, backgroundColor: PrimaryBlue }} />
+              <TextInput
+                ref={inputRef}
+                placeholder={replyingTo ? `Reply to @${replyingTo.username}...` : "Share your thoughts..."}
+                placeholderTextColor={PrimaryGrey}
+                value={comment}
+                onChangeText={setComment}
+                multiline
+                style={{
+                  flex: 1,
+                  fontSize: 14,
+                  color: '#111827',
+                  paddingHorizontal: 12,
+                  paddingVertical: Platform.OS === 'ios' ? 12 : 8,
+                  maxHeight: 100,
+                  backgroundColor: '#F9FAFB'
+                }}
+              />
+            </View>
+
+            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center' }}>
               <TouchableOpacity
                 onPress={handleAddCommentSubmit}
                 disabled={!comment.trim()}
                 style={{
-                  backgroundColor: comment.trim() ? PrimaryBlue : LightGrey,
+                  backgroundColor: comment.trim() ? PrimaryBlue : '#F3F4F6',
                   borderRadius: 20,
-                  paddingHorizontal: 20,
+                  paddingHorizontal: 24,
                   paddingVertical: 8,
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
               >
-                <Text style={{ fontSize: 14, fontWeight: '600', color: comment.trim() ? 'white' : PrimaryGrey }}>Reply</Text>
+                <Text style={{
+                  fontSize: 14,
+                  fontWeight: '600',
+                  color: comment.trim() ? 'white' : '#9CA3AF'
+                }}>Reply</Text>
               </TouchableOpacity>
             </View>
           </View>

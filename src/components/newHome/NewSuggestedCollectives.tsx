@@ -11,6 +11,7 @@ interface Collective {
   founder: {
     name: string;
     profile_picture?: string;
+    color?: string;
   };
   nonprofit_count: number;
   description: string;
@@ -121,7 +122,7 @@ export default function NewSuggestedCollectives({
           ];
           const founderId = collective.founder.name || collective.id;
           const founderColorIndex = founderId ? (String(founderId).split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % avatarColors.length) : 0;
-          const founderAvatarBgColor = avatarColors[founderColorIndex];
+          const founderAvatarBgColor = collective.founder.color || avatarColors[founderColorIndex];
 
           return (
             <TouchableOpacity
@@ -164,9 +165,7 @@ export default function NewSuggestedCollectives({
                     textStyle={{ color: '#FFFFFF', fontSize: 10, fontWeight: '600' }}
                   >
                     {collective.founder.name
-                      .split(' ')
-                      .map((n) => n.charAt(0))
-                      .join('')
+                      .charAt(0)
                       .toUpperCase()}
                   </AvatarFallback>
                 </Avatar>

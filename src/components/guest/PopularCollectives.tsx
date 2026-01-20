@@ -16,6 +16,7 @@ interface Collective {
   founder: {
     name: string;
     profile_picture?: string;
+    color?: string;
   };
   nonprofit_count: number;
   description: string;
@@ -149,12 +150,10 @@ export default function PopularCollectives() {
                       <AvatarImage src={collective.founder.profile_picture} />
                       <AvatarFallback
                         textStyle={{ fontSize: 10, color: 'white' }}
-                        style={{ backgroundColor: '#6b7280' }}
+                        style={{ backgroundColor: collective.founder.color || '#6b7280' }}
                       >
                         {collective.founder.name
-                          .split(' ')
-                          .map((n) => n.charAt(0))
-                          .join('')
+                          .charAt(0)
                           .toUpperCase()}
                       </AvatarFallback>
                     </Avatar>

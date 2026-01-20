@@ -323,12 +323,12 @@ export default function CommentsBottomSheet({
     '#EF4444', '#06B6D4', '#F97316', '#84CC16', '#A855F7',
     '#14B8A6', '#F43F5E', '#6366F1', '#22C55E', '#EAB308',
   ];
-  
+
   const getConsistentColor = (id: number | string, colors: string[]) => {
     const hash = typeof id === 'number' ? id : id.toString().split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
     return colors[hash % colors.length];
   };
-  
+
   const postAvatarColor = post.color || getConsistentColor(post.id, avatarColors);
 
   const topLevelComments = comments.filter(c => !c.parentComment);
@@ -417,27 +417,38 @@ export default function CommentsBottomSheet({
           {/* Input Bar */}
           {currentUser && (
             <View style={styles.inputBarContainer}>
-              <BottomSheetTextInput
-                value={commentText}
-                onChangeText={setCommentText}
-                placeholder="Join the conversation"
-                placeholderTextColor="#6B7280"
-                style={styles.commentInput}
-                onSubmitEditing={handleSubmit}
-                returnKeyType="send"
-                editable={!createCommentMutation.isPending}
-              />
-              <TouchableOpacity
-                onPress={handleSubmit}
-                disabled={!commentText.trim() || createCommentMutation.isPending}
-                style={[styles.sendButton, (!commentText.trim() || createCommentMutation.isPending) && styles.sendButtonDisabled]}
-              >
-                {createCommentMutation.isPending ? (
-                  <Loader2 size={20} color="white" />
-                ) : (
-                  <ArrowRight size={20} color="white" />
-                )}
-              </TouchableOpacity>
+              <View style={styles.inputWrapper}>
+                <View style={styles.blueAccentBar} />
+                <BottomSheetTextInput
+                  value={commentText}
+                  onChangeText={setCommentText}
+                  placeholder="Join the conversation"
+                  placeholderTextColor="#6B7280"
+                  style={styles.commentInput}
+                  onSubmitEditing={handleSubmit}
+                  returnKeyType="send"
+                  editable={!createCommentMutation.isPending}
+                />
+              </View>
+              <View style={styles.footerRow}>
+                <TouchableOpacity
+                  onPress={handleSubmit}
+                  disabled={!commentText.trim() || createCommentMutation.isPending}
+                  style={[
+                    styles.replyPillButton,
+                    (!commentText.trim() || createCommentMutation.isPending) && styles.replyButtonDisabled
+                  ]}
+                >
+                  {createCommentMutation.isPending ? (
+                    <ActivityIndicator size="small" color="white" />
+                  ) : (
+                    <Text style={[
+                      styles.replyButtonText,
+                      (!commentText.trim() || createCommentMutation.isPending) && styles.replyButtonTextDisabled
+                    ]}>Reply</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
             </View>
           )}
         </View>
@@ -553,34 +564,54 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   inputBarContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderTopWidth: 1,
     borderTopColor: '#E5E7EB',
     backgroundColor: 'white',
   },
+  inputWrapper: {
+    flexDirection: 'row',
+    backgroundColor: '#F9FAFB',
+    borderRadius: 8,
+    overflow: 'hidden',
+    marginBottom: 8,
+  },
+  blueAccentBar: {
+    width: 4,
+    backgroundColor: '#1600ff',
+  },
   commentInput: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
-    borderRadius: 24,
-    paddingHorizontal: 16,
-    paddingVertical: Platform.OS === 'ios' ? 10 : 8,
+    backgroundColor: '#F9FAFB',
+    paddingHorizontal: 12,
+    paddingVertical: Platform.OS === 'ios' ? 12 : 8,
     fontSize: 14,
     color: '#111827',
-    marginRight: 8,
   },
-  sendButton: {
+  footerRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+  replyPillButton: {
     backgroundColor: '#1600ff',
-    borderRadius: 24,
-    width: 40,
-    height: 40,
+    borderRadius: 20,
+    paddingHorizontal: 24,
+    paddingVertical: 8,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  sendButtonDisabled: {
-    opacity: 0.5,
+  replyButtonDisabled: {
+    backgroundColor: '#F3F4F6',
+  },
+  replyButtonText: {
+    color: 'white',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  replyButtonTextDisabled: {
+    color: '#9CA3AF',
   },
 });
 

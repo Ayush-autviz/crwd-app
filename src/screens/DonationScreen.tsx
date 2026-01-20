@@ -19,7 +19,7 @@ import PaymentSection from '../components/donation/PaymentSection';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PrimaryBlue, PrimaryGrey } from '../Constants/Colors';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getDonationBox, createDonationBox, removeCauseFromBox, removeCollectiveFromBox, activateDonationBoxMobile, confirmMobileActivation, getDonationHistory } from '../services/api/donation';
+import { getDonationBox, createDonationBox, removeCauseFromBox, removeCollectiveFromBox, activateDonationBoxMobile, confirmMobileActivation, getDonationHistory, addCausesToBox, updateDonationBox } from '../services/api/donation';
 import DonationBoxSummaryCard from '../components/donation/DonationBoxSummaryCard';
 import { getCausesBySearch, getJoinCollective, getCollectiveById } from '../services/api/crwd';
 import { useAuthStore } from '../store/store';
@@ -59,6 +59,9 @@ export default function DonationScreen() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{ id: string; name: string; type: 'cause' | 'collective' } | null>(null);
   const [showEditSplitSheet, setShowEditSplitSheet] = useState(false);
+  const [isEditingAmount, setIsEditingAmount] = useState(false);
+  const [editableAmount, setEditableAmount] = useState(0);
+  const [addingCauseId, setAddingCauseId] = useState<number | null>(null);
   const reviewBottomSheetRef = useRef<any>(null);
   const { user: currentUser } = useAuthStore();
   const queryClient = useQueryClient();
@@ -136,6 +139,80 @@ export default function DonationScreen() {
     queryKey: ['joined-collectives', currentUser?.id],
     queryFn: () => getJoinCollective(currentUser?.id?.toString() || ''),
     enabled: !!currentUser?.id,
+  });
+
+
+
+  // Calculate fees and capacity
+  const calculateFees = (grossAmount: number) => {
+    const gross = grossAmount;
+    let crwdFee: number;
+    let net: number;
+
+    if (gross < 10.00) {
+      // Flat fee of $1.00
+      crwdFee = 1.00;
+      net = gross - crwdFee;
+    } else {
+      // 10% of total
+      crwdFee = gross * 0.10;
+      net = gross - crwdFee;
+    }
+
+    return {
+      crwdFee: Math.round(crwdFee * 100) / 100,
+      net: Math.round(net * 100) / 100,
+    };
+  };
+
+  // Sync editable amount
+  useEffect(() => {
+    const box = donationBoxQuery.data;
+    if (box?.monthly_amount) {
+      setEditableAmount(Math.round(parseFloat(box.monthly_amount)));
+    }
+  }, [donationBoxQuery.data]);
+
+  // Update amount mutation
+  const updateAmountMutation = useMutation({
+    mutationFn: (amount: number) => updateDonationBox({ monthly_amount: amount.toString() }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['donationBox'] });
+      setIsEditingAmount(false);
+      Alert.alert('Success', 'Monthly donation amount updated!');
+    },
+    onError: (e: any) => Alert.alert('Error', e?.response?.data?.message || 'Failed to update amount'),
+  });
+
+  const handleSaveAmount = () => {
+    const fees = calculateFees(editableAmount);
+    const net = fees.net;
+    const maxCapacity = Math.floor(net / 0.20);
+    const currentDonationBoxCauses = donationBox?.box_causes?.length || 0;
+
+    if (currentDonationBoxCauses > maxCapacity) {
+      Alert.alert('Capacity Limit', `You can only support up to ${maxCapacity} causes with $${editableAmount}. Please increase the amount.`);
+      return;
+    }
+    updateAmountMutation.mutate(editableAmount);
+  };
+
+  const handleCancelEdit = () => {
+    const box = donationBoxQuery.data;
+    if (box?.monthly_amount) {
+      setEditableAmount(Math.round(parseFloat(box.monthly_amount)));
+    }
+    setIsEditingAmount(false);
+  };
+
+  // Add causes mutation
+  const addCausesMutation = useMutation({
+    mutationFn: (causeId: number) => addCausesToBox({ causes: [{ cause_id: causeId }] }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['donationBox'] });
+      setSearchQuery(''); // Clear search
+    },
+    onError: (e: any) => Alert.alert('Error', e?.response?.data?.message || 'Failed to add cause'),
   });
 
   // Create donation box
@@ -1055,182 +1132,207 @@ export default function DonationScreen() {
                     </View>
                   ) : step === 2 ? (
                     <View style={styles.step2Content}>
-                      {/* Show loading state if data is still being fetched */}
                       {donationBoxQuery.isLoading ? (
                         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 48 }}>
                           <ActivityIndicator size="large" color={PrimaryBlue} />
                         </View>
                       ) : (
                         <>
-                          {/* Donation Box Summary Card */}
-                          <DonationBoxSummaryCard
-                            monthlyAmount={Math.round(parseFloat((donationBoxQuery.data?.monthly_amount || donationBox?.monthly_amount || donationAmount).toString()))}
-                            lifetimeAmount={Math.round((donationHistoryData?.results?.reduce((sum: number, transaction: any) => {
-                              return sum + parseFloat(transaction.gross_amount || '0');
-                            }, 0) || 0))}
-                            causesCount={(() => {
-                              const boxCauses = donationBoxQuery.data?.box_causes || donationBox?.box_causes || [];
-                              const causes = boxCauses.map((boxCause: any) => boxCause.cause).filter((cause: any) => cause != null);
-                              return causes.length;
-                            })()}
-                            collectivesCount={(() => {
-                              const attributingCollectives = donationBoxQuery.data?.attributing_collectives || donationBox?.attributing_collectives || [];
-                              return attributingCollectives.length;
-                            })()}
-                            currentCapacity={(() => {
-                              const boxCauses = donationBoxQuery.data?.box_causes || donationBox?.box_causes || [];
-                              const uniqueCauseIds = new Set(boxCauses.map((bc: any) => bc.cause?.id).filter(Boolean));
-                              return uniqueCauseIds.size;
-                            })()}
-                            maxCapacity={(() => {
-                              const actualAmount = parseFloat((donationBoxQuery.data?.monthly_amount || donationBox?.monthly_amount || donationAmount).toString());
-                              const calculateFees = (grossAmount: number) => {
-                                const gross = grossAmount;
-                                let crwdFee: number;
-                                let net: number;
+                          {/* Header */}
+                          <View style={styles.step1Header}>
+                            <Text style={styles.step1Title}>Set your monthly gift</Text>
+                            <Text style={styles.step1Subtitle}>
+                              Support multiple causes with one donation, split evenly. Change anytime.
+                            </Text>
+                          </View>
 
-                                if (gross < 10.00) {
-                                  crwdFee = 1.00;
-                                  net = gross - crwdFee;
-                                } else {
-                                  crwdFee = gross * 0.10;
-                                  net = gross - crwdFee;
-                                }
+                          {/* Donation Box Card (Amount) */}
+                          <View style={styles.amountCard}>
+                            <View style={styles.monthlyImpactSection}>
+                              <Text style={styles.monthlyImpactTitle}>Your Monthly Impact</Text>
+                              <View style={styles.amountSelectorContainer}>
+                                <TouchableOpacity
+                                  onPress={() => {
+                                    if (!isEditingAmount) setIsEditingAmount(true);
+                                    if (editableAmount > 5) {
+                                      setEditableAmount(prev => Math.max(5, prev - 5));
+                                    }
+                                  }}
+                                  style={[
+                                    styles.amountButton,
+                                    editableAmount <= 5 && !isEditingAmount && styles.amountButtonDisabled
+                                  ]}
+                                >
+                                  <Text style={[styles.minusIcon, editableAmount > 5 && styles.minusIconWhite]}>−</Text>
+                                </TouchableOpacity>
 
-                                return {
-                                  crwdFee: Math.round(crwdFee * 100) / 100,
-                                  net: Math.round(net * 100) / 100,
-                                };
-                              };
-                              const fees = calculateFees(actualAmount);
-                              const net = fees.net;
-                              return Math.floor(net / 0.20);
-                            })()}
-                            donationBox={donationBoxQuery.data || donationBox}
-                            onAddCauses={() => {
-                              navigation.navigate('ManageDonationBox' as never);
-                            }}
-                          />
+                                <View style={styles.amountDisplay}>
+                                  <Text style={styles.amountValue}>${editableAmount}</Text>
+                                  <Text style={styles.amountLabel}>per month</Text>
+                                </View>
 
-                          {/* Currently Supporting Section */}
-                          <View style={styles.currentlySupportingSection}>
-                            <View style={styles.currentlySupportingHeader}>
-                              <View style={{}}>
-                                <Text style={styles.currentlySupportingTitle}>Currently Supporting</Text>
-                                <Text style={styles.currentlySupportingSubtitle}>
-                                  Supporting {(() => {
-                                    const boxCauses = donationBoxQuery.data?.box_causes || donationBox?.box_causes || [];
-                                    const causes = boxCauses.map((boxCause: any) => boxCause.cause).filter((cause: any) => cause != null);
-                                    return causes.length;
-                                  })()} nonprofit{(() => {
-                                    const boxCauses = donationBoxQuery.data?.box_causes || donationBox?.box_causes || [];
-                                    const causes = boxCauses.map((boxCause: any) => boxCause.cause).filter((cause: any) => cause != null);
-                                    return causes.length;
-                                  })() !== 1 ? 's' : ''}
-                                </Text>
+                                <TouchableOpacity
+                                  onPress={() => {
+                                    if (!isEditingAmount) setIsEditingAmount(true);
+                                    setEditableAmount(prev => prev + 5);
+                                  }}
+                                  style={styles.amountButton}
+                                >
+                                  <Plus size={20} color="white" />
+                                </TouchableOpacity>
                               </View>
-                              {(() => {
-                                const boxCauses = donationBoxQuery.data?.box_causes || donationBox?.box_causes || [];
-                                const causes = boxCauses.map((boxCause: any) => boxCause.cause).filter((cause: any) => cause != null);
-                                return causes.length > 1 ? (
-                                  <TouchableOpacity
-                                    onPress={() => setShowEditSplitSheet(true)}
-                                    style={styles.editSplitButton}
-                                  >
-                                    <Pencil size={16} color="#374151" />
-                                    <Text style={styles.editSplitButtonText}>Edit Split</Text>
-                                  </TouchableOpacity>
-                                ) : null;
-                              })()}
                             </View>
 
-                            {/* Causes List from box_causes */}
-                            <View style={styles.causesListContainer}>
-                              {(() => {
-                                const boxCauses = donationBoxQuery.data?.box_causes || donationBox?.box_causes || [];
-                                const causes = boxCauses.map((boxCause: any) => boxCause.cause).filter((cause: any) => cause != null);
+                            {/* Save/Cancel Buttons */}
+                            {isEditingAmount && (
+                              <View style={styles.editActions}>
+                                <TouchableOpacity
+                                  onPress={handleCancelEdit}
+                                  style={styles.cancelButton}
+                                  disabled={updateAmountMutation.isPending}
+                                >
+                                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                  onPress={handleSaveAmount}
+                                  style={styles.saveButton}
+                                  disabled={updateAmountMutation.isPending}
+                                >
+                                  {updateAmountMutation.isPending ? (
+                                    <ActivityIndicator size="small" color="white" />
+                                  ) : (
+                                    <Text style={styles.saveButtonText}>Save</Text>
+                                  )}
+                                </TouchableOpacity>
+                              </View>
+                            )}
+                          </View>
 
-                                // Helper for consistent avatar colors
-                                const avatarColors = [
-                                  '#3B82F6', '#EC4899', '#8B5CF6', '#10B981', '#F59E0B', '#EF4444', '#06B6D4',
-                                  '#F97316', '#84CC16', '#A855F7', '#14B8A6', '#F43F5E', '#6366F1', '#22C55E', '#EAB308',
-                                ];
+                          {/* Your Selected Causes */}
+                          <View style={styles.selectedCausesSection}>
+                            <View style={styles.selectedCausesHeader}>
+                              <View>
+                                <Text style={styles.selectedCausesTitle}>Your Selected Causes</Text>
+                                <Text style={styles.selectedCausesSubtitle}>Your Donation Box. Add or remove anytime.</Text>
+                              </View>
+                              <View style={styles.selectedCausesBadge}>
+                                <Text style={styles.selectedCausesBadgeText}>
+                                  {(donationBoxQuery.data?.box_causes || []).length}
+                                </Text>
+                              </View>
+                            </View>
 
-                                const getConsistentColor = (id: number | string, colors: string[]) => {
-                                  const hash = typeof id === 'number' ? id : id.toString().split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
-                                  return colors[hash % colors.length];
-                                };
-
-                                const getInitials = (name: string) => {
-                                  if (!name) return 'N';
-                                  const words = name.trim().split(' ');
-                                  if (words.length >= 2) {
-                                    return (words[0].charAt(0) + words[1].charAt(0)).toUpperCase();
-                                  }
-                                  return name.charAt(0).toUpperCase();
-                                };
-
-                                const actualDonationAmount = parseFloat((donationBoxQuery.data?.monthly_amount || donationBox?.monthly_amount || donationAmount).toString());
-                                const totalItems = causes.length;
-                                const distributionPercentage = totalItems > 0 ? Math.floor(100 / totalItems) : 0;
-                                const amountPerItem = totalItems > 0 ? (actualDonationAmount * 0.9) / totalItems : 0;
-
-                                if (causes.length > 0) {
-                                  return causes.map((cause: any) => {
-                                    const avatarBgColor = getConsistentColor(cause.id, avatarColors);
-                                    const initials = getInitials(cause.name || 'N');
-                                    return (
-                                      <View key={cause.id} style={styles.causeCardStep2}>
-                                        <Avatar size={48} style={[styles.causeIconStep2, { borderRadius: 8 }]}>
-                                          <AvatarImage src={cause.image} />
-                                          <AvatarFallback
-                                            style={{ backgroundColor: avatarBgColor }}
-                                            textStyle={{ color: '#FFFFFF', fontSize: 16, fontWeight: '700' }}
-                                          >
-                                            {initials}
-                                          </AvatarFallback>
-                                        </Avatar>
-                                        <View style={styles.causeInfoStep2}>
-                                          <Text style={styles.causeNameStep2}>{cause.name}</Text>
-                                          <Text style={styles.causeDescriptionStep2} numberOfLines={1}>
-                                            {cause.mission || cause.description || 'Making a positive impact in the community'}
-                                          </Text>
-                                        </View>
-                                        <View style={styles.causeActionsStep2}>
-                                          <View style={styles.amountInfoStep2}>
-                                            {/* <Text style={styles.amountPercentageStep2}>{distributionPercentage}%</Text> */}
-                                            <Text style={styles.amountPercentageStep2}>{(() => {
-                                              const customPercentage = getCausePercentage(cause.id);
-                                              return customPercentage != null
-                                                ? `${Number(customPercentage).toFixed(1)}%`
-                                                : distributionPercentage != null
-                                                  ? `${Number(distributionPercentage).toFixed(1)}%`
-                                                  : '0%';
-                                            })()}</Text>
-                                            <Text style={styles.amountPerMonthStep2}>${getAmountPerItem(cause.id).toFixed(2)}/mo</Text>
-                                          </View>
-                                          <TouchableOpacity
-                                            onPress={() => {
-                                              setItemToDelete({ id: cause.id.toString(), name: cause.name, type: 'cause' });
-                                              setShowDeleteModal(true);
-                                            }}
-                                            style={styles.trashButtonStep2}
-                                            activeOpacity={0.7}
-                                          >
-                                            <Trash2 size={18} color="#ef4444" />
-                                          </TouchableOpacity>
-                                        </View>
-                                      </View>
-                                    );
-                                  });
-                                } else {
+                            <View style={styles.selectedCausesList}>
+                              {(donationBoxQuery.data?.box_causes || []).length > 0 ? (
+                                (donationBoxQuery.data?.box_causes || []).map((boxCause: any) => {
+                                  const cause = boxCause.cause;
+                                  if (!cause) return null;
                                   return (
-                                    <View style={styles.noCausesContainer}>
-                                      <Text style={styles.noCausesText}>No causes</Text>
+                                    <View key={cause.id} style={styles.causeItem}>
+                                      <Avatar size={48} style={styles.causeAvatar}>
+                                        <AvatarImage src={cause.image || cause.logo} />
+                                        <AvatarFallback
+                                          textStyle={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}
+                                          style={{ backgroundColor: PrimaryBlue }}
+                                        >
+                                          {cause.name?.substring(0, 2).toUpperCase()}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                      <View style={styles.causeInfo}>
+                                        <Text style={styles.causeName} numberOfLines={1}>{cause.name}</Text>
+                                        <Text style={styles.causeDescription} numberOfLines={1}>
+                                          {cause.mission || cause.description || 'Making a positive impact'}
+                                        </Text>
+                                      </View>
+                                      <TouchableOpacity
+                                        onPress={() => {
+                                          setItemToDelete({ id: cause.id.toString(), name: cause.name, type: 'cause' });
+                                          setShowDeleteModal(true);
+                                        }}
+                                        style={styles.removeCauseButton}
+                                      >
+                                        <Trash2 size={20} color="#EF4444" />
+                                      </TouchableOpacity>
                                     </View>
                                   );
-                                }
-                              })()}
+                                })
+                              ) : (
+                                <Text style={{ textAlign: 'center', color: '#6B7280', padding: 16 }}>
+                                  No causes in your box yet.
+                                </Text>
+                              )}
+                            </View>
+                          </View>
+
+                          {/* Add More Causes */}
+                          <View style={styles.addMoreSection}>
+                            <Text style={styles.addMoreTitle}>Add More Causes</Text>
+
+                            <View style={styles.searchBarContainer}>
+                              <View style={styles.searchInputWrapper}>
+                                <Search size={20} color="#9CA3AF" style={styles.searchIcon} />
+                                <TextInput
+                                  style={styles.searchInput}
+                                  placeholder="Search for causes..."
+                                  placeholderTextColor="#9CA3AF"
+                                  value={searchQuery}
+                                  onChangeText={setSearchQuery}
+                                />
+                              </View>
+                            </View>
+
+                            <TouchableOpacity
+                              onPress={() => setShowRequestModal(true)}
+                              style={styles.requestLinkContainer}
+                            >
+                              <Text style={styles.requestLink}>
+                                Can't find your nonprofit? Request it here
+                              </Text>
+                            </TouchableOpacity>
+
+                            <View style={styles.causesList}>
+                              {causesLoading ? (
+                                <ActivityIndicator size="small" color={PrimaryBlue} style={{ marginVertical: 20 }} />
+                              ) : causesData?.results?.length > 0 ? (
+                                causesData.results
+                                  .filter((cause: any) => !(donationBoxQuery.data?.box_causes || []).some((bc: any) => bc.cause?.id === cause.id))
+                                  .slice(0, 5)
+                                  .map((cause: any) => (
+                                    <View key={cause.id} style={styles.causeItem}>
+                                      <Avatar size={48} style={styles.causeAvatar}>
+                                        <AvatarImage src={cause.image || cause.logo} />
+                                        <AvatarFallback
+                                          textStyle={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}
+                                          style={{ backgroundColor: PrimaryBlue }}
+                                        >
+                                          {cause.name?.substring(0, 2).toUpperCase()}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                      <View style={styles.causeInfo}>
+                                        <Text style={styles.causeName} numberOfLines={1}>{cause.name}</Text>
+                                        <Text style={styles.causeDescription} numberOfLines={1}>{cause.mission || 'Nonprofit'}</Text>
+                                      </View>
+                                      <TouchableOpacity
+                                        onPress={() => {
+                                          setAddingCauseId(cause.id);
+                                          addCausesMutation.mutate(cause.id, {
+                                            onSettled: () => setAddingCauseId(null)
+                                          });
+                                        }}
+                                        disabled={addCausesMutation.isPending}
+                                        style={styles.addCauseButton}
+                                      >
+                                        {addingCauseId === cause.id ? (
+                                          <ActivityIndicator size="small" color="#db2777" />
+                                        ) : (
+                                          <Plus size={16} color="#db2777" strokeWidth={3} />
+                                        )}
+                                      </TouchableOpacity>
+                                    </View>
+                                  ))
+                              ) : searchQuery ? (
+                                <Text style={styles.noCausesText}>No nonprofits found matching "{searchQuery}"</Text>
+                              ) : null}
                             </View>
                           </View>
                         </>
@@ -2297,5 +2399,37 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '500',
     color: '#374151',
+  },
+  editActions: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 12,
+    marginTop: 16,
+  },
+  cancelButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    backgroundColor: '#f3f4f6',
+  },
+  cancelButtonText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#4b5563',
+  },
+  saveButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    backgroundColor: '#1600ff',
+  },
+  saveButtonText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#ffffff',
+  },
+  causeDesc: {
+    fontSize: 13,
+    color: '#6b7280',
   },
 });

@@ -74,8 +74,7 @@ export default function NewGroupCrwdPage() {
 
   // Bottom sheet ref for statistics
   const statisticsBottomSheetRef = useRef<BottomSheet>(null);
-  const screenHeight = Dimensions.get('window').height;
-  const statisticsSnapPoints = useMemo(() => [screenHeight * 0.75], [screenHeight]);
+  const statisticsSnapPoints = useMemo(() => ['75%'], []);
 
   // Bottom sheet backdrop for statistics
   const renderStatisticsBackdrop = useCallback(
@@ -566,7 +565,7 @@ export default function NewGroupCrwdPage() {
                       {cause.mission || 'No description available'}
                     </Text>
                   </View>
-                  <TouchableOpacity
+                  {/* <TouchableOpacity
                     style={styles.viewButton}
                     onPress={() => {
                       statisticsBottomSheetRef.current?.close();
@@ -574,7 +573,7 @@ export default function NewGroupCrwdPage() {
                     }}
                   >
                     <Text style={styles.viewButtonText}>View</Text>
-                  </TouchableOpacity>
+                  </TouchableOpacity> */}
                 </TouchableOpacity>
               );
             })
@@ -1118,6 +1117,7 @@ export default function NewGroupCrwdPage() {
         enablePanDownToClose
         backdropComponent={renderStatisticsBackdrop}
         onChange={(index) => setShowStatisticsModal(index >= 0)}
+        enableDynamicSizing={false}
       >
         <BottomSheetView style={styles.bottomSheetContent}>
           {/* Header */}

@@ -1,17 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
-  Modal,
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  ScrollView,
+  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-  ActivityIndicator,
 } from 'react-native';
-import { X, Send } from 'lucide-react-native';
+import { X, ArrowRight } from 'lucide-react-native';
+import {
+  BottomSheetModal,
+  BottomSheetBackdrop,
+  BottomSheetScrollView,
+  BottomSheetTextInput,
+} from '@gorhom/bottom-sheet';
 import { requestCause } from '../../services/api/crwd';
 import { useToast } from '../../contexts/ToastContext';
 
@@ -24,14 +28,38 @@ export default function RequestNonprofitModal({
   isOpen,
   onClose,
 }: RequestNonprofitModalProps) {
+  const bottomSheetRef = useRef<BottomSheetModal>(null);
   const [nonprofitName, setNonprofitName] = useState('');
   const [ein, setEin] = useState('');
   const [reason, setReason] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { showToast } = useToast();
 
+  const snapPoints = useMemo(() => ['70%'], []);
+
+  // Open/close bottom sheet based on isOpen prop
+  useEffect(() => {
+    if (isOpen) {
+      bottomSheetRef.current?.present();
+    } else {
+      bottomSheetRef.current?.dismiss();
+    }
+  }, [isOpen]);
+
+  const renderBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop
+        {...props}
+        disappearsOnIndex={-1}
+        appearsOnIndex={0}
+        opacity={0.5}
+      />
+    ),
+    []
+  );
+
   const handleSubmit = async () => {
-    if (!nonprofitName.trim() || !ein.trim() || !reason.trim()) {
+    if (!nonprofitName.trim() || !ein.trim()) {
       return;
     }
 
@@ -40,7 +68,7 @@ export default function RequestNonprofitModal({
       await requestCause({
         name: nonprofitName.trim(),
         ein_number: ein.trim(),
-        description: reason.trim(),
+        description: reason.trim() || 'No reason provided',
       });
       
       // Reset form first
@@ -64,109 +92,119 @@ export default function RequestNonprofitModal({
     }
   };
 
-  const isFormValid = nonprofitName.trim() && ein.trim() && reason.trim();
+  const isFormValid = nonprofitName.trim() && ein.trim();
 
   return (
-    <Modal
-      visible={isOpen}
-      transparent
-      animationType="slide"
-      onRequestClose={onClose}
+    <BottomSheetModal
+      ref={bottomSheetRef}
+      snapPoints={snapPoints}
+      enablePanDownToClose
+      backdropComponent={renderBackdrop}
+      backgroundStyle={{ backgroundColor: 'white' }}
+      onDismiss={onClose}
+      enableDynamicSizing={false}
+      keyboardBehavior="interactive"
+      keyboardBlurBehavior="restore"
+      android_keyboardInputMode="adjustResize"
     >
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.container}
-      >
-        <View style={styles.overlay} />
-        <View style={styles.modal}>
-          {/* Header */}
-          <View style={styles.header}>
+      <View style={styles.container}>
+        {/* Header */}
+        <View style={styles.header}>
+          <View style={styles.headerContent}>
             <Text style={styles.title}>Request a Nonprofit</Text>
-            <TouchableOpacity onPress={onClose} style={styles.closeButton} activeOpacity={0.7}>
-              <X size={20} color="#4B5563" />
-            </TouchableOpacity>
           </View>
-
-          {/* Content */}
-          <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-            <Text style={styles.introText}>
-              Can't find the nonprofit you're looking for? Let us know and if everything checks
-              out we'll add it within{' '}
-              <Text style={styles.highlight}>72 hours</Text>.
-            </Text>
-
-            {/* Nonprofit Name */}
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Nonprofit Name</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="e.g., Local Food Bank"
-                value={nonprofitName}
-                onChangeText={setNonprofitName}
-              />
-            </View>
-
-            {/* EIN */}
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>EIN (Employer Identification Number)</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="e.g., 12-3456789"
-                value={ein}
-                onChangeText={setEin}
-              />
-            </View>
-
-            {/* Why do you care */}
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Why do you care about this cause?</Text>
-              <TextInput
-                style={[styles.input, styles.textArea]}
-                placeholder="Tell us why this nonprofit matters to you..."
-                value={reason}
-                onChangeText={setReason}
-                multiline
-                numberOfLines={4}
-                textAlignVertical="top"
-              />
-            </View>
-          </ScrollView>
-
-          {/* Action Buttons */}
-          <View style={styles.actions}>
-            <TouchableOpacity
-              onPress={onClose}
-              style={styles.cancelButton}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.cancelText}>Cancel</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={handleSubmit}
-              disabled={!isFormValid || isSubmitting}
-              style={[
-                styles.submitButton,
-                (!isFormValid || isSubmitting) && styles.submitButtonDisabled,
-              ]}
-              activeOpacity={0.7}
-            >
-              {isSubmitting ? (
-                <>
-                  <ActivityIndicator size="small" color="#FFFFFF" />
-                  <Text style={styles.submitText}>Submitting...</Text>
-                </>
-              ) : (
-                <>
-                  <Send size={16} color="#FFFFFF" />
-                  <Text style={styles.submitText}>Submit Request</Text>
-                </>
-              )}
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity onPress={onClose} style={styles.closeButton} activeOpacity={0.7}>
+            <X size={20} color="#6B7280" />
+          </TouchableOpacity>
         </View>
-      </KeyboardAvoidingView>
-    </Modal>
+
+        {/* Content */}
+        <BottomSheetScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <Text style={styles.introText}>
+            Can't find the nonprofit you're looking for? Let us know and if everything checks
+            out we'll add it within{' '}
+            <Text style={styles.highlight}>72 hours</Text>.
+          </Text>
+
+          {/* Nonprofit Name */}
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Nonprofit Name</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="e.g., Local Food Bank"
+              value={nonprofitName}
+              onChangeText={setNonprofitName}
+              placeholderTextColor="#9CA3AF"
+            />
+          </View>
+
+          {/* EIN */}
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>EIN (Employer Identification Number)</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="e.g., 12-3456789"
+              value={ein}
+              onChangeText={setEin}
+              placeholderTextColor="#9CA3AF"
+            />
+          </View>
+
+          {/* Why do you care */}
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Why do you care about this cause?</Text>
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              placeholder="Tell us why this nonprofit matters to you..."
+              value={reason}
+              onChangeText={setReason}
+              multiline
+              numberOfLines={4}
+              textAlignVertical="top"
+              placeholderTextColor="#9CA3AF"
+            />
+          </View>
+        </BottomSheetScrollView>
+
+        {/* Action Buttons */}
+        <View style={styles.actions}>
+          <TouchableOpacity
+            onPress={onClose}
+            style={styles.cancelButton}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.cancelText}>Cancel</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={handleSubmit}
+            disabled={!isFormValid || isSubmitting}
+            style={[
+              styles.submitButton,
+              (!isFormValid || isSubmitting) && styles.submitButtonDisabled,
+            ]}
+            activeOpacity={0.7}
+          >
+            {isSubmitting ? (
+              <>
+                <ActivityIndicator size="small" color="#FFFFFF" style={{ marginRight: 6 }} />
+                <Text style={styles.submitText}>Submitting...</Text>
+              </>
+            ) : (
+              <>
+                <ArrowRight size={16} color="#FFFFFF" />
+                <Text style={styles.submitText}>Submit Request</Text>
+              </>
+            )}
+          </TouchableOpacity>
+        </View>
+      </View>
+    </BottomSheetModal>
   );
 }
 
@@ -174,28 +212,19 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  modal: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    maxHeight: '90%',
-  },
   header: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: 24,
+    paddingTop: 12,
+    paddingBottom: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#E5E7EB',
+  },
+  headerContent: {
+    flex: 1,
+    paddingRight: 8,
   },
   title: {
     fontSize: 20,
@@ -204,9 +233,13 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     padding: 8,
+    marginLeft: 8,
   },
-  content: {
-    paddingHorizontal: 16,
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingHorizontal: 24,
     paddingVertical: 16,
   },
   introText: {
@@ -246,7 +279,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingTop: 16,
+    paddingBottom: 24,
     borderTopWidth: 1,
     borderTopColor: '#E5E7EB',
   },

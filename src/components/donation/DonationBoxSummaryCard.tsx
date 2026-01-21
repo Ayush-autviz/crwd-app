@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { View, Text, TouchableOpacity, StyleSheet, TextInput, ActivityIndicator, Alert } from 'react-native'
-import { Pencil, Plus, Minus } from 'lucide-react-native'
+import { Pencil, Plus, Minus, CreditCard } from 'lucide-react-native'
 import { PrimaryBlue, PrimaryGrey, LightGrey, SecondaryGrey } from '../../Constants/Colors'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { updateDonationBox } from '../../services/api/donation'
@@ -264,15 +264,30 @@ export default function DonationBoxSummaryCard({
           </Text>
         </View> */}
 
-        {/* Add Causes Button */}
-        {onAddCauses && (
-          <TouchableOpacity
-            onPress={onAddCauses}
-            style={styles.addCausesButton}
-          >
-            <Plus size={18} color="#FFFFFF" />
-            <Text style={styles.addCausesButtonText}>Add Causes</Text>
-          </TouchableOpacity>
+        {/* Edit Payment and Add Causes Buttons */}
+        {(onEditPayment || onAddCauses) && (
+          <View style={styles.buttonsRow}>
+            {onEditPayment && (
+              <TouchableOpacity
+                onPress={onEditPayment}
+                style={styles.editPaymentButton}
+                activeOpacity={0.7}
+              >
+                <CreditCard size={18} color="#111827" />
+                <Text style={styles.editPaymentButtonText}>Edit payment</Text>
+              </TouchableOpacity>
+            )}
+            {onAddCauses && (
+              <TouchableOpacity
+                onPress={onAddCauses}
+                style={styles.addCausesButton}
+                activeOpacity={0.7}
+              >
+                <Plus size={18} color="#FFFFFF" />
+                <Text style={styles.addCausesButtonText}>Add Causes</Text>
+              </TouchableOpacity>
+            )}
+          </View>
         )}
       </View>
     </View>
@@ -467,15 +482,39 @@ const styles = StyleSheet.create({
   buttonDisabled: {
     opacity: 0.5,
   },
-  addCausesButton: {
-    backgroundColor: PrimaryBlue,
+  buttonsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+    marginTop: 8,
+  },
+  editPaymentButton: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    paddingVertical: 12,
+    paddingVertical: 10,
     borderRadius: 8,
-    marginTop: 8,
+  },
+  editPaymentButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#111827',
+  },
+  addCausesButton: {
+    flex: 1,
+    backgroundColor: '#1600ff',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 10,
+    borderRadius: 8,
   },
   addCausesButtonText: {
     fontSize: 14,

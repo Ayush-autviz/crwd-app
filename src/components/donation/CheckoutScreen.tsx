@@ -19,12 +19,17 @@ import { getCollectiveById } from '../../services/api/crwd';
 import { PrimaryBlue, SecondaryGrey } from '../../Constants/Colors';
 import { useQueryClient, useQuery, useMutation } from '@tanstack/react-query';
 import DonationBoxSummaryCard from './DonationBoxSummaryCard';
-import { getDonationHistory, removeCauseFromBox, cancelDonationBox } from '../../services/api/donation';
+import {
+  getDonationHistory,
+  removeCauseFromBox,
+  cancelDonationBox,
+} from '../../services/api/donation';
 import { getNonprofitColor } from '../../lib/getNonprofitColor';
 import RequestNonprofitModal from '../newsearch/RequestNonprofitModal';
 import { Alert } from 'react-native';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
 import EditDonationSplitBottomSheet from './EditDonationSplitBottomSheet';
+import PaymentMethodsBottomSheet from './PaymentMethodsBottomSheet';
 
 const { width, height } = Dimensions.get('window');
 
@@ -67,6 +72,7 @@ export default function CheckoutScreen({
   const [showEditSplitSheet, setShowEditSplitSheet] = useState(false);
   const [showCancelConfirmModal, setShowCancelConfirmModal] = useState(false);
   const [showPauseConfirmModal, setShowPauseConfirmModal] = useState(false);
+  const [showPaymentMethodsSheet, setShowPaymentMethodsSheet] = useState(false);
 
   // Get box_causes from donation box API (main source)
   const boxCauses = donationBox?.box_causes || [];
@@ -298,6 +304,7 @@ export default function CheckoutScreen({
               currentCapacity={currentCapacity}
               maxCapacity={maxCapacity}
               donationBox={donationBox}
+              onEditPayment={() => setShowPaymentMethodsSheet(true)}
               onAddCauses={() => navigation.navigate('ManageDonationBox' as never)}
             />
           </View>
@@ -425,13 +432,16 @@ export default function CheckoutScreen({
             </TouchableOpacity>
           </View>
 
-          {/* Pause Donations Section */}
+          {/* Cancel Subscription Button */}
           <View style={styles.pauseSection}>
             <TouchableOpacity
-              onPress={() => setShowPauseConfirmModal(true)}
+              onPress={handleCancelSubscription}
+              disabled={cancelDonationBoxMutation.isPending}
               activeOpacity={0.7}
             >
-              <Text style={styles.pauseText}>Pause Donations</Text>
+              <Text style={styles.pauseText}>
+                {cancelDonationBoxMutation.isPending ? 'Cancelling...' : 'Cancel subscription completely'}
+              </Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -817,6 +827,12 @@ export default function CheckoutScreen({
         );
       })()}
 
+      {/* Payment Methods Bottom Sheet */}
+      <PaymentMethodsBottomSheet
+        isOpen={showPaymentMethodsSheet}
+        onClose={() => setShowPaymentMethodsSheet(false)}
+      />
+
     </>
   );
 }
@@ -970,7 +986,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
   },
   sectionTitle: {
     fontSize: 18,
@@ -1002,8 +1018,9 @@ const styles = StyleSheet.create({
   causeCardContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    gap: 16,
+    paddingHorizontal: 8,
+    paddingVertical: 10,
+    gap: 8,
   },
   causeIcon: {
     width: 48,
@@ -1045,7 +1062,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   causeName: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '700',
     color: '#111827',
     marginBottom: 4,
@@ -1057,7 +1074,7 @@ const styles = StyleSheet.create({
   causeActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
+    gap: 4,
   },
   amountInfo: {
     alignItems: 'flex-end',
@@ -1456,8 +1473,8 @@ const styles = StyleSheet.create({
     pointerEvents: 'none',
   },
   trashButton: {
-    padding: 8,
-    marginLeft: 8,
+    padding: 4,
+    // marginLeft: 8,
   },
   requestSection: {
     paddingHorizontal: 20,
@@ -1477,8 +1494,9 @@ const styles = StyleSheet.create({
   },
   pauseText: {
     fontSize: 14,
-    color: '#6B7280',
+    color: '#EF4444',
     fontWeight: '500',
+    textAlign: 'center',
   },
   removeModalContent: {
     backgroundColor: 'white',

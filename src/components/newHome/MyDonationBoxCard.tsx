@@ -14,12 +14,22 @@ export default function MyDonationBoxCard({
 }: MyDonationBoxCardProps) {
   const navigation = useNavigation();
 
+  const handleNavigateToDonation = () => {
+    // Navigate to Donate tab with bottom tabs preserved
+    (navigation as any).navigate('DrawerNav', {
+      screen: 'MainTabs',
+      params: {
+        screen: 'Donate',
+      },
+    });
+  };
+
   return (
     <View style={styles.container}>
       <TouchableOpacity
         style={styles.card}
         activeOpacity={0.7}
-        onPress={() => navigation.navigate('Donation' as never)}
+        onPress={handleNavigateToDonation}
       >
         {/* Icon and Title Row */}
         <View style={styles.iconTitleRow}>
@@ -38,7 +48,7 @@ export default function MyDonationBoxCard({
           </Text>
           <TouchableOpacity
             style={styles.linkContainer}
-            onPress={() => navigation.navigate('Donation' as never)}
+            onPress={handleNavigateToDonation}
           >
             <Text style={styles.linkText}>Manage</Text>
             <ArrowRight size={14} color="#1600ff" />

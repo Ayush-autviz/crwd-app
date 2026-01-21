@@ -8,6 +8,7 @@ import Account from '../components/account/Account'
 import ChangePasswordSheet from '../components/newsettings/ChangePasswordSheet'
 import ChangeEmailSheet from '../components/newsettings/ChangeEmailSheet'
 import RequestNonprofitModal from '../components/newsearch/RequestNonprofitModal'
+import PaymentMethodsBottomSheet from '../components/donation/PaymentMethodsBottomSheet'
 import { CircleHelp, CreditCard, FileText, Info, Lock, Mail, MessageSquare, Shield, Trash2, Eye, Bookmark, Heart, ChevronDown, UserPlus } from 'lucide-react-native'
 import { LightGrey, PrimaryBlue, PrimaryGrey, SecondaryGrey } from '../Constants/Colors'
 import { useNavigation } from '@react-navigation/native'
@@ -28,6 +29,7 @@ export default function NewSettings() {
   // State
   const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null)
   const [showRequestModal, setShowRequestModal] = useState(false)
+  const [showPaymentMethodsSheet, setShowPaymentMethodsSheet] = useState(false)
 
   const toggleFAQ = (index: number) => {
     setExpandedFAQ(expandedFAQ === index ? null : index)
@@ -178,10 +180,7 @@ export default function NewSettings() {
               </View>
               <View style={styles.divider} />
               <TouchableOpacity
-                onPress={() => {
-                  // @ts-ignore
-                  navigation.navigate('PaymentMethods')
-                }}
+                onPress={() => setShowPaymentMethodsSheet(true)}
                 style={styles.menuButton}
               >
                 <CreditCard size={20} color={PrimaryGrey} />
@@ -325,6 +324,12 @@ export default function NewSettings() {
         <RequestNonprofitModal
           isOpen={showRequestModal}
           onClose={() => setShowRequestModal(false)}
+        />
+
+        {/* Payment Methods Bottom Sheet */}
+        <PaymentMethodsBottomSheet
+          isOpen={showPaymentMethodsSheet}
+          onClose={() => setShowPaymentMethodsSheet(false)}
         />
       </SafeAreaView>
     </GestureHandlerRootView>

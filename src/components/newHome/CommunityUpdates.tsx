@@ -208,7 +208,7 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
               <AvatarImage src={update.user.avatar} />
               <AvatarFallback
                 style={{ backgroundColor: update.user.color || '#1600ff' }}
-                textStyle={{ color: '#FFFFFF', fontSize: 12 }}
+                textStyle={{ color: '#FFFFFF', fontSize: 16 }}
               >
                 {update.user.name
                   .charAt(0)
@@ -278,12 +278,10 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
             <AvatarImage src={update.user.avatar} />
             <AvatarFallback
               style={{ backgroundColor: update.user.color || '#1600ff' }}
-              textStyle={{ color: '#FFFFFF', fontSize: 12 }}
+              textStyle={{ color: '#FFFFFF', fontSize: 16 }}
             >
               {update.user.name
-                .split(' ')
-                .map((n) => n.charAt(0))
-                .join('')
+                .charAt(0)
                 .toUpperCase()}
             </AvatarFallback>
           </Avatar>

@@ -131,7 +131,7 @@ const Circles = () => {
             <Avatar size={20}>
               <AvatarImage src={circle.created_by.profile_picture} />
               <AvatarFallback
-                style={{ backgroundColor: getConsistentColor(circle.created_by.id || founderName, avatarColors) }}
+                style={{ backgroundColor: circle.created_by.color || getConsistentColor(circle.created_by.id || founderName, avatarColors) }}
                 textStyle={{ color: '#FFFFFF', fontSize: 10, fontWeight: '600' }}
               >
                 {founderName.charAt(0).toUpperCase()}
@@ -210,7 +210,7 @@ const Circles = () => {
             <Avatar size={20}>
               <AvatarImage src={item.created_by.profile_picture} />
               <AvatarFallback
-                style={{ backgroundColor: getConsistentColor(item.created_by.id || founderName, avatarColors) }}
+                style={{ backgroundColor: item.created_by.color || getConsistentColor(item.created_by.id || founderName, avatarColors) }}
                 textStyle={{ color: '#FFFFFF', fontSize: 10, fontWeight: '600' }}
               >
                 {founderName.charAt(0).toUpperCase()}

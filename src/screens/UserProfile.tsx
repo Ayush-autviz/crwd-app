@@ -643,6 +643,20 @@ export default function UserProfile() {
                         <ProfileBio bio={userProfile.bio} />
                     </View>
 
+                    {/* People Inspired */}
+                    {userProfile.inspired_people_count > 0 && (
+                        <Text style={{ 
+                            fontSize: 13, 
+                            fontWeight: '700', 
+                            color: '#111827', 
+                            textAlign: 'center',
+                            
+                            marginBottom: 12
+                        }}>
+                            {userProfile.inspired_people_count} {userProfile.inspired_people_count === 1 ? 'Person' : 'People'} Inspired
+                        </Text>
+                    )}
+
                     {/* Follow Button */}
                     <TouchableOpacity
                         onPress={handleFollowClick}
@@ -687,7 +701,7 @@ export default function UserProfile() {
                     {userProfile.recently_supported_causes && userProfile.recently_supported_causes.length > 0 && (
                         <View style={{ marginTop: 24, paddingHorizontal: 0 }}>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                                <Text style={{ fontSize: 18, fontWeight: '700', color: '#111827' }}>
+                                <Text style={{ fontSize: 16, fontWeight: '700', color: '#111827' }}>
                                     Supports
                                 </Text>
                             </View>
@@ -722,7 +736,7 @@ export default function UserProfile() {
                                                 height: 100,
                                                 justifyContent: 'space-between',
                                             }}>
-                                                {cause.logo ? (
+                                                {cause.image || cause.logo ? (
                                                     <View style={{
                                                         width: 48,
                                                         height: 48,
@@ -731,7 +745,7 @@ export default function UserProfile() {
                                                         overflow: 'hidden',
                                                     }}>
                                                         <Image
-                                                            source={{ uri: cause.logo }}
+                                                            source={{ uri: cause.image || cause.logo }}
                                                             style={{
                                                                 width: 48,
                                                                 height: 48,
@@ -780,10 +794,10 @@ export default function UserProfile() {
 
                             {/* Show more causes text and link */}
                             {userProfile.recently_supported_causes.length > 5 && (
-                                <View style={{ alignItems: 'center', gap: 8 }}>
-                                    <Text style={{ fontSize: 14, color: '#6b7280' }}>
+                                <View style={{ alignItems: 'center', gap: 8,  marginTop: 4 }}>
+                                    {/* <Text style={{ fontSize: 14, color: '#6b7280' }}>
                                         + {userProfile.supported_causes_count - 6} more causes
-                                    </Text>
+                                    </Text> */}
                                     <TouchableOpacity
                                         onPress={() => {
                                             setActiveStatsTab('causes');
@@ -792,7 +806,7 @@ export default function UserProfile() {
                                         }}
                                     >
                                         <Text style={{
-                                            fontSize: 14,
+                                            fontSize: 13,
                                             color: PrimaryBlue,
                                             fontWeight: '500'
                                         }}>
@@ -811,10 +825,20 @@ export default function UserProfile() {
 
                     {/* Recent Activity */}
                     <View style={styles.activitySection}>
+                        {userPosts.length > 0 && (
+                            <View style={{ marginBottom: 16 }}>
+                                <Text style={{ fontSize: 16, fontWeight: '700', color: '#111827', marginBottom: 4 }}>
+                                    Recent Activity
+                                </Text>
+                                <Text style={{ fontSize: 12, color: '#6B7280' }}>
+                                    Activity, updates, and discoveries from your community
+                                </Text>
+                            </View>
+                        )}
                         <PopularPosts
                             posts={userPosts}
-                            showTitle={true}
-                            title="Recent Activity"
+                            showTitle={false}
+                            title=""
                             onLoadMore={() => fetchNextPage()}
                             hasMore={hasNextPage || false}
                             isLoadingMore={isFetchingNextPage}

@@ -170,13 +170,27 @@ export default function Activity() {
             // Extract collective name from body or title
             let collectiveName = '';
             if (notification.body) {
+                // Pattern 1: "received donation to [collective]"
                 const receivedMatch = notification.body.match(/received.*?donation.*?to (.+)/i);
                 if (receivedMatch) {
                     collectiveName = receivedMatch[1].trim();
                 } else {
-                    const joinedMatch = notification.body.match(/joined (.+)/i);
+                    // Pattern 2: "joined [collective]" or "@username joined [collective]"
+                    const joinedMatch = notification.body.match(/joined\s+(.+?)(?:\.|Supporting)/i);
                     if (joinedMatch) {
                         collectiveName = joinedMatch[1].trim();
+                    } else {
+                        // Pattern 3: "posted in [collective]"
+                        const postedMatch = notification.body.match(/posted\s+in\s+(.+)/i);
+                        if (postedMatch) {
+                            collectiveName = postedMatch[1].trim();
+                        } else {
+                            // Pattern 4: Just "joined [collective]" without period
+                            const simpleJoinedMatch = notification.body.match(/joined\s+(.+)/i);
+                            if (simpleJoinedMatch) {
+                                collectiveName = simpleJoinedMatch[1].trim();
+                            }
+                        }
                     }
                 }
             }
@@ -217,6 +231,7 @@ export default function Activity() {
                 notification.data?.user_id;
             
             // Extract username from body if it contains @username pattern (e.g., "@jake_long liked your post")
+            // Also check data.follower_username for follower notifications
             let username = '';
             if (notification.body) {
                 const usernameMatch = notification.body.match(/@(\w+)/);
@@ -224,25 +239,54 @@ export default function Activity() {
                     username = usernameMatch[1];
                 }
             }
+            // Use follower_username from data if available
+            if (!username && notification.data?.follower_username) {
+                username = notification.data.follower_username;
+            }
             
             // Get user profile from fetched profiles map if available
             const userProfile = userId ? userProfilesMap.get(userId.toString()) : null;
             const profileUser = userProfile?.user || userProfile;
             
-            // Get user info from fetched profile, notification.user, or notification.data
+            // Extract full name from body text if it appears (e.g., "Aayush Bajaj commented", "Jake Smith joined", "Chad F has started")
+            let extractedFirstName = '';
+            let extractedLastName = '';
+            if (notification.body && !username) {
+                // Try to extract full name pattern: "First Last" or "First L" at the start
+                // Matches: "Aayush Bajaj", "Jake Smith", "Chad F", etc.
+                const fullNameMatch = notification.body.match(/^([A-Z][a-z]+(?:\s+[A-Z][a-z]*)?)\s/);
+                if (fullNameMatch) {
+                    const nameParts = fullNameMatch[1].split(/\s+/);
+                    if (nameParts.length >= 2) {
+                        extractedFirstName = nameParts[0];
+                        extractedLastName = nameParts.slice(1).join(' ');
+                    } else if (nameParts.length === 1) {
+                        extractedFirstName = nameParts[0];
+                    }
+                }
+            }
+            
+            // Get user info from fetched profile, notification.user, notification.data, or extracted from body
             const firstName = 
                 profileUser?.first_name || 
                 notification.user?.first_name || 
-                notification.data?.first_name || '';
+                notification.data?.first_name || 
+                extractedFirstName || '';
             const lastName = 
                 profileUser?.last_name || 
                 notification.user?.last_name || 
-                notification.data?.last_name || '';
+                notification.data?.last_name || 
+                extractedLastName || '';
             const extractedUsername = 
                 username || 
                 profileUser?.username || 
                 notification.user?.username || 
-                notification.data?.username || '';
+                notification.data?.username || 
+                notification.data?.follower_username || '';
+
+            const postId = notification.data?.post_id || notification.data?.post?.id || notification.post_id;
+            const collectiveId = notification.data?.collective_id || notification.data?.collective?.id;
+            const nonprofitId = notification.data?.nonprofit_id;
 
             return {
                 id: notification.id,
@@ -253,13 +297,15 @@ export default function Activity() {
                 memberName: memberName,
                 donationAmount: donationAmount,
                 time: formatTimeAgo(notification.created_at || notification.updated_at),
-                avatarUrl: notification.user?.profile_picture || notification.data?.profile_picture || '',
-                collectiveId: notification.data?.collective_id,
+                avatarUrl: notification.data?.user_profile_picture || '',
+                collectiveId: collectiveId,
+                nonprofitId: nonprofitId,
+                postId: postId,
                 userId: userId,
                 firstName: firstName,
                 lastName: lastName,
                 username: extractedUsername,
-                color: profileUser?.color || notification.user?.color || notification.data?.color || undefined,
+                color: notification.data?.user_color || profileUser?.color || notification.user?.color || undefined,
             };
         });
     }, [personalNotifications, userProfilesMap]);
@@ -329,12 +375,13 @@ export default function Activity() {
 
             return {
                 id: notification.id,
-                avatarUrl: notification.user?.profile_picture || notification.data?.profile_picture || '',
+                // avatarUrl: notification.user?.profile_picture || notification.data?.user_profile_picture || '',
+                avatarUrl: notification.data?.user_profile_picture || '',
                 username: username,
                 userId: userId,
                 firstName: firstName,
                 lastName: lastName,
-                color: notification.user?.color || notification.data?.color || undefined,
+                color: notification.data?.user_color || undefined,
                 profileLink: isCurrentUser ? undefined : (userId ? `/user-profile/${userId}` : username ? `/user-profile/${username}` : undefined),
                 time: formatTimeAgo(notification.created_at || notification.updated_at),
                 org: collectiveName || null,
@@ -449,40 +496,365 @@ export default function Activity() {
             }
         };
 
+        const handleItemPress = () => {
+            if (item.postId) {
+                (navigation as any).navigate('PostDetail', { postId: item.postId });
+            } else if (item.userId) {
+                (navigation as any).navigate('UserProfile', { userId: item.userId.toString() });
+            } else if (item.collectiveId) {
+                (navigation as any).navigate('GroupCRWD', { crwdId: item.collectiveId.toString() });
+            }
+        };
+
+        // Parse description to make usernames and collectives clickable (matching vite)
+        const renderDescription = () => {
+            const description = item.description || '';
+            if (!description) return <Text style={{ color: '#374151', fontSize: 12 }}>{description}</Text>;
+
+            // Handle donation type with "donated to" format
+            if (item.type === 'donation' && description.includes('donated to')) {
+                const parts: React.ReactElement[] = [];
+                const donatedSplit = description.split(' donated to ');
+                if (donatedSplit.length === 2) {
+                    const donorPart = donatedSplit[0];
+                    const restPart = donatedSplit[1];
+
+                    // Handle Donor Link
+                    if (donorPart.startsWith('@') && item.userId) {
+                        parts.push(
+                            <Text
+                                key="donor"
+                                style={{ fontWeight: '600', color: '#374151', fontSize: 12 }}
+                                onPress={() => {
+                                    (navigation as any).navigate('UserProfile', { userId: item.userId.toString() });
+                                }}
+                            >
+                                {donorPart}
+                            </Text>
+                        );
+                    } else {
+                        parts.push(
+                            <Text key="donor-text" style={{ color: '#374151', fontSize: 12 }}>
+                                {donorPart}
+                            </Text>
+                        );
+                    }
+
+                    parts.push(
+                        <Text key="donated-to" style={{ color: '#374151', fontSize: 12 }}>
+                            {' '}donated to{' '}
+                        </Text>
+                    );
+
+                    // Handle Nonprofit Link - check for " and X other"
+                    const otherMatch = restPart.match(/(.*)( and \d+ other.*)/);
+                    const nonprofitName = otherMatch ? otherMatch[1] : restPart;
+                    const suffix = otherMatch ? otherMatch[2] : '';
+
+                    if (item.nonprofitId) {
+                        parts.push(
+                            <Text
+                                key="nonprofit"
+                                style={{ fontWeight: '600', color: '#374151', fontSize: 12 }}
+                                onPress={() => {
+                                    (navigation as any).navigate('CauseDetail', { causeId: item.nonprofitId });
+                                }}
+                            >
+                                {nonprofitName}
+                            </Text>
+                        );
+                    } else {
+                        parts.push(
+                            <Text key="nonprofit-text" style={{ color: '#374151', fontSize: 12 }}>
+                                {nonprofitName}
+                            </Text>
+                        );
+                    }
+
+                    if (suffix) {
+                        parts.push(
+                            <Text key="suffix" style={{ color: '#374151', fontSize: 12 }}>
+                                {suffix}
+                            </Text>
+                        );
+                    }
+
+                    return <Text style={{ color: '#374151', fontSize: 12 }}>{parts}</Text>;
+                }
+            }
+
+            // Handle donation type with collective format
+            if (item.type === 'donation') {
+                return (
+                    <Text style={{ color: '#374151', fontSize: 12 }}>
+                        Your collective{' '}
+                        {item.collectiveId && item.collectiveName ? (
+                            <Text
+                                style={{ fontWeight: '600', color: '#374151', fontSize: 12 }}
+                                onPress={() => {
+                                    if (item.collectiveId) {
+                                        (navigation as any).navigate('GroupCRWD', { crwdId: item.collectiveId.toString() });
+                                    }
+                                }}
+                            >
+                                {item.collectiveName}
+                            </Text>
+                        ) : (
+                            <Text style={{ color: '#374151', fontSize: 12 }}>
+                                {item.collectiveName || 'Community Champions'}
+                            </Text>
+                        )}
+                        {' '}received a {item.donationAmount || '$50'} donation
+                    </Text>
+                );
+            }
+
+            // Handle new_member type
+            if (item.type === 'new_member') {
+                const parts: React.ReactElement[] = [];
+                let lastIndex = 0;
+
+                // Find member name and make it clickable
+                if (item.userId && item.memberName) {
+                    const memberPattern = new RegExp(item.memberName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+                    let match;
+                    while ((match = memberPattern.exec(description)) !== null) {
+                        if (match.index > lastIndex) {
+                            parts.push(
+                                <Text key={`text-${match.index}`} style={{ color: '#374151', fontSize: 12 }}>
+                                    {description.substring(lastIndex, match.index)}
+                                </Text>
+                            );
+                        }
+                        parts.push(
+                            <Text
+                                key={`member-${match.index}`}
+                                style={{ fontWeight: '600', color: '#374151', fontSize: 12 }}
+                                onPress={() => {
+                                    (navigation as any).navigate('UserProfile', { userId: item.userId.toString() });
+                                }}
+                            >
+                                {match[0]}
+                            </Text>
+                        );
+                        lastIndex = match.index + match[0].length;
+                    }
+                }
+
+                // Find collective name and make it clickable
+                if (item.collectiveId && item.collectiveName) {
+                    const collectivePattern = new RegExp(item.collectiveName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+                    let match;
+                    while ((match = collectivePattern.exec(description)) !== null) {
+                        if (match.index >= lastIndex) {
+                            if (match.index > lastIndex) {
+                                parts.push(
+                                    <Text key={`text-${match.index}`} style={{ color: '#374151', fontSize: 12 }}>
+                                        {description.substring(lastIndex, match.index)}
+                                    </Text>
+                                );
+                            }
+                            parts.push(
+                                <Text
+                                    key={`collective-${match.index}`}
+                                    style={{ fontWeight: '600', color: '#374151', fontSize: 12 }}
+                                    onPress={() => {
+                                        (navigation as any).navigate('GroupCRWD', { crwdId: item.collectiveId.toString() });
+                                    }}
+                                >
+                                    {match[0]}
+                                </Text>
+                            );
+                            lastIndex = match.index + match[0].length;
+                        }
+                    }
+                }
+
+                if (lastIndex < description.length) {
+                    parts.push(
+                        <Text key="text-end" style={{ color: '#374151', fontSize: 12 }}>
+                            {description.substring(lastIndex)}
+                        </Text>
+                    );
+                }
+
+                return parts.length > 0 ? (
+                    <Text style={{ color: '#374151', fontSize: 12 }}>{parts}</Text>
+                ) : (
+                    <Text style={{ color: '#374151', fontSize: 12 }}>{description}</Text>
+                );
+            }
+
+            // Handle other types - parse full names, @username mentions, and collective names
+            const parts: React.ReactElement[] = [];
+            let lastIndex = 0;
+
+            // Collect all matches with their positions
+            const matches: Array<{ index: number; length: number; type: 'username' | 'fullname' | 'collective'; userId?: string; collectiveId?: string }> = [];
+
+            // Find @username mentions - make them clickable if we have userId
+            const usernamePattern = /@(\w+)/gi;
+            let match;
+            while ((match = usernamePattern.exec(description)) !== null) {
+                const matchedUsername = match[1];
+                // If we have userId, make the @username clickable (it's the user who triggered the notification)
+                if (item.userId) {
+                    matches.push({
+                        index: match.index,
+                        length: match[0].length,
+                        type: 'username',
+                        userId: item.userId.toString()
+                    });
+                }
+            }
+
+            // Find full names (pattern: "First Last" at start of sentence or after certain words)
+            // Match names like "Aayush Bajaj", "Jake Smith", "Chad F", etc.
+            if (item.userId && item.firstName && item.lastName) {
+                const fullNamePattern = new RegExp(`\\b${item.firstName}\\s+${item.lastName}\\b`, 'gi');
+                let nameMatch: RegExpExecArray | null;
+                while ((nameMatch = fullNamePattern.exec(description)) !== null) {
+                    // Check if this position is not already covered by a username match
+                    const isOverlapping = matches.some(m => 
+                        nameMatch!.index >= m.index && nameMatch!.index < m.index + m.length
+                    );
+                    if (!isOverlapping) {
+                        matches.push({
+                            index: nameMatch.index,
+                            length: nameMatch[0].length,
+                            type: 'fullname',
+                            userId: item.userId.toString()
+                        });
+                    }
+                }
+            }
+
+            // Find collective name mentions
+            if (item.collectiveId && item.collectiveName) {
+                const collectivePattern = new RegExp(item.collectiveName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+                let collectiveMatch: RegExpExecArray | null;
+                while ((collectiveMatch = collectivePattern.exec(description)) !== null) {
+                    // Check if this position is not already covered
+                    const isOverlapping = matches.some(m => 
+                        collectiveMatch!.index >= m.index && collectiveMatch!.index < m.index + m.length
+                    );
+                    if (!isOverlapping) {
+                        matches.push({
+                            index: collectiveMatch.index,
+                            length: collectiveMatch[0].length,
+                            type: 'collective',
+                            collectiveId: item.collectiveId.toString()
+                        });
+                    }
+                }
+            }
+
+            // Sort matches by index
+            matches.sort((a, b) => a.index - b.index);
+
+            // Build parts array
+            for (const matchItem of matches) {
+                // Add text before match
+                if (matchItem.index > lastIndex) {
+                    parts.push(
+                        <Text key={`text-${matchItem.index}`} style={{ color: '#374151', fontSize: 12 }}>
+                            {description.substring(lastIndex, matchItem.index)}
+                        </Text>
+                    );
+                }
+
+                // Add clickable link based on type
+                if (matchItem.type === 'username' || matchItem.type === 'fullname') {
+                    if (matchItem.userId) {
+                        parts.push(
+                            <Text
+                                key={`user-${matchItem.index}`}
+                                style={{ fontWeight: '600', color: '#374151', fontSize: 12 }}
+                                onPress={() => {
+                                    (navigation as any).navigate('UserProfile', { userId: matchItem.userId });
+                                }}
+                            >
+                                {description.substring(matchItem.index, matchItem.index + matchItem.length)}
+                            </Text>
+                        );
+                    } else {
+                        parts.push(
+                            <Text key={`user-text-${matchItem.index}`} style={{ color: '#374151', fontSize: 12 }}>
+                                {description.substring(matchItem.index, matchItem.index + matchItem.length)}
+                            </Text>
+                        );
+                    }
+                } else if (matchItem.type === 'collective') {
+                    if (matchItem.collectiveId) {
+                        parts.push(
+                            <Text
+                                key={`collective-${matchItem.index}`}
+                                style={{ fontWeight: '600', color: '#374151', fontSize: 12 }}
+                                onPress={() => {
+                                    (navigation as any).navigate('GroupCRWD', { crwdId: matchItem.collectiveId });
+                                }}
+                            >
+                                {description.substring(matchItem.index, matchItem.index + matchItem.length)}
+                            </Text>
+                        );
+                    } else {
+                        parts.push(
+                            <Text key={`collective-text-${matchItem.index}`} style={{ color: '#374151', fontSize: 12 }}>
+                                {description.substring(matchItem.index, matchItem.index + matchItem.length)}
+                            </Text>
+                        );
+                    }
+                }
+
+                lastIndex = matchItem.index + matchItem.length;
+            }
+
+            // Add remaining text
+            if (lastIndex < description.length) {
+                parts.push(
+                    <Text key="text-end" style={{ color: '#374151', fontSize: 12 }}>
+                        {description.substring(lastIndex)}
+                    </Text>
+                );
+            }
+
+            return parts.length > 0 ? (
+                <Text style={{ color: '#374151', fontSize: 12 }}>{parts}</Text>
+            ) : (
+                <Text style={{ color: '#374151', fontSize: 12 }}>{description}</Text>
+            );
+        };
+
         return (
             <TouchableOpacity
                 style={{ 
                     paddingHorizontal: 12, 
                     paddingVertical: 16, 
                     borderBottomWidth: 1, 
-                    borderBottomColor: '#F3F4F6' 
+                    borderBottomColor: '#F3F4F6',
+                    backgroundColor: item.postId ? 'transparent' : 'white',
                 }}
-                onPress={() => {
-                    if (item.userId) {
-                        (navigation as any).navigate('UserProfile', { userId: item.userId.toString() });
-                    } else if (item.collectiveId) {
-                        (navigation as any).navigate('GroupCRWD', { crwdId: item.collectiveId.toString() });
-                    }
-                }}
-                activeOpacity={0.7}
+                onPress={handleItemPress}
+                activeOpacity={item.postId ? 0.7 : 1}
             >
                 <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 12 }}>
-                    {/* Avatar - show image if available, otherwise use fallback color like Vite */}
+                    {/* Avatar - matching vite size and style */}
                     <TouchableOpacity 
                         onPress={handleAvatarPress}
                         activeOpacity={0.7}
+                        style={{ flexShrink: 0 }}
                     >
                         {(() => {
                             const bgColor = item.userId 
                                 ? (item.color || getConsistentColor(item.userId, avatarColors))
-                                : (item.username ? getConsistentColor(item.username, avatarColors) : '#E5E7EB');
+                                : (item.username ? getConsistentColor(item.username, avatarColors) : avatarColors[0]);
                             
                             return (
-                                <Avatar size={48}>
+                                <Avatar size={40}>
                                     <AvatarImage src={item.avatarUrl} />
                                     <AvatarFallback 
                                         style={{ backgroundColor: bgColor }}
-                                        textStyle={{ color: '#FFFFFF', fontSize: 14, fontWeight: '700' }}
+                                        textStyle={{ color: '#FFFFFF', fontSize: 12, fontWeight: '700' }}
                                     >
                                         {getInitials(item.firstName, item.lastName, item.username)}
                                     </AvatarFallback>
@@ -491,127 +863,22 @@ export default function Activity() {
                         })()}
                     </TouchableOpacity>
 
-                    {/* Content */}
+                    {/* Content - matching vite layout */}
                     <View style={{ flex: 1, minWidth: 0 }}>
+                        {/* Title - matching vite font size */}
                         <Text style={{ 
                             fontWeight: '700', 
                             color: '#111827', 
                             fontSize: 14, 
-                            marginBottom: 2 
+                            marginBottom: 4 
                         }}>
                             {item.title}
                         </Text>
-                        <View style={{ marginBottom: 6 }}>
-                            {item.type === 'donation' ? (
-                                <Text style={{ color: '#374151', fontSize: 12 }}>
-                                    Your collective{' '}
-                                    {item.collectiveId && item.collectiveName ? (
-                                        <Text 
-                                            style={{ fontWeight: '600', color: '#374151' }}
-                                            onPress={() => {
-                                                if (item.collectiveId) {
-                                                    (navigation as any).navigate('GroupCRWD', { id: item.collectiveId.toString() });
-                                                }
-                                            }}
-                                        >
-                                            {item.collectiveName}
-                                        </Text>
-                                    ) : (
-                                        <Text>{item.collectiveName || 'Community Champions'}</Text>
-                                    )}
-                                    {' '}received a {item.donationAmount || '$50'} donation
-                                </Text>
-                            ) : item.type === 'new_member' ? (
-                                (() => {
-                                    // Parse description to make user and collective names clickable (like Vite)
-                                    const description = item.description || '';
-                                    if (!description) return <Text style={{ color: '#374151', fontSize: 12 }}>{description}</Text>;
-                                    
-                                    const parts: React.ReactElement[] = [];
-                                    let lastIndex = 0;
-                                    
-                                    // Find member name and make it clickable
-                                    if (item.userId && item.memberName) {
-                                        const memberPattern = new RegExp(item.memberName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
-                                        let match;
-                                        while ((match = memberPattern.exec(description)) !== null) {
-                                            // Add text before match
-                                            if (match.index > lastIndex) {
-                                                parts.push(
-                                                    <Text key={`text-${match.index}`} style={{ color: '#374151', fontSize: 12 }}>
-                                                        {description.substring(lastIndex, match.index)}
-                                                    </Text>
-                                                );
-                                            }
-                                            // Add clickable link
-                                            parts.push(
-                                                <Text
-                                                    key={`member-${match.index}`}
-                                                    style={{ fontWeight: '600', color: '#374151', fontSize: 12 }}
-                                                    onPress={() => {
-                                                        (navigation as any).navigate('UserProfile', { userId: item.userId.toString() });
-                                                    }}
-                                                >
-                                                    {match[0]}
-                                                </Text>
-                                            );
-                                            lastIndex = match.index + match[0].length;
-                                        }
-                                    }
-                                    
-                                    // Find collective name and make it clickable
-                                    if (item.collectiveId && item.collectiveName) {
-                                        const collectivePattern = new RegExp(item.collectiveName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
-                                        let match;
-                                        while ((match = collectivePattern.exec(description)) !== null) {
-                                            // Check if this part is already a link
-                                            if (match.index >= lastIndex) {
-                                                // Add text before match if needed
-                                                if (match.index > lastIndex) {
-                                                    parts.push(
-                                                        <Text key={`text-${match.index}`} style={{ color: '#374151', fontSize: 12 }}>
-                                                            {description.substring(lastIndex, match.index)}
-                                                        </Text>
-                                                    );
-                                                }
-                                                // Add clickable link
-                                                parts.push(
-                                                    <Text
-                                                        key={`collective-${match.index}`}
-                                                        style={{ fontWeight: '600', color: '#374151', fontSize: 12 }}
-                                                        onPress={() => {
-                                                            (navigation as any).navigate('GroupCRWD', { id: item.collectiveId.toString() });
-                                                        }}
-                                                    >
-                                                        {match[0]}
-                                                    </Text>
-                                                );
-                                                lastIndex = match.index + match[0].length;
-                                            }
-                                        }
-                                    }
-                                    
-                                    // Add remaining text
-                                    if (lastIndex < description.length) {
-                                        parts.push(
-                                            <Text key={`text-end`} style={{ color: '#374151', fontSize: 12 }}>
-                                                {description.substring(lastIndex)}
-                                            </Text>
-                                        );
-                                    }
-                                    
-                                    return parts.length > 0 ? (
-                                        <Text style={{ color: '#374151', fontSize: 12 }}>
-                                            {parts}
-                                        </Text>
-                                    ) : (
-                                        <Text style={{ color: '#374151', fontSize: 12 }}>{description}</Text>
-                                    );
-                                })()
-                            ) : (
-                                <Text style={{ color: '#374151', fontSize: 12 }}>{item.description}</Text>
-                            )}
-                        </View>
+                        {/* Description - matching vite font size and color */}
+                        <Text style={{ color: '#374151', fontSize: 12, marginBottom: 6 }}>
+                            {renderDescription()}
+                        </Text>
+                        {/* Time - matching vite font size */}
                         <Text style={{ color: '#9CA3AF', fontSize: 10 }}>
                             {item.time}
                         </Text>

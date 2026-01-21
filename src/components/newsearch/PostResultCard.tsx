@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, Linking, ActivityIndicator, Share, Clipboard } from 'react-native';
 import { useNavigation, CommonActions } from '@react-navigation/native';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
-import { Heart, MessageCircle, Share2, MapPin } from 'lucide-react-native';
+import { Heart, MessageCircle, Share2 } from 'lucide-react-native';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { likePost, unlikePost, followUserById, unfollowUserById, getUserProfileById } from '../../services/api/social';
 import { useAuthStore } from '../../store/store';
@@ -270,16 +270,7 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
       style={styles.card}
       activeOpacity={0.7}
     >
-      <View style={[styles.content, post.fundraiser?.is_active && styles.activeFundraiserContent]}>
-        {/* Pinned Fundraiser Header */}
-        {post.fundraiser?.is_active && !isHomeFeed && (
-          <View style={styles.pinnedHeader}>
-            <View style={styles.pinnedBadge}>
-              <MapPin size={12} color="#1600ff" />
-              <Text style={styles.pinnedText}>PINNED FUNDRAISER</Text>
-            </View>
-          </View>
-        )}
+      <View style={styles.content}>
         {/* User Header */}
         <View style={styles.header}>
           {user && (
@@ -424,18 +415,30 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
 
               <Text style={styles.time}>{timeAgo}</Text> */}
             </View>
-            {post.fundraiser && !isHomeFeed && (
-              <Text style={styles.startedFundraiser}>Started a fundraiser</Text>
-            )}
           </View>
         </View>
       </View>
 
-      {/* Post Content */}
-      {post.content ? (
+      {/* Post Content - Only show if not fundraiser */}
+      {post.content && !post.fundraiser ? (
         <Text style={styles.postContent} numberOfLines={3}>
           {post.content}
         </Text>
+      ) : null}
+
+      {/* Show fundraiser image like normal post image */}
+      {post.fundraiser?.image ? (
+        <TouchableOpacity
+          onPress={handleCardPress}
+          activeOpacity={0.9}
+          style={styles.fundraiserImagePost}
+        >
+          <Image
+            source={{ uri: post.fundraiser.image }}
+            style={styles.fundraiserImagePostStyle}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
       ) : null}
 
       {/* Fundraiser UI */}
@@ -445,15 +448,14 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
           activeOpacity={0.9}
           style={styles.fundraiserCard}
         >
-          <View style={[styles.fundraiserImageContainer, { backgroundColor: post.fundraiser.color || '#1600ff' }]}>
-            {post.fundraiser.image ? (
-              <Image source={{ uri: post.fundraiser.image }} style={styles.fundraiserImage} resizeMode="cover" />
-            ) : (
+          {/* Fundraiser Cover Image/Color - Only show if no image (show color/default) */}
+          {!post.fundraiser.image && (
+            <View style={[styles.fundraiserImageContainer, { backgroundColor: post.fundraiser.color || '#1600ff' }]}>
               <View style={styles.fundraiserPlaceholder}>
                 <Text style={styles.fundraiserPlaceholderText}>{post.fundraiser.name}</Text>
               </View>
-            )}
-          </View>
+            </View>
+          )}
           <View style={styles.fundraiserInfo}>
             <Text style={styles.fundraiserTitle} numberOfLines={2}>{post.fundraiser.name}</Text>
 
@@ -619,26 +621,6 @@ const styles = StyleSheet.create({
   content: {
     // padding: 12,
   },
-  activeFundraiserContent: {
-    backgroundColor: '#fbfcff',
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
-  },
-  pinnedHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  pinnedBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  pinnedText: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: '#1600ff',
-  },
   founderBadge: {
     paddingHorizontal: 8,
     paddingVertical: 2,
@@ -649,11 +631,6 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 8,
     fontWeight: '500',
-  },
-  startedFundraiser: {
-    fontSize: 10,
-    color: '#6B7280',
-    marginTop: 2,
   },
   fundraiserCard: {
     marginBottom: 12,
@@ -670,10 +647,6 @@ const styles = StyleSheet.create({
   fundraiserImageContainer: {
     height: 180,
     width: '100%',
-  },
-  fundraiserImage: {
-    width: '100%',
-    height: '100%',
   },
   fundraiserPlaceholder: {
     flex: 1,
@@ -831,6 +804,20 @@ const styles = StyleSheet.create({
     height: 200,
     borderRadius: 8,
     marginBottom: 10,
+  },
+  fundraiserImagePost: {
+    width: '100%',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    marginBottom: 10,
+    backgroundColor: '#F9FAFB',
+    overflow: 'hidden',
+  },
+  fundraiserImagePostStyle: {
+    width: '100%',
+    height: 200,
+    backgroundColor: '#F9FAFB',
   },
   previewCard: {
     flexDirection: 'row',

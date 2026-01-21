@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
   seeAll: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#10B981',
+    color: '#1600ff',
   },
   scrollContent: {
     paddingRight: 16,

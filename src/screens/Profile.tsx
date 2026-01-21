@@ -813,6 +813,21 @@ export default function Profile() {
                         </View>
                     </View>
 
+                    {/* People Inspired */}
+                    {profileData?.inspired_people_count > 0 && (
+                        <Text style={{ 
+                            fontSize: 13, 
+                            fontWeight: '700', 
+                            color: '#111827', 
+                            textAlign: 'center',
+                            // marginTop: 4,
+                            marginBottom: 4
+                        }}>
+                            {profileData.inspired_people_count} {profileData.inspired_people_count === 1 ? 'Person' : 'People'} Inspired
+                        </Text>
+                    )}
+
+
                     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 16, marginTop: 16 }}>
                         <TouchableOpacity onPress={handleEditProfile} style={{ paddingHorizontal: 16, paddingVertical: 10, borderRadius: 8, borderWidth: 1, borderColor: '#e5e7eb', minWidth: 120 }}>
                             <Text style={{ fontSize: 14, color: '#595959', fontWeight: '700', textAlign: 'center' }}>Edit Profile</Text>
@@ -848,7 +863,7 @@ export default function Profile() {
                     {profileData?.recently_supported_causes && profileData.recently_supported_causes.length > 0 && (
                         <View style={{ marginTop: 24 }}>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                                <Text style={{ fontSize: 18, fontWeight: '700', color: '#111827' }}>
+                                <Text style={{ fontSize: 16, fontWeight: '700', color: '#111827' }}>
                                     Supports
                                 </Text>
                             </View>
@@ -884,7 +899,7 @@ export default function Profile() {
                                                 height: 100,
                                                 justifyContent: 'space-between',
                                             }}>
-                                                {cause.logo ? (
+                                                {cause.image || cause.logo ? (
                                                     <View style={{
                                                         width: 48,
                                                         height: 48,
@@ -893,7 +908,7 @@ export default function Profile() {
                                                         overflow: 'hidden',
                                                     }}>
                                                         <Image
-                                                            source={{ uri: cause.logo }}
+                                                            source={{ uri: cause.image || cause.logo }}
                                                             style={{
                                                                 width: 48,
                                                                 height: 48,
@@ -942,13 +957,13 @@ export default function Profile() {
 
                             {/* Show more causes text and link */}
                             {profileData.recently_supported_causes.length > 5 && (
-                                <View style={{ alignItems: 'center', gap: 8 }}>
-                                    <Text style={{ fontSize: 14, color: '#6b7280' }}>
+                                <View style={{ alignItems: 'center', gap: 8, marginTop:4 }}>
+                                    {/* <Text style={{ fontSize: 14, color: '#6b7280' }}>
                                         + {profileData.supported_causes_count - 6} more causes
-                                    </Text>
+                                    </Text> */}
                                     <TouchableOpacity onPress={handleMoreInterests}>
                                         <Text style={{
-                                            fontSize: 14,
+                                            fontSize: 13,
                                             color: PrimaryBlue,
                                             fontWeight: '500'
                                         }}>
@@ -968,6 +983,7 @@ export default function Profile() {
                     {/* Profile Bio */}
                     {profileData?.bio && <ProfileBio bio={profileData.bio} />}
 
+                    
                     {/* Recent Activity */}
                     <View style={{ paddingVertical: 16 }}>
                         {postsQuery.isLoading ? (
@@ -1008,26 +1024,37 @@ export default function Profile() {
                                     </Text>
                                 </View>
                             </View>
-                        ) : (
-                            <PopularPosts
-                                posts={userPosts}
-                                title="Recent Activity"
+                        ) : null}
+                        {userPosts.length > 0 && (
+                            <>
+                                <View style={{ marginBottom: 0 }}>
+                                    <Text style={{ fontSize: 16, fontWeight: '700', color: '#111827', marginBottom: 4 }}>
+                                        Recent Activity
+                                    </Text>
+                                    <Text style={{ fontSize: 12, color: '#6B7280' }}>
+                                        Activity, updates, and discoveries from your community
+                                    </Text>
+                                </View>
+                                <PopularPosts
+                                    posts={userPosts}
+                                    title=""
                                 onLoadMore={async () => { }}
                                 hasMore={false}
-                                onCommentPress={(post) => {
-                                    // Find the original post data to get firstName and lastName
-                                    const originalPost = postsQuery?.data?.results?.find((p: any) => p.id?.toString() === post.id);
-                                    setSelectedPost({
-                                        id: parseInt(post.id),
-                                        username: post.username,
-                                        text: post.text,
-                                        avatarUrl: post.avatarUrl,
-                                        firstName: originalPost?.user?.first_name || post.username?.split(' ')[0],
-                                        lastName: originalPost?.user?.last_name || post.username?.split(' ').slice(1).join(' ') || '',
-                                    });
-                                    setShowCommentsSheet(true);
-                                }}
-                            />
+                                    onCommentPress={(post) => {
+                                        // Find the original post data to get firstName and lastName
+                                        const originalPost = postsQuery?.data?.results?.find((p: any) => p.id?.toString() === post.id);
+                                        setSelectedPost({
+                                            id: parseInt(post.id),
+                                            username: post.username,
+                                            text: post.text,
+                                            avatarUrl: post.avatarUrl,
+                                            firstName: originalPost?.user?.first_name || post.username?.split(' ')[0],
+                                            lastName: originalPost?.user?.last_name || post.username?.split(' ').slice(1).join(' ') || '',
+                                        });
+                                        setShowCommentsSheet(true);
+                                    }}
+                                />
+                            </>
                         )}
                     </View>
                 </View>

@@ -2,7 +2,7 @@ import { View, Text, ScrollView, TouchableOpacity, Share, Alert, Image, Modal, T
 import React, { useState, useCallback, useMemo, useRef } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import BottomSheet, { BottomSheetView, BottomSheetBackdrop, BottomSheetScrollView } from '@gorhom/bottom-sheet'
+import BottomSheet, { BottomSheetView, BottomSheetBackdrop, BottomSheetScrollView, BottomSheetModal } from '@gorhom/bottom-sheet'
 import MainHeaderNav from '../components/MainHeaderNav'
 import ProfileBio from '../components/ProfileBio'
 import ProfileStats from '../components/ProfileStats'
@@ -10,7 +10,7 @@ import PopularPosts from '../components/PopularPosts'
 import ProfileInterests from '../components/ProfileInterests'
 import { PrimaryBlue, PrimaryGrey, LightGrey } from '../Constants/Colors'
 import { useNavigation, NavigationProp } from '@react-navigation/native'
-import { Share2, Flag, ChevronRight, Ellipsis, MessageCircle, MessageSquare, ArrowLeft } from 'lucide-react-native'
+import { Share2, Flag, ChevronRight, Ellipsis, MessageCircle, MessageSquare, ArrowLeft, X } from 'lucide-react-native'
 import { getPosts, getUserProfileById, getUserFollowers, getUserFollowing, getFavoriteCauses, getSupportedCausesByUserId, followUser, unfollowUser } from '../services/api/social'
 import { getUserCollectives, getJoinCollective } from '../services/api/crwd'
 import { useAuthStore } from '../store/store'
@@ -70,11 +70,14 @@ export default function Profile() {
     const [activeStatsTab, setActiveStatsTab] = useState<'causes' | 'following' | 'followers' | 'crwds'>('causes');
     const [showCommentsSheet, setShowCommentsSheet] = useState(false);
     const [selectedPost, setSelectedPost] = useState<any>(null);
+    const [showFounderSheet, setShowFounderSheet] = useState(false);
 
     // Bottom sheet ref
     const bottomSheetRef = useRef<BottomSheet>(null);
+    const founderSheetRef = useRef<BottomSheetModal>(null);
     const screenHeight = Dimensions.get('window').height;
     const snapPoints = useMemo(() => [screenHeight * 0.75], [screenHeight]);
+    const founderSnapPoints = useMemo(() => [screenHeight * 0.75], [screenHeight]);
 
     console.log('user', token);
 
@@ -159,6 +162,33 @@ export default function Profile() {
         queryFn: () => getJoinCollective(user?.id),
         enabled: !!user?.id,
     });
+
+    // Filter collectives to only show those where user is admin
+    const adminCollectives = useMemo(() => {
+        return userCollectivesQuery.data?.data?.filter((item: any) => item.role === 'admin') || [];
+    }, [userCollectivesQuery.data]);
+
+    // Fetch admin collectives for founder bottom sheet (only when sheet is open)
+    const { data: adminCollectivesData, isLoading: adminCollectivesLoading } = useQuery({
+        queryKey: ['adminCollectives', user?.id],
+        queryFn: () => getJoinCollective(user?.id),
+        enabled: !!user?.id && showFounderSheet,
+    });
+
+    // Filter collectives for bottom sheet to only show those where user is admin
+    const adminCollectivesForSheet = useMemo(() => {
+        const data = adminCollectivesData?.data || [];
+        return Array.isArray(data) ? data.filter((item: any) => item.role === 'admin') : [];
+    }, [adminCollectivesData]);
+
+    // Handle sheet opening/closing
+    React.useEffect(() => {
+        if (showFounderSheet) {
+            founderSheetRef.current?.present();
+        } else {
+            founderSheetRef.current?.dismiss();
+        }
+    }, [showFounderSheet]);
 
     // Statistics bottom sheet queries
     const targetUserId = profileData?.id?.toString() || user?.id?.toString() || '';
@@ -376,6 +406,19 @@ export default function Profile() {
 
     // Bottom sheet backdrop
     const renderBackdrop = useCallback(
+        (props: any) => (
+            <BottomSheetBackdrop
+                {...props}
+                disappearsOnIndex={-1}
+                appearsOnIndex={0}
+                opacity={0.5}
+            />
+        ),
+        []
+    );
+
+    // Founder sheet backdrop
+    const renderFounderBackdrop = useCallback(
         (props: any) => (
             <BottomSheetBackdrop
                 {...props}
@@ -631,7 +674,7 @@ export default function Profile() {
     }
 
     return (
-        <SafeAreaView style={{ backgroundColor: 'white', flex: 1, paddingBottom: 80 }} edges={['top', 'left', 'right']}>
+        <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }} edges={['top', 'left', 'right']}>
             {/* <MainHeaderNav title={'Me'} menu={false} /> */}
 
             {/* Top right buttons */}
@@ -779,17 +822,39 @@ export default function Profile() {
                                 </AvatarFallback>
                             </Avatar>
                         </TouchableOpacity>
-                        <Text style={{
-                            fontSize: 18,
-                            fontWeight: 'bold',
-                            color: '#111827',
-                            marginVertical: 16
-                        }}>
-                            {profileData?.first_name && profileData?.last_name
-                                ? `${profileData.first_name} ${profileData.last_name}`
-                                : profileData?.username || 'User'
-                            }
-                        </Text>
+                        <View style={{ alignItems: 'center', marginVertical: 16 }}>
+                            <View style={{ flexDirection: 'column', alignItems: 'center', gap: 6, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 8 }}>
+                                <Text style={{
+                                    fontSize: 18,
+                                    fontWeight: 'bold',
+                                    color: '#111827',
+                                }}>
+                                    {profileData?.first_name && profileData?.last_name
+                                        ? `${profileData.first_name} ${profileData.last_name}`
+                                        : profileData?.username || 'User'
+                                    }
+                                </Text>
+                                {adminCollectives.length > 0 && (
+                                    <TouchableOpacity
+                                        onPress={() => setShowFounderSheet(true)}
+                                        style={{
+                                            backgroundColor: '#FCE7F3',
+                                            paddingHorizontal: 12,
+                                            paddingVertical: 4,
+                                            borderRadius: 9999,
+                                        }}
+                                    >
+                                        <Text style={{
+                                            color: '#EC4899',
+                                            fontSize: 11,
+                                            fontWeight: '600',
+                                        }}>
+                                            Organizer
+                                        </Text>
+                                    </TouchableOpacity>
+                                )}
+                            </View>
+                        </View>
 
                         {/* Location and Link */}
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -1167,6 +1232,136 @@ export default function Profile() {
                 </BottomSheetScrollView>
             </BottomSheet>
 
+            {/* Founder/Organizer Bottom Sheet */}
+            <BottomSheetModal
+                ref={founderSheetRef}
+                snapPoints={founderSnapPoints}
+                enablePanDownToClose
+                backdropComponent={renderFounderBackdrop}
+                onDismiss={() => setShowFounderSheet(false)}
+                enableDynamicSizing={false}
+                backgroundStyle={{ backgroundColor: 'white' }}
+            >
+                <View style={{ flex: 1 }}>
+                    {/* Header */}
+                    <View style={[styles.bottomSheetHeader, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', paddingVertical: 10 }]}>
+                        <View style={{ flex: 1 }}>
+                            <Text style={{ fontSize: 13, fontWeight: '600', color: '#111827' }}>
+                                Collectives founded by {profileData?.first_name && profileData?.last_name
+                                    ? `${profileData.first_name} ${profileData.last_name}`
+                                    : profileData?.username || 'User'}
+                            </Text>
+                        </View>
+                        <TouchableOpacity
+                            onPress={() => setShowFounderSheet(false)}
+                            style={{ padding: 4, marginLeft: 8 }}
+                        >
+                            <X size={18} color="#6B7280" />
+                        </TouchableOpacity>
+                    </View>
+
+                    {/* Scrollable Content */}
+                    <BottomSheetScrollView
+                        showsVerticalScrollIndicator={false}
+                        contentContainerStyle={{ paddingHorizontal: 12, paddingTop: 16, paddingBottom: 16 }}
+                        style={{ flex: 1 }}
+                    >
+                        {adminCollectivesLoading ? (
+                            <View style={{ padding: 16, alignItems: 'center' }}>
+                                <ActivityIndicator size="small" color={PrimaryBlue} />
+                            </View>
+                        ) : adminCollectivesForSheet.length > 0 ? (
+                            <View style={{ gap: 8 }}>
+                                {adminCollectivesForSheet.map((item: any) => {
+                                    const collective = item.collective || item;
+                                    if (!collective || !collective.id) return null;
+
+                                    const avatarBgColor = collective.color || getConsistentColor(collective.id, avatarColors);
+                                    const collectiveName = collective.name || 'Unknown Collective';
+                                    const initials = getInitials(collectiveName, '', collectiveName);
+
+                                    return (
+                                        <TouchableOpacity
+                                            key={collective.id}
+                                            onPress={() => {
+                                                setShowFounderSheet(false);
+                                                (navigation as any).navigate('GroupCRWD', { id: collective.id.toString() });
+                                            }}
+                                            style={{
+                                                flexDirection: 'row',
+                                                alignItems: 'center',
+                                                gap: 10,
+                                                padding: 10,
+                                                backgroundColor: '#F9FAFB',
+                                                borderRadius: 10,
+                                                borderWidth: 1,
+                                                borderColor: '#E5E7EB',
+                                            }}
+                                        >
+                                            <Avatar size={44} style={{ borderRadius: 10 }}>
+                                                <AvatarImage src={collective.logo || collective.image} />
+                                                <AvatarFallback
+                                                    style={{ backgroundColor: avatarBgColor }}
+                                                    textStyle={{ color: '#FFFFFF', fontSize: 16, fontWeight: '700' }}
+                                                >
+                                                    {initials}
+                                                </AvatarFallback>
+                                            </Avatar>
+                                            <View style={{ flex: 1 }}>
+                                                <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827', marginBottom: 2 }}>
+                                                    {collectiveName}
+                                                </Text>
+                                                <Text style={{ fontSize: 11, color: '#6B7280' }}>
+                                                    {collective.member_count || 0} member{collective.member_count !== 1 ? 's' : ''}
+                                                </Text>
+                                            </View>
+                                            <ChevronRight size={18} color="#9CA3AF" />
+                                        </TouchableOpacity>
+                                    );
+                                })}
+                            </View>
+                        ) : (
+                            <View style={{ padding: 32, alignItems: 'center' }}>
+                                <Text style={{ fontSize: 12, color: '#6B7280' }}>
+                                    No collectives found
+                                </Text>
+                            </View>
+                        )}
+                    </BottomSheetScrollView>
+
+                    {/* Fixed Footer */}
+                    <View style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 16, borderTopWidth: 1, borderTopColor: '#E5E7EB', backgroundColor: 'white' }}>
+                        {/* Motivational Message */}
+                        {adminCollectivesForSheet.length > 0 && (
+                            <View style={{ marginBottom: 12, alignItems: 'center' }}>
+                                <Text style={{ fontSize: 11, color: '#6B7280', textAlign: 'center' }}>
+                                    Keep building your impact! Create another Collective to bring even more people together.
+                                </Text>
+                            </View>
+                        )}
+
+                        {/* Create Another Collective Button */}
+                        <TouchableOpacity
+                            onPress={() => {
+                                setShowFounderSheet(false);
+                                (navigation as any).navigate('NewCreateCollective');
+                            }}
+                            style={{
+                                backgroundColor: '#1600ff',
+                                paddingVertical: 12,
+                                paddingHorizontal: 16,
+                                borderRadius: 8,
+                                alignItems: 'center',
+                            }}
+                        >
+                            <Text style={{ color: '#FFFFFF', fontSize: 14, fontWeight: '600' }}>
+                                {adminCollectivesForSheet.length > 0 ? 'Create Another Collective' : 'Create Your Own Collective'}
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </BottomSheetModal>
+
             {/* Comments Bottom Sheet */}
             {selectedPost && (
                 <CommentsBottomSheet
@@ -1183,6 +1378,9 @@ export default function Profile() {
 }
 
 const styles = StyleSheet.create({
+    bottomSheetContent: {
+        flex: 1,
+    },
     bottomSheetHeader: {
         flexDirection: 'row',
         alignItems: 'center',

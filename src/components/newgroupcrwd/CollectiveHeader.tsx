@@ -7,6 +7,8 @@ import { favoriteCollective, unfavoriteCollective } from '../../services/api/soc
 import { useAuthStore } from '../../store/store';
 import { Clipboard } from 'react-native';
 import { useToast } from '../../contexts/ToastContext';
+import { Edit } from 'lucide-react-native';
+import { Link2 } from 'lucide-react-native';
 
 interface CollectiveHeaderProps {
   title: string;

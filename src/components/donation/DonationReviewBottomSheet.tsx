@@ -40,6 +40,7 @@ const DonationReviewBottomSheet = forwardRef<any, DonationReviewBottomSheetProps
   const queryClient = useQueryClient();
   const { user: currentUser } = useAuthStore();
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [showPlatformFeeTooltip, setShowPlatformFeeTooltip] = useState(false);
 
   const snapPoints = useMemo(() => ['75%'], []);
 
@@ -272,6 +273,7 @@ const DonationReviewBottomSheet = forwardRef<any, DonationReviewBottomSheetProps
             style={styles.scrollView}
             contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}
+            onScrollBeginDrag={() => setShowPlatformFeeTooltip(false)}
           >
             {/* Summary Box */}
             <View style={styles.summaryBox}>
@@ -286,7 +288,20 @@ const DonationReviewBottomSheet = forwardRef<any, DonationReviewBottomSheetProps
               <View style={styles.summaryRow}>
                 <View style={styles.summaryLabelRow}>
                   <Text style={styles.summaryLabel}>Platform fee:</Text>
-                  <Info size={14} color="#9CA3AF" />
+                  <TouchableOpacity
+                    onPress={() => setShowPlatformFeeTooltip(!showPlatformFeeTooltip)}
+                    style={styles.infoButton}
+                  >
+                    <Info size={14} color="#9CA3AF" />
+                  </TouchableOpacity>
+                  {showPlatformFeeTooltip && (
+                    <View style={styles.tooltip}>
+                      <Text style={styles.tooltipText}>
+                        This fee covers payment processing and platform operations
+                      </Text>
+                      <View style={styles.tooltipArrow} />
+                    </View>
+                  )}
                 </View>
                 <Text style={styles.summaryValue}>${platformFee.toFixed(2)}</Text>
               </View>
@@ -430,6 +445,48 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
+    position: 'relative',
+  },
+  infoButton: {
+    padding: 4,
+  },
+  tooltip: {
+    position: 'absolute',
+    bottom: 30,
+    left: 0,
+    backgroundColor: '#1F2937',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    width: 290,
+    zIndex: 1000,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  tooltipText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    // textAlign: 'center',
+    lineHeight: 16,
+  },
+  tooltipArrow: {
+    position: 'absolute',
+    top: '100%',
+    left: 100,
+    width: 0,
+    height: 0,
+    borderLeftWidth: 4,
+    borderRightWidth: 4,
+    borderTopWidth: 4,
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+    borderTopColor: '#1F2937',
   },
   summaryValue: {
     fontSize: 14,

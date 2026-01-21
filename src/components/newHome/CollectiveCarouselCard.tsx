@@ -170,7 +170,7 @@ export default function CollectiveCarouselCard({
                       currentCollective.role !== 'Admin' && styles.memberBadgeText,
                     ]}
                   >
-                    {currentCollective.role === 'Admin' ? 'Founder' : currentCollective.role}
+                    {currentCollective.role === 'Admin' ? 'Organizer' : currentCollective.role}
                   </Text>
                 </View>
               )}

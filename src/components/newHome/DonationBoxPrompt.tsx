@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Clock, Plus, ArrowRight, ShoppingBag } from 'lucide-react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, CommonActions } from '@react-navigation/native';
 import { useAuthStore } from '../../store/store';
 
 interface DonationBoxPromptProps {
@@ -31,7 +31,41 @@ export default function DonationBoxPrompt({ causeCount, hasJoinedCollectives = f
           <TouchableOpacity
             style={[styles.card, styles.almostThereCard]}
             activeOpacity={0.7}
-            onPress={() => navigation.navigate('Donation' as never)}
+            onPress={() => {
+              navigation.dispatch(
+                CommonActions.reset({
+                  index: 0,
+                  routes: [
+                    {
+                      name: 'DrawerNav',
+                      state: {
+                        routes: [
+                          {
+                            name: 'MainTabs',
+                            state: {
+                              routes: [
+                                { name: 'Home' },
+                                { name: 'Search' },
+                                {
+                                  name: 'Donate',
+                                  params: {
+                                    initialTab: 'setup',
+                                  },
+                                },
+                                { name: 'Collectives' },
+                                { name: 'Profile' },
+                              ],
+                              index: 2, // Donate tab index
+                            },
+                          },
+                        ],
+                        index: 0,
+                      },
+                    },
+                  ],
+                })
+              );
+            }}
           >
             <View style={styles.cardInner}>
               <View style={[styles.iconContainer, styles.orangeIcon]}>
@@ -44,7 +78,41 @@ export default function DonationBoxPrompt({ causeCount, hasJoinedCollectives = f
               </Text>
               <TouchableOpacity
                 style={styles.linkContainer}
-                onPress={() => navigation.navigate('Donation' as never)}
+                onPress={() => {
+                  navigation.dispatch(
+                    CommonActions.reset({
+                      index: 0,
+                      routes: [
+                        {
+                          name: 'DrawerNav',
+                          state: {
+                            routes: [
+                              {
+                                name: 'MainTabs',
+                                state: {
+                                  routes: [
+                                    { name: 'Home' },
+                                    { name: 'Search' },
+                                    {
+                                      name: 'Donate',
+                                      params: {
+                                        initialTab: 'setup',
+                                      },
+                                    },
+                                    { name: 'Collectives' },
+                                    { name: 'Profile' },
+                                  ],
+                                  index: 2, // Donate tab index
+                                },
+                              },
+                            ],
+                            index: 0,
+                          },
+                        },
+                      ],
+                    })
+                  );
+                }}
               >
                 <Text style={styles.orangeLink}>Complete Setup - Just 2 minutes!</Text>
                 <ArrowRight size={16} color="#EA580C" />
@@ -57,7 +125,41 @@ export default function DonationBoxPrompt({ causeCount, hasJoinedCollectives = f
           <TouchableOpacity
             style={styles.card}
             activeOpacity={0.7}
-            onPress={() => navigation.navigate('Donation' as never)}
+            onPress={() => {
+              navigation.dispatch(
+                CommonActions.reset({
+                  index: 0,
+                  routes: [
+                    {
+                      name: 'DrawerNav',
+                      state: {
+                        routes: [
+                          {
+                            name: 'MainTabs',
+                            state: {
+                              routes: [
+                                { name: 'Home' },
+                                { name: 'Search' },
+                                {
+                                  name: 'Donate',
+                                  params: {
+                                    initialTab: 'setup',
+                                  },
+                                },
+                                { name: 'Collectives' },
+                                { name: 'Profile' },
+                              ],
+                              index: 2, // Donate tab index
+                            },
+                          },
+                        ],
+                        index: 0,
+                      },
+                    },
+                  ],
+                })
+              );
+            }}
           >
             <View style={styles.cardInner}>
               <View style={[styles.iconContainer, styles.blueIcon]}>
@@ -70,7 +172,41 @@ export default function DonationBoxPrompt({ causeCount, hasJoinedCollectives = f
               </Text>
               <TouchableOpacity
                 style={styles.linkContainer}
-                onPress={() => navigation.navigate('Donation' as never)}
+                onPress={() => {
+                  navigation.dispatch(
+                    CommonActions.reset({
+                      index: 0,
+                      routes: [
+                        {
+                          name: 'DrawerNav',
+                          state: {
+                            routes: [
+                              {
+                                name: 'MainTabs',
+                                state: {
+                                  routes: [
+                                    { name: 'Home' },
+                                    { name: 'Search' },
+                                    {
+                                      name: 'Donate',
+                                      params: {
+                                        initialTab: 'setup',
+                                      },
+                                    },
+                                    { name: 'Collectives' },
+                                    { name: 'Profile' },
+                                  ],
+                                  index: 2, // Donate tab index
+                                },
+                              },
+                            ],
+                            index: 0,
+                          },
+                        },
+                      ],
+                    })
+                  );
+                }}
               >
                 <Text style={styles.linkText}>Start donating →</Text>
               </TouchableOpacity>

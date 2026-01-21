@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   sectionTitle: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '700',
     color: '#111827',
     marginBottom: 4,
@@ -170,11 +170,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 6,
-    marginTop: 4,
+    // marginTop: 4,
   },
   mainFocusBadge: {
     paddingEnd: 5,
-    paddingVertical: 4,
+    // paddingVertical: 4,
     borderRadius: 20,
   },
   mainFocusText: {
@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
   taxId: {
     fontSize: 12,
     color: '#374151',
-    marginTop: 4,
+    // marginTop: 4,
   },
 });
 

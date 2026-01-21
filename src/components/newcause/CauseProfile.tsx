@@ -98,16 +98,10 @@ export default function CauseProfile({ causeData }: CauseProfileProps) {
               <TouchableOpacity
                 key={index}
                 onPress={() => {
-                  (navigation as any).navigate('DrawerNav', {
-                    screen: 'MainTabs',
-                    params: {
-                      screen: 'Search',
-                      params: {
-                        searchQuery: cat.name,
-                        autoSearch: true,
-                        activeTab: 'Causes'
-                      }
-                    }
+                  (navigation as any).navigate('Search', {
+                    categoryId: cat.id,
+                    categoryName: cat.name,
+                    searchQuery: cat.name,
                   });
                 }}
                 style={[

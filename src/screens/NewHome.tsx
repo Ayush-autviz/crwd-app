@@ -235,6 +235,7 @@ export default function NewHome() {
             founder: {
               name: founderName,
               profile_picture: collective.created_by?.profile_picture || '',
+              color: collective.created_by?.color || '',
             },
             nonprofit_count:
               collective.causes_count ||

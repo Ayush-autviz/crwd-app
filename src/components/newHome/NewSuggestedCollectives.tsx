@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
     padding: 12,
     minWidth: 240,
     maxWidth: 280,
-    height: 220,
+    height: 200,
     marginRight: 12,
     flexDirection: 'column',
   },

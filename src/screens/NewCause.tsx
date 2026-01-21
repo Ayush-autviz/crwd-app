@@ -26,6 +26,7 @@ import OrganizationMission from '../components/newcause/OrganizationMission';
 import SimilarNonprofits from '../components/newcause/SimilarNonprofits';
 import { Share } from 'react-native';
 import AddToDonationBoxBottomSheet from '../components/newcause/AddToDonationBoxBottomSheet';
+import { categories } from '../Constants/categories';
 
 export default function NewCausePage() {
   const route = useRoute();
@@ -390,7 +391,12 @@ export default function NewCausePage() {
 
           <CauseDetails causeData={causeData} />
 
-          <SimilarNonprofits similarCauses={similarCauses} isLoading={isLoadingSimilar} />
+          <SimilarNonprofits 
+            similarCauses={similarCauses} 
+            isLoading={isLoadingSimilar}
+            categoryName={causeData?.category ? categories.find(c => c.id === causeData.category)?.name : undefined}
+            categoryId={causeData?.category}
+          />
         </View>
 
       </ScrollView>

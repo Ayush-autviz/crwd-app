@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   mission: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#111827',
     lineHeight: 20,
   },

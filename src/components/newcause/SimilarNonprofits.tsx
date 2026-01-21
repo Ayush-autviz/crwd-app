@@ -6,9 +6,11 @@ import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
 interface SimilarNonprofitsProps {
   similarCauses: any[];
   isLoading?: boolean;
+  categoryName?: string;
+  categoryId?: string;
 }
 
-export default function SimilarNonprofits({ similarCauses, isLoading }: SimilarNonprofitsProps) {
+export default function SimilarNonprofits({ similarCauses, isLoading, categoryName, categoryId }: SimilarNonprofitsProps) {
   const navigation = useNavigation();
 
   // Get consistent color for avatar
@@ -40,7 +42,23 @@ export default function SimilarNonprofits({ similarCauses, isLoading }: SimilarN
   if (isLoading) {
     return (
       <View style={styles.container}>
-        <Text style={styles.title}>Similar Nonprofits</Text>
+        <View style={styles.titleRow}>
+          <Text style={styles.title}>Similar Nonprofits</Text>
+          {categoryName && categoryId && (
+            <TouchableOpacity
+              onPress={() => {
+                (navigation as any).navigate('Search', {
+                  categoryId,
+                  categoryName,
+                  searchQuery: categoryName,
+                });
+              }}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.seeAllText}>See all</Text>
+            </TouchableOpacity>
+          )}
+        </View>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#9CA3AF" />
         </View>
@@ -54,7 +72,23 @@ export default function SimilarNonprofits({ similarCauses, isLoading }: SimilarN
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Similar Nonprofits</Text>
+      <View style={styles.titleRow}>
+        <Text style={styles.title}>Similar Nonprofits</Text>
+        {categoryName && categoryId && (
+          <TouchableOpacity
+            onPress={() => {
+              (navigation as any).navigate('Search', {
+                categoryId,
+                categoryName,
+                searchQuery: categoryName,
+              });
+            }}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.seeAllText}>See all</Text>
+          </TouchableOpacity>
+        )}
+      </View>
       <View style={styles.causesList}>
         {similarCauses.map((cause) => {
           const avatarBgColor = getConsistentColor(cause.id || cause.name, avatarColors);
@@ -97,11 +131,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 16,
   },
+  titleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
   title: {
     fontSize: 16,
     fontWeight: '700',
     color: '#111827',
-    marginBottom: 12,
+  },
+  seeAllText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#1600ff',
   },
   loadingContainer: {
     paddingVertical: 24,

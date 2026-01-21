@@ -642,7 +642,7 @@ export default function UserProfile() {
                                     <Share2 size={16} color="#374151" />
                                     <Text style={styles.menuItemText}>Share Profile</Text>
                                 </TouchableOpacity>
-                                <TouchableOpacity
+                                {/* <TouchableOpacity
                                     onPress={() => {
                                         setShowMenu(false);
                                         Alert.alert('Report Profile', 'Report functionality would go here');
@@ -652,7 +652,7 @@ export default function UserProfile() {
                                 >
                                     <Flag size={16} color="#ef4444" />
                                     <Text style={[styles.menuItemText, { color: '#ef4444' }]}>Report Profile</Text>
-                                </TouchableOpacity>
+                                </TouchableOpacity> */}
                             </View>
                         </TouchableWithoutFeedback>
                     )}

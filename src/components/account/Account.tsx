@@ -228,8 +228,9 @@ export default function Account() {
                   style={styles.profilePicture}
                 />
               ) : (
-                <View style={styles.profilePicture}>
-                  <User size={50} color="#FFFFFF" />
+                <View style={[styles.profilePicture, { backgroundColor: profileData.color }]}>
+                  {/* <User size={50} color="#FFFFFF" /> */}
+                  <Text style={styles.initials}>{profileData.first_name.charAt(0).toUpperCase()}</Text>
                 </View>
               )}
             </TouchableOpacity>
@@ -418,9 +419,9 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
   },
   profilePicture: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 120,
+    height: 120,
+    borderRadius: 500,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#8B5CF6',
@@ -448,6 +449,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     paddingHorizontal: 0,
     margin: 0,
+  },
+  initials: {
+    fontSize: 32,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
   fieldsContainer: {
     paddingHorizontal: 20,

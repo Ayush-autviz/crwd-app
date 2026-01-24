@@ -173,7 +173,14 @@ export default function CollectiveCarouselCard({
           {/* Content */}
           <View style={styles.textContent}>
             <Text style={styles.description}>
-              <Text style={styles.bold}>{currentCollective?.name || 'Unknown Collective'}</Text> has{' '}
+              <Text
+                style={styles.bold}
+                onPress={() => {
+                  if (currentCollective?.id) {
+                    (navigation as any).navigate('GroupCRWD', { id: currentCollective.id });
+                  }
+                }}
+              >{currentCollective?.name || 'Unknown Collective'}</Text> has{' '}
               <Text style={styles.bold}>{currentCollective?.memberCount || 0}</Text> members donating to{' '}
               <Text style={styles.bold}>{currentCollective?.causeCount || 0} causes</Text>.
             </Text>
@@ -289,7 +296,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   title: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '700',
     color: '#111827',
     marginBottom: 4,

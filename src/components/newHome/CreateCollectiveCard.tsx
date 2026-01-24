@@ -73,14 +73,14 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   cardTitle: {
-    fontSize: 14,
+    fontSize: 17,
     fontWeight: '700',
     color: '#111827',
     marginBottom: 4,
     textAlign: 'left',
   },
   cardSubtitle: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#4B5563',
     marginBottom: 8,
     marginTop: 4,

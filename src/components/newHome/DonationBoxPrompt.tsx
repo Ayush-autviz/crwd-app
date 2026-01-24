@@ -72,51 +72,51 @@ export default function DonationBoxPrompt({ causeCount, hasJoinedCollectives = f
                 <Clock size={24} color="#FFFFFF" />
               </View>
               <View style={styles.content}>
-              <Text style={styles.cardTitle}>You're Almost There!</Text>
-              <Text style={styles.cardDescription}>
-                You selected <Text style={styles.bold}>{causeCount} {causeCount === 1 ? 'cause' : 'causes'}</Text> but haven't started donating yet
-              </Text>
-              <TouchableOpacity
-                style={styles.linkContainer}
-                onPress={() => {
-                  navigation.dispatch(
-                    CommonActions.reset({
-                      index: 0,
-                      routes: [
-                        {
-                          name: 'DrawerNav',
-                          state: {
-                            routes: [
-                              {
-                                name: 'MainTabs',
-                                state: {
-                                  routes: [
-                                    { name: 'Home' },
-                                    { name: 'Search' },
-                                    {
-                                      name: 'Donate',
-                                      params: {
-                                        initialTab: 'setup',
+                <Text style={styles.cardTitle}>You're Almost There!</Text>
+                <Text style={[styles.cardDescription, { color: '#78350F' }]}>
+                  You selected <Text style={styles.bold}>{causeCount} {causeCount === 1 ? 'cause' : 'causes'}</Text> but haven't started donating yet
+                </Text>
+                <TouchableOpacity
+                  style={styles.linkContainer}
+                  onPress={() => {
+                    navigation.dispatch(
+                      CommonActions.reset({
+                        index: 0,
+                        routes: [
+                          {
+                            name: 'DrawerNav',
+                            state: {
+                              routes: [
+                                {
+                                  name: 'MainTabs',
+                                  state: {
+                                    routes: [
+                                      { name: 'Home' },
+                                      { name: 'Search' },
+                                      {
+                                        name: 'Donate',
+                                        params: {
+                                          initialTab: 'setup',
+                                        },
                                       },
-                                    },
-                                    { name: 'Collectives' },
-                                    { name: 'Profile' },
-                                  ],
-                                  index: 2, // Donate tab index
+                                      { name: 'Collectives' },
+                                      { name: 'Profile' },
+                                    ],
+                                    index: 2, // Donate tab index
+                                  },
                                 },
-                              },
-                            ],
-                            index: 0,
+                              ],
+                              index: 0,
+                            },
                           },
-                        },
-                      ],
-                    })
-                  );
-                }}
-              >
-                <Text style={styles.orangeLink}>Complete Setup - Just 2 minutes!</Text>
-                <ArrowRight size={16} color="#EA580C" />
-              </TouchableOpacity>
+                        ],
+                      })
+                    );
+                  }}
+                >
+                  <Text style={styles.orangeLink}>Complete Setup - Just 2 minutes!</Text>
+                  <ArrowRight size={16} color="#EA580C" />
+                </TouchableOpacity>
               </View>
             </View>
           </TouchableOpacity>
@@ -166,50 +166,50 @@ export default function DonationBoxPrompt({ causeCount, hasJoinedCollectives = f
                 <ShoppingBag size={24} color="#FFFFFF" />
               </View>
               <View style={styles.content}>
-              <Text style={styles.cardTitle}>Create a Donation Box</Text>
-              <Text style={styles.cardSubtitle}>
-                Support multiple causes with one donation
-              </Text>
-              <TouchableOpacity
-                style={styles.linkContainer}
-                onPress={() => {
-                  navigation.dispatch(
-                    CommonActions.reset({
-                      index: 0,
-                      routes: [
-                        {
-                          name: 'DrawerNav',
-                          state: {
-                            routes: [
-                              {
-                                name: 'MainTabs',
-                                state: {
-                                  routes: [
-                                    { name: 'Home' },
-                                    { name: 'Search' },
-                                    {
-                                      name: 'Donate',
-                                      params: {
-                                        initialTab: 'setup',
+                <Text style={styles.cardTitle}>Create a Donation Box</Text>
+                <Text style={styles.cardSubtitle}>
+                  Support multiple causes with one donation
+                </Text>
+                <TouchableOpacity
+                  style={styles.linkContainer}
+                  onPress={() => {
+                    navigation.dispatch(
+                      CommonActions.reset({
+                        index: 0,
+                        routes: [
+                          {
+                            name: 'DrawerNav',
+                            state: {
+                              routes: [
+                                {
+                                  name: 'MainTabs',
+                                  state: {
+                                    routes: [
+                                      { name: 'Home' },
+                                      { name: 'Search' },
+                                      {
+                                        name: 'Donate',
+                                        params: {
+                                          initialTab: 'setup',
+                                        },
                                       },
-                                    },
-                                    { name: 'Collectives' },
-                                    { name: 'Profile' },
-                                  ],
-                                  index: 2, // Donate tab index
+                                      { name: 'Collectives' },
+                                      { name: 'Profile' },
+                                    ],
+                                    index: 2, // Donate tab index
+                                  },
                                 },
-                              },
-                            ],
-                            index: 0,
+                              ],
+                              index: 0,
+                            },
                           },
-                        },
-                      ],
-                    })
-                  );
-                }}
-              >
-                <Text style={styles.linkText}>Start donating →</Text>
-              </TouchableOpacity>
+                        ],
+                      })
+                    );
+                  }}
+                >
+                  <Text style={styles.linkText}>Start donating →</Text>
+                </TouchableOpacity>
               </View>
             </View>
           </TouchableOpacity>
@@ -303,21 +303,21 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   cardTitle: {
-    fontSize: 14,
+    fontSize: 17,
     fontWeight: '700',
     color: '#111827',
     marginBottom: 4,
     textAlign: 'left',
   },
   cardDescription: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#111827',
     marginBottom: 12,
     lineHeight: 18,
     textAlign: 'left',
   },
   cardSubtitle: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#4B5563',
     marginBottom: 8,
     marginTop: 4,

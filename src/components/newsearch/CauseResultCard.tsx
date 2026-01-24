@@ -2,6 +2,8 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
+import { truncateAtFirstPeriod } from '../../utils/truncateFirstPeriod';
+
 
 interface CauseResultCardProps {
   cause: {
@@ -37,12 +39,6 @@ const getConsistentColor = (id: number | string, colors: string[]) => {
   return colors[hash % colors.length];
 };
 
-// Helper function to truncate description at first period
-const truncateAtFirstPeriod = (text: string): string => {
-  if (!text) return text;
-  const periodIndex = text.indexOf('.');
-  return periodIndex !== -1 ? text.substring(0, periodIndex + 1) : text;
-};
 
 export default function CauseResultCard({ cause }: CauseResultCardProps) {
   const navigation = useNavigation();
@@ -77,7 +73,7 @@ export default function CauseResultCard({ cause }: CauseResultCardProps) {
         <View style={styles.textContainer}>
           <Text style={styles.title}>{cause.name}</Text>
           {location ? <Text style={styles.location}>{location}</Text> : null}
-          <Text style={styles.description} numberOfLines={1}>
+          <Text style={styles.description}>
             {truncatedDescription}
           </Text>
         </View>

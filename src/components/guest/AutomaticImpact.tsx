@@ -1,5 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
+import { Check } from 'lucide-react-native';
 import { PrimaryBlue } from '../../Constants/Colors';
 
 const { width: screenWidth } = Dimensions.get('window');
@@ -8,72 +10,79 @@ export default function AutomaticImpact() {
   const amountOptions = [5, 25, 50];
 
   return (
-    <View style={styles.container}>
-      <View style={styles.content}>
-        {/* Heading */}
-        <Text style={styles.heading}>
-          From Caring to <Text style={styles.headingHighlight}>Doing</Text> in 3 Simple Steps.
-        </Text>
+    <LinearGradient
+      colors={['#eff6ff', '#faf5ff', '#fdf2f8']}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 0 }}
+    // style={styles.container}
+    >
+      <View style={styles.container}>
+        <View style={styles.content}>
+          {/* Heading */}
+          <Text style={styles.heading}>
+            From Caring to <Text style={styles.headingHighlight}>Doing</Text> in 3 Simple Steps.
+          </Text>
 
-        {/* Three Step Cards */}
-        <View style={styles.stepsContainer}>
-          {/* Step 1 */}
-          <View style={styles.card}>
-            <View style={styles.stepCircleBlue}>
-              <Text style={styles.stepNumberBlue}>1</Text>
+          {/* Three Step Cards */}
+          <View style={styles.stepsContainer}>
+            {/* Step 1 */}
+            <View style={styles.card}>
+              <View style={styles.stepCircleBlue}>
+                <Text style={styles.stepNumberBlue}>1</Text>
+              </View>
+              <Text style={styles.stepTitle}>Set one monthly amount</Text>
+              <View style={styles.amountButtonsContainer}>
+                {amountOptions.map((amount) => (
+                  <View
+                    key={amount}
+                    style={[
+                      styles.amountButton,
+                      {
+                        backgroundColor:
+                          amount === 5
+                            ? '#1600ff'
+                            : amount === 25
+                              ? '#ff3366'
+                              : '#a854f7',
+                      },
+                    ]}
+                  >
+                    <Text style={styles.amountButtonText}>${amount}</Text>
+                  </View>
+                ))}
+              </View>
+              <Text style={styles.amountSubtext}>whatever works for you</Text>
             </View>
-            <Text style={styles.stepTitle}>Set one monthly amount</Text>
-            <View style={styles.amountButtonsContainer}>
-              {amountOptions.map((amount) => (
-                <View
-                  key={amount}
-                  style={[
-                    styles.amountButton,
-                    {
-                      backgroundColor:
-                        amount === 5
-                          ? '#1600ff'
-                          : amount === 25
-                            ? '#ff3366'
-                            : '#a854f7',
-                    },
-                  ]}
-                >
-                  <Text style={styles.amountButtonText}>${amount}</Text>
-                </View>
-              ))}
+
+            {/* Step 2 */}
+            <View style={styles.card}>
+              <View style={styles.stepCirclePink}>
+                <Text style={styles.stepNumberPink}>2</Text>
+              </View>
+              <Text style={styles.stepTitle}>Split it across every nonprofit you care about</Text>
             </View>
-            <Text style={styles.amountSubtext}>whatever works for you</Text>
+
+            {/* Step 3 */}
+            <View style={styles.card}>
+              <View style={styles.stepCirclePurple}>
+                <Text style={styles.stepNumberPurple}>3</Text>
+              </View>
+              <Text style={styles.stepTitle}>We handle everything automatically</Text>
+            </View>
           </View>
 
-          {/* Step 2 */}
-          <View style={styles.card}>
-            <View style={styles.stepCirclePink}>
-              <Text style={styles.stepNumberPink}>2</Text>
-            </View>
-            <Text style={styles.stepTitle}>Split it across every nonprofit you care about</Text>
-          </View>
-
-          {/* Step 3 */}
-          <View style={styles.card}>
-            <View style={styles.stepCirclePurple}>
-              <Text style={styles.stepNumberPurple}>3</Text>
-            </View>
-            <Text style={styles.stepTitle}>We handle everything automatically</Text>
-          </View>
+          <Text style={styles.benefitsMessage}>
+            Just set it once, and become someone who actually makes a difference.
+          </Text>
         </View>
-
-        <Text style={styles.benefitsMessage}>
-          Just set it once, and become someone who actually makes a difference.
-        </Text>
       </View>
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#f8fafc', // from-blue-50 via-purple-50 to-pink-50 approximated
+    // backgroundColor: '#f8fafc', // Removed for gradient
     paddingVertical: 40,
     paddingHorizontal: 16,
   },

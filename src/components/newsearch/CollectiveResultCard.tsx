@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { useNavigation, CommonActions } from '@react-navigation/native';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
 import { useAuthStore } from '../../store/store';
+import { truncateAtFirstPeriod } from '../../utils/truncateFirstPeriod';
 
 interface CollectiveResultCardProps {
   collective: {
@@ -133,8 +134,8 @@ export default function CollectiveResultCard({ collective }: CollectiveResultCar
           <Text style={styles.title}>{collective.name}</Text>
 
           {/* Description */}
-          <Text style={styles.description} numberOfLines={1}>
-            {collective.description || 'No description available'}
+          <Text style={styles.description} >
+            {truncateAtFirstPeriod(collective.description || 'No description available')}
           </Text>
 
           {/* Founder Information */}

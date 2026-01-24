@@ -13,7 +13,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import { Search, Menu, ChevronRight, LogIn, Users, CheckSquare, Settings, X } from 'lucide-react-native';
+import { Search, Menu, ChevronRight, LogIn, Users, CheckSquare, Settings, X, Check } from 'lucide-react-native';
+import LinearGradient from 'react-native-linear-gradient';
 import { PrimaryBlue } from '../Constants/Colors';
 import Slider from '@react-native-community/slider';
 import AutomaticImpact from './guest/AutomaticImpact';
@@ -244,77 +245,99 @@ export default function GuestHome() {
           >
             <Text style={styles.getStartedButtonText}>Get started</Text>
           </TouchableOpacity>
+
+          <View style={styles.verifiedContainer}>
+            <View style={styles.verifiedItem}>
+              <View style={styles.checkCircle}>
+                <Check size={14} color="#1600ff" />
+              </View>
+              <Text style={styles.verifiedText}>Thousands of verified nonprofits</Text>
+            </View>
+            <View style={styles.verifiedItem}>
+              <View style={styles.checkCircle}>
+                <Check size={14} color="#1600ff" />
+              </View>
+              <Text style={styles.verifiedText}>Start with any amount</Text>
+            </View>
+          </View>
         </View>
 
         {/* See the Magic in Action Section */}
-        <View style={styles.magicSection}>
-          <Text style={styles.magicTitle}>
-            See the <Text style={styles.magicTitleHighlight}>Magic</Text> in Action
-          </Text>
-          <Text style={styles.magicDescription}>
-            Set your monthly amount. We split it automatically.
-          </Text>
-
-          {/* Demo Card */}
-          <View style={styles.demoCard}>
-            <Text style={styles.demoCardText}>
-              You can give{' '}
-              <Text style={styles.demoCardAmount}>${donationAmount}</Text>/month to
+        <LinearGradient
+          colors={['#f1f6ff', '#f7f6ff', '#fdf3f8']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.magicSection}
+        >
+          <View style={{ paddingHorizontal: 16, paddingVertical: 40 }}>
+            <Text style={styles.magicTitle}>
+              See the <Text style={styles.magicTitleHighlight}>Magic</Text> in Action
+            </Text>
+            <Text style={styles.magicDescription}>
+              Set your monthly amount. We split it automatically.
             </Text>
 
-            {/* Slider */}
-            <View style={styles.sliderContainer}>
-              <Slider
-                style={styles.slider}
-                minimumValue={5}
-                maximumValue={100}
-                step={5}
-                value={donationAmount}
-                onValueChange={(value) => setDonationAmount(Math.round(value / 5) * 5)}
-                minimumTrackTintColor="#1600ff"
-                maximumTrackTintColor="#E5E7EB"
-                thumbTintColor="#1600ff"
-              />
-            </View>
-
-            {/* Cause Buttons */}
-            <View style={styles.causeButtonsContainer}>
-              {causeSets[currentCauseSet].map((cause, index) => (
-                <View
-                  key={`${cause.name}-${currentCauseSet}-${index}`}
-                  style={[styles.causeButton, { backgroundColor: cause.bgColor }]}
-                >
-                  <Text style={styles.causeButtonText}>{cause.name}</Text>
-                </View>
-              ))}
-            </View>
-
-            <Text style={styles.yearlyImpact}>
-              = <Text style={styles.yearlyImpactAmount}>${donationAmount * 12}</Text> /year of impact
-            </Text>
-
-            {/* Distribution Bar */}
-            <View style={styles.distributionBar}>
-              <View style={[styles.distributionSegment, { backgroundColor: '#EC4899' }]} />
-              <View style={[styles.distributionSegment, { backgroundColor: '#F59E0B' }]} />
-              <View style={[styles.distributionSegment, { backgroundColor: '#10B981' }]} />
-              <View style={[styles.distributionSegment, { backgroundColor: '#1600ff' }]} />
-            </View>
-
-            <Text style={styles.oneGiftText}>One gift. Multiple causes.</Text>
-
-            <TouchableOpacity
-              onPress={() => navigation.navigate('Waitlist' as never)}
-              style={styles.startSupportingButton}
-            >
-              <Text style={styles.startSupportingButtonText}>
-                Start Supporting
+            {/* Demo Card */}
+            <View style={styles.demoCard}>
+              <Text style={styles.demoCardText}>
+                You can give{' '}
+                <Text style={styles.demoCardAmount}>${donationAmount}</Text>/month to
               </Text>
-              <ChevronRight size={20} color="white" />
-            </TouchableOpacity>
-            <Text style={styles.everyDollarText}>All nonprofits are verified 501(c)(3) organizations</Text>
+
+              {/* Slider */}
+              <View style={styles.sliderContainer}>
+                <Slider
+                  style={styles.slider}
+                  minimumValue={5}
+                  maximumValue={100}
+                  step={5}
+                  value={donationAmount}
+                  onValueChange={(value) => setDonationAmount(Math.round(value / 5) * 5)}
+                  minimumTrackTintColor="#1600ff"
+                  maximumTrackTintColor="#E5E7EB"
+                  thumbTintColor="#1600ff"
+                />
+              </View>
+
+              {/* Cause Buttons */}
+              <View style={styles.causeButtonsContainer}>
+                {causeSets[currentCauseSet].map((cause, index) => (
+                  <View
+                    key={`${cause.name}-${currentCauseSet}-${index}`}
+                    style={[styles.causeButton, { backgroundColor: cause.bgColor }]}
+                  >
+                    <Text style={styles.causeButtonText}>{cause.name}</Text>
+                  </View>
+                ))}
+              </View>
+
+              <Text style={styles.yearlyImpact}>
+                = <Text style={styles.yearlyImpactAmount}>${donationAmount * 12}</Text> /year of impact
+              </Text>
+
+              {/* Distribution Bar */}
+              <View style={styles.distributionBar}>
+                <View style={[styles.distributionSegment, { backgroundColor: '#EC4899' }]} />
+                <View style={[styles.distributionSegment, { backgroundColor: '#F59E0B' }]} />
+                <View style={[styles.distributionSegment, { backgroundColor: '#10B981' }]} />
+                <View style={[styles.distributionSegment, { backgroundColor: '#1600ff' }]} />
+              </View>
+
+              <Text style={styles.oneGiftText}>One gift. Multiple causes.</Text>
+
+              <TouchableOpacity
+                onPress={() => navigation.navigate('Waitlist' as never)}
+                style={styles.startSupportingButton}
+              >
+                <Text style={styles.startSupportingButtonText}>
+                  Start Supporting
+                </Text>
+                <ChevronRight size={20} color="white" />
+              </TouchableOpacity>
+              <Text style={styles.everyDollarText}>All nonprofits are verified 501(c)(3) organizations</Text>
+            </View>
           </View>
-        </View>
+        </LinearGradient>
 
         {/* Automatic Impact Section */}
         <AutomaticImpact />
@@ -550,16 +573,41 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
     paddingVertical: 16,
     borderRadius: 8,
+    marginBottom: 24,
   },
   getStartedButtonText: {
     color: 'white',
     fontWeight: 'bold',
     fontSize: 18,
   },
+  verifiedContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 16,
+  },
+  verifiedItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  checkCircle: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#e0e7ff', // light blue from blue-100? or manual check against vite
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  verifiedText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151', // gray-700
+  },
   magicSection: {
-    backgroundColor: '#F1F6FF',
-    paddingVertical: 40,
-    paddingHorizontal: 16,
+    // backgroundColor: '#F1F6FF', // Removed as we use LinearGradient now
+    // paddingVertical: 40,
+    // paddingHorizontal: 16,
   },
   magicTitle: {
     fontSize: 28,

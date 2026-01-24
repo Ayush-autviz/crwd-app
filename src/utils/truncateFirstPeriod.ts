@@ -9,7 +9,7 @@
 
 
 
-export const truncateTextSmart = (
+export const truncateAtFirstPeriod = (
   text: string,
   minChars = 75,
   maxChars = 125

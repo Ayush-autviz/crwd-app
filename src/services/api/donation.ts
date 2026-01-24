@@ -89,17 +89,22 @@ export const getDonationSuccess = async () => {
 
 // Payment methods (mobile SDK)
 export const getPaymentMethod = async () => {
-  const response = await axiosClient.get('/donations/payment-methods/');
-  return response.data;
+    const response = await axiosClient.get('/donations/payment-methods/');
+    return response.data;
 };
 
 export const getPaymentMethodSetupIntent = async () => {
-  const response = await axiosClient.post('/donations/payment-methods/setup-intent/');
-  return response.data;
+    const response = await axiosClient.post('/donations/payment-methods/setup-intent/');
+    return response.data;
 };
 
 export const updatePaymentMethod = async (data: { payment_method_id: string }) => {
-  const response = await axiosClient.post('/donations/payment-methods/update/', data);
-  return response.data;
+    const response = await axiosClient.post('/donations/payment-methods/update/', data);
+    return response.data;
+};
+
+export const getTransactionReceipt = async (donationId: string) => {
+    const response = await axiosClient.get(`/donations/receipt/${donationId}/`);
+    return response.data;
 };
 

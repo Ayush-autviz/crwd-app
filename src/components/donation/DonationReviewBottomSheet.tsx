@@ -100,7 +100,7 @@ const DonationReviewBottomSheet = forwardRef<any, DonationReviewBottomSheetProps
         setIsProcessingPayment(false);
         return;
       }
-      
+
       setIsProcessingPayment(true);
       try {
         const merchantDisplayName = getMerchantDisplayName();
@@ -124,7 +124,7 @@ const DonationReviewBottomSheet = forwardRef<any, DonationReviewBottomSheetProps
           return;
         }
 
-        if(!present.error) {
+        if (!present.error) {
           // Keep loader showing while confirming
           confirmActivationMutation.mutate({
             payment_intent_id: response.payment_intent_id,
@@ -197,10 +197,10 @@ const DonationReviewBottomSheet = forwardRef<any, DonationReviewBottomSheetProps
 
   const actualDonationAmount = parseFloat(donationAmount.toString());
   const fees = calculateFees(actualDonationAmount);
-  
+
   // Platform fee = CRWD fee (covers all platform + processing costs)
   const platformFee = fees.crwdFee;
-  
+
   // Calculate totals - only count causes (not collectives)
   const totalCauses = selectedCauses.length;
   const perCause = totalCauses > 0 ? fees.net / totalCauses : 0;
@@ -240,7 +240,7 @@ const DonationReviewBottomSheet = forwardRef<any, DonationReviewBottomSheetProps
         >
           <View style={styles.logoAnimationContainer}>
             <CrwdAnimation size="lg" />
-            <Text style={styles.creatingText}>Creating collective...</Text>
+            {/* <Text style={styles.creatingText}>Creating collective...</Text> */}
           </View>
         </Modal>
       )}
@@ -269,7 +269,7 @@ const DonationReviewBottomSheet = forwardRef<any, DonationReviewBottomSheetProps
           </View>
 
           {/* Content - Scrollable */}
-          <BottomSheetScrollView 
+          <BottomSheetScrollView
             style={styles.scrollView}
             contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}

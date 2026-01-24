@@ -528,11 +528,11 @@ export default function PopularPosts({
 
                         // Get initials from firstName/lastName or username
                         const getInitials = (firstName?: string, lastName?: string, username?: string) => {
-                            if (firstName && lastName) {
+                            if (firstName) {
                                 return `${firstName[0]}`.toUpperCase();
                             }
                             if (username) {
-                                return username.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+                                return username.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 1);
                             }
                             return 'U';
                         };

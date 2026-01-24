@@ -428,16 +428,16 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
 
       {/* Media Section - Only show if no fundraiser */}
       {!post.fundraiser && !post.preview_details?.image && post.media && (
-        <TouchableOpacity
-          onPress={() => {
-            if (post.media) {
-              Linking.openURL(post.media);
-            }
-          }}
-          activeOpacity={0.9}
-        >
-          <Image source={{ uri: post.media }} style={styles.media} resizeMode="cover" />
-        </TouchableOpacity>
+        // <TouchableOpacity
+        //   onPress={() => {
+        //     if (post.media) {
+        //       Linking.openURL(post.media);
+        //     }
+        //   }}
+        //   activeOpacity={0.9}
+        // >
+        <Image source={{ uri: post.media }} style={styles.media} resizeMode="cover" />
+        // </TouchableOpacity>
       )}
 
       {/* Fundraiser UI */}
@@ -539,14 +539,14 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
       ) : (
         /* Preview Card */
         post.preview_details && (post.preview_details.url || post.preview_details.title || post.preview_details.image) ? (
-          <TouchableOpacity
-            onPress={() => {
-              if (post.preview_details?.url) {
-                Linking.openURL(post.preview_details.url);
-              }
-            }}
+          <View
+            // onPress={() => {
+            //   if (post.preview_details?.url) {
+            //     Linking.openURL(post.preview_details.url);
+            //   }
+            // }}
             style={styles.previewCardVertical}
-            activeOpacity={0.8}
+          // activeOpacity={0.8}
           >
             {post.preview_details.image && (
               <Image
@@ -572,7 +572,7 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
                 </Text>
               )}
             </View>
-          </TouchableOpacity>
+          </View>
         ) : null
       )}
 

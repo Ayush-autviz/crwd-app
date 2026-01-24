@@ -24,6 +24,9 @@ interface DonationReviewBottomSheetProps {
   selectedCauses: any[];
   onComplete: () => void;
   onClose?: () => void;
+  onSubmit?: () => void;
+  isOneTime?: boolean;
+  isProcessing?: boolean;
 }
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
@@ -33,13 +36,18 @@ const DonationReviewBottomSheet = forwardRef<any, DonationReviewBottomSheetProps
   selectedCauses,
   onComplete,
   onClose,
+  onSubmit,
+  isOneTime = false,
+  isProcessing: externalIsProcessing = false,
 }, ref) => {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const [showLogoAnimation, setShowLogoAnimation] = useState(false);
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const queryClient = useQueryClient();
   const { user: currentUser } = useAuthStore();
-  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [internalIsProcessing, setInternalIsProcessing] = useState(false);
+
+  const isProcessingPayment = internalIsProcessing || externalIsProcessing;
   const [showPlatformFeeTooltip, setShowPlatformFeeTooltip] = useState(false);
 
   const snapPoints = useMemo(() => ['75%'], []);
@@ -97,11 +105,11 @@ const DonationReviewBottomSheet = forwardRef<any, DonationReviewBottomSheetProps
       const clientSecret = response?.client_secret;
       if (!clientSecret) {
         Alert.alert('Error', 'Missing client secret');
-        setIsProcessingPayment(false);
+        setInternalIsProcessing(false);
         return;
       }
 
-      setIsProcessingPayment(true);
+      setInternalIsProcessing(true);
       try {
         const merchantDisplayName = getMerchantDisplayName();
         const init = await initPaymentSheet({
@@ -114,13 +122,13 @@ const DonationReviewBottomSheet = forwardRef<any, DonationReviewBottomSheetProps
         });
         if (init.error) {
           Alert.alert('Error', init.error.message || 'Failed to initialize payment');
-          setIsProcessingPayment(false);
+          setInternalIsProcessing(false);
           return;
         }
         const present = await presentPaymentSheet();
         if (present.error && present.error.code !== 'Canceled') {
           Alert.alert('Payment Failed', present.error.message || 'Unable to complete payment');
-          setIsProcessingPayment(false);
+          setInternalIsProcessing(false);
           return;
         }
 
@@ -130,17 +138,17 @@ const DonationReviewBottomSheet = forwardRef<any, DonationReviewBottomSheetProps
             payment_intent_id: response.payment_intent_id,
           });
         } else {
-          setIsProcessingPayment(false);
+          setInternalIsProcessing(false);
         }
       } catch (error) {
-        setIsProcessingPayment(false);
+        setInternalIsProcessing(false);
         Alert.alert('Error', 'Payment processing failed');
       }
     },
     onError: (error: any) => {
       console.error('Error activating donation box:', error);
       Alert.alert('Error', error?.response?.data?.message || 'Activation failed');
-      setIsProcessingPayment(false);
+      setInternalIsProcessing(false);
     },
   });
 
@@ -158,7 +166,7 @@ const DonationReviewBottomSheet = forwardRef<any, DonationReviewBottomSheetProps
     },
     onError: (e: any) => {
       Alert.alert('Error', e?.response?.data?.message || 'Activation failed');
-      setIsProcessingPayment(false);
+      setInternalIsProcessing(false);
       setShowLogoAnimation(false);
     },
   });
@@ -258,9 +266,11 @@ const DonationReviewBottomSheet = forwardRef<any, DonationReviewBottomSheetProps
           {/* Header - Fixed */}
           <View style={styles.header}>
             <View style={styles.headerContent}>
-              <Text style={styles.title}>Complete Your Monthly Gift</Text>
+              <Text style={styles.title}>{isOneTime ? 'Complete Your Gift' : 'Complete Your Monthly Gift'}</Text>
               <Text style={styles.subtitle}>
-                Review your recurring donation details and set up monthly payment.
+                {isOneTime
+                  ? 'Review your donation details and complete payment.'
+                  : 'Review your recurring donation details and set up monthly payment.'}
               </Text>
             </View>
             <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
@@ -357,7 +367,13 @@ const DonationReviewBottomSheet = forwardRef<any, DonationReviewBottomSheetProps
           {/* Complete Monthly Gift Button - Fixed at bottom */}
           <View style={styles.footer}>
             <TouchableOpacity
-              onPress={() => activateBoxMutation.mutate({ monthly_amount: donationAmount })}
+              onPress={() => {
+                if (isOneTime && onSubmit) {
+                  onSubmit();
+                } else {
+                  activateBoxMutation.mutate({ monthly_amount: donationAmount });
+                }
+              }}
               disabled={activateBoxMutation.isPending || showLogoAnimation || isProcessingPayment}
               style={[
                 styles.completeButton,
@@ -367,10 +383,10 @@ const DonationReviewBottomSheet = forwardRef<any, DonationReviewBottomSheetProps
               {activateBoxMutation.isPending || isProcessingPayment ? (
                 <>
                   <ActivityIndicator size="small" color="#FFFFFF" style={{ marginRight: 8 }} />
-                  <Text style={styles.completeButtonText}>Activating...</Text>
+                  <Text style={styles.completeButtonText}>{isOneTime ? 'Processing...' : 'Activating...'}</Text>
                 </>
               ) : (
-                <Text style={styles.completeButtonText}>Complete Monthly Gift</Text>
+                <Text style={styles.completeButtonText}>{isOneTime ? 'Complete Gift' : 'Complete Monthly Gift'}</Text>
               )}
             </TouchableOpacity>
           </View>

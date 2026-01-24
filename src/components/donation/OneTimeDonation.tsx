@@ -24,9 +24,10 @@ import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
 import { getCausesBySearch, getJoinCollective } from '../../services/api/crwd';
 import { useAuthStore } from '../../store/store';
 import { useStripe } from '@stripe/stripe-react-native';
-import ConfettiCannon from 'react-native-confetti-cannon';
+import DonationReviewBottomSheet from './DonationReviewBottomSheet';
 import RequestNonprofitModal from '../newsearch/RequestNonprofitModal';
 
+// ... (in component)
 const { width, height } = Dimensions.get('window');
 
 interface SelectedItem {
@@ -82,9 +83,9 @@ export default function OneTimeDonation({
   const [isPresenting, setIsPresenting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showRequestModal, setShowRequestModal] = useState(false);
-  const confettiRef = useRef<ConfettiCannon>(null);
   const navigation = useNavigation();
   const queryClient = useQueryClient();
+  const reviewBottomSheetRef = useRef<any>(null);
 
   // Handle preselected item from navigation
   useEffect(() => {
@@ -148,7 +149,7 @@ export default function OneTimeDonation({
   // Fundraiser donation mutation
   const fundraiserDonationMutation = useMutation({
     mutationFn: createFundraiserDonation,
-    onSuccess: async (response) => {
+    onSuccess: async (response: any) => {
       console.log('Fundraiser donation response:', response);
       const clientSecret = response?.client_secret;
       if (!clientSecret) {
@@ -186,11 +187,6 @@ export default function OneTimeDonation({
         }
 
         // Payment succeeded
-        setShowSuccessModal(true);
-        // Fire confetti after modal appears
-        setTimeout(() => {
-          confettiRef.current?.start();
-        }, 300);
         setSelectedItems([]);
         setSelectedOrganizations([]);
 
@@ -202,14 +198,17 @@ export default function OneTimeDonation({
           queryClient.invalidateQueries({ queryKey: ['crwd', collectiveId.toString()] });
         }
 
-        // Replace current screen with fundraiser detail screen after a short delay
-        // This prevents going back to the donation screen
-        setTimeout(() => {
-          setShowSuccessModal(false);
-          if (fundraiserId) {
-            (navigation as any).replace('FundraiserDetail', { id: fundraiserId, fundraiserId: fundraiserId });
+        // Navigate back immediately
+        if (fundraiserId) {
+          if (navigation.canGoBack()) {
+            navigation.goBack();
+          } else {
+            (navigation as any).reset({
+              index: 0,
+              routes: [{ name: 'FundraiserDetail', params: { id: fundraiserId, fundraiserId: fundraiserId } }],
+            });
           }
-        }, 2000);
+        }
       } catch (err: any) {
         console.error('Stripe confirmation exception:', err);
         Alert.alert('Error', err?.message || 'Payment confirmation failed');
@@ -227,7 +226,7 @@ export default function OneTimeDonation({
   // One-time donation mutation
   const oneTimeDonationMutation = useMutation({
     mutationFn: createOneTimeDonationMobile,
-    onSuccess: async (response) => {
+    onSuccess: async (response: any) => {
       console.log('One-time donation response:', response);
       const clientSecret = response?.client_secret;
       if (!clientSecret) {
@@ -265,13 +264,10 @@ export default function OneTimeDonation({
         }
 
         // Payment succeeded
-        setShowSuccessModal(true);
-        // Fire confetti after modal appears
-        setTimeout(() => {
-          confettiRef.current?.start();
-        }, 300);
+        // setShowSuccessModal(true);
         setSelectedItems([]);
         setSelectedOrganizations([]);
+        reviewBottomSheetRef.current?.close();
       } catch (err: any) {
         console.error('Stripe confirmation exception:', err);
         Alert.alert('Error', err?.message || 'Payment confirmation failed');
@@ -456,6 +452,11 @@ export default function OneTimeDonation({
       return;
     }
 
+    // Regular one-time donation - Open Review Sheet
+    reviewBottomSheetRef.current?.open();
+  };
+
+  const handleProcessOneTimeDonation = () => {
     // Regular one-time donation
     // Prepare request body according to API specification
     // Format: { amount: string, causes: [{ cause_id: number, attributed_collective?: number }] }
@@ -550,7 +551,11 @@ export default function OneTimeDonation({
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
         {/* Header Section */}
         <View style={styles.headerSection}>
-          <Text style={styles.headerTitle}>Set your one-time gift</Text>
+          <Text style={styles.headerTitle}>
+            {(preselectedItem?.data?.name || (preselectedCausesData && preselectedCausesData.length > 0 && preselectedCausesData[0]?.name))
+              ? `Supporting ${preselectedItem?.data?.name || preselectedCausesData?.[0]?.name}`
+              : 'Set your one-time gift'}
+          </Text>
           <Text style={styles.headerSubtitle}>Support multiple causes with one donation, split evenly. Change anytime.</Text>
         </View>
 
@@ -818,18 +823,6 @@ export default function OneTimeDonation({
       >
         <TouchableWithoutFeedback onPress={() => setShowSuccessModal(false)}>
           <View style={styles.modalOverlay}>
-            {/* Confetti */}
-            <View style={styles.confettiContainer}>
-              <ConfettiCannon
-                ref={confettiRef}
-                count={200}
-                origin={{ x: width / 2, y: 0 }}
-                autoStart={false}
-                colors={['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8']}
-                fadeOut
-              />
-            </View>
-
             <TouchableWithoutFeedback onPress={() => { }}>
               <View style={styles.modalContent}>
                 <TouchableOpacity
@@ -867,6 +860,19 @@ export default function OneTimeDonation({
           </View>
         </TouchableWithoutFeedback>
       </Modal>
+
+      {/* Donation Review Bottom Sheet */}
+      <DonationReviewBottomSheet
+        ref={reviewBottomSheetRef}
+        donationAmount={donationAmount}
+        selectedCauses={selectedItems.filter(item => item.type === 'cause').map(item => item.data)}
+        onComplete={() => {
+          reviewBottomSheetRef.current?.close();
+        }}
+        onSubmit={handleProcessOneTimeDonation}
+        isOneTime={true}
+        isProcessing={oneTimeDonationMutation.isPending || isPresenting}
+      />
 
       {/* Request Nonprofit Modal */}
       <RequestNonprofitModal
@@ -1446,14 +1452,5 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 24,
     lineHeight: 20,
-  },
-  confettiContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 999,
-    pointerEvents: 'none',
   },
 });

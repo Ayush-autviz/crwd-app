@@ -70,6 +70,8 @@ export default function DonationScreen() {
   const causes = boxCauses.map((boxCause: any) => boxCause.cause).filter((cause: any) => cause != null);
   const actualDonationAmount = parseFloat(donationBox?.monthly_amount || donationAmount.toString());
   const totalItems = causes.length;
+  const hasCustomPercentages = boxCauses.some((bc: any) => bc.percentage != null);
+  const distributionPercentage = totalItems > 0 ? (hasCustomPercentages ? null : 100 / totalItems) : 0;
 
   const getCausePercentage = (causeId: number) => {
     const boxCause = boxCauses.find((bc: any) => bc.cause?.id === causeId);
@@ -1242,6 +1244,21 @@ export default function DonationScreen() {
                                         <Text style={styles.causeName} numberOfLines={1}>{cause.name}</Text>
                                         <Text style={styles.causeDescription} numberOfLines={1}>
                                           {cause.mission || cause.description || 'Making a positive impact'}
+                                        </Text>
+                                      </View>
+                                      <View style={{ alignItems: 'flex-end', marginRight: 12 }}>
+                                        <Text style={{ fontWeight: '700', fontSize: 13, color: '#111827' }}>
+                                          {(() => {
+                                            const customPercentage = getCausePercentage(cause.id);
+                                            return customPercentage != null
+                                              ? `${Number(customPercentage).toFixed(1)}%`
+                                              : distributionPercentage != null
+                                                ? `${Number(distributionPercentage).toFixed(1)}%`
+                                                : '0%';
+                                          })()}
+                                        </Text>
+                                        <Text style={{ fontSize: 11, color: '#6B7280' }}>
+                                          ${getAmountPerItem(cause.id).toFixed(2)}/mo
                                         </Text>
                                       </View>
                                       <TouchableOpacity

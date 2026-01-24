@@ -1,23 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Modal, Pressable } from 'react-native';
-import { ArrowLeft, Star, Share2, MoreHorizontal, Edit2, Link, Flag, Plus } from 'lucide-react-native';
+import { ArrowLeft, Star, Share2, MoreHorizontal, Edit2, Link, Flag, Plus, Heart, User, Pencil, HandHeart } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { favoriteCollective, unfavoriteCollective } from '../../services/api/social';
 import { useAuthStore } from '../../store/store';
 import { Clipboard } from 'react-native';
 import { useToast } from '../../contexts/ToastContext';
-import { Edit } from 'lucide-react-native';
-import { Link2 } from 'lucide-react-native';
 
 interface CollectiveHeaderProps {
   title: string;
   collectiveId?: string;
   isFavorite?: boolean;
   isAdmin?: boolean;
+  isJoined?: boolean;
   onShare?: () => void;
   onManageCollective?: () => void;
   onCreateFundraiser?: () => void;
+  onDonate?: () => void;
+  onLeave?: () => void;
   onBack?: () => void;
 }
 
@@ -26,9 +27,12 @@ export default function CollectiveHeader({
   collectiveId,
   isFavorite: initialIsFavorite = false,
   isAdmin = false,
+  isJoined = false,
   onShare,
   onManageCollective,
   onCreateFundraiser,
+  onDonate,
+  onLeave,
   onBack,
 }: CollectiveHeaderProps) {
   const navigation = useNavigation();
@@ -104,7 +108,7 @@ export default function CollectiveHeader({
     if (onManageCollective) {
       onManageCollective();
     } else if (collectiveId) {
-      navigation.navigate('ManageCRWD' as never, { collectiveId } as never);
+      (navigation as any).navigate('ManageCRWD', { collectiveId });
     }
     setShowDropdown(false);
   };
@@ -128,6 +132,13 @@ export default function CollectiveHeader({
   const handleReport = () => {
     // TODO: Implement report functionality
     console.log('Report clicked');
+    setShowDropdown(false);
+  };
+
+  const handleDonate = () => {
+    if (onDonate) {
+      onDonate();
+    }
     setShowDropdown(false);
   };
 
@@ -201,7 +212,7 @@ export default function CollectiveHeader({
                       style={styles.dropdownItem}
                       activeOpacity={0.7}
                     >
-                      <Edit size={16} color="#111827" strokeWidth={2.5} />
+                      <Pencil size={16} color="#111827" />
                       <Text style={styles.dropdownText}>Manage collective</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
@@ -209,18 +220,30 @@ export default function CollectiveHeader({
                       style={styles.dropdownItem}
                       activeOpacity={0.7}
                     >
-                      <Plus size={16} color="#111827" strokeWidth={2.5} />
+                      <Heart size={16} color="#111827" />
                       <Text style={styles.dropdownText}>Create fundraiser</Text>
                     </TouchableOpacity>
                     <View style={styles.separator} />
                   </>
                 )}
+
+                {isJoined && (
+                  <TouchableOpacity
+                    onPress={handleDonate}
+                    style={styles.dropdownItem}
+                    activeOpacity={0.7}
+                  >
+                    <HandHeart size={16} color="#111827" />
+                    <Text style={styles.dropdownText}>Donate</Text>
+                  </TouchableOpacity>
+                )}
+
                 <TouchableOpacity
                   onPress={handleShareClick}
                   style={styles.dropdownItem}
                   activeOpacity={0.7}
                 >
-                  <Share2 size={16} color="#111827" strokeWidth={2.5} />
+                  <Share2 size={16} color="#111827" />
                   <Text style={styles.dropdownText}>Share</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -228,7 +251,7 @@ export default function CollectiveHeader({
                   style={styles.dropdownItem}
                   activeOpacity={0.7}
                 >
-                  <Link2 size={16} color="#111827" strokeWidth={2.5} />
+                  <Link size={16} color="#111827" />
                   <Text style={styles.dropdownText}>Copy link</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -241,19 +264,33 @@ export default function CollectiveHeader({
                     size={16}
                     color={isFavorite ? '#F59E0B' : '#111827'}
                     fill={isFavorite ? '#F59E0B' : 'none'}
-                    strokeWidth={2.5}
                   />
                   <Text style={styles.dropdownText}>
                     {isFavorite ? 'Remove favorite' : 'Add to favorites'}
                   </Text>
                 </TouchableOpacity>
+
+                {!isAdmin && isJoined && (
+                  <>
+                    <View style={styles.separator} />
+                    <TouchableOpacity
+                      onPress={onLeave}
+                      style={styles.dropdownItem}
+                      activeOpacity={0.7}
+                    >
+                      <User size={16} color="#EF4444" />
+                      <Text style={[styles.dropdownText, { color: '#EF4444' }]}>Leave collective</Text>
+                    </TouchableOpacity>
+                  </>
+                )}
+
                 <View style={styles.separator} />
                 <TouchableOpacity
                   onPress={handleReport}
                   style={styles.dropdownItem}
                   activeOpacity={0.7}
                 >
-                  <Flag size={16} color="#111827" strokeWidth={2.5} />
+                  <Flag size={16} color="#111827" />
                   <Text style={styles.dropdownText}>Report</Text>
                 </TouchableOpacity>
               </View>

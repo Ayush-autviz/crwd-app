@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
-import { ChevronLeft, ChevronRight, Share2, Settings, Eye, ArrowRight } from 'lucide-react-native';
+import { ChevronLeft, ChevronRight, Share2, Settings, Eye, ArrowRight, Users } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 
 interface Collective {
@@ -139,22 +139,15 @@ export default function CollectiveCarouselCard({
             activeOpacity={0.7}
           >
             {/* Circular Icon */}
-            <View style={[styles.iconContainer, { backgroundColor: iconColor }]}>
-              {showImage ? (
-                <Image
-                  source={{ uri: currentCollective.logo || currentCollective.image }}
-                  style={styles.iconImage}
-                  resizeMode="cover"
-                />
-              ) : (
-                <Text style={styles.iconLetter}>{iconLetter}</Text>
-              )}
+            {/* Circular Icon */}
+            <View style={[styles.iconContainer, { backgroundColor: '#9333ea', borderRadius: 20 }]}>
+              <Users size={20} color="white" />
             </View>
 
             {/* Title and Badge */}
             <View style={styles.titleBadgeContainer}>
-              <Text style={styles.title}>{currentCollective?.name || 'Unknown Collective'}</Text>
-              {currentCollective?.role === 'Admin' && (
+              <Text style={styles.title}>My Collectives</Text>
+              {/* {currentCollective?.role === 'Admin' && (
                 <View
                   style={[
                     styles.badge,
@@ -173,15 +166,15 @@ export default function CollectiveCarouselCard({
                     {currentCollective.role === 'Admin' ? 'Organizer' : currentCollective.role}
                   </Text>
                 </View>
-              )}
+              )} */}
             </View>
           </TouchableOpacity>
 
           {/* Content */}
           <View style={styles.textContent}>
             <Text style={styles.description}>
-              <Text style={styles.bold}>{currentCollective?.memberCount || 0}</Text> members are
-              currently donating to{' '}
+              <Text style={styles.bold}>{currentCollective?.name || 'Unknown Collective'}</Text> has{' '}
+              <Text style={styles.bold}>{currentCollective?.memberCount || 0}</Text> members donating to{' '}
               <Text style={styles.bold}>{currentCollective?.causeCount || 0} causes</Text>.
             </Text>
 
@@ -199,7 +192,8 @@ export default function CollectiveCarouselCard({
                   </>
                 ) : (
                   <>
-                    <Text style={styles.outlineButtonText}>View</Text>
+                    <Text style={[styles.outlineButtonText, { color: '#1600ff' }]}>View</Text>
+                    <ArrowRight size={14} color="#1600ff" />
                   </>
                 )}
               </TouchableOpacity>
@@ -344,10 +338,10 @@ const styles = StyleSheet.create({
   outlineButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    // justifyContent: 'center',
     gap: 6,
     backgroundColor: '#FFFFFF',
-    paddingHorizontal: 12,
+    // paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 8,
     flex: 1,

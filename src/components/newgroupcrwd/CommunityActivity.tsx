@@ -49,26 +49,26 @@ export default function CommunityActivity({
         ) : (
           <View>
             <TouchableOpacity
-              onPress={() => isFounder ? setModalVisible(true) : navigation.navigate('Post' as never, { collectiveData } as never)}
+              onPress={() => isFounder ? setModalVisible(true) : (navigation as any).navigate('Post', { collectiveData })}
               style={styles.postButton}
               activeOpacity={0.7}
             >
               <Text style={styles.postButtonText}>{isFounder ? '+ Create' : 'Create Post'}</Text>
             </TouchableOpacity>
 
-            <Modal
-              transparent={true}
-              visible={modalVisible}
-              onRequestClose={() => setModalVisible(false)}
-              animationType="fade"
-            >
-              <Pressable style={styles.modalOverlay} onPress={() => setModalVisible(false)}>
+            {modalVisible && (
+              <View style={styles.dropdownContainer}>
+                <TouchableOpacity
+                  style={styles.overlay}
+                  activeOpacity={1}
+                  onPress={() => setModalVisible(false)}
+                />
                 <View style={styles.dropdownMenu}>
                   <TouchableOpacity
                     style={styles.dropdownItem}
                     onPress={() => {
                       setModalVisible(false);
-                      navigation.navigate('Post' as never, { collectiveData } as never);
+                      (navigation as any).navigate('Post', { collectiveData });
                     }}
                   >
                     <MessageCircle size={20} color="#4B5563" />
@@ -78,25 +78,15 @@ export default function CommunityActivity({
                     style={styles.dropdownItem}
                     onPress={() => {
                       setModalVisible(false);
-                      navigation.navigate('CreateEvent' as never, { collectiveData } as never);
-                    }}
-                  >
-                    <Calendar size={20} color="#4B5563" />
-                    <Text style={styles.dropdownText}>Create Event</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.dropdownItem}
-                    onPress={() => {
-                      setModalVisible(false);
-                      navigation.navigate('CreateFundraiser' as never, { collectiveData } as never);
+                      (navigation as any).navigate('CreateFundraiser', { collectiveData });
                     }}
                   >
                     <Heart size={20} color="#4B5563" />
                     <Text style={styles.dropdownText}>Create Fundraiser</Text>
                   </TouchableOpacity>
                 </View>
-              </Pressable>
-            </Modal>
+              </View>
+            )}
           </View>
         )}
       </View>
@@ -166,15 +156,17 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   postButton: {
-    backgroundColor: '#1600ff',
+    backgroundColor: '#FFFFFF',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
   postButtonText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#1F2937',
   },
   loadingContainer: {
     paddingVertical: 24,
@@ -203,13 +195,20 @@ const styles = StyleSheet.create({
     color: '#111827',
     marginBottom: 12,
   },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.2)',
-    justifyContent: 'flex-start',
-    alignItems: 'flex-end',
-    paddingTop: 60,
-    paddingRight: 16,
+  dropdownContainer: {
+    position: 'absolute',
+    top: 45,
+    right: 0,
+    zIndex: 1000,
+  },
+  overlay: {
+    position: 'absolute',
+    top: -1000,
+    left: -1000,
+    right: -1000,
+    bottom: -1000,
+    // backgroundColor: 'transparent', // clickable but invisible
+    zIndex: -1,
   },
   dropdownMenu: {
     backgroundColor: 'white',

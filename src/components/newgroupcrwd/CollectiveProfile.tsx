@@ -108,15 +108,15 @@ export default function CollectiveProfile({
         <View style={styles.titleContainer}>
           <View style={styles.titleRow}>
             <Text style={styles.title}>{name}</Text>
-            {isJoined && (
+            {/* {isJoined && (
               <View style={styles.joinedBadge}>
                 <Text style={styles.joinedText}>Joined</Text>
               </View>
-            )}
+            )} */}
           </View>
           {founder && (
             <View style={styles.founderRow}>
-              <Avatar size={20}>
+              {/* <Avatar size={20}>
                 <AvatarImage src={founder?.profile_picture || undefined} />
                 <AvatarFallback
                   style={{ backgroundColor: getConsistentColor(founder.id || founderName, avatarColors) }}
@@ -124,7 +124,7 @@ export default function CollectiveProfile({
                 >
                   {(founderName || 'F').charAt(0).toUpperCase()}
                 </AvatarFallback>
-              </Avatar>
+              </Avatar> */}
               <Text style={styles.founderText}>
                 Founded by{' '}
                 <Text style={styles.founderLink} onPress={handleFounderClick}>

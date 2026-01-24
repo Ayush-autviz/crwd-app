@@ -529,7 +529,7 @@ export default function PopularPosts({
                         // Get initials from firstName/lastName or username
                         const getInitials = (firstName?: string, lastName?: string, username?: string) => {
                             if (firstName && lastName) {
-                                return `${firstName[0]}${lastName[0]}`.toUpperCase();
+                                return `${firstName[0]}`.toUpperCase();
                             }
                             if (username) {
                                 return username.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
@@ -701,11 +701,11 @@ export default function PopularPosts({
                                                         <Text style={styles.date}>
                                                             {formatPostTime((item as any).created_at || (item as any).timestamp || item.time)}
                                                         </Text>
-                                                        {item.org && (
+                                                        {/* {item.org && (
                                                             <View style={[styles.tag, { backgroundColor: tagBgColor }]}>
                                                                 <Text style={styles.tagText}>{item.org}</Text>
                                                             </View>
-                                                        )}
+                                                        )} */}
                                                     </>
                                                 )}
                                             </View>
@@ -1156,11 +1156,11 @@ const styles = StyleSheet.create({
     postCard: {
         backgroundColor: 'white',
         borderRadius: 12,
-        marginHorizontal: 4,
+        // marginHorizontal: 4,
         marginBottom: 16,
-        padding: 16,
-        borderWidth: 1,
-        borderColor: '#e5e7eb',
+        // padding: 16,
+        // borderWidth: 1,
+        // borderColor: '#e5e7eb',
     },
     postHeader: {
         flexDirection: 'row',
@@ -1304,9 +1304,12 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingTop: 12,
-        // borderTopWidth: 1,
-        // borderTopColor: '#f3f4f6',
+        marginTop: 12,
+        borderTopWidth: 1,
+        borderTopColor: '#f5f5f5',
+        borderBottomWidth: 1,
+        borderBottomColor: '#f5f5f5',
+        paddingVertical: 3,
     },
     footerLeft: {
         flexDirection: 'row',

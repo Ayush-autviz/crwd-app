@@ -44,7 +44,7 @@ const getConsistentColor = (id: number | string, colors: string[]) => {
 
 const getInitials = (firstName?: string, lastName?: string, name?: string, username?: string) => {
     if (firstName && lastName) {
-        return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+        return `${firstName.charAt(0)}`.toUpperCase();
     }
     if (firstName) {
         return firstName.charAt(0).toUpperCase();
@@ -73,7 +73,7 @@ export default function Profile() {
     const [showFounderSheet, setShowFounderSheet] = useState(false);
 
     // Bottom sheet ref
-    const bottomSheetRef = useRef<BottomSheet>(null);
+    const bottomSheetRef = useRef<BottomSheetModal>(null);
     const founderSheetRef = useRef<BottomSheetModal>(null);
     const screenHeight = Dimensions.get('window').height;
     const snapPoints = useMemo(() => [screenHeight * 0.75], [screenHeight]);
@@ -288,6 +288,7 @@ export default function Profile() {
         comments: post.comments_count || 0,
         shares: 0, // API doesn't provide shares count
         isLiked: post.is_liked || false,
+        color: post.user?.color,
     })) || [];
 
     const handleShare = async () => {
@@ -816,7 +817,7 @@ export default function Profile() {
                                 <AvatarImage src={profileData?.profile_picture} />
                                 <AvatarFallback
                                     style={{ backgroundColor: profileData?.color || getConsistentColor(profileData?.id || profileData?.username || 'U', avatarColors) }}
-                                    textStyle={{ color: '#FFFFFF', fontWeight: '600' }}
+                                    textStyle={{ color: '#FFFFFF', fontWeight: '600', fontSize: 40 }}
                                 >
                                     {getInitials(profileData?.first_name, profileData?.last_name, profileData?.username, profileData?.username)}
                                 </AvatarFallback>
@@ -879,7 +880,7 @@ export default function Profile() {
                     </View>
 
                     {/* People Inspired */}
-                    {profileData?.inspired_people_count > 0 && (
+                    {/* {profileData?.inspired_people_count > 0 && (
                         <Text style={{ 
                             fontSize: 13, 
                             fontWeight: '700', 
@@ -890,7 +891,7 @@ export default function Profile() {
                         }}>
                             {profileData.inspired_people_count} {profileData.inspired_people_count === 1 ? 'Person' : 'People'} Inspired
                         </Text>
-                    )}
+                    )} */}
 
 
                     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 16, marginTop: 16 }}>
@@ -918,7 +919,7 @@ export default function Profile() {
                         isLoadingFollowing={followingQuery?.isLoading || false}
                         onStatPress={(tab) => {
                             setActiveStatsTab(tab);
-                            bottomSheetRef.current?.snapToIndex(0);
+                            bottomSheetRef.current?.present();
                         }}
                     />
 
@@ -1022,7 +1023,7 @@ export default function Profile() {
 
                             {/* Show more causes text and link */}
                             {profileData.recently_supported_causes.length > 5 && (
-                                <View style={{ alignItems: 'center', gap: 8, marginTop:4 }}>
+                                <View style={{ alignItems: 'center', gap: 8, marginTop: 4 }}>
                                     {/* <Text style={{ fontSize: 14, color: '#6b7280' }}>
                                         + {profileData.supported_causes_count - 6} more causes
                                     </Text> */}
@@ -1048,7 +1049,7 @@ export default function Profile() {
                     {/* Profile Bio */}
                     {profileData?.bio && <ProfileBio bio={profileData.bio} />}
 
-                    
+
                     {/* Recent Activity */}
                     <View style={{ paddingVertical: 16 }}>
                         {postsQuery.isLoading ? (
@@ -1096,15 +1097,15 @@ export default function Profile() {
                                     <Text style={{ fontSize: 16, fontWeight: '700', color: '#111827', marginBottom: 4 }}>
                                         Recent Activity
                                     </Text>
-                                    <Text style={{ fontSize: 12, color: '#6B7280' }}>
+                                    {/* <Text style={{ fontSize: 12, color: '#6B7280' }}>
                                         Activity, updates, and discoveries from your community
-                                    </Text>
+                                    </Text> */}
                                 </View>
                                 <PopularPosts
                                     posts={userPosts}
                                     title=""
-                                onLoadMore={async () => { }}
-                                hasMore={false}
+                                    onLoadMore={async () => { }}
+                                    hasMore={false}
                                     onCommentPress={(post) => {
                                         // Find the original post data to get firstName and lastName
                                         const originalPost = postsQuery?.data?.results?.find((p: any) => p.id?.toString() === post.id);
@@ -1119,6 +1120,7 @@ export default function Profile() {
                                         setShowCommentsSheet(true);
                                     }}
                                 />
+                                <View style={{ height: 100 }} />
                             </>
                         )}
                     </View>
@@ -1181,9 +1183,9 @@ export default function Profile() {
             </Modal>
 
             {/* Statistics Bottom Sheet */}
-            <BottomSheet
+            <BottomSheetModal
                 ref={bottomSheetRef}
-                index={-1}
+                index={0}
                 snapPoints={snapPoints}
                 enablePanDownToClose
                 backdropComponent={renderBackdrop}
@@ -1230,7 +1232,7 @@ export default function Profile() {
                 >
                     {renderStatsContent()}
                 </BottomSheetScrollView>
-            </BottomSheet>
+            </BottomSheetModal>
 
             {/* Founder/Organizer Bottom Sheet */}
             <BottomSheetModal
@@ -1406,11 +1408,11 @@ const styles = StyleSheet.create({
     },
     titleSection: {
         paddingHorizontal: 16,
-        paddingTop: 24,
+        paddingTop: 8,
         paddingBottom: 8,
     },
     bottomSheetTitle: {
-        fontSize: 28,
+        fontSize: 24,
         fontWeight: '700',
         color: '#111827',
         marginBottom: 4,
@@ -1478,9 +1480,9 @@ const styles = StyleSheet.create({
         marginBottom: 4,
     },
     causeDescription: {
-        fontSize: 13,
+        fontSize: 12,
         color: '#6b7280',
-        lineHeight: 20,
+        // lineHeight: 20,
     },
     statsItem: {
         flexDirection: 'row',

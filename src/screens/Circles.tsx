@@ -75,7 +75,7 @@ const Circles = () => {
     const circle = item.collective || item;
     // Priority: 1. Use color (with white text), 2. Use logo (image), 3. Fallback to generated color with letter
     const hasColor = circle.color;
-    const hasLogo = circle.logo && 
+    const hasLogo = circle.logo &&
       (circle.logo.startsWith('http') || circle.logo.startsWith('/') || circle.logo.startsWith('data:'));
     // Generate consistent color based on collective name if no color/logo
     const colors = [
@@ -91,10 +91,10 @@ const Circles = () => {
     const circleBgColor = hasColor || (!hasLogo ? colors[colorIndex] : undefined);
     const showImage = hasLogo && !hasColor;
     const iconLetter = circle.name?.charAt(0)?.toUpperCase() || 'C';
-    const founderName = circle.created_by 
+    const founderName = circle.created_by
       ? `${circle.created_by.first_name || ''} ${circle.created_by.last_name || ''}`.trim() || circle.created_by.username
       : 'Unknown';
-    
+
     return (
       <TouchableOpacity
         onPress={() => navigation.navigate('GroupCRWD', { collectiveId: circle.id?.toString() })}
@@ -124,7 +124,7 @@ const Circles = () => {
         <Text style={styles.cardDescription} numberOfLines={2}>
           {circle.description}
         </Text>
-        
+
         {/* Founder Info */}
         {circle.created_by && (
           <View style={styles.founderInfo}>
@@ -142,7 +142,7 @@ const Circles = () => {
             </Text>
           </View>
         )}
-        
+
         {/* Supporting nonprofits count */}
         <Text style={styles.nonprofitCount}>
           Supporting {circle.causes_count || circle.supported_causes_count || 0} nonprofits
@@ -154,7 +154,7 @@ const Circles = () => {
   const renderDiscoverItem = ({ item }: { item: any }) => {
     // Priority: 1. Use color (with white text), 2. Use logo (image), 3. Fallback to generated color with letter
     const hasColor = item.color;
-    const hasLogo = item.logo && 
+    const hasLogo = item.logo &&
       (item.logo.startsWith('http') || item.logo.startsWith('/') || item.logo.startsWith('data:'));
     // Generate consistent color based on collective name if no color/logo
     const colors = [
@@ -170,10 +170,10 @@ const Circles = () => {
     const circleBgColor = hasColor || (!hasLogo ? colors[colorIndex] : undefined);
     const showImage = hasLogo && !hasColor;
     const iconLetter = item.name?.charAt(0)?.toUpperCase() || 'C';
-    const founderName = item.created_by 
+    const founderName = item.created_by
       ? `${item.created_by.first_name || ''} ${item.created_by.last_name || ''}`.trim() || item.created_by.username
       : 'Unknown';
-    
+
     return (
       <TouchableOpacity
         onPress={() => navigation.navigate('GroupCRWD', { collectiveId: item.id?.toString() })}
@@ -203,7 +203,7 @@ const Circles = () => {
         <Text style={styles.cardDescription} numberOfLines={2}>
           {item.description}
         </Text>
-        
+
         {/* Founder Info */}
         {item.created_by && (
           <View style={styles.founderInfo}>
@@ -221,7 +221,7 @@ const Circles = () => {
             </Text>
           </View>
         )}
-        
+
         {/* Supporting nonprofits count */}
         <Text style={styles.nonprofitCount}>
           Supporting {item.causes_count || item.supported_causes_count || 0} nonprofits
@@ -232,7 +232,7 @@ const Circles = () => {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'right', 'left']}>
-        <MainHeaderNav title={'CRWD Collectives'} menu={false} postButton={false} />
+      <MainHeaderNav title={'Collectives'} menu={false} postButton={false} />
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Discover Collectives</Text>
         <Text style={styles.headerSubtitle}>
@@ -240,10 +240,10 @@ const Circles = () => {
         </Text>
         <TouchableOpacity
           style={styles.createButton}
-          onPress={() => navigation.navigate('DrawerNav', { screen: 'CreateCRWD'})}
+          onPress={() => navigation.navigate('DrawerNav', { screen: 'CreateCRWD' })}
           activeOpacity={0.8}
         >
-            <Plus color='#ffffff' size={18}  />
+          <Plus color='#ffffff' size={18} />
           <Text style={styles.createButtonText}>Start a Collective</Text>
         </TouchableOpacity>
       </View>
@@ -254,7 +254,7 @@ const Circles = () => {
           onPress={() => setActiveTab('my-crwds')}
           activeOpacity={0.7}
         >
-            <Users size={16} color={activeTab === 'my-crwds' ? '#000' : '#6B7280'}/>
+          <Users size={16} color={activeTab === 'my-crwds' ? '#000' : '#6B7280'} />
           <Text style={[styles.tabText, activeTab === 'my-crwds' && styles.tabTextActive]}>
             My Collectives ({joinCollectiveData?.data?.length || 0})
           </Text>
@@ -264,7 +264,7 @@ const Circles = () => {
           onPress={() => setActiveTab('discover')}
           activeOpacity={0.7}
         >
-            <Search color={activeTab === 'discover' ? '#000' : '#6B7280'} size={16} />
+          <Search color={activeTab === 'discover' ? '#000' : '#6B7280'} size={16} />
           <Text style={[styles.tabText, activeTab === 'discover' && styles.tabTextActive]}>Discover</Text>
         </TouchableOpacity>
       </View>

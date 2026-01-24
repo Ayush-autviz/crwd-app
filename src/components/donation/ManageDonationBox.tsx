@@ -32,7 +32,7 @@ export default function ManageDonationBoxScreen() {
   const queryClient = useQueryClient();
   const { user: currentUser } = useAuthStore();
   const { showToast } = useToast();
-  
+
   // Fetch donation box data
   const donationBoxQuery = useQuery({
     queryKey: ['donationBox'],
@@ -43,7 +43,7 @@ export default function ManageDonationBoxScreen() {
 
   const donationBox = donationBoxQuery.data;
   const amount = donationBox?.monthly_amount || 7;
-  
+
   // Get box_causes from donation box API (main source)
   const boxCauses = donationBox?.box_causes || [];
   // Extract cause objects from box_causes
@@ -52,7 +52,7 @@ export default function ManageDonationBoxScreen() {
   // Also get manual_causes for backward compatibility
   const manualCauses = donationBox?.manual_causes || [];
   const attributingCollectives = donationBox?.attributing_collectives || [];
-  
+
   // Prepare causes from donation box data - use box_causes as primary source
   const causes: Organization[] = [
     ...causesFromBox.map((cause: any) => ({
@@ -115,31 +115,31 @@ export default function ManageDonationBoxScreen() {
   const [selectedCollectives, setSelectedCollectives] = useState<number[]>([]);
   const [selectedCausesData, setSelectedCausesData] = useState<any[]>([]);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState<{ 
-    id: number; 
-    name: string; 
-    type: 'cause' | 'collective'; 
-    isNewlySelected: boolean 
+  const [itemToDelete, setItemToDelete] = useState<{
+    id: number;
+    name: string;
+    type: 'cause' | 'collective';
+    isNewlySelected: boolean
   } | null>(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [expandedCollectives, setExpandedCollectives] = useState<Set<number>>(new Set());
   const [collectiveDetails, setCollectiveDetails] = useState<Record<number, any>>({});
   const [loadingCollectives, setLoadingCollectives] = useState<Set<number>>(new Set());
   const [showEditSplitSheet, setShowEditSplitSheet] = useState(false);
-  
+
   // Get isActive from donationBox
   const isActive = donationBox?.is_active ?? true;
 
   // Format next charge date
   const formatNextChargeDate = (dateString?: string) => {
     if (!dateString) return 'December 26, 2024'; // Fallback
-    
+
     try {
       const date = new Date(dateString);
-      const options: Intl.DateTimeFormatOptions = { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
+      const options: Intl.DateTimeFormatOptions = {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
       };
       return date.toLocaleDateString('en-US', options);
     } catch (error) {
@@ -151,7 +151,7 @@ export default function ManageDonationBoxScreen() {
   // Get day of month from next charge date
   const getChargeDay = (dateString?: string) => {
     if (!dateString) return '26th'; // Fallback
-    
+
     try {
       const date = new Date(dateString);
       const day = date.getDate();
@@ -250,13 +250,13 @@ export default function ManageDonationBoxScreen() {
       const newAmount = Math.max(5, Math.round(editableAmount) - 1);
       const newMaxCapacity = calculateMaxCapacity(newAmount);
       const currentCapacity = totalCauseIds.length;
-      
+
       // Check if new amount would reduce capacity below current causes
       if (currentCapacity > newMaxCapacity) {
         showToast(`You have ${currentCapacity} cause${currentCapacity !== 1 ? 's' : ''} selected. Please remove ${currentCapacity - newMaxCapacity} cause${currentCapacity - newMaxCapacity !== 1 ? 's' : ''} to lower the donation amount to $${newAmount}.`, 4000);
         return;
       }
-      
+
       setEditableAmount(newAmount);
     }
   };
@@ -323,12 +323,12 @@ export default function ManageDonationBoxScreen() {
       // Check capacity before adding
       const newMaxCapacity = calculateMaxCapacity(editableAmount);
       const currentCapacity = totalCauseIds.length;
-      
+
       if (currentCapacity >= newMaxCapacity) {
         showToast(`You've reached the maximum capacity of ${newMaxCapacity} cause${newMaxCapacity !== 1 ? 's' : ''} for this donation amount. Please increase your donation amount to add more causes.`, 4000);
         return;
       }
-      
+
       const causeData = causesData?.results?.find((c: any) => c.id === causeId);
       if (causeData) {
         setSelectedCauses(prev => [...prev, causeId]);
@@ -338,8 +338,8 @@ export default function ManageDonationBoxScreen() {
   };
 
   const handleToggleCollective = (collectiveId: number) => {
-    setSelectedCollectives(prev => 
-      prev.includes(collectiveId) 
+    setSelectedCollectives(prev =>
+      prev.includes(collectiveId)
         ? prev.filter(id => id !== collectiveId)
         : [...prev, collectiveId]
     );
@@ -348,7 +348,7 @@ export default function ManageDonationBoxScreen() {
   const handleToggleCollectiveDropdown = async (collectiveId: number) => {
     const isExpanded = expandedCollectives.has(collectiveId);
     const newExpanded = new Set(expandedCollectives);
-    
+
     if (isExpanded) {
       newExpanded.delete(collectiveId);
     } else {
@@ -389,7 +389,7 @@ export default function ManageDonationBoxScreen() {
       const allCollectiveIdsUpdate = [...existingCollectiveIdsUpdate, ...attributingCollectiveIdsUpdate];
       // Remove duplicates
       const uniqueCollectiveIdsUpdate = Array.from(new Set(allCollectiveIdsUpdate));
-      
+
       const remainingExistingCollectiveIds = uniqueCollectiveIdsUpdate.filter((collectiveId: number) => {
         const collectiveIdString = `collective-${collectiveId}`;
         return !temporarilyRemovedCauses.includes(collectiveIdString);
@@ -411,7 +411,7 @@ export default function ManageDonationBoxScreen() {
       // Get box_causes from donation box data to map attributed_collectives
       const boxCausesFromDonationBox = donationBox?.box_causes || [];
       const causeToAttributedCollective = new Map<number, number>();
-      
+
       // Map existing causes to their attributed_collective from box_causes
       boxCausesFromDonationBox.forEach((boxCause: any) => {
         const causeId = boxCause.cause?.id;
@@ -419,7 +419,7 @@ export default function ManageDonationBoxScreen() {
           // Check if attributed_collectives exists and is not "manual"
           const attributedCollectives = boxCause.attributed_collectives || [];
           // Find the first numeric collective ID (not "manual")
-          const numericCollectiveId = attributedCollectives.find((ac: any) => 
+          const numericCollectiveId = attributedCollectives.find((ac: any) =>
             typeof ac === 'number' && ac !== 0
           );
           if (numericCollectiveId) {
@@ -543,7 +543,7 @@ export default function ManageDonationBoxScreen() {
   const getSelectedCausesForDisplay = () => {
     const existingList = existingCauses.filter(c => !temporarilyRemovedCauses.includes(c.id));
     const newlySelectedCauses = selectedCausesData;
-    
+
     return [...existingList.map(c => ({
       id: c.id,
       name: c.name,
@@ -565,7 +565,7 @@ export default function ManageDonationBoxScreen() {
   // Create combined selected collectives list for display
   const getSelectedCollectivesForDisplay = () => {
     const existingList = existingCollectives.filter(c => !temporarilyRemovedCauses.includes(c.id));
-    const newlySelectedFromList = joinedCollectivesData?.data?.map((item: any) => item.collective).filter((collective: any) => 
+    const newlySelectedFromList = joinedCollectivesData?.data?.map((item: any) => item.collective).filter((collective: any) =>
       selectedCollectives.includes(collective.id)
     ) || [];
     return [...existingList.map(c => ({
@@ -587,15 +587,15 @@ export default function ManageDonationBoxScreen() {
   };
 
   // Get causes to display - show first 5 by default, or search results if searching
-  const displayCauses = causesData?.results 
+  const displayCauses = causesData?.results
     ? causesData.results
-        .filter((cause: any) => !allSelectedCauseIds.includes(cause.id))
-        .slice(0, 5)
+      .filter((cause: any) => !allSelectedCauseIds.includes(cause.id))
+      .slice(0, 5)
     : [];
 
   // Get joined collectives, excluding all selected ones
   const joinedCollectives = joinedCollectivesData?.data?.map((item: any) => item.collective) || [];
-  const availableCollectives = joinedCollectives.filter((collective: any) => 
+  const availableCollectives = joinedCollectives.filter((collective: any) =>
     !allSelectedCollectiveIds.includes(collective.id)
   );
 
@@ -620,7 +620,7 @@ export default function ManageDonationBoxScreen() {
   const allCollectiveIds = [...existingCollectiveIdsFromCauses, ...attributingCollectiveIds];
   // Remove duplicates
   const uniqueCollectiveIds = Array.from(new Set(allCollectiveIds));
-  
+
   const remainingExistingCollectiveIds = uniqueCollectiveIds.filter((collectiveId: number) => {
     const collectiveIdString = `collective-${collectiveId}`;
     return !temporarilyRemovedCauses.includes(collectiveIdString);
@@ -656,7 +656,7 @@ export default function ManageDonationBoxScreen() {
   const fees = calculateFees(actualDonationAmount);
   const net = fees.net;
   const maxCapacity = Math.floor(net / 0.20);
-  
+
   // Calculate capacity for summary card
   const currentCapacity = totalCauseIds.length;
   const totalCausesCount = totalCauseIds.length;
@@ -713,61 +713,61 @@ export default function ManageDonationBoxScreen() {
               <View style={styles.gradientHeader} />
 
               <View style={styles.summaryCardContent}>
-                 {/* Monthly Donation Section */}
-                 <View style={styles.monthlySection}>
-                   <Text style={styles.monthlyLabel}>Monthly Donation</Text>
-                   <View style={styles.amountRow}>
-                     <View style={styles.amountDisplayContainer}>
-                       {isEditingAmount ? (
-                         <TextInput
-                           value={Math.round(editableAmount).toString()}
-                           onChangeText={handleAmountChange}
-                           onBlur={() => {
-                             setIsEditingAmount(false);
-                             setEditableAmount(prev => Math.round(prev));
-                           }}
-                           autoFocus
-                           style={styles.amountInput}
-                           keyboardType="numeric"
-                         />
-                       ) : (
-                         <>
-                           <Text style={styles.amountText}>${Math.round(editableAmount)}</Text>
-                           <Text style={styles.perMonthText}>/   month</Text>
-                         </>
-                       )}
-                     </View>
-                     <View style={styles.amountControls}>
-                       <TouchableOpacity
-                         onPress={decrementAmount}
-                         disabled={editableAmount <= 5}
-                         style={[
-                           styles.amountControlButton,
-                           editableAmount <= 5 && styles.amountControlButtonDisabled
-                         ]}
-                       >
-                         <Minus size={14} color={editableAmount <= 5 ? '#9CA3AF' : '#374151'} />
-                       </TouchableOpacity>
-                       <TouchableOpacity
-                         onPress={incrementAmount}
-                         style={styles.amountControlButton}
-                       >
-                         <Plus size={14} color="#374151" />
-                       </TouchableOpacity>
-                     </View>
-                   </View>
-                   {lifetimeAmount > 0 && (
-                     <Text style={styles.lifetimeAmount}>${Math.round(lifetimeAmount).toLocaleString()} lifetime</Text>
-                   )}
-                   {/* Billing Cycle Info - Only show when donation box is active */}
-                   {donationBox?.is_active && donationBox?.next_charge_date && (
-                     <View style={styles.billingCycleBanner}>
-                       <Text style={styles.billingCycleText}>
-                         Changes take effect on your next billing cycle ({getChargeDay(donationBox.next_charge_date)} of the month)
-                       </Text>
-                     </View>
-                   )}
-                 </View>
+                {/* Monthly Donation Section */}
+                <View style={styles.monthlySection}>
+                  <Text style={styles.monthlyLabel}>Monthly Donation</Text>
+                  <View style={styles.amountRow}>
+                    <View style={styles.amountDisplayContainer}>
+                      {isEditingAmount ? (
+                        <TextInput
+                          value={Math.round(editableAmount).toString()}
+                          onChangeText={handleAmountChange}
+                          onBlur={() => {
+                            setIsEditingAmount(false);
+                            setEditableAmount(prev => Math.round(prev));
+                          }}
+                          autoFocus
+                          style={styles.amountInput}
+                          keyboardType="numeric"
+                        />
+                      ) : (
+                        <>
+                          <Text style={styles.amountText}>${Math.round(editableAmount)}</Text>
+                          <Text style={styles.perMonthText}>/   month</Text>
+                        </>
+                      )}
+                    </View>
+                    <View style={styles.amountControls}>
+                      <TouchableOpacity
+                        onPress={decrementAmount}
+                        disabled={editableAmount <= 5}
+                        style={[
+                          styles.amountControlButton,
+                          editableAmount <= 5 && styles.amountControlButtonDisabled
+                        ]}
+                      >
+                        <Minus size={14} color={editableAmount <= 5 ? '#9CA3AF' : '#374151'} />
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={incrementAmount}
+                        style={styles.amountControlButton}
+                      >
+                        <Plus size={14} color="#374151" />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                  {lifetimeAmount > 0 && (
+                    <Text style={styles.lifetimeAmount}>${Math.round(lifetimeAmount).toLocaleString()} lifetime</Text>
+                  )}
+                  {/* Billing Cycle Info - Only show when donation box is active */}
+                  {donationBox?.is_active && donationBox?.next_charge_date && (
+                    <View style={styles.billingCycleBanner}>
+                      <Text style={styles.billingCycleText}>
+                        Changes take effect on your next billing cycle ({getChargeDay(donationBox.next_charge_date)} of the month)
+                      </Text>
+                    </View>
+                  )}
+                </View>
 
                 {/* Supported Entities */}
                 <View style={styles.entitiesContainer}>
@@ -819,8 +819,8 @@ export default function ManageDonationBoxScreen() {
             </View>
           </View>
 
-        {/* Tabs Navigation - Commented out to match Vite version */}
-        {/* <View style={styles.tabsContainer}>
+          {/* Tabs Navigation - Commented out to match Vite version */}
+          {/* <View style={styles.tabsContainer}>
           <View style={styles.tabs}>
             <TouchableOpacity
               style={[styles.tab, activeTab === 'nonprofits' && styles.tabActive]}
@@ -849,8 +849,8 @@ export default function ManageDonationBoxScreen() {
           </View>
         </View> */}
 
-        {/* Content Area - Only show nonprofits (tabs commented out to match Vite) */}
-        <View style={styles.contentSection}>
+          {/* Content Area - Only show nonprofits (tabs commented out to match Vite) */}
+          <View style={styles.contentSection}>
             {/* Selected Nonprofits */}
             {(() => {
               const selectedCausesForDisplay = getSelectedCausesForDisplay();
@@ -897,10 +897,10 @@ export default function ManageDonationBoxScreen() {
                               )}
                             </View>
                             <View style={styles.causeActions}>
-                              <View style={styles.amountInfo}>
+                              {/* <View style={styles.amountInfo}>
                                 <Text style={styles.amountPercentage}>{distributionPercentage.toFixed(1)}%</Text>
                                 <Text style={styles.amountPerMonth}>${amountPerItem.toFixed(2)}/mo</Text>
-                              </View>
+                              </View> */}
                               <TouchableOpacity
                                 style={styles.removeButton}
                                 onPress={() => handleDeselectCause(causeId, org.isNewlySelected, org.name)}
@@ -1017,10 +1017,10 @@ export default function ManageDonationBoxScreen() {
                 {causesLoading ? (
                   <Text style={styles.loadingText}>Loading...</Text>
                 ) : (() => {
-                  const searchResults = causesData?.results 
+                  const searchResults = causesData?.results
                     ? causesData.results
-                        .filter((cause: any) => !allSelectedCauseIds.includes(cause.id))
-                        .slice(0, 5)
+                      .filter((cause: any) => !allSelectedCauseIds.includes(cause.id))
+                      .slice(0, 5)
                     : [];
                   return searchResults.length > 0 ? (
                     <View style={styles.list}>
@@ -1074,11 +1074,11 @@ export default function ManageDonationBoxScreen() {
               </View>
             )}
           </View>
-        {/* Collectives tab - Commented out to match Vite version */}
-        {/* ) : (
+          {/* Collectives tab - Commented out to match Vite version */}
+          {/* ) : (
           <View style={styles.contentSection}>
             {/* Selected Collectives */}
-            {/* {(() => {
+          {/* {(() => {
               const selectedCollectivesForDisplay = getSelectedCollectivesForDisplay();
               return selectedCollectivesForDisplay.length > 0 && (
                 <View style={styles.selectedSection}>
@@ -1181,7 +1181,7 @@ export default function ManageDonationBoxScreen() {
             })()}
 
             {/* Available Collectives - Commented out to match Vite version */}
-            {/* <View style={styles.collectivesSection}>
+          {/* <View style={styles.collectivesSection}>
               <Text style={styles.sectionTitle}>Joined Collectives</Text>
               {joinedCollectivesLoading ? (
                 <Text style={styles.loadingText}>Loading...</Text>
@@ -1282,8 +1282,8 @@ export default function ManageDonationBoxScreen() {
           </View>
         )} */}
 
-        {/* Distribution Details */}
-        {/* <View style={styles.distributionSection}>
+          {/* Distribution Details */}
+          {/* <View style={styles.distributionSection}>
           <Text style={styles.distributionText}>
             Your ${Math.round(editableAmount)} becomes ${(Math.round(editableAmount) * 0.9).toFixed(2)}{" "}
             after fees, split evenly across causes. Your donation will be evenly
@@ -1291,8 +1291,8 @@ export default function ManageDonationBoxScreen() {
           </Text>
         </View> */}
 
-        {/* Next Payment Section */}
-        {/* <View style={styles.nextPaymentSection}>
+          {/* Next Payment Section */}
+          {/* <View style={styles.nextPaymentSection}>
           <Text style={styles.sectionTitle}>NEXT PAYMENT</Text>
           <View style={styles.nextPaymentCard}>
             <View style={styles.nextPaymentInfo}>
@@ -1309,28 +1309,28 @@ export default function ManageDonationBoxScreen() {
         <Text style={styles.allocationNote}>
           Allocations will automatically adjust for 100% distribution
         </Text> */}
-      </ScrollView>
+        </ScrollView>
 
-      {/* Update Donation Button Footer - Always visible at bottom */}
-      <SafeAreaView edges={['bottom']} style={{ backgroundColor: '#ffffff' }}>
-        <View style={styles.footer}>
-          <TouchableOpacity
-            style={[
-              styles.updateButton, 
-              (updateDonationBoxMutation.isPending || !hasItems) && styles.updateButtonDisabled
-            ]}
-            onPress={handleUpdateDonation}
-            disabled={updateDonationBoxMutation.isPending || !hasItems}
-          >
-            {updateDonationBoxMutation.isPending ? (
-              <ActivityIndicator color="#ffffff" />
-            ) : (
-              <Text style={styles.updateButtonText}>Update Donation</Text>
-            )}
-          </TouchableOpacity>
-          
-          {/* Deactivate Subscription Button - Commented out to match Vite version */}
-          {/* {isActive && (
+        {/* Update Donation Button Footer - Always visible at bottom */}
+        <SafeAreaView edges={['bottom']} style={{ backgroundColor: '#ffffff' }}>
+          <View style={styles.footer}>
+            <TouchableOpacity
+              style={[
+                styles.updateButton,
+                (updateDonationBoxMutation.isPending || !hasItems) && styles.updateButtonDisabled
+              ]}
+              onPress={handleUpdateDonation}
+              disabled={updateDonationBoxMutation.isPending || !hasItems}
+            >
+              {updateDonationBoxMutation.isPending ? (
+                <ActivityIndicator color="#ffffff" />
+              ) : (
+                <Text style={styles.updateButtonText}>Update Donation</Text>
+              )}
+            </TouchableOpacity>
+
+            {/* Deactivate Subscription Button - Commented out to match Vite version */}
+            {/* {isActive && (
             <TouchableOpacity
               style={[styles.deactivateButton, cancelDonationBoxMutation.isPending && styles.deactivateButtonDisabled]}
               onPress={() => setShowCancelModal(true)}
@@ -1343,130 +1343,130 @@ export default function ManageDonationBoxScreen() {
               )}
             </TouchableOpacity>
           )} */}
-        </View>
-      </SafeAreaView>
-
-      {/* Delete Confirmation Modal */}
-      <Modal
-        visible={showDeleteModal}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => {
-          setShowDeleteModal(false);
-          setItemToDelete(null);
-        }}
-      >
-        <TouchableWithoutFeedback onPress={() => {
-          setShowDeleteModal(false);
-          setItemToDelete(null);
-        }}>
-          <View style={styles.modalOverlay}>
-            <TouchableWithoutFeedback onPress={() => {}}>
-              <View style={styles.modalContent}>
-                <Text style={styles.modalTitle}>Confirm Removal</Text>
-                <Text style={styles.modalDescription}>
-                  Are you sure you want to remove {itemToDelete?.name} from your donation box? This action cannot be undone.
-                </Text>
-                <View style={styles.modalActions}>
-                  <TouchableOpacity
-                    style={styles.modalCancelButton}
-                    onPress={() => {
-                      setShowDeleteModal(false);
-                      setItemToDelete(null);
-                    }}
-                  >
-                    <Text style={styles.modalCancelText}>Cancel</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.modalRemoveButton}
-                    onPress={handleConfirmDelete}
-                  >
-                    <Text style={styles.modalRemoveText}>Remove</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </TouchableWithoutFeedback>
           </View>
-        </TouchableWithoutFeedback>
-      </Modal>
+        </SafeAreaView>
 
-      {/* Cancel/Deactivate Confirmation Modal */}
-      <Modal
-        visible={showCancelModal}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => {
-          setShowCancelModal(false);
-        }}
-      >
-        <TouchableWithoutFeedback onPress={() => {
-          setShowCancelModal(false);
-        }}>
-          <View style={styles.modalOverlay}>
-            <TouchableWithoutFeedback onPress={() => {}}>
-              <View style={styles.modalContent}>
-                <Text style={styles.modalTitle}>Deactivate Subscription</Text>
-                <Text style={styles.modalDescription}>
-                  Are you sure you want to deactivate your donation box subscription? This will cancel all future monthly donations. You can reactivate it at any time.
-                </Text>
-                <View style={styles.modalActions}>
-                  <TouchableOpacity
-                    style={styles.modalCancelButton}
-                    onPress={() => {
-                      setShowCancelModal(false);
-                    }}
-                    disabled={cancelDonationBoxMutation.isPending}
-                  >
-                    <Text style={styles.modalCancelText}>Cancel</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[styles.modalRemoveButton, { backgroundColor: '#dc2626' }]}
-                    onPress={() => cancelDonationBoxMutation.mutate()}
-                    disabled={cancelDonationBoxMutation.isPending}
-                  >
-                    <Text style={styles.modalRemoveText}>
-                      {cancelDonationBoxMutation.isPending ? 'Deactivating...' : 'Deactivate Subscription'}
-                    </Text>
-                  </TouchableOpacity>
+        {/* Delete Confirmation Modal */}
+        <Modal
+          visible={showDeleteModal}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => {
+            setShowDeleteModal(false);
+            setItemToDelete(null);
+          }}
+        >
+          <TouchableWithoutFeedback onPress={() => {
+            setShowDeleteModal(false);
+            setItemToDelete(null);
+          }}>
+            <View style={styles.modalOverlay}>
+              <TouchableWithoutFeedback onPress={() => { }}>
+                <View style={styles.modalContent}>
+                  <Text style={styles.modalTitle}>Confirm Removal</Text>
+                  <Text style={styles.modalDescription}>
+                    Are you sure you want to remove {itemToDelete?.name} from your donation box? This action cannot be undone.
+                  </Text>
+                  <View style={styles.modalActions}>
+                    <TouchableOpacity
+                      style={styles.modalCancelButton}
+                      onPress={() => {
+                        setShowDeleteModal(false);
+                        setItemToDelete(null);
+                      }}
+                    >
+                      <Text style={styles.modalCancelText}>Cancel</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.modalRemoveButton}
+                      onPress={handleConfirmDelete}
+                    >
+                      <Text style={styles.modalRemoveText}>Remove</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
-              </View>
-            </TouchableWithoutFeedback>
-          </View>
-        </TouchableWithoutFeedback>
-      </Modal>
+              </TouchableWithoutFeedback>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
 
-      {/* Edit Donation Split Bottom Sheet */}
-      {(() => {
-        // Get causes from boxCauses for the edit split sheet
-        // Use boxCauses directly and extract cause objects
-        const causesForEditSplit = (boxCauses || [])
-          .map((boxCause: any) => {
-            // Handle both boxCause.cause and direct cause structure
-            const cause = boxCause?.cause || boxCause;
-            return cause;
-          })
-          .filter((cause: any) => cause != null && cause.id != null)
-          .map((cause: any) => ({
-            id: cause.id,
-            name: cause.name || 'Unknown Cause',
-            image: cause.image || cause.logo || '',
-            logo: cause.logo || cause.image || '',
-          }));
+        {/* Cancel/Deactivate Confirmation Modal */}
+        <Modal
+          visible={showCancelModal}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => {
+            setShowCancelModal(false);
+          }}
+        >
+          <TouchableWithoutFeedback onPress={() => {
+            setShowCancelModal(false);
+          }}>
+            <View style={styles.modalOverlay}>
+              <TouchableWithoutFeedback onPress={() => { }}>
+                <View style={styles.modalContent}>
+                  <Text style={styles.modalTitle}>Deactivate Subscription</Text>
+                  <Text style={styles.modalDescription}>
+                    Are you sure you want to deactivate your donation box subscription? This will cancel all future monthly donations. You can reactivate it at any time.
+                  </Text>
+                  <View style={styles.modalActions}>
+                    <TouchableOpacity
+                      style={styles.modalCancelButton}
+                      onPress={() => {
+                        setShowCancelModal(false);
+                      }}
+                      disabled={cancelDonationBoxMutation.isPending}
+                    >
+                      <Text style={styles.modalCancelText}>Cancel</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.modalRemoveButton, { backgroundColor: '#dc2626' }]}
+                      onPress={() => cancelDonationBoxMutation.mutate()}
+                      disabled={cancelDonationBoxMutation.isPending}
+                    >
+                      <Text style={styles.modalRemoveText}>
+                        {cancelDonationBoxMutation.isPending ? 'Deactivating...' : 'Deactivate Subscription'}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </TouchableWithoutFeedback>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
 
-        // Only show if we have more than 1 cause and the sheet is open
-        if (causesForEditSplit.length > 1 && showEditSplitSheet) {
-          return (
-            <EditDonationSplitBottomSheet
-              isOpen={showEditSplitSheet}
-              onClose={() => setShowEditSplitSheet(false)}
-              causes={causesForEditSplit}
-              monthlyAmount={amount}
-              boxCauses={boxCauses}
-            />
-          );
-        }
-        return null;
-      })()}
+        {/* Edit Donation Split Bottom Sheet */}
+        {(() => {
+          // Get causes from boxCauses for the edit split sheet
+          // Use boxCauses directly and extract cause objects
+          const causesForEditSplit = (boxCauses || [])
+            .map((boxCause: any) => {
+              // Handle both boxCause.cause and direct cause structure
+              const cause = boxCause?.cause || boxCause;
+              return cause;
+            })
+            .filter((cause: any) => cause != null && cause.id != null)
+            .map((cause: any) => ({
+              id: cause.id,
+              name: cause.name || 'Unknown Cause',
+              image: cause.image || cause.logo || '',
+              logo: cause.logo || cause.image || '',
+            }));
+
+          // Only show if we have more than 1 cause and the sheet is open
+          if (causesForEditSplit.length > 1 && showEditSplitSheet) {
+            return (
+              <EditDonationSplitBottomSheet
+                isOpen={showEditSplitSheet}
+                onClose={() => setShowEditSplitSheet(false)}
+                causes={causesForEditSplit}
+                monthlyAmount={amount}
+                boxCauses={boxCauses}
+              />
+            );
+          }
+          return null;
+        })()}
       </View>
     </RNSafeAreaView>
   );

@@ -658,7 +658,7 @@ export default function NewGroupCrwdPage() {
               const role = member.role || '';
               const isFounder = role?.toLowerCase() === 'founder' || role?.toLowerCase() === 'admin' || member.is_founder;
               const userId = user.id || member.id || username;
-              const avatarBgColor = getConsistentColor(userId, avatarColors);
+              const avatarBgColor = user.color || getConsistentColor(userId, avatarColors);
               const initial = name.charAt(0).toUpperCase() || username.charAt(0).toUpperCase() || 'U';
 
               return (
@@ -688,11 +688,13 @@ export default function NewGroupCrwdPage() {
                       </Text>
                       {isFounder && (
                         <View style={styles.founderBadge}>
-                          <Text style={styles.founderBadgeText}>Founder</Text>
+                          <Text style={styles.founderBadgeText}>Organizer</Text>
                         </View>
                       )}
                     </View>
-                    <Text style={styles.memberRole}>Active member</Text>
+                    {user.bio || user.location && (
+                      <Text style={styles.memberRole}>{user.bio || user.location}</Text>
+                    )}
                   </View>
                 </TouchableOpacity>
               );
@@ -820,6 +822,18 @@ export default function NewGroupCrwdPage() {
         onManageCollective={handleManageCollective}
         onBack={handleBack}
         onCreateFundraiser={handleCreateFundraiser}
+        onDonate={() => {
+          if (!currentUser || !token?.access_token) {
+            (navigation as any).navigate('OnBoard', {
+              redirectTo: 'GroupCRWD',
+              redirectParams: { id: String(crwdId), collectiveId: String(crwdId) }
+            });
+            return;
+          }
+          setShowJoinModal(true);
+        }}
+        isJoined={crwdData.is_joined}
+        onLeave={() => setShowConfirmDialog(true)}
       />
 
       <ScrollView
@@ -869,7 +883,7 @@ export default function NewGroupCrwdPage() {
                   disabled
                   activeOpacity={1}
                 >
-                  <Check size={14} color="#FFFFFF" />
+                  <Check size={14} color="#16a34a" />
                   <Text style={styles.joinedButtonText}>Joined</Text>
                 </TouchableOpacity>
                 {/* Share Button */}
@@ -1229,8 +1243,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#1600ff',
   },
   joinedButton: {
-    backgroundColor: '#1600ff',
-    borderColor: '#1600ff',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#16a34a',
   },
   shareButton: {
     backgroundColor: '#1600ff',
@@ -1250,7 +1265,9 @@ const styles = StyleSheet.create({
   },
   disabledButton: {
     opacity: 0.75,
-    backgroundColor: '#1600ff',
+    backgroundColor: '#FFFFFF',
+    borderColor: '#16a34a',
+    borderWidth: 1,
   },
   joinButtonText: {
     fontSize: 14,
@@ -1260,7 +1277,7 @@ const styles = StyleSheet.create({
   joinedButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: '#16a34a',
   },
   shareButtonText: {
     fontSize: 14,

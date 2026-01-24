@@ -275,7 +275,7 @@ export default function Profile() {
         id: post.id,
         userId: post.user?.id?.toString(),
         avatarUrl: post.user?.profile_picture,
-        username: post.user?.username || post.user?.full_name || 'Unknown User',
+        username: post.user?.first_name + ' ' + post.user?.last_name || 'Unknssown User',
         time: post.created_at || new Date().toISOString(), // Pass raw timestamp for proper relative time calculation
         created_at: post.created_at, // Also include created_at for ProfileActivityCard to use
         timestamp: post.created_at, // Include timestamp as well
@@ -960,9 +960,9 @@ export default function Profile() {
                                                 borderRadius: 8,
                                                 borderWidth: 1,
                                                 borderColor: '#e5e7eb',
-                                                padding: 12,
+                                                paddingVertical: 6,
                                                 alignItems: 'center',
-                                                height: 100,
+                                                // height: 100,
                                                 justifyContent: 'space-between',
                                             }}>
                                                 {cause.image || cause.logo ? (

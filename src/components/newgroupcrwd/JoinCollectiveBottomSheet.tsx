@@ -141,12 +141,12 @@ export default function JoinCollectiveBottomSheet({
 
   // Check if donation box exists
   const hasDonationBox = donationBox && donationBox.id;
-  
+
   // Check capacity: compare box_causes.length with capacity
   const currentCapacity = donationBox?.box_causes?.length || 0;
   const maxCapacity = donationBox?.capacity || 0;
   const isAtCapacity = hasDonationBox && currentCapacity >= maxCapacity;
-  
+
   // Get available nonprofits (excluding those already in donation box)
   const availableNonprofits = nonprofits.filter((np) => {
     const cause = np.cause || np;
@@ -165,7 +165,7 @@ export default function JoinCollectiveBottomSheet({
             return existingCauseIds.has(causeId) ? null : causeId;
           })
           .filter((id): id is number => id !== null);
-        
+
         setSelectedNonprofitIds(new Set(availableIds));
       } else if (isAtCapacity) {
         // Clear selection if at capacity
@@ -213,7 +213,7 @@ export default function JoinCollectiveBottomSheet({
     if (isAtCapacity || existingCauseIds.has(id)) {
       return;
     }
-    
+
     setSelectedNonprofitIds((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(id)) {
@@ -230,7 +230,7 @@ export default function JoinCollectiveBottomSheet({
     if (isAtCapacity) {
       return;
     }
-    
+
     if (selectedNonprofitIds.size === availableNonprofits.length) {
       // If all available selected, deselect all
       setSelectedNonprofitIds(new Set());
@@ -283,8 +283,10 @@ export default function JoinCollectiveBottomSheet({
   return (
     <BottomSheetModal
       ref={bottomSheetRef}
+      index={0}
       snapPoints={snapPoints}
       enablePanDownToClose
+      enableDynamicSizing={false}
       backdropComponent={renderBackdrop}
       backgroundStyle={styles.bottomSheetBackground}
       handleIndicatorStyle={styles.handleIndicator}
@@ -296,11 +298,11 @@ export default function JoinCollectiveBottomSheet({
           <View style={styles.headerContent}>
             <Text style={styles.headerTitle}>You've joined {collectiveName}!</Text>
             <Text style={styles.headerDescription}>
-              {isAtCapacity 
+              {isAtCapacity
                 ? "Your donation box is at capacity. Increase your donation to add more nonprofits."
                 : hasDonationBox
-                ? "Optionally add these nonprofits to your donation box. You can manage them anytime from your profile."
-                : "Would you like to set up your donation box to support these nonprofits?"
+                  ? "Optionally add these nonprofits to your donation box. You can manage them anytime from your profile."
+                  : "Would you like to set up your donation box to support these nonprofits?"
               }
             </Text>
           </View>
@@ -352,7 +354,7 @@ export default function JoinCollectiveBottomSheet({
               const isDisabled = existingCauseIds.has(nonprofitId);
               const avatarBgColor = getConsistentColor(nonprofitId, avatarColors);
               const initials = getInitials(nonprofitName);
-              
+
               return (
                 <NonprofitItem
                   key={nonprofit.id}

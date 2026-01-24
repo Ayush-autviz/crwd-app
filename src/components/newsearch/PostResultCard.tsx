@@ -426,20 +426,19 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
         </Text>
       ) : null}
 
-      {/* Show fundraiser image like normal post image */}
-      {post.fundraiser?.image ? (
+      {/* Media Section - Only show if no fundraiser */}
+      {!post.fundraiser && !post.preview_details?.image && post.media && (
         <TouchableOpacity
-          onPress={handleCardPress}
+          onPress={() => {
+            if (post.media) {
+              Linking.openURL(post.media);
+            }
+          }}
           activeOpacity={0.9}
-          style={styles.fundraiserImagePost}
         >
-          <Image
-            source={{ uri: post.fundraiser.image }}
-            style={styles.fundraiserImagePostStyle}
-            resizeMode="contain"
-          />
+          <Image source={{ uri: post.media }} style={styles.media} resizeMode="cover" />
         </TouchableOpacity>
-      ) : null}
+      )}
 
       {/* Fundraiser UI */}
       {post.fundraiser ? (
@@ -448,49 +447,88 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
           activeOpacity={0.9}
           style={styles.fundraiserCard}
         >
-          {/* Fundraiser Cover Image/Color - Only show if no image (show color/default) */}
-          {!post.fundraiser.image && (
-            <View style={[styles.fundraiserImageContainer, { backgroundColor: post.fundraiser.color || '#1600ff' }]}>
-              <View style={styles.fundraiserPlaceholder}>
-                <Text style={styles.fundraiserPlaceholderText}>{post.fundraiser.name}</Text>
+          {/* Fundraiser Cover Image/Color - rounded-t-lg only */}
+          <View style={{ width: '100%', height: 170, borderTopLeftRadius: 12, borderTopRightRadius: 12, overflow: 'hidden' }}>
+            {post.fundraiser.color ? (
+              <View style={{
+                width: '100%',
+                height: '100%',
+                backgroundColor: post.fundraiser.color,
+                justifyContent: 'center',
+                alignItems: 'center'
+              }}>
+                <Text style={{ color: 'white', fontSize: 20, fontWeight: 'bold' }}>
+                  {post.fundraiser.name}
+                </Text>
               </View>
-            </View>
-          )}
-          <View style={styles.fundraiserInfo}>
-            <Text style={styles.fundraiserTitle} numberOfLines={2}>{post.fundraiser.name}</Text>
+            ) : post.fundraiser.image ? (
+              <Image
+                source={{ uri: post.fundraiser.image }}
+                style={{ width: '100%', height: '100%' }}
+                resizeMode="cover"
+              />
+            ) : (
+              <View style={{
+                width: '100%',
+                height: '100%',
+                backgroundColor: '#1600ff',
+                justifyContent: 'center',
+                alignItems: 'center'
+              }}>
+                <Text style={{ color: 'white', fontSize: 20, fontWeight: 'bold' }}>
+                  {post.fundraiser.name}
+                </Text>
+              </View>
+            )}
+          </View>
 
-            <View style={styles.fundingProgress}>
-              <View style={styles.amountRow}>
-                <Text style={styles.raisedAmount}>
+          {/* Fundraiser Info - rounded-b-lg only, connected to cover */}
+          <View style={{ marginBottom: 8, backgroundColor: 'white', padding: 16, borderBottomLeftRadius: 12, borderBottomRightRadius: 12, borderWidth: 1, borderColor: '#E5E7EB', borderTopWidth: 0 }}>
+            <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#111827', marginBottom: 12 }}>
+              {post.fundraiser.name}
+            </Text>
+
+            {/* Amount and Progress */}
+            <View style={{ marginBottom: 8 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 8, marginBottom: 6 }}>
+                <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#1600ff' }}>
                   ${parseFloat(post.fundraiser.current_amount || '0').toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                 </Text>
-                <Text style={styles.goalText}>
+                <Text style={{ fontSize: 12, color: '#6b7280' }}>
                   raised of ${parseFloat(post.fundraiser.target_amount || '0').toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} goal
                 </Text>
               </View>
-              <View style={styles.progressBar}>
-                <View
-                  style={[
-                    styles.progressFill,
-                    { width: `${Math.min(post.fundraiser.progress_percentage || 0, 100)}%` }
-                  ]}
-                />
+              {/* Progress Bar */}
+              <View style={{
+                width: '100%',
+                height: 6,
+                backgroundColor: '#e5e7eb',
+                borderRadius: 999,
+                overflow: 'hidden',
+                marginBottom: 6
+              }}>
+                <View style={{
+                  height: '100%',
+                  backgroundColor: '#1600ff',
+                  width: `${Math.min(post.fundraiser.progress_percentage || 0, 100)}%`
+                }} />
               </View>
-              <View style={styles.fundraiserStats}>
+              {/* Donors and Days Left */}
+              <View style={{ flexDirection: 'row', gap: 12 }}>
                 {post.fundraiser.total_donors !== undefined && (
-                  <Text style={styles.statsText}>
-                    <Text style={styles.statsBold}>{post.fundraiser.total_donors}</Text> donor{post.fundraiser.total_donors !== 1 ? 's' : ''}
+                  <Text style={{ fontSize: 12, color: '#111827' }}>
+                    <Text style={{ fontWeight: '600' }}>{post.fundraiser.total_donors}</Text> donor{post.fundraiser.total_donors !== 1 ? 's' : ''}
                   </Text>
                 )}
                 {post.fundraiser.end_date && post.fundraiser.is_active && (
-                  <Text style={styles.statsText}>
-                    • <Text style={styles.statsBold}>
+                  <Text style={{ fontSize: 12, color: '#111827' }}>
+                    <Text style={{ fontWeight: '600' }}>
                       {Math.max(0, Math.ceil((new Date(post.fundraiser.end_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))}
                     </Text> days left
                   </Text>
                 )}
                 {!post.fundraiser.is_active && (
-                  <Text style={[styles.statsText, { color: '#666', marginLeft: 8, fontWeight: '500' }]}>
+                  <Text style={{ fontSize: 12, color: '#666', fontWeight: '500' }}>
                     Fundraiser Ended
                   </Text>
                 )}
@@ -499,7 +537,7 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
           </View>
         </TouchableOpacity>
       ) : (
-        /* Preview Card or Media */
+        /* Preview Card */
         post.preview_details && (post.preview_details.url || post.preview_details.title || post.preview_details.image) ? (
           <TouchableOpacity
             onPress={() => {
@@ -507,52 +545,33 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
                 Linking.openURL(post.preview_details.url);
               }
             }}
-            style={[
-              styles.previewCard,
-              !post.preview_details.image && styles.previewCardNoImage,
-            ]}
+            style={styles.previewCardVertical}
             activeOpacity={0.8}
           >
             {post.preview_details.image && (
               <Image
                 source={{ uri: post.preview_details.image }}
-                style={styles.previewImage}
+                style={{ width: '100%', height: 160 }}
                 resizeMode="cover"
               />
             )}
-            <View style={styles.previewContent}>
+            <View style={{ padding: 12 }}>
               {post.preview_details.site_name && (
-                <Text style={styles.previewSiteName} numberOfLines={1}>
+                <Text style={{ fontSize: 10, color: '#6B7280', textTransform: 'uppercase', marginBottom: 4 }}>
                   {post.preview_details.site_name.toUpperCase()}
                 </Text>
               )}
               {post.preview_details.title && (
-                <Text style={styles.previewTitle} numberOfLines={2}>
+                <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827', marginBottom: 4 }} numberOfLines={2}>
                   {post.preview_details.title}
                 </Text>
               )}
               {post.preview_details.description && (
-                <Text style={styles.previewDescription} numberOfLines={2}>
+                <Text style={{ fontSize: 12, color: '#4B5563' }} numberOfLines={2}>
                   {post.preview_details.description}
                 </Text>
               )}
-              {post.preview_details.domain && (
-                <Text style={styles.previewDomain} numberOfLines={1}>
-                  {post.preview_details.domain}
-                </Text>
-              )}
             </View>
-          </TouchableOpacity>
-        ) : post.media ? (
-          <TouchableOpacity
-            onPress={() => {
-              if (post.media) {
-                Linking.openURL(post.media);
-              }
-            }}
-            activeOpacity={0.9}
-          >
-            <Image source={{ uri: post.media }} style={styles.media} resizeMode="cover" />
           </TouchableOpacity>
         ) : null
       )}
@@ -605,7 +624,6 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
           <Share2 size={14} color="#4B5563" />
         </TouchableOpacity>
       </View>
-      {/* </View> */}
     </TouchableOpacity >
   );
 }
@@ -637,8 +655,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 8,
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
+    // borderWidth: 1,
+    // borderColor: '#E5E7EB',
   },
   inactiveFundraiserCard: {
     backgroundColor: '#eff6ff', // blue-50 equivalent
@@ -819,22 +837,13 @@ const styles = StyleSheet.create({
     height: 200,
     backgroundColor: '#F9FAFB',
   },
-  previewCard: {
-    flexDirection: 'row',
+  previewCardVertical: {
     backgroundColor: '#FFFFFF',
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#E5E7EB',
     marginBottom: 10,
     overflow: 'hidden',
-  },
-  previewCardNoImage: {
-    flexDirection: 'column',
-  },
-  previewImage: {
-    width: 120,
-    height: 120,
-    flexShrink: 0,
   },
   previewContent: {
     flex: 1,

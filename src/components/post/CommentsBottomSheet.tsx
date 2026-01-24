@@ -41,7 +41,7 @@ export default function CommentsBottomSheet({
   const { user: currentUser } = useAuthStore();
   const queryClient = useQueryClient();
 
-  const snapPoints = useMemo(() => ['75%', '90%'], []);
+  const snapPoints = useMemo(() => ['90%'], []);
 
   // Handle opening/closing the bottom sheet
   useEffect(() => {
@@ -53,15 +53,7 @@ export default function CommentsBottomSheet({
       setTimeout(() => {
         console.log('Attempting to present, ref:', bottomSheetRef.current);
         if (bottomSheetRef.current) {
-          // If comments exist, open at max height (index 1 = 90%), otherwise at 75% (index 0)
-          const hasComments = comments.length > 0;
-          const snapIndex = hasComments ? 1 : 0; // 1 = 90%, 0 = 75%
-          console.log('Presenting at snap index:', snapIndex, 'hasComments:', hasComments, 'comments.length:', comments.length);
           bottomSheetRef.current.present();
-          // After presenting, snap to the desired index
-          setTimeout(() => {
-            bottomSheetRef.current?.snapToIndex(snapIndex);
-          }, 50);
           console.log('present() called');
         } else {
           console.log('bottomSheetRef.current is null!');
@@ -71,7 +63,7 @@ export default function CommentsBottomSheet({
       console.log('Dismissing bottom sheet');
       bottomSheetRef.current?.dismiss();
     }
-  }, [isOpen, comments.length]);
+  }, [isOpen]);
 
   const handleClose = useCallback(() => {
     bottomSheetRef.current?.dismiss();
@@ -260,7 +252,7 @@ export default function CommentsBottomSheet({
     setLoadingReplies(prev => new Set(prev).add(commentId));
     try {
       const repliesData = await getCommentReplies(commentId.toString());
-      
+
       // Support multiple possible response shapes: {replies: [...]}, {results: [...]}, or a bare array
       const repliesArray =
         repliesData?.replies ||
@@ -377,8 +369,10 @@ export default function CommentsBottomSheet({
   return (
     <BottomSheetModal
       ref={bottomSheetRef}
+      index={0}
       snapPoints={snapPoints}
       enablePanDownToClose
+      enableDynamicSizing={false}
       backdropComponent={renderBackdrop}
       backgroundStyle={styles.bottomSheetBackground}
       handleIndicatorStyle={styles.handleIndicator}

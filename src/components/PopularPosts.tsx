@@ -897,7 +897,55 @@ export default function PopularPosts({
                                         </>
                                     )}
 
-                                    {/* Media Section - Only show if there's actual media content and NO fundraiser */}
+                                    {/* Media Section - Only show if NO fundraiser */}
+                                    {!item.fundraiser && !item.previewDetails?.image && item.imageUrl && (
+                                        <View style={styles.mediaContainer}>
+                                            <Image
+                                                source={{ uri: item.imageUrl }}
+                                                style={styles.postImage}
+                                                resizeMode="cover"
+                                            />
+                                        </View>
+                                    )}
+
+                                    {/* Link Preview Section */}
+                                    {!item.fundraiser && item.previewDetails && (
+                                        <View style={{
+                                            borderWidth: 1,
+                                            borderColor: '#E5E7EB',
+                                            borderRadius: 8,
+                                            backgroundColor: 'white',
+                                            overflow: 'hidden',
+                                            marginBottom: 12,
+                                        }}>
+                                            {/* Preview Image */}
+                                            {item.previewDetails.image && (
+                                                <Image
+                                                    source={{ uri: item.previewDetails.image }}
+                                                    style={{ width: '100%', height: 160 }}
+                                                    resizeMode="cover"
+                                                />
+                                            )}
+                                            {/* Preview Content */}
+                                            <View style={{ padding: 12 }}>
+                                                {item.previewDetails.site_name && (
+                                                    <Text style={{ fontSize: 10, color: '#6B7280', textTransform: 'uppercase', marginBottom: 4 }}>
+                                                        {item.previewDetails.site_name}
+                                                    </Text>
+                                                )}
+                                                {item.previewDetails.title && (
+                                                    <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827', marginBottom: 4 }} numberOfLines={2}>
+                                                        {item.previewDetails.title}
+                                                    </Text>
+                                                )}
+                                                {item.previewDetails.description && (
+                                                    <Text style={{ fontSize: 12, color: '#4B5563' }} numberOfLines={2}>
+                                                        {item.previewDetails.description}
+                                                    </Text>
+                                                )}
+                                            </View>
+                                        </View>
+                                    )}
                                     {!item.fundraiser && item.previewDetails && (item.previewDetails.image || item.previewDetails.title || item.previewDetails.description) ? (
                                         <TouchableOpacity
                                             onPress={(e) => {
@@ -915,7 +963,7 @@ export default function PopularPosts({
                                             {item.previewDetails.image && (
                                                 <Image
                                                     source={{ uri: item.previewDetails.image }}
-                                                    style={styles.mediaImage}
+                                                    style={styles.postImage}
                                                     resizeMode="cover"
                                                 />
                                             )}
@@ -945,7 +993,7 @@ export default function PopularPosts({
                                     ) : !item.fundraiser && item.imageUrl ? (
                                         <Image
                                             source={{ uri: item.imageUrl }}
-                                            style={styles.mediaImage}
+                                            style={styles.postImage}
                                             resizeMode="cover"
                                         />
                                     ) : null}
@@ -1254,7 +1302,7 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
         marginBottom: 12,
     },
-    mediaImage: {
+    postImage: {
         width: '100%',
         height: 200,
         borderRadius: 12,

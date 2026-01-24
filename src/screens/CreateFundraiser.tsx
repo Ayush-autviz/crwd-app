@@ -31,7 +31,7 @@ import {
   Sparkles,
   Loader2,
 } from 'lucide-react-native';
-import * as ImagePicker from 'react-native-image-picker';
+import ImagePicker from 'react-native-image-crop-picker';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/Avatar';
 import { PrimaryBlue } from '../Constants/Colors';
@@ -40,6 +40,7 @@ import ConfettiCannon from 'react-native-confetti-cannon';
 import { getCollectiveById, getCausesBySearch, createFundraiser } from '../services/api/crwd';
 import { useToast } from '../contexts/ToastContext';
 import CrwdAnimation from '../components/ui/CrwdAnimation';
+import { truncateAtFirstPeriod } from '../utils/truncateFirstPeriod';
 
 // Avatar colors for consistent fallback styling
 const avatarColors = [
@@ -80,20 +81,20 @@ export default function CreateFundraiser() {
   const collectiveId = params?.collectiveId || '';
   const queryClient = useQueryClient();
   const { showToast } = useToast();
-  
+
   const [step, setStep] = useState<1 | 2 | 3>(1);
-  
+
   // Step 1 state
   const [coverType, setCoverType] = useState<'color' | 'image'>('color');
   const [coverColor, setCoverColor] = useState('#1600ff');
   const [uploadedCoverImage, setUploadedCoverImage] = useState<string | null>(null);
   const [uploadedCoverImageFile, setUploadedCoverImageFile] = useState<any>(null);
   const [campaignTitle, setCampaignTitle] = useState('');
-  const [fundraisingGoal, setFundraisingGoal] = useState('1000');
+  const [fundraisingGoal, setFundraisingGoal] = useState('');
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [campaignStory, setCampaignStory] = useState('');
-  
+
   // Step 2 state
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -183,25 +184,23 @@ export default function CreateFundraiser() {
   };
 
   const handleFileChange = () => {
-    const options: ImagePicker.ImageLibraryOptions = {
+    ImagePicker.openPicker({
       mediaType: 'photo',
+      cropping: true,
+      freeStyleCropEnabled: true,
       includeBase64: false,
-      maxHeight: 2000,
-      maxWidth: 2000,
-    };
-
-    ImagePicker.launchImageLibrary(options, (response) => {
-      if (response.didCancel) {
-        return;
-      }
-      if (response.errorCode) {
-        Alert.alert('Error', response.errorMessage || 'Failed to pick image');
-        return;
-      }
-      if (response.assets && response.assets[0]?.uri) {
-        setUploadedCoverImage(response.assets[0].uri);
-        setUploadedCoverImageFile(response.assets[0]);
-        setCoverType('image');
+      cropperToolbarTitle: 'Crop Cover Image',
+    }).then(image => {
+      setUploadedCoverImage(image.path);
+      setUploadedCoverImageFile({
+        uri: image.path,
+        type: image.mime,
+        fileName: image.filename || 'cover_image.jpg',
+      });
+      setCoverType('image');
+    }).catch(error => {
+      if (error.code !== 'E_PICKER_CANCELLED') {
+        console.log('ImagePicker Error: ', error);
       }
     });
   };
@@ -505,7 +504,7 @@ export default function CreateFundraiser() {
               )}
             </View>
           </View>
-          
+
           {/* Progress Indicator - Only show for steps 1 and 2 */}
           {step !== 3 && (
             <View style={styles.progressContainer}>
@@ -557,7 +556,7 @@ export default function CreateFundraiser() {
               {/* Campaign Cover */}
               <View style={styles.section}>
                 <Text style={styles.label}>Campaign Cover</Text>
-                
+
                 {/* Type Selection Buttons */}
                 <View style={styles.typeButtons}>
                   <TouchableOpacity
@@ -597,7 +596,7 @@ export default function CreateFundraiser() {
                         />
                       ))}
                     </View>
-                    
+
                     {/* Color Preview Box */}
                     <View style={[styles.previewBox, { backgroundColor: coverColor }]}>
                       <Text style={styles.previewText}>
@@ -661,7 +660,7 @@ export default function CreateFundraiser() {
                     style={styles.currencyInputField}
                     value={fundraisingGoal}
                     onChangeText={setFundraisingGoal}
-                    placeholder="1000"
+                    placeholder="100"
                     placeholderTextColor="#9CA3AF"
                     keyboardType="numeric"
                   />
@@ -683,7 +682,7 @@ export default function CreateFundraiser() {
                 </TouchableOpacity>
                 <Text style={styles.helperText}>Choose when your campaign ends</Text>
               </View>
-              
+
               {/* Date Picker Modal for iOS */}
               {Platform.OS === 'ios' && (
                 <Modal
@@ -729,7 +728,7 @@ export default function CreateFundraiser() {
                   </View>
                 </Modal>
               )}
-              
+
               {/* Date Picker for Android */}
               {Platform.OS === 'android' && showDatePicker && (
                 <DateTimePicker
@@ -854,7 +853,7 @@ export default function CreateFundraiser() {
                         <View style={styles.nonprofitInfo}>
                           <Text style={styles.nonprofitName}>{nonprofit.name}</Text>
                           <Text style={styles.nonprofitMission}>
-                            {nonprofit.mission || nonprofit.description || categoryName}
+                            {truncateAtFirstPeriod(nonprofit.mission || nonprofit.description || categoryName, 50)}
                           </Text>
                         </View>
                         <View style={styles.checkboxContainer}>
@@ -926,7 +925,7 @@ export default function CreateFundraiser() {
                       const initials = getInitials(nonprofit.name || 'N');
                       const category = categories.find(cat => cat.id === nonprofit.category || cat.id === nonprofit.cause_category);
                       const categoryName = category?.name || 'General';
-                      
+
                       return (
                         <View key={nonprofit.id} style={styles.previewNonprofitItem}>
                           <Avatar style={styles.previewNonprofitAvatar}>
@@ -1108,7 +1107,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 16,
-    paddingBottom: 100,
+    paddingBottom: 30,
   },
   infoBox: {
     flexDirection: 'row',
@@ -1435,7 +1434,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#111827',
-    marginBottom: 16,
+    // marginBottom: 16,
   },
   nonprofitsList: {
     gap: 12,
@@ -1452,8 +1451,8 @@ const styles = StyleSheet.create({
   nonprofitItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    padding: 16,
+    gap: 8,
+    padding: 10,
     borderWidth: 1,
     borderColor: '#E5E7EB',
     borderRadius: 8,

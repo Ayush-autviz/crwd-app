@@ -78,7 +78,7 @@ export default function CommunityActivity({
                     style={styles.dropdownItem}
                     onPress={() => {
                       setModalVisible(false);
-                      (navigation as any).navigate('CreateFundraiser', { collectiveData });
+                      (navigation as any).navigate('CreateFundraiser', { collectiveId: collectiveId });
                     }}
                   >
                     <Heart size={20} color="#4B5563" />

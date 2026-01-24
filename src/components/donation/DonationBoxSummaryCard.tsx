@@ -98,7 +98,7 @@ export default function DonationBoxSummaryCard({
     const fees = calculateFees(editableAmount)
     const net = fees.net
     const newMaxCapacity = Math.floor(net / 0.20)
-    
+
     // Check if current causes exceed the new capacity
     if (currentCapacity > newMaxCapacity) {
       Alert.alert(
@@ -107,7 +107,7 @@ export default function DonationBoxSummaryCard({
       )
       return
     }
-    
+
     // If capacity check passes, update the amount
     updateAmountMutation.mutate(editableAmount)
   }
@@ -120,7 +120,7 @@ export default function DonationBoxSummaryCard({
   // Get day of month from next charge date
   const getChargeDay = (dateString?: string) => {
     if (!dateString) return '26th'
-    
+
     try {
       const date = new Date(dateString)
       const day = date.getDate()
@@ -147,7 +147,7 @@ export default function DonationBoxSummaryCard({
         {/* Monthly Donation Section */}
         <View style={styles.monthlySection}>
           <Text style={styles.monthlyLabel}>Monthly Donation</Text>
-          
+
           {/* Amount Display with Controls */}
           <View style={styles.amountRow}>
             <View style={styles.amountContainer}>
@@ -167,7 +167,7 @@ export default function DonationBoxSummaryCard({
               )}
               <Text style={styles.perMonthText}>/month</Text>
             </View>
-            
+
             {/* +/- Buttons - Only show when editing */}
             {isEditingAmount && (
               <View style={styles.amountControls}>
@@ -189,7 +189,7 @@ export default function DonationBoxSummaryCard({
                 </TouchableOpacity>
               </View>
             )}
-            
+
             {/* Pencil Icon - Only show when not editing */}
             {!isEditingAmount && (
               <TouchableOpacity
@@ -201,12 +201,12 @@ export default function DonationBoxSummaryCard({
               </TouchableOpacity>
             )}
           </View>
-          
+
           {/* Lifetime Amount */}
           {lifetimeAmount > 0 && (
             <Text style={styles.lifetimeAmount}>${lifetimeAmount.toLocaleString()} lifetime</Text>
           )}
-          
+
           {/* Billing Cycle Info - Only show when editing and donation box is active */}
           {isEditingAmount && donationBox?.is_active && donationBox?.next_charge_date && (
             <View style={styles.billingCycleBanner}>
@@ -215,7 +215,7 @@ export default function DonationBoxSummaryCard({
               </Text>
             </View>
           )}
-          
+
           {/* Action Buttons - Only show when editing */}
           {isEditingAmount && (
             <View style={styles.actionButtons}>
@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
     marginVertical: 16,
   },
   gradientHeader: {
-    height: 2,
+    height: 4,
     width: '100%',
     backgroundColor: PrimaryBlue, // Gradient effect - can be enhanced with LinearGradient
   },

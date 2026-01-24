@@ -12,7 +12,7 @@ interface DiscoverMoreCollectivesProps {
 
 export default function DiscoverMoreCollectives({ collectiveId }: DiscoverMoreCollectivesProps) {
   const navigation = useNavigation();
-  
+
   // Fetch suggested collectives
   const { data: suggestedData, isLoading, error } = useQuery({
     queryKey: ['suggestedCrwds', collectiveId],
@@ -66,12 +66,12 @@ export default function DiscoverMoreCollectives({ collectiveId }: DiscoverMoreCo
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Discover More Collectives</Text>
-      
+
       <View style={styles.collectivesList}>
         {suggestedCollectives.map((collective: any, index: number) => {
           const hasLogo = collective.logo && (
-            collective.logo.startsWith('http') || 
-            collective.logo.startsWith('/') || 
+            collective.logo.startsWith('http') ||
+            collective.logo.startsWith('/') ||
             collective.logo.startsWith('data:')
           );
           const iconColor = getIconColor(index, collective);
@@ -99,7 +99,7 @@ export default function DiscoverMoreCollectives({ collectiveId }: DiscoverMoreCo
                 ]}
               >
                 {hasLogo ? (
-                  <Avatar size={48}>
+                  <Avatar size={48} style={{ borderRadius: 12 }}>
                     <AvatarImage src={collective.logo} />
                     <AvatarFallback
                       style={{ backgroundColor: iconColor }}
@@ -213,7 +213,7 @@ const styles = StyleSheet.create({
   iconContainer: {
     width: 48,
     height: 48,
-    borderRadius: 24,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,

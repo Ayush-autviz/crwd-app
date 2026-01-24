@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { PrimaryGrey, PrimaryBlue, LightGrey } from '../Constants/Colors'
 import { Image as ImageIcon, X, ArrowLeft, Paperclip, Lightbulb } from 'lucide-react-native'
-import * as ImagePicker from 'react-native-image-picker'
+import ImagePicker from 'react-native-image-crop-picker'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query'
 import { createPost, getLinkPreview } from '../services/api/social'
@@ -30,10 +30,10 @@ export default function Post() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [urlError, setUrlError] = useState<string | null>(null)
-  
+
   // Track link preview
   const [showPreview, setShowPreview] = useState(false)
-  
+
   // Validate URL format - defined before useQuery
   const validateUrl = (url: string): boolean => {
     try {
@@ -43,14 +43,14 @@ export default function Post() {
       return false;
     }
   }
-  
+
   // Fetch link preview automatically when URL is valid
   const { data: previewData, isLoading: isLoadingPreview, refetch: fetchPreview } = useQuery({
     queryKey: ['link-preview', form.url],
     queryFn: () => getLinkPreview(form.url),
     enabled: form.url.trim().length > 0 && validateUrl(form.url) && !urlError,
   })
-  
+
   // Show preview when data is available
   useEffect(() => {
     if (previewData && form.url && validateUrl(form.url) && !urlError) {
@@ -67,7 +67,7 @@ export default function Post() {
       console.log('Post created successfully:', response);
       setToastMessage("Post created successfully!");
       setShowToast(true);
-      
+
       // Invalidate posts queries to refresh the list
       if (collectiveData?.id) {
         // Invalidate posts for the specific collective
@@ -75,7 +75,7 @@ export default function Post() {
       }
       // Also invalidate all posts query to refresh home page and other places
       queryClient.invalidateQueries({ queryKey: ['posts'] });
-      
+
       // Navigate back to the collective page or home
       setTimeout(() => {
         navigation.goBack();
@@ -111,23 +111,20 @@ export default function Post() {
 
   // Handle image selection
   const handleImageSelect = () => {
-    const options: ImagePicker.ImageLibraryOptions = {
+    ImagePicker.openPicker({
       mediaType: 'photo',
+      cropping: true,
+      freeStyleCropEnabled: true,
       includeBase64: false,
-      maxHeight: 2000,
-      maxWidth: 2000,
-    }
-
-    ImagePicker.launchImageLibrary(options, (response) => {
-      if (response.didCancel) {
-        console.log('User cancelled image picker')
-      } else if (response.errorCode) {
-        console.log('ImagePicker Error: ', response.errorMessage)
-      } else if (response.assets && response.assets[0].uri) {
-        setSelectedImage(response.assets[0].uri);
-        setImagePreview(response.assets[0].uri);
+      cropperToolbarTitle: 'Edit Image',
+    }).then(image => {
+      setSelectedImage(image.path);
+      setImagePreview(image.path);
+    }).catch(error => {
+      if (error.code !== 'E_PICKER_CANCELLED') {
+        console.log('ImagePicker Error: ', error);
       }
-    })
+    });
   }
 
   // Handle post type selection
@@ -155,12 +152,12 @@ export default function Post() {
   const canSubmitPost = () => {
     // Post can be submitted with just content (text-only post)
     if (!form.content.trim()) return false;
-    
+
     // If URL is provided, it must be valid
     if (form.url.trim() && (!validateUrl(form.url) || urlError)) {
       return false;
     }
-    
+
     // Allow text-only posts, posts with image, posts with link, or any combination
     // Image and link are optional
     return true;
@@ -182,7 +179,7 @@ export default function Post() {
         name: 'image.jpg',
       } as any);
     }
-    
+
     // Add media_url if URL is provided (for link posts or when URL is filled)
     if (form.url.trim() && validateUrl(form.url)) {
       formData.append('media_url', form.url);
@@ -629,7 +626,7 @@ const styles = StyleSheet.create({
     borderColor: '#D1D5DB',
     borderRadius: 8,
     width: 150,
-    
+
   },
   previewButtonDisabled: {
     opacity: 0.5,

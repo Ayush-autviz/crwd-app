@@ -114,7 +114,9 @@ export default function Post() {
     ImagePicker.openPicker({
       mediaType: 'photo',
       cropping: true,
-      freeStyleCropEnabled: true,
+      width: 1200,
+      height: 400,
+      freeStyleCropEnabled: false,
       includeBase64: false,
       cropperToolbarTitle: 'Edit Image',
     }).then(image => {
@@ -698,7 +700,7 @@ const styles = StyleSheet.create({
   },
   imagePreview: {
     width: '100%',
-    maxHeight: 256,
+    aspectRatio: 3,
   },
   removeImageButton: {
     position: 'absolute',

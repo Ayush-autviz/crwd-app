@@ -187,7 +187,9 @@ export default function CreateFundraiser() {
     ImagePicker.openPicker({
       mediaType: 'photo',
       cropping: true,
-      freeStyleCropEnabled: true,
+      width: 1200,
+      height: 400,
+      freeStyleCropEnabled: false,
       includeBase64: false,
       cropperToolbarTitle: 'Crop Cover Image',
     }).then(image => {

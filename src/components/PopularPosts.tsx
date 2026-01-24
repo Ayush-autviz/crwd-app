@@ -737,7 +737,7 @@ export default function PopularPosts({
                                     {item.fundraiser?.is_active ? (
                                         <>
                                             {/* Fundraiser Cover Image/Color - rounded-t-lg only */}
-                                            <View style={{ width: '100%', height: 170, borderTopLeftRadius: 12, borderTopRightRadius: 12, overflow: 'hidden' }}>
+                                            <View style={{ width: '100%', aspectRatio: 3, borderTopLeftRadius: 12, borderTopRightRadius: 12, overflow: 'hidden' }}>
                                                 {item.fundraiser.color ? (
                                                     <View style={{
                                                         width: '100%',
@@ -826,7 +826,7 @@ export default function PopularPosts({
                                     ) : item.fundraiser ? (
                                         <>
                                             {/* Legacy Fundraiser UI for inactive fundraisers */}
-                                            <View style={{ width: '100%', height: 170, borderTopLeftRadius: 12, borderTopRightRadius: 12, overflow: 'hidden' }}>
+                                            <View style={{ width: '100%', aspectRatio: 3, borderTopLeftRadius: 12, borderTopRightRadius: 12, overflow: 'hidden' }}>
                                                 {item.fundraiser.color ? (
                                                     <View style={{
                                                         width: '100%',
@@ -922,7 +922,7 @@ export default function PopularPosts({
                                             {item.previewDetails.image && (
                                                 <Image
                                                     source={{ uri: item.previewDetails.image }}
-                                                    style={{ width: '100%', height: 160 }}
+                                                    style={{ width: '100%', aspectRatio: 3 }}
                                                     resizeMode="cover"
                                                 />
                                             )}
@@ -946,57 +946,7 @@ export default function PopularPosts({
                                             </View>
                                         </View>
                                     )}
-                                    {!item.fundraiser && item.previewDetails && (item.previewDetails.image || item.previewDetails.title || item.previewDetails.description) ? (
-                                        <TouchableOpacity
-                                            onPress={(e) => {
-                                                e.stopPropagation();
-                                                if (item.previewDetails?.url) {
-                                                    Linking.openURL(item.previewDetails.url).catch(err => {
-                                                        console.error('Failed to open URL:', err);
-                                                        Alert.alert('Error', 'Failed to open link');
-                                                    });
-                                                }
-                                            }}
-                                            activeOpacity={0.7}
-                                            style={styles.mediaContainer}
-                                        >
-                                            {item.previewDetails.image && (
-                                                <Image
-                                                    source={{ uri: item.previewDetails.image }}
-                                                    style={styles.postImage}
-                                                    resizeMode="cover"
-                                                />
-                                            )}
-                                            <View style={styles.previewContent}>
-                                                {item.previewDetails.site_name && (
-                                                    <Text style={styles.previewSiteName}>
-                                                        {item.previewDetails.site_name.toUpperCase()}
-                                                    </Text>
-                                                )}
-                                                {item.previewDetails.title && (
-                                                    <Text style={styles.previewTitle} numberOfLines={2}>
-                                                        {item.previewDetails.title}
-                                                    </Text>
-                                                )}
-                                                {item.previewDetails.description && (
-                                                    <Text style={styles.previewDescription} numberOfLines={2}>
-                                                        {item.previewDetails.description}
-                                                    </Text>
-                                                )}
-                                                {item.previewDetails.domain && (
-                                                    <Text style={styles.previewDomain} numberOfLines={1}>
-                                                        {item.previewDetails.domain}
-                                                    </Text>
-                                                )}
-                                            </View>
-                                        </TouchableOpacity>
-                                    ) : !item.fundraiser && item.imageUrl ? (
-                                        <Image
-                                            source={{ uri: item.imageUrl }}
-                                            style={styles.postImage}
-                                            resizeMode="cover"
-                                        />
-                                    ) : null}
+
 
                                     {/* Footer */}
                                     <View style={styles.postFooter}>
@@ -1304,7 +1254,7 @@ const styles = StyleSheet.create({
     },
     postImage: {
         width: '100%',
-        height: 200,
+        aspectRatio: 3,
         borderRadius: 12,
     },
     mediaPlaceholder: {

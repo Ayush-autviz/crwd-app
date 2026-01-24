@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image } from 'react-native';
 import { useNavigation, CommonActions } from '@react-navigation/native';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
+import { truncateAtFirstPeriod } from '../../utils/truncateFirstPeriod';
 
 interface Collective {
   id: string | number;
@@ -181,8 +182,8 @@ export default function NewSuggestedCollectives({
               </Text>
 
               {/* Description */}
-              <Text style={styles.description} numberOfLines={2}>
-                {collective.description}
+              <Text style={styles.description}>
+                {truncateAtFirstPeriod(collective.description)}
               </Text>
             </TouchableOpacity>
           );
@@ -225,7 +226,7 @@ const styles = StyleSheet.create({
     padding: 12,
     minWidth: 240,
     maxWidth: 280,
-    height: 200,
+    // height: 200,
     marginRight: 12,
     flexDirection: 'column',
   },

@@ -716,7 +716,7 @@ export default function NewCreateCollective() {
           >
             <ArrowLeft size={20} color="#4B5563" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Create a CRWD Collective</Text>
+          <Text style={styles.headerTitle}>Create a Collective</Text>
         </View>
         <View style={styles.promptContainer}>
           <View style={styles.promptIconContainer}>
@@ -756,7 +756,7 @@ export default function NewCreateCollective() {
           >
             <ArrowLeft size={20} color="#4B5563" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Create a CRWD Collective</Text>
+          <Text style={styles.headerTitle}>Create a Collective</Text>
         </View>
         <View style={styles.promptContainer}>
           <View style={styles.promptIconContainer}>
@@ -1065,7 +1065,7 @@ export default function NewCreateCollective() {
         >
           <ArrowLeft size={20} color="#4B5563" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Create a CRWD Collective</Text>
+        <Text style={styles.headerTitle}>Create a Collective</Text>
       </View>
 
       <KeyboardAvoidingView
@@ -1613,7 +1613,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   headerTitle: {
-    flex: 1,
+    // flex: 1,
     fontSize: 18,
     fontWeight: 'bold',
     color: '#111827',

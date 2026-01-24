@@ -81,7 +81,8 @@ export default function CommunityTestimonials({ limit = 3 }: CommunityTestimonia
     <View style={styles.container}>
       <View style={styles.content}>
         {/* Title */}
-        <Text style={styles.title}>What Our Community Is Saying</Text>
+        <Text style={styles.title}>See What's Happening in the Community</Text>
+        <Text style={styles.subtitle}>Real posts from people showing up for causes they care about.</Text>
 
         {/* Posts List */}
         {isLoading ? (
@@ -154,11 +155,17 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: '800',
     color: '#111827',
-    marginBottom: 24,
+    marginBottom: 16,
     textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#6b7280',
+    textAlign: 'center',
+    marginBottom: 24,
   },
   loadingContainer: {
     paddingVertical: 48,

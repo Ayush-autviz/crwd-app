@@ -9,11 +9,11 @@ export default function StartMakingDifference() {
     <View style={styles.container}>
       <View style={styles.content}>
         {/* Headline */}
-        <Text style={styles.headline}>Start Making a Difference</Text>
+        <Text style={styles.headline}>Ready to stop wishing and start showing up?</Text>
 
         {/* Subtitle */}
         <Text style={styles.subtitle}>
-          The simplest way to support every cause you care about.
+          It's not about how much. It's about showing up. The commitment matters.
         </Text>
 
         {/* Call-to-Action Button */}
@@ -31,7 +31,7 @@ export default function StartMakingDifference() {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#a955f7',
-    paddingVertical: 48,
+    paddingVertical: 36,
     paddingHorizontal: 16,
   },
   content: {
@@ -41,20 +41,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headline: {
-    fontSize: 32,
+    fontSize: 30,
     fontWeight: '900',
     color: 'white',
     marginBottom: 16,
     textAlign: 'center',
-    lineHeight: 40,
+    // lineHeight: 40,
   },
   subtitle: {
-    fontSize: 18,
+    fontSize: 17,
     color: 'white',
     marginBottom: 24,
     textAlign: 'center',
     maxWidth: 600,
-    lineHeight: 28,
+    // lineHeight: 28,
   },
   button: {
     backgroundColor: '#aeff30',

@@ -100,7 +100,8 @@ export default function PopularCollectives() {
     <View style={styles.container}>
       <View style={styles.content}>
         {/* Title */}
-        <Text style={styles.title}>Popular Collectives</Text>
+        <Text style={styles.title}>Give With Others - Join or Start a Collective</Text>
+        <Text style={styles.subtitle}>Groups giving together to shared causes. Join free or start your own.</Text>
 
         {/* Grid Layout */}
         <View style={styles.grid}>
@@ -185,8 +186,15 @@ export default function PopularCollectives() {
           })}
         </View>
 
-        {/* See All Collectives Button */}
-        <View style={styles.seeAllContainer}>
+        {/* Buttons */}
+        <View style={styles.buttonsContainer}>
+          <TouchableOpacity
+            style={styles.startOwnButton}
+            onPress={() => (navigation as any).navigate('CreateCRWD' as never)}
+          >
+            <Text style={styles.startOwnButtonText}>Start Your Own Collective</Text>
+          </TouchableOpacity>
+
           <TouchableOpacity
             style={styles.seeAllButton}
             onPress={() => {
@@ -225,7 +233,7 @@ export default function PopularCollectives() {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: 'white',
+    backgroundColor: '#f9fafb', // gray-50 equivalent
     paddingVertical: 40,
     paddingHorizontal: 16,
   },
@@ -235,9 +243,16 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: '800',
     color: '#111827',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#6b7280',
+    textAlign: 'center',
     marginBottom: 24,
   },
   loadingContainer: {
@@ -329,8 +344,23 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     fontSize: 14,
   },
-  seeAllContainer: {
+  buttonsContainer: {
     alignItems: 'center',
+    gap: 12,
+  },
+  startOwnButton: {
+    backgroundColor: '#1600ff',
+    borderRadius: 9999,
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    width: '100%',
+    maxWidth: 300,
+    alignItems: 'center',
+  },
+  startOwnButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
   seeAllButton: {
     borderWidth: 1,
@@ -338,6 +368,9 @@ const styles = StyleSheet.create({
     borderRadius: 9999,
     paddingVertical: 12,
     paddingHorizontal: 32,
+    width: '100%',
+    maxWidth: 300,
+    alignItems: 'center',
   },
   seeAllButtonText: {
     color: '#a854f7',

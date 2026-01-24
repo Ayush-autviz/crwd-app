@@ -17,6 +17,7 @@ import { Search, Menu, ChevronRight, LogIn, Users, CheckSquare, Settings, X } fr
 import { PrimaryBlue } from '../Constants/Colors';
 import Slider from '@react-native-community/slider';
 import AutomaticImpact from './guest/AutomaticImpact';
+import ShowStandFor from './guest/ShowStandFor';
 import PopularCollectives from './guest/PopularCollectives';
 import LearnAndGetInspired from './guest/LearnAndGetInspired';
 import CommunityTestimonials from './guest/CommunityTestimonials';
@@ -209,7 +210,7 @@ export default function GuestHome() {
             onPress={() => navigation.navigate('Login' as never)}
             style={styles.signInButton}
           >
-            <Text style={styles.signInButtonText}>Sign In</Text>
+            <Text style={styles.signInButtonText}>Get Sarted</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -234,7 +235,7 @@ export default function GuestHome() {
           </Text>
 
           <Text style={styles.heroDescription}>
-            What if you could support every cause you care about automatically, affordably, and powerfully?
+            Support multiple charities with one donation.
           </Text>
 
           <TouchableOpacity
@@ -251,7 +252,7 @@ export default function GuestHome() {
             See the <Text style={styles.magicTitleHighlight}>Magic</Text> in Action
           </Text>
           <Text style={styles.magicDescription}>
-            Pick your causes. Give once. Multiply your impact.
+            Set your monthly amount. We split it automatically.
           </Text>
 
           {/* Demo Card */}
@@ -311,12 +312,15 @@ export default function GuestHome() {
               </Text>
               <ChevronRight size={20} color="white" />
             </TouchableOpacity>
-            <Text style={styles.everyDollarText}>Every dollar makes a difference</Text>
+            <Text style={styles.everyDollarText}>All nonprofits are verified 501(c)(3) organizations</Text>
           </View>
         </View>
 
         {/* Automatic Impact Section */}
         <AutomaticImpact />
+
+        {/* Show What You Stand For Section */}
+        <ShowStandFor />
 
         {/* Popular Collectives Section */}
         <PopularCollectives />
@@ -523,7 +527,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   heroTitle: {
-    fontSize: 36,
+    fontSize: 38,
     fontWeight: '900',
     color: '#111827',
     textAlign: 'center',
@@ -568,7 +572,7 @@ const styles = StyleSheet.create({
     color: '#1600ff',
   },
   magicDescription: {
-    fontSize: 18,
+    fontSize: 17,
     color: '#6B7280',
     textAlign: 'center',
     marginBottom: 32,

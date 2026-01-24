@@ -56,8 +56,10 @@ export default function LearnAndGetInspired({ articles }: LearnAndGetInspiredPro
       <View style={styles.content}>
         {/* Header with Title and Link */}
         <View style={styles.header}>
-          <Text style={styles.title}>Learn & Get Inspired</Text>
-
+          <Text style={styles.title}>New to Giving? Start Here.</Text>
+          <Text style={styles.subtitle}>
+            Whether you've never donated before or you're looking to give more effectively, these guides will help.
+          </Text>
         </View>
 
         {/* Article Cards Grid */}
@@ -115,22 +117,19 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     marginBottom: 24,
-    flexWrap: 'wrap',
-    gap: 16,
+    gap: 8,
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: '800',
     color: '#111827',
   },
-  seeAllLink: {
-    color: '#1600ff',
-    fontWeight: '600',
-    fontSize: 16,
+  subtitle: {
+    fontSize: 14,
+    color: '#6b7280',
+    lineHeight: 20,
+    maxWidth: 800,
   },
   grid: {
     flexDirection: 'row',

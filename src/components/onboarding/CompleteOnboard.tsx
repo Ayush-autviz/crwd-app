@@ -23,6 +23,7 @@ import { useToast } from '../../contexts/ToastContext';
 import { categories } from '../../Constants/categories';
 import { Star } from 'lucide-react-native';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
+import { Zap } from 'lucide-react-native';
 
 type ViewType = 'initial' | 'surprise' | 'browse';
 

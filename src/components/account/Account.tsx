@@ -335,7 +335,7 @@ export default function Account() {
                 numberOfLines={4}
                 placeholderTextColor={'#9CA3AF'}
                 textAlignVertical="top"
-                placeholder='Bio'
+                placeholder='Passionate about making a difference through strategic giving.'
               />
               <View style={styles.characterCount}>
                 <Text style={styles.characterCountText}>

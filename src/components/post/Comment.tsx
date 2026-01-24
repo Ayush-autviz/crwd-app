@@ -126,12 +126,12 @@ export const Comment: React.FC<CommentProps> = ({
     '#EF4444', '#06B6D4', '#F97316', '#84CC16', '#A855F7',
     '#14B8A6', '#F43F5E', '#6366F1', '#22C55E', '#EAB308',
   ];
-  
+
   const getConsistentColor = (id: number | string, colors: string[]) => {
     const hash = typeof id === 'number' ? id : id.toString().split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
     return colors[hash % colors.length];
   };
-  
+
   const avatarColor = color || getConsistentColor(userId || id || username || 'U', avatarColors);
 
   return (
@@ -166,11 +166,14 @@ export const Comment: React.FC<CommentProps> = ({
             <Text style={styles.content}>{content}</Text>
           </View>
           <View style={styles.actions}>
-            <Text style={styles.timestamp}>{formatDistanceToNow(timestamp, { addSuffix: true })}</Text>
-            <TouchableOpacity onPress={handleLikePress} style={styles.actionButton}>
+            <Text style={styles.timestamp}>
+              {formatDistanceToNow(timestamp, { addSuffix: true })
+                .replace(/^less than a minute ago$/, 'Just now')}
+            </Text>
+            {/* <TouchableOpacity onPress={handleLikePress} style={styles.actionButton}>
               <Heart size={14} color={isLiked ? '#EF4444' : '#6B7280'} fill={isLiked ? '#EF4444' : 'none'} />
               <Text style={styles.actionText}>{likes}</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
             {showReplyButton && (
               <TouchableOpacity onPress={handleReplyClick} style={styles.actionButton}>
                 <MessageCircle size={14} color="#6B7280" />
@@ -285,7 +288,7 @@ const styles = StyleSheet.create({
   actions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
+    gap: 10,
     marginTop: 8,
     marginLeft: 4,
   },

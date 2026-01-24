@@ -181,8 +181,8 @@ export default function CollectiveCarouselCard({
                   }
                 }}
               >{currentCollective?.name || 'Unknown Collective'}</Text> has{' '}
-              <Text style={styles.bold}>{currentCollective?.memberCount || 0}</Text> members donating to{' '}
-              <Text style={styles.bold}>{currentCollective?.causeCount || 0} causes</Text>.
+              <Text style={styles.bold}>{currentCollective?.memberCount || 0}</Text> {currentCollective?.memberCount === 1 ? 'member' : 'members'} donating to{' '}
+              <Text style={styles.bold}>{currentCollective?.causeCount || 0} {currentCollective?.causeCount === 1 ? 'cause' : 'causes'}</Text>.
             </Text>
 
             {/* Action Buttons */}
@@ -217,7 +217,7 @@ export default function CollectiveCarouselCard({
           </View>
         </View>
       </View>
-    </View>
+    </View >
   );
 }
 

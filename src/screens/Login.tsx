@@ -40,8 +40,10 @@ export default function Login() {
   const { showToast } = useToast()
   const { setUser, setToken } = useAuthStore()
 
-  // Get redirectTo from route params (React Navigation pattern)
-  const redirectTo = (route.params as any)?.redirectTo || null;
+  // Get redirectTo and redirectParams from route params (React Navigation pattern)
+  const params = route.params as any || {};
+  const redirectTo = params.redirectTo || null;
+  const redirectParams = params.redirectParams || {};
 
   const [showPassword, setShowPassword] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
@@ -63,7 +65,6 @@ export default function Login() {
       showToast('Google authentication successful!');
 
       // Handle redirect - use reset to prevent going back to login
-      const redirectParams = (route.params as any)?.redirectParams || {};
       if (response.user && !response.user.last_login_at) {
         // New user - go through onboarding with redirectTo and redirectParams
         navigation.reset({
@@ -130,7 +131,6 @@ export default function Login() {
       }
 
       // Handle redirect - similar to Google Callback
-      const redirectParams = (route.params as any)?.redirectParams || {};
 
       if (response.redirectTo) {
         navigation.reset({
@@ -203,7 +203,6 @@ export default function Login() {
       }
 
       // Handle redirect - use reset to prevent going back to login
-      const redirectParams = (route.params as any)?.redirectParams || {};
       if (response.user && !response.user.last_login_at) {
         // New user - go through onboarding with redirectTo and redirectParams
         navigation.reset({

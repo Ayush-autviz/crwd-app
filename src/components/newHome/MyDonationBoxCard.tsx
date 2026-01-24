@@ -44,7 +44,7 @@ export default function MyDonationBoxCard({
           <Text style={styles.description}>
             You are currently donating{' '}
             <Text style={styles.bold}>${monthlyAmount} per month</Text> to{' '}
-            <Text style={styles.bold}>{causeCount} causes</Text>.
+            <Text style={styles.bold}>{causeCount} {causeCount === 1 ? 'cause' : 'causes'}</Text>.
           </Text>
           <TouchableOpacity
             style={styles.linkContainer}

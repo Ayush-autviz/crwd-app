@@ -777,7 +777,7 @@ export default function ManageDonationBoxScreen() {
                 </View>
 
                 {/* Donation Box Capacity */}
-                <View style={styles.capacityContainer}>
+                {/* <View style={styles.capacityContainer}>
                   <View style={styles.capacityHeader}>
                     <Text style={styles.capacityTitle}>Donation Box Capacity</Text>
                     <Text style={styles.capacityCount}>{currentCapacity}/{maxCapacity} causes</Text>
@@ -790,7 +790,7 @@ export default function ManageDonationBoxScreen() {
                   <Text style={styles.capacityText}>
                     You can support {maxCapacity - currentCapacity} more cause{(maxCapacity - currentCapacity) !== 1 ? 's' : ''} with this donation amount.
                   </Text>
-                </View>
+                </View> */}
 
                 {/* Payment Schedule - Commented out to match Vite version */}
                 {/* <Text style={styles.scheduleText}>on the {getChargeDay(donationBox?.next_charge_date)} of every month</Text> */}
@@ -861,7 +861,7 @@ export default function ManageDonationBoxScreen() {
                       <Text style={styles.sectionTitleLarge}>Your Selected Causes</Text>
                       <Text style={styles.sectionSubtitle}>Your Donation Box. Add or remove anytime.</Text>
                     </View>
-                    {selectedCausesForDisplay.length > 1 && (
+                    {/* {selectedCausesForDisplay.length > 1 && (
                       <TouchableOpacity
                         onPress={() => setShowEditSplitSheet(true)}
                         style={styles.editSplitButton}
@@ -869,7 +869,7 @@ export default function ManageDonationBoxScreen() {
                         <Pencil size={16} color="#374151" />
                         <Text style={styles.editSplitButtonText}>Edit Split</Text>
                       </TouchableOpacity>
-                    )}
+                    )} */}
                   </View>
                   <View style={styles.list}>
                     {selectedCausesForDisplay.map((org) => {
@@ -1529,7 +1529,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   gradientHeader: {
-    height: 2,
+    height: 4,
     width: '100%',
     backgroundColor: PrimaryBlue,
   },
@@ -1613,7 +1613,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    marginBottom: 24,
+    // marginBottom: 24,
     alignItems: 'center',
   },
   entitiesText: {
@@ -1972,7 +1972,7 @@ const styles = StyleSheet.create({
     borderColor: '#d1d5db',
     borderRadius: 8,
     paddingHorizontal: 12,
-    marginBottom: 12,
+    marginTop: 12,
     backgroundColor: '#ffffff',
   },
   searchIcon: {
@@ -2147,14 +2147,14 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderTopWidth: 1,
     borderTopColor: '#f3f4f6',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: -2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 5,
+    // shadowColor: '#000',
+    // shadowOffset: {
+    //   width: 0,
+    //   height: -2,
+    // },
+    // shadowOpacity: 0.1,
+    // shadowRadius: 4,
+    // elevation: 5,
     width: '100%',
   },
   updateButton: {
@@ -2163,7 +2163,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 12,
+    // marginBottom: 12,
   },
   updateButtonDisabled: {
     opacity: 0.6,

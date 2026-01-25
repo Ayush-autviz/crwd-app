@@ -548,9 +548,9 @@ export default function EditDonationSplitBottomSheet({
       snapPoints={snapPoints}
       onChange={handleSheetChanges}
       backdropComponent={renderBackdrop}
-      enablePanDownToClose
-      keyboardBehavior="interactive"
-      handleIndicatorStyle={{ backgroundColor: '#D1D5DB' }}
+      enablePanDownToClose={true}
+      enableDynamicSizing={false}
+      handleIndicatorStyle={styles.handleIndicator}
       backgroundStyle={styles.bottomSheetBackground}
     >
       <View style={styles.sheetContainer}>
@@ -659,6 +659,12 @@ const styles = StyleSheet.create({
   bottomSheetBackground: {
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
+  },
+  handleIndicator: {
+    backgroundColor: '#D1D5DB',
+    width: 40,
+    height: 4,
+    borderRadius: 2,
   },
   header: {
     flexDirection: 'row',

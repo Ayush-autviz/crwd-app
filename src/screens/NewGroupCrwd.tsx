@@ -343,6 +343,7 @@ export default function NewGroupCrwdPage() {
           description: cause.mission || cause.description || np.mission || np.description || '',
           mission: cause.mission || np.mission || '',
           logo: cause.image || cause.logo || np.image || np.logo || '',
+          image: cause.image || cause.logo || np.image || np.logo || '',
         };
       });
 
@@ -450,6 +451,7 @@ export default function NewGroupCrwdPage() {
         description: cause.mission || cause.description || np.mission || np.description || '',
         mission: cause.mission || np.mission || '',
         logo: cause.image || cause.logo || np.image || np.logo || '',
+        image: cause.image || cause.logo || np.image || np.logo || '',
       };
     });
 

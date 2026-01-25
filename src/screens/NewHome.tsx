@@ -485,10 +485,10 @@ export default function NewHome() {
             notification.title?.toLowerCase().includes('new member');
 
           // Extract collective ID from notification data if available
-          const collectiveId = notification.data?.collective_id || 
-                             notification.data?.collectiveId || 
-                             notification.data?.crwd_id ||
-                             null;
+          const collectiveId = notification.data?.collective_id ||
+            notification.data?.collectiveId ||
+            notification.data?.crwd_id ||
+            null;
 
           return {
             id: notification.id,
@@ -542,9 +542,9 @@ export default function NewHome() {
 
           {/* My Donation Box Card or Prompt */}
           <LinearGradient
-            colors={['#DBEAFE', '#F3E8FF', '#FCE7F3']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
+            colors={['#EFF6FF', '#FAF5FF', '#FDF2F8']}
+            start={{ x: 0, y: 0.5 }}
+            end={{ x: 1, y: 0.5 }}
             style={styles.gradientContainer}
           >
             <View style={styles.gradientContent}>

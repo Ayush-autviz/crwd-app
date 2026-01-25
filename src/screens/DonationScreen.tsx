@@ -750,7 +750,7 @@ export default function DonationScreen() {
             />
           ) : (
             <View style={styles.setupContentWrapper}>
-              <ScrollView style={styles.content} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
+              <ScrollView style={styles.content} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 0 }}>
                 <>
                   {step === 1 ? (
                     <View style={styles.stepContent}>
@@ -810,7 +810,7 @@ export default function DonationScreen() {
                         </View>
 
                         {/* Donation Box Capacity Section */}
-                        {(() => {
+                        {/* {(() => {
                           const calculateFees = (grossAmount: number) => {
                             const gross = grossAmount;
                             let crwdFee: number;
@@ -846,7 +846,7 @@ export default function DonationScreen() {
                                 </Text>
                               </View>
 
-                              {/* Progress Bar */}
+                              
                               <View style={styles.progressBarContainer}>
                                 <View
                                   style={[
@@ -861,7 +861,7 @@ export default function DonationScreen() {
                               </Text>
                             </View>
                           );
-                        })()}
+                        })()} */}
                       </View>
 
                       {/* Your Selected Causes */}
@@ -1653,7 +1653,7 @@ const styles = StyleSheet.create({
   },
   stepContent: {
     padding: 16,
-    paddingBottom: 100, // Space for continue button
+    // paddingBottom: 100, // Space for continue button
   },
   step1Header: {
     marginBottom: 16,
@@ -1676,7 +1676,7 @@ const styles = StyleSheet.create({
   amountCard: {
     backgroundColor: '#ffffff',
     borderRadius: 12,
-    padding: 24,
+    padding: 16,
     marginBottom: 24,
     borderWidth: 1,
     borderColor: '#e5e7eb',
@@ -1721,7 +1721,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#e5e7eb',
   },
   monthlyImpactSection: {
-    marginBottom: 16,
+    // marginBottom: 16,
   },
   monthlyImpactTitle: {
     fontSize: 18,
@@ -2242,7 +2242,7 @@ const styles = StyleSheet.create({
   },
   step2Content: {
     padding: 16,
-    paddingBottom: 100,
+    // paddingBottom: 100,
   },
   currentlySupportingSection: {
     marginTop: 16,

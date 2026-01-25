@@ -225,6 +225,7 @@ export default function NewCausePage() {
                               description: causeData.description || causeData.mission || '',
                               mission: causeData.mission || '',
                               logo: causeData.image || causeData.logo || '',
+                              image: causeData.image || causeData.logo || '',
                             }] : [],
                           },
                         },
@@ -391,8 +392,8 @@ export default function NewCausePage() {
 
           <CauseDetails causeData={causeData} />
 
-          <SimilarNonprofits 
-            similarCauses={similarCauses} 
+          <SimilarNonprofits
+            similarCauses={similarCauses}
             isLoading={isLoadingSimilar}
             categoryName={causeData?.category ? categories.find(c => c.id === causeData.category)?.name : undefined}
             categoryId={causeData?.category}

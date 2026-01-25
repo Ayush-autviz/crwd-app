@@ -9,7 +9,7 @@ import ChangePasswordSheet from '../components/newsettings/ChangePasswordSheet'
 import ChangeEmailSheet from '../components/newsettings/ChangeEmailSheet'
 import RequestNonprofitModal from '../components/newsearch/RequestNonprofitModal'
 import PaymentMethodsBottomSheet from '../components/donation/PaymentMethodsBottomSheet'
-import { CircleHelp, CreditCard, FileText, Info, Lock, Mail, MessageSquare, Shield, Trash2, Eye, Bookmark, Heart, ChevronDown, UserPlus } from 'lucide-react-native'
+import { CircleHelp, CreditCard, FileText, Info, Lock, Mail, MessageSquare, Shield, Trash2, Eye, Bookmark, Heart, ChevronDown, UserPlus, DoorOpenIcon } from 'lucide-react-native'
 import { LightGrey, PrimaryBlue, PrimaryGrey, SecondaryGrey } from '../Constants/Colors'
 import { useNavigation } from '@react-navigation/native'
 import { useAuthStore } from '../store/store'
@@ -19,7 +19,7 @@ import { useToast } from '../contexts/ToastContext'
 
 export default function NewSettings() {
   const navigation = useNavigation()
-  const { user: currentUser, setUser, setToken } = useAuthStore()
+  const { user: currentUser, setUser, setToken, logout } = useAuthStore()
   const { showToast } = useToast()
 
   // Bottom sheet refs
@@ -82,6 +82,29 @@ export default function NewSettings() {
   })
 
   // ... (handleDeleteAccount, openPasswordSheet, openEmailSheet stay the same) ...
+  const handleLogout = () => {
+    Alert.alert(
+      'Log Out',
+      'Are you sure you want to log out?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Log Out',
+          style: 'destructive',
+          onPress: () => {
+            logout()
+            showToast('Logged out successfully', 3000)
+            navigation.reset({
+              index: 0,
+              routes: [{ name: 'SplashScreen' as never }],
+            })
+          },
+        },
+      ],
+      { cancelable: true }
+    )
+  }
+
   const handleDeleteAccount = () => {
     Alert.alert(
       'Delete Account',
@@ -293,22 +316,41 @@ export default function NewSettings() {
 
           {/* Delete Account Section */}
           {currentUser?.id && (
-            <View style={styles.section}>
-              <TouchableOpacity
-                onPress={handleDeleteAccount}
-                disabled={deactivateAccountMutation.isPending}
-                style={[
-                  styles.menuItem,
-                  styles.deleteButton,
-                  deactivateAccountMutation.isPending && styles.disabledButton
-                ]}
-              >
-                <Trash2 size={20} color="#ef4444" />
-                <Text style={styles.deleteButtonText}>
-                  {deactivateAccountMutation.isPending ? 'Deactivating...' : 'Delete Account'}
-                </Text>
-              </TouchableOpacity>
-            </View>
+            <>
+              <View style={styles.section}>
+                <TouchableOpacity
+                  onPress={handleDeleteAccount}
+                  disabled={deactivateAccountMutation.isPending}
+                  style={[
+                    styles.menuItem,
+                    styles.deleteButton,
+                    deactivateAccountMutation.isPending && styles.disabledButton
+                  ]}
+                >
+                  <Trash2 size={20} color="#ef4444" />
+                  <Text style={styles.deleteButtonText}>
+                    {deactivateAccountMutation.isPending ? 'Deactivating...' : 'Delete Account'}
+                  </Text>
+                </TouchableOpacity>
+
+              </View>
+
+              <View style={styles.section}>
+
+                <TouchableOpacity
+                  onPress={handleLogout}
+                  style={[
+                    styles.menuItem,
+                    styles.deleteButton,
+                  ]}
+                >
+                  <DoorOpenIcon size={20} color="#ef4444" />
+                  <Text style={styles.deleteButtonText}>
+                    Log Out
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </>
           )}
 
           <View style={styles.bottomSpacing} />

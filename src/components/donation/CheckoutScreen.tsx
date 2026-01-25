@@ -280,6 +280,7 @@ export default function CheckoutScreen({
   const selectedOrganizationsList = hasApiData ? [] : selectedOrganizations;
 
   // Calculate equal distribution percentage and amount per item
+  const hasCustomPercentages = boxCauses.some((bc: any) => bc.percentage != null && bc.percentage !== undefined);
   const totalItems = hasApiData
     ? (totalCauses + totalCollectives)
     : selectedOrganizationsList.length;
@@ -360,8 +361,18 @@ export default function CheckoutScreen({
                         {/* Donation Info & Remove Button */}
                         <View style={styles.causeActions}>
                           <View style={styles.amountInfo}>
-                            <Text style={styles.amountPercentage}>{distributionPercentage}%</Text>
-                            <Text style={styles.amountPerMonth}>${amountPerItem.toFixed(2)}/mo</Text>
+                            <Text style={styles.amountPercentage}>
+                              {hasCustomPercentages
+                                ? Number(boxCauses.find((bc: any) => bc.cause?.id === cause.id)?.percentage || 0).toFixed(1)
+                                : distributionPercentage.toFixed(1)
+                              }%
+                            </Text>
+                            <Text style={styles.amountPerMonth}>
+                              ${hasCustomPercentages
+                                ? ((net * Number(boxCauses.find((bc: any) => bc.cause?.id === cause.id)?.percentage || 0)) / 100).toFixed(2)
+                                : amountPerItem.toFixed(2)
+                              }/mo
+                            </Text>
                           </View>
                           <TouchableOpacity
                             onPress={() => handleRemoveCause(cause)}

@@ -75,7 +75,7 @@
 //   //         access_token: data.access_token,
 //   //         refresh_token: data.refresh_token
 //   //       });
-        
+
 //   //       // Navigate to main app
 //   //       navigation.navigate('DrawerNav' as never);
 //   //     } else {
@@ -103,7 +103,7 @@
 //         });
 //       }
 //       showToast('Google authentication successful!');
-      
+
 //       // If last_login_at is null, navigate to nonprofit interests page (new user)
 //       if (response.user && !response.user.last_login_at) {
 //         (navigation as any).navigate('NonProfitInterests', { fromAuth: true })
@@ -169,7 +169,7 @@
 //   //   try {
 //   //     const result = await googleLoginQuery.refetch();
 //   //     console.log('Google login response:', result);
-      
+
 //   //     // Open the device browser with the Google login URL
 //   //     if (result.data?.url) {
 //   //       const supported = await Linking.canOpenURL(result.data.url);
@@ -195,12 +195,12 @@
 //   const handleGoogleLogin = async () => {
 //     console.log('=== Google Login Started ===');
 //     setIsGoogleLoading(true)
-    
+
 //       const result = await googleLogin();
-      
+
 //       if (result && result.url) {
 //         console.log('Got OAuth URL:', result.url);
-        
+
 //         // Use InAppBrowser instead of Linking
 //         if (await InAppBrowser.isAvailable()) {
 //           const authResult = await InAppBrowser.openAuth(
@@ -213,24 +213,24 @@
 //               enableDefaultShare: false,
 //             }
 //           )
-          
+
 //           console.log('Auth result:', authResult);
-          
+
 //           if (authResult.type === 'success' && authResult.url) {
 //             // Handle the callback URL directly here
 //             const codeMatch = authResult.url.match(/[?&]code=([^&]+)/);
 //             const code = codeMatch ? decodeURIComponent(codeMatch[1]) : null;
-            
+
 //             if (code) {
 //               googleCallbackMutation.mutateAsync(code);
-              
-            
+
+
 //           }
 //         } else {
 //           // Fallback to regular Linking
 //           await Linking.openURL(result.url);
 //         }
-        
+
 //         setIsGoogleLoading(false);
 //       }
 //     } 
@@ -381,7 +381,7 @@
 //           Discover nonprofits like these on CRWD
 //         </Text>
 
-      
+
 
 //         {/* Top row */}
 //         {renderRow(rowTop, scrollXTop, [0, 20])}
@@ -404,7 +404,7 @@
 //             backgroundColor: '#e5e7eb',
 //             marginRight: 60,
 //           }} />
-          
+
 //           {/* Right line segment */}
 //           <View style={{
 //             position: 'absolute',
@@ -415,7 +415,7 @@
 //             backgroundColor: '#e5e7eb',
 //             marginLeft: 60,
 //           }} />
-          
+
 //           {/* Center text */}
 //           <View style={{
 //             alignItems: 'center',
@@ -426,7 +426,7 @@
 //               fontSize: 12,
 //               color: '#6b7280',
 //               textTransform: 'uppercase',
-              
+
 //               paddingHorizontal: 8,
 //             }}>
 //               continue with
@@ -621,6 +621,8 @@ export default function OnBoard() {
   const { setUser, setToken } = useAuthStore();
   const { showToast } = useToast();
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isAppleLoading, setIsAppleLoading] = useState(false);
+
 
   // Get redirectTo and redirectParams from route params (React Navigation pattern)
   const redirectTo = (route.params as any)?.redirectTo || null;
@@ -633,6 +635,44 @@ export default function OnBoard() {
     queryFn: googleLogin,
     enabled: false,
   });
+
+  const appleLoginQuery = useQuery({
+    queryKey: ['appleLogin'],
+    queryFn: () => googleLogin('SignInWithApple'),
+    enabled: false,
+  })
+
+  const appleCallbackMutation = useMutation({
+    mutationFn: (code: string) => googleCallbackApi(code, 'apple'),
+    onSuccess: (response) => {
+      console.log('Apple callback successful:', response)
+
+      if (response.user) {
+        setUser(response.user)
+      }
+      if (response.access_token) {
+        setToken({
+          access_token: response.access_token,
+          refresh_token: response.refresh_token
+        })
+      }
+
+      // Handle redirect
+      if (response.user && !response.user.last_login_at) {
+        (navigation as any).navigate('NonProfitInterests', { fromAuth: true, redirectTo, redirectParams: (route.params as any)?.redirectParams });
+      } else if (redirectTo && redirectTo !== '/' && redirectTo !== 'DrawerNav') {
+        // Navigate to specific route if provided
+        (navigation as any).navigate(redirectTo);
+      } else {
+        navigation.navigate('DrawerNav' as never);
+      }
+    },
+    onError: (error: any) => {
+      console.error('Apple callback error:', error.response)
+      const errorMessage = error?.response?.data?.message || error.message || 'Apple callback failed'
+      showToast(errorMessage)
+    },
+  })
 
   const googleCallbackMutation = useMutation({
     mutationFn: googleCallbackApi,
@@ -697,7 +737,7 @@ export default function OnBoard() {
     try {
       setIsGoogleLoading(true);
       const result = await googleLoginQuery.refetch();
-      
+
       if (result.data && result.data.url) {
         if (await InAppBrowser.isAvailable()) {
           const authResult = await InAppBrowser.openAuth(
@@ -745,9 +785,38 @@ export default function OnBoard() {
     (navigation as any).navigate('Login', { redirectTo, redirectParams });
   };
 
-  const handleAppleLogin = () => {
-    // TODO: Implement Apple Sign In
-    showToast('Apple Sign In coming soon!');
+  const handleAppleLogin = async () => {
+    setIsAppleLoading(true)
+    try {
+      const result = await appleLoginQuery.refetch()
+      if (result.data && result.data.url) {
+        if (await InAppBrowser.isAvailable()) {
+          const authResult = await InAppBrowser.openAuth(
+            result.data.url,
+            'crwd-app://appleCallback',
+            {
+              ephemeralWebSession: false,
+              showTitle: false,
+              enableUrlBarHiding: true,
+              enableDefaultShare: false,
+            }
+          )
+
+          if (authResult.type === 'success' && authResult.url) {
+            const codeMatch = authResult.url.match(/[?&]code=([^&]+)/);
+            const code = codeMatch ? decodeURIComponent(codeMatch[1]) : null;
+            if (code) {
+              appleCallbackMutation.mutate(code);
+            }
+          }
+        }
+      }
+    } catch (error: any) {
+      console.error('Apple login error:', error)
+      showToast('Apple login failed. Please try again.')
+    } finally {
+      setIsAppleLoading(false)
+    }
   };
 
   return (
@@ -758,8 +827,8 @@ export default function OnBoard() {
       >
         {/* Logo */}
         {/* <View style={styles.logoWrapper}> */}
-          {/* <NewLogo size="lg" /> */}
-          <Image source={require('../../assets/newLogo/FullLogo.png')} style={styles.logo} resizeMode='contain'/>
+        {/* <NewLogo size="lg" /> */}
+        <Image source={require('../../assets/newLogo/FullLogo.png')} style={styles.logo} resizeMode='contain' />
         {/* </View> */}
 
         {/* Headings */}
@@ -786,11 +855,18 @@ export default function OnBoard() {
         <View style={styles.buttonsContainer}>
           {/* Apple Button */}
           <TouchableOpacity
-            style={styles.appleButton}
+            style={[styles.appleButton, (isAppleLoading || appleCallbackMutation.isPending) && styles.buttonDisabled]}
             onPress={handleAppleLogin}
+            disabled={isAppleLoading || appleCallbackMutation.isPending}
           >
-            <SvgXml xml={appleXml} width={20} height={20} />
-            <Text style={styles.appleButtonText}>Continue with Apple</Text>
+            {(isAppleLoading || appleCallbackMutation.isPending) ? (
+              <ActivityIndicator size="small" color="#FFFFFF" />
+            ) : (
+              <SvgXml xml={appleXml} width={20} height={20} />
+            )}
+            <Text style={styles.appleButtonText}>
+              {(isAppleLoading || appleCallbackMutation.isPending) ? 'Signing in...' : 'Continue with Apple'}
+            </Text>
           </TouchableOpacity>
 
           {/* Google Button */}
@@ -992,4 +1068,3 @@ const styles = StyleSheet.create({
 
 
 
-  

@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
+import { truncateAtFirstPeriod } from '../../utils/truncateFirstPeriod';
 
 interface Nonprofit {
   id: string | number;
@@ -34,15 +35,6 @@ const getIconColor = (id: number | string): string => {
         .split('')
         .reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
   return colors[hash % colors.length];
-};
-
-const truncateAtFirstPeriod = (text: string): string => {
-  if (!text) return text;
-  if (text.length < 30) return text;
-  const periodIndex = text.indexOf('.');
-  const newText = periodIndex !== -1 ? text.substring(0, periodIndex + 1) : text;
-  if (newText.length < 30) return text;
-  else return newText
 };
 
 export default function NewFeaturedNonprofits({
@@ -99,7 +91,7 @@ export default function NewFeaturedNonprofits({
               {/* Content */}
               <View style={styles.content}>
                 {/* Title */}
-                <Text style={styles.cardTitle}>{nonprofit.name}</Text>
+                <Text style={styles.cardTitle} numberOfLines={1}>{nonprofit.name}</Text>
 
                 {/* Description */}
                 <Text style={styles.description} numberOfLines={3}>

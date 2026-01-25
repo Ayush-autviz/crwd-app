@@ -40,12 +40,12 @@ const getInitials = (firstName?: string, lastName?: string, username?: string) =
 // Helper function to format time ago - matching Vite format
 const formatTimeAgo = (dateString: string): string => {
     if (!dateString) return '';
-    
+
     try {
         const date = new Date(dateString);
         const now = new Date();
         const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-        
+
         if (diffInSeconds < 60) {
             return `${diffInSeconds} seconds ago`;
         } else if (diffInSeconds < 3600) {
@@ -65,7 +65,7 @@ const formatTimeAgo = (dateString: string): string => {
 
 export default function Activity() {
     const route = useRoute()
-    const {tab}: any = route.params ?? 'community'
+    const { tab }: any = route.params ?? 'community'
     const [activeTab, setActiveTab] = useState<'community' | 'notifications'>(tab ?? 'notifications')
     const navigation = useNavigation()
     const { user: currentUser } = useAuthStore();
@@ -90,12 +90,12 @@ export default function Activity() {
     // Mark all notifications as read on mount
     useFocusEffect(
         useCallback(() => {
-          if (currentUser?.id && notificationsData?.results?.length > 0) {
-            markAllNotificationsAsReadMutation.mutate();
-          }
+            if (currentUser?.id && notificationsData?.results?.length > 0) {
+                markAllNotificationsAsReadMutation.mutate();
+            }
         }, [currentUser?.id, notificationsData?.results?.length])
-      );
-      
+    );
+
 
     // Filter notifications by type
     const personalNotifications = useMemo(() => {
@@ -117,14 +117,14 @@ export default function Activity() {
             new Set(
                 personalNotifications
                     .map((notification: any) => {
-                        const userId = 
-                            notification.data?.liker_id || 
-                            notification.data?.commenter_id || 
+                        const userId =
+                            notification.data?.liker_id ||
+                            notification.data?.commenter_id ||
                             notification.data?.mentioner_id ||
                             notification.data?.follower_id ||
-                            notification.data?.donor_id || 
-                            notification.data?.new_member_id || 
-                            notification.user?.id || 
+                            notification.data?.donor_id ||
+                            notification.data?.new_member_id ||
+                            notification.user?.id ||
                             notification.data?.user_id;
                         return userId;
                     })
@@ -160,13 +160,13 @@ export default function Activity() {
 
         return personalNotifications.map((notification: any) => {
             // Determine notification type and extract data
-            const isDonation = notification.title?.toLowerCase().includes('donation') || 
-                              notification.body?.toLowerCase().includes('donation') ||
-                              notification.data?.donor_id;
-            const isNewMember = notification.title?.toLowerCase().includes('member') || 
-                               notification.body?.toLowerCase().includes('joined') ||
-                               notification.data?.new_member_id;
-            
+            const isDonation = notification.title?.toLowerCase().includes('donation') ||
+                notification.body?.toLowerCase().includes('donation') ||
+                notification.data?.donor_id;
+            const isNewMember = notification.title?.toLowerCase().includes('member') ||
+                notification.body?.toLowerCase().includes('joined') ||
+                notification.data?.new_member_id;
+
             // Extract collective name from body or title
             let collectiveName = '';
             if (notification.body) {
@@ -194,7 +194,7 @@ export default function Activity() {
                     }
                 }
             }
-            
+
             // Extract user name for new member notifications
             let memberName = '';
             if (isNewMember && notification.body) {
@@ -208,7 +208,7 @@ export default function Activity() {
                     // The description will be parsed to show names clickable, so we don't need to reconstruct it
                 }
             }
-            
+
             // Extract donation amount
             let donationAmount = '';
             if (isDonation && notification.body) {
@@ -220,16 +220,16 @@ export default function Activity() {
 
             // Extract user info for avatar - get the user who triggered the notification
             // For likes, comments, mentions, etc., check liker_id, commenter_id, mentioner_id, etc.
-            const userId = 
-                notification.data?.liker_id || 
-                notification.data?.commenter_id || 
+            const userId =
+                notification.data?.liker_id ||
+                notification.data?.commenter_id ||
                 notification.data?.mentioner_id ||
                 notification.data?.follower_id ||
-                notification.data?.donor_id || 
-                notification.data?.new_member_id || 
-                notification.user?.id || 
+                notification.data?.donor_id ||
+                notification.data?.new_member_id ||
+                notification.user?.id ||
                 notification.data?.user_id;
-            
+
             // Extract username from body if it contains @username pattern (e.g., "@jake_long liked your post")
             // Also check data.follower_username for follower notifications
             let username = '';
@@ -243,11 +243,11 @@ export default function Activity() {
             if (!username && notification.data?.follower_username) {
                 username = notification.data.follower_username;
             }
-            
+
             // Get user profile from fetched profiles map if available
             const userProfile = userId ? userProfilesMap.get(userId.toString()) : null;
             const profileUser = userProfile?.user || userProfile;
-            
+
             // Extract full name from body text if it appears (e.g., "Aayush Bajaj commented", "Jake Smith joined", "Chad F has started")
             let extractedFirstName = '';
             let extractedLastName = '';
@@ -265,23 +265,23 @@ export default function Activity() {
                     }
                 }
             }
-            
+
             // Get user info from fetched profile, notification.user, notification.data, or extracted from body
-            const firstName = 
-                profileUser?.first_name || 
-                notification.user?.first_name || 
-                notification.data?.first_name || 
+            const firstName =
+                profileUser?.first_name ||
+                notification.user?.first_name ||
+                notification.data?.first_name ||
                 extractedFirstName || '';
-            const lastName = 
-                profileUser?.last_name || 
-                notification.user?.last_name || 
-                notification.data?.last_name || 
+            const lastName =
+                profileUser?.last_name ||
+                notification.user?.last_name ||
+                notification.data?.last_name ||
                 extractedLastName || '';
-            const extractedUsername = 
-                username || 
-                profileUser?.username || 
-                notification.user?.username || 
-                notification.data?.username || 
+            const extractedUsername =
+                username ||
+                profileUser?.username ||
+                notification.user?.username ||
+                notification.data?.username ||
                 notification.data?.follower_username || '';
 
             const postId = notification.data?.post_id || notification.data?.post?.id || notification.post_id;
@@ -342,9 +342,9 @@ export default function Activity() {
             }
 
             // Extract user ID from notification data based on type
-            const userId = 
-                notification.data?.new_member_id || 
-                notification.data?.creator_id || 
+            const userId =
+                notification.data?.new_member_id ||
+                notification.data?.creator_id ||
                 notification.data?.donor_id ||
                 notification.data?.liker_id ||
                 notification.data?.user_id ||
@@ -357,7 +357,7 @@ export default function Activity() {
 
             // Check if this is the current user's own profile
             const isCurrentUser = currentUser?.id && (
-                (userId && currentUser.id.toString() === userId.toString()) || 
+                (userId && currentUser.id.toString() === userId.toString()) ||
                 (username && currentUser.username === username)
             );
 
@@ -408,86 +408,86 @@ export default function Activity() {
 
     if (!currentUser?.id) {
         return (
-        <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }} edges={['top', 'left', 'right']}>
-            <MainHeaderNav title={'Activity'} show={true} />
-            <View style={{ 
-                flex: 1, 
-                justifyContent: 'center', 
-                alignItems: 'center', 
-                paddingHorizontal: 32,
-                backgroundColor: 'white'
-            }}>
-                {/* Icon */}
+            <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }} edges={['top', 'left', 'right']}>
+                <MainHeaderNav title={'Activity'} show={true} />
                 <View style={{
-                    width: 80,
-                    height: 80,
-                    backgroundColor: '#dbeafe',
-                    borderRadius: 40,
+                    flex: 1,
                     justifyContent: 'center',
                     alignItems: 'center',
-                    marginBottom: 24
+                    paddingHorizontal: 32,
+                    backgroundColor: 'white'
                 }}>
-                    <User size={40} color={PrimaryBlue} />
-                </View>
-                
-                {/* Title */}
-                <Text style={{
-                    fontSize: 24,
-                    fontWeight: 'bold',
-                    color: '#111827',
-                    marginBottom: 12,
-                    textAlign: 'center'
-                }}>
-                    Sign in to view your Notifications and Community Updates
-                </Text>
-                
-                {/* Description */}
-                <Text style={{
-                    fontSize: 16,
-                    color: '#6b7280',
-                    marginBottom: 32,
-                    textAlign: 'center',
-                    lineHeight: 24
-                }}>
-                    Sign in to view your Notifications and Community Updates, manage your causes, and connect with your community.
-                </Text>
-                
-                {/* CTA Button */}
-                <TouchableOpacity
-                    onPress={() => navigation.navigate('Login' as never)}
-                    style={{
-                        backgroundColor: '#2563eb',
-                        paddingHorizontal: 32,
-                        paddingVertical: 12,
-                        borderRadius: 8,
-                        flexDirection: 'row',
+                    {/* Icon */}
+                    <View style={{
+                        width: 80,
+                        height: 80,
+                        backgroundColor: '#dbeafe',
+                        borderRadius: 40,
+                        justifyContent: 'center',
                         alignItems: 'center',
-                        gap: 8
-                    }}
-                >
-                    <Text style={{ color: 'white', fontSize: 16, fontWeight: '500' }}>
-                        Sign In to Continue
+                        marginBottom: 24
+                    }}>
+                        <User size={40} color={PrimaryBlue} />
+                    </View>
+
+                    {/* Title */}
+                    <Text style={{
+                        fontSize: 24,
+                        fontFamily: 'Outfit-Bold',
+                        color: '#111827',
+                        marginBottom: 12,
+                        textAlign: 'center'
+                    }}>
+                        Sign in to view your Notifications and Community Updates
                     </Text>
-                </TouchableOpacity>
-                
-                {/* Additional Info */}
-                <TouchableOpacity
-                    onPress={() => navigation.navigate('ClaimProfile' as never)}
-                  >
-                <Text style={{
-                    fontSize: 14,
-                    color: '#6b7280',
-                    marginTop: 24,
-                    textAlign: 'center'
-                }}>
-                    Don't have an account? 
-                    <Text style={{ color: '#2563eb', fontWeight: '500' }}> Create one here</Text>
-                </Text>
-                </TouchableOpacity>
-            </View>
-        </SafeAreaView>
-    );
-}
+
+                    {/* Description */}
+                    <Text style={{
+                        fontSize: 16,
+                        color: '#6b7280',
+                        marginBottom: 32,
+                        textAlign: 'center',
+                        lineHeight: 24
+                    }}>
+                        Sign in to view your Notifications and Community Updates, manage your causes, and connect with your community.
+                    </Text>
+
+                    {/* CTA Button */}
+                    <TouchableOpacity
+                        onPress={() => navigation.navigate('Login' as never)}
+                        style={{
+                            backgroundColor: '#2563eb',
+                            paddingHorizontal: 32,
+                            paddingVertical: 12,
+                            borderRadius: 8,
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            gap: 8
+                        }}
+                    >
+                        <Text style={{ color: 'white', fontSize: 16, fontFamily: 'Outfit-Medium' }}>
+                            Sign In to Continue
+                        </Text>
+                    </TouchableOpacity>
+
+                    {/* Additional Info */}
+                    <TouchableOpacity
+                        onPress={() => navigation.navigate('ClaimProfile' as never)}
+                    >
+                        <Text style={{
+                            fontSize: 14,
+                            color: '#6b7280',
+                            marginTop: 24,
+                            textAlign: 'center'
+                        }}>
+                            Don't have an account?
+                            <Text style={{ color: '#2563eb', fontFamily: 'Outfit-Medium' }}> Create one here</Text>
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+            </SafeAreaView>
+        );
+    }
 
     const renderNotificationItem = ({ item }: { item: any }) => {
         const handleAvatarPress = () => {
@@ -524,7 +524,7 @@ export default function Activity() {
                         parts.push(
                             <Text
                                 key="donor"
-                                style={{ fontWeight: '600', color: '#374151', fontSize: 12 }}
+                                style={{ fontFamily: 'Outfit-SemiBold', color: '#374151', fontSize: 12 }}
                                 onPress={() => {
                                     (navigation as any).navigate('UserProfile', { userId: item.userId.toString() });
                                 }}
@@ -555,7 +555,7 @@ export default function Activity() {
                         parts.push(
                             <Text
                                 key="nonprofit"
-                                style={{ fontWeight: '600', color: '#374151', fontSize: 12 }}
+                                style={{ fontFamily: 'Outfit-SemiBold', color: '#374151', fontSize: 12 }}
                                 onPress={() => {
                                     (navigation as any).navigate('CauseDetail', { causeId: item.nonprofitId });
                                 }}
@@ -590,7 +590,7 @@ export default function Activity() {
                         Your collective{' '}
                         {item.collectiveId && item.collectiveName ? (
                             <Text
-                                style={{ fontWeight: '600', color: '#374151', fontSize: 12 }}
+                                style={{ fontFamily: 'Outfit-SemiBold', color: '#374151', fontSize: 12 }}
                                 onPress={() => {
                                     if (item.collectiveId) {
                                         (navigation as any).navigate('GroupCRWD', { crwdId: item.collectiveId.toString() });
@@ -629,7 +629,7 @@ export default function Activity() {
                         parts.push(
                             <Text
                                 key={`member-${match.index}`}
-                                style={{ fontWeight: '600', color: '#374151', fontSize: 12 }}
+                                style={{ fontFamily: 'Outfit-SemiBold', color: '#374151', fontSize: 12 }}
                                 onPress={() => {
                                     (navigation as any).navigate('UserProfile', { userId: item.userId.toString() });
                                 }}
@@ -657,7 +657,7 @@ export default function Activity() {
                             parts.push(
                                 <Text
                                     key={`collective-${match.index}`}
-                                    style={{ fontWeight: '600', color: '#374151', fontSize: 12 }}
+                                    style={{ fontFamily: 'Outfit-SemiBold', color: '#374151', fontSize: 12 }}
                                     onPress={() => {
                                         (navigation as any).navigate('GroupCRWD', { crwdId: item.collectiveId.toString() });
                                     }}
@@ -715,7 +715,7 @@ export default function Activity() {
                 let nameMatch: RegExpExecArray | null;
                 while ((nameMatch = fullNamePattern.exec(description)) !== null) {
                     // Check if this position is not already covered by a username match
-                    const isOverlapping = matches.some(m => 
+                    const isOverlapping = matches.some(m =>
                         nameMatch!.index >= m.index && nameMatch!.index < m.index + m.length
                     );
                     if (!isOverlapping) {
@@ -735,7 +735,7 @@ export default function Activity() {
                 let collectiveMatch: RegExpExecArray | null;
                 while ((collectiveMatch = collectivePattern.exec(description)) !== null) {
                     // Check if this position is not already covered
-                    const isOverlapping = matches.some(m => 
+                    const isOverlapping = matches.some(m =>
                         collectiveMatch!.index >= m.index && collectiveMatch!.index < m.index + m.length
                     );
                     if (!isOverlapping) {
@@ -769,7 +769,7 @@ export default function Activity() {
                         parts.push(
                             <Text
                                 key={`user-${matchItem.index}`}
-                                style={{ fontWeight: '600', color: '#374151', fontSize: 12 }}
+                                style={{ fontFamily: 'Outfit-SemiBold', color: '#374151', fontSize: 12 }}
                                 onPress={() => {
                                     (navigation as any).navigate('UserProfile', { userId: matchItem.userId });
                                 }}
@@ -789,7 +789,7 @@ export default function Activity() {
                         parts.push(
                             <Text
                                 key={`collective-${matchItem.index}`}
-                                style={{ fontWeight: '600', color: '#374151', fontSize: 12 }}
+                                style={{ fontFamily: 'Outfit-SemiBold', color: '#374151', fontSize: 12 }}
                                 onPress={() => {
                                     (navigation as any).navigate('GroupCRWD', { crwdId: matchItem.collectiveId });
                                 }}
@@ -827,10 +827,10 @@ export default function Activity() {
 
         return (
             <TouchableOpacity
-                style={{ 
-                    paddingHorizontal: 12, 
-                    paddingVertical: 16, 
-                    borderBottomWidth: 1, 
+                style={{
+                    paddingHorizontal: 12,
+                    paddingVertical: 16,
+                    borderBottomWidth: 1,
                     borderBottomColor: '#F3F4F6',
                     backgroundColor: item.postId ? 'transparent' : 'white',
                 }}
@@ -839,22 +839,22 @@ export default function Activity() {
             >
                 <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 12 }}>
                     {/* Avatar - matching vite size and style */}
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         onPress={handleAvatarPress}
                         activeOpacity={0.7}
                         style={{ flexShrink: 0 }}
                     >
                         {(() => {
-                            const bgColor = item.userId 
+                            const bgColor = item.userId
                                 ? (item.color || getConsistentColor(item.userId, avatarColors))
                                 : (item.username ? getConsistentColor(item.username, avatarColors) : avatarColors[0]);
-                            
+
                             return (
                                 <Avatar size={40}>
                                     <AvatarImage src={item.avatarUrl} />
-                                    <AvatarFallback 
+                                    <AvatarFallback
                                         style={{ backgroundColor: bgColor }}
-                                        textStyle={{ color: '#FFFFFF', fontSize: 12, fontWeight: '700' }}
+                                        textStyle={{ color: '#FFFFFF', fontSize: 12, fontFamily: 'Outfit-Bold' }}
                                     >
                                         {getInitials(item.firstName, item.lastName, item.username)}
                                     </AvatarFallback>
@@ -866,11 +866,11 @@ export default function Activity() {
                     {/* Content - matching vite layout */}
                     <View style={{ flex: 1, minWidth: 0 }}>
                         {/* Title - matching vite font size */}
-                        <Text style={{ 
-                            fontWeight: '700', 
-                            color: '#111827', 
-                            fontSize: 14, 
-                            marginBottom: 4 
+                        <Text style={{
+                            fontFamily: 'Outfit-Bold',
+                            color: '#111827',
+                            fontSize: 14,
+                            marginBottom: 4
                         }}>
                             {item.title}
                         </Text>
@@ -890,14 +890,14 @@ export default function Activity() {
 
     const renderCommunityPost = ({ item }: { item: any }) => {
         return (
-            <View style={{ 
+            <View style={{
                 backgroundColor: 'white',
                 borderBottomWidth: 1,
                 borderBottomColor: LightGrey,
                 padding: 16
             }}>
                 <View style={{ flexDirection: 'row', gap: 12 }}>
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         onPress={() => {
                             if (item.userId) {
                                 (navigation as any).navigate('UserProfile', { userId: item.userId.toString() });
@@ -906,17 +906,17 @@ export default function Activity() {
                         activeOpacity={0.7}
                     >
                         {(() => {
-                            const bgColor = item.userId 
+                            const bgColor = item.userId
                                 ? (item.color || getConsistentColor(item.userId, avatarColors))
                                 : (item.username ? getConsistentColor(item.username, avatarColors) : '#E5E7EB');
-                            
+
                             // Show image if available, otherwise use fallback color like Vite
                             return (
                                 <Avatar size={40}>
                                     <AvatarImage src={item.avatarUrl} />
-                                    <AvatarFallback 
+                                    <AvatarFallback
                                         style={{ backgroundColor: bgColor }}
-                                        textStyle={{ color: '#FFFFFF', fontSize: 12, fontWeight: '700' }}
+                                        textStyle={{ color: '#FFFFFF', fontSize: 12, fontFamily: 'Outfit-Bold' }}
                                     >
                                         {getInitials(item.firstName, item.lastName, item.username)}
                                     </AvatarFallback>
@@ -924,8 +924,8 @@ export default function Activity() {
                             );
                         })()}
                     </TouchableOpacity>
-                    
-                    <TouchableOpacity 
+
+                    <TouchableOpacity
                         onPress={() => {
                             if (item.postId) {
                                 (navigation as any).navigate('PostDetail', { postId: item.postId });
@@ -934,18 +934,18 @@ export default function Activity() {
                         style={{ flex: 1 }}
                         activeOpacity={0.7}
                     >
-                        
+
                         <View style={{ flex: 1 }}>
                             {!item.isDonation && (
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                                        <Text style={{ fontWeight: '600', fontSize: 14, color: '#111' }}>{item.username}</Text>
+                                        <Text style={{ fontFamily: 'Outfit-SemiBold', fontSize: 14, color: '#111' }}>{item.username}</Text>
                                         <Text style={{ fontSize: 12, color: PrimaryGrey }}>• {item.time}</Text>
                                     </View>
                                     {/* <MoreHorizontal size={16} color={PrimaryGrey} /> */}
                                 </View>
                             )}
-                            
+
                             {item.org && (
                                 <TouchableOpacity onPress={() => {
                                     if (item.collectiveId) {
@@ -966,7 +966,7 @@ export default function Activity() {
                                                     (navigation as any).navigate('GroupCRWD', { collectiveId: item.collectiveId.toString() });
                                                 }
                                             }}>
-                                                <Text style={{ color: PrimaryBlue, fontWeight: '600' }}>{item.groupName}</Text>
+                                                <Text style={{ color: PrimaryBlue, fontFamily: 'Outfit-SemiBold' }}>{item.groupName}</Text>
                                             </TouchableOpacity>
                                         )}
                                     </View>
@@ -995,14 +995,14 @@ export default function Activity() {
                             )}
 
                             {item.linkPreview && (
-                                <View style={{ 
-                                    borderWidth: 1, 
-                                    borderColor: LightGrey, 
-                                    borderRadius: 8, 
-                                    padding: 12, 
-                                    marginBottom: 12 
+                                <View style={{
+                                    borderWidth: 1,
+                                    borderColor: LightGrey,
+                                    borderRadius: 8,
+                                    padding: 12,
+                                    marginBottom: 12
                                 }}>
-                                    <Text style={{ fontWeight: '600', color: '#111', marginBottom: 4 }}>
+                                    <Text style={{ fontFamily: 'Outfit-SemiBold', color: '#111', marginBottom: 4 }}>
                                         {item.linkPreview.title}
                                     </Text>
                                     <Text style={{ color: '#6B7280' }}>
@@ -1015,24 +1015,24 @@ export default function Activity() {
                                 <View style={{ marginBottom: 12 }}>
                                     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16, marginBottom: 8 }}>
                                         <View>
-                                            <Text style={{ fontWeight: '600', color: '#111' }}>Date</Text>
+                                            <Text style={{ fontFamily: 'Outfit-SemiBold', color: '#111' }}>Date</Text>
                                             <Text style={{ color: '#6B7280' }}>{item.eventDetails.date}</Text>
                                         </View>
                                         <View>
-                                            <Text style={{ fontWeight: '600', color: '#111' }}>Time</Text>
+                                            <Text style={{ fontFamily: 'Outfit-SemiBold', color: '#111' }}>Time</Text>
                                             <Text style={{ color: '#6B7280' }}>{item.eventDetails.time}</Text>
                                         </View>
                                         <View>
-                                            <Text style={{ fontWeight: '600', color: '#111' }}>RSVP</Text>
+                                            <Text style={{ fontFamily: 'Outfit-SemiBold', color: '#111' }}>RSVP</Text>
                                             <Text style={{ color: '#6B7280' }}>{item.eventDetails.rsvp}</Text>
                                         </View>
                                         <View>
-                                            <Text style={{ fontWeight: '600', color: '#111' }}>Maybe</Text>
+                                            <Text style={{ fontFamily: 'Outfit-SemiBold', color: '#111' }}>Maybe</Text>
                                             <Text style={{ color: '#6B7280' }}>{item.eventDetails.maybe}</Text>
                                         </View>
                                     </View>
                                     <View>
-                                        <Text style={{ fontWeight: '600', color: '#111' }}>Place</Text>
+                                        <Text style={{ fontFamily: 'Outfit-SemiBold', color: '#111' }}>Place</Text>
                                         <Text style={{ color: '#6B7280' }}>{item.eventDetails.place}</Text>
                                     </View>
                                 </View>
@@ -1064,12 +1064,12 @@ export default function Activity() {
     return (
         <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }} edges={['top', 'left', 'right']}>
             {/* Header - matching Vite */}
-            <View style={{ 
-                height: 56, 
-                flexDirection: 'row', 
-                alignItems: 'center', 
-                gap: 6, 
-                paddingHorizontal: 12 
+            <View style={{
+                height: 56,
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 6,
+                paddingHorizontal: 12
             }}>
                 <TouchableOpacity
                     onPress={() => navigation.goBack()}
@@ -1078,11 +1078,11 @@ export default function Activity() {
                 >
                     <ArrowLeft size={20} color="#374151" />
                 </TouchableOpacity>
-                <Text style={{ fontSize: 20, fontWeight: '700', color: '#111827', flex: 1 }}>
+                <Text style={{ fontSize: 20, fontFamily: 'Outfit-Bold', color: '#111827', flex: 1 }}>
                     Notifications
                 </Text>
             </View>
-            
+
             {/* Tab Headers */}
             {/* <View style={{ flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: LightGrey }}>
                 <TouchableOpacity
@@ -1097,7 +1097,7 @@ export default function Activity() {
                 >
                     <Text style={{
                         fontSize: 14,
-                        fontWeight: '500',
+                        fontFamily: 'Outfit-Medium',
                         color: activeTab === 'community' ? '#000' : PrimaryGrey,
                         textAlign: 'center'
                     }}>
@@ -1121,7 +1121,7 @@ export default function Activity() {
                 >
                     <Text style={{
                         fontSize: 14,
-                        fontWeight: '500',
+                        fontFamily: 'Outfit-Medium',
                         color: activeTab === 'notifications' ? '#000' : PrimaryGrey,
                     }}>
                         Notifications
@@ -1154,7 +1154,7 @@ export default function Activity() {
                             </View>
                             <Text style={{
                                 fontSize: 18,
-                                fontWeight: '600',
+                                fontFamily: 'Outfit-SemiBold',
                                 color: '#111827',
                                 marginBottom: 8,
                                 textAlign: 'center'
@@ -1179,7 +1179,7 @@ export default function Activity() {
                         />
                     )
                 )}
-                
+
                 {activeTab === 'community' && (
                     isLoadingNotifications ? (
                         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 32 }}>
@@ -1203,7 +1203,7 @@ export default function Activity() {
                             </View>
                             <Text style={{
                                 fontSize: 16,
-                                fontWeight: '600',
+                                fontFamily: 'Outfit-SemiBold',
                                 color: '#111827',
                                 marginBottom: 6,
                                 textAlign: 'center'

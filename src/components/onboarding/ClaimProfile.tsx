@@ -763,7 +763,7 @@ const styles = StyleSheet.create({
     },
     label: {
         fontSize: 14,
-        fontWeight: '500',
+        fontFamily: 'Outfit-Medium',
         color: '#111827',
         marginBottom: 8,
     },
@@ -838,7 +838,7 @@ const styles = StyleSheet.create({
     },
     signInLink: {
         color: '#1600ff',
-        fontWeight: '500',
+        fontFamily: 'Outfit-Medium',
     },
     stepIndicator: {
         alignItems: 'center',
@@ -867,15 +867,15 @@ const styles = StyleSheet.create({
     },
     heading: {
         fontSize: 24,
-        fontWeight: '700',
+        fontFamily: 'Outfit-Bold',
         color: '#111827',
         marginBottom: 8,
         textAlign: 'center',
     },
     subheading: {
         fontSize: 14,
-        fontWeight: '600',
-        color: '#6b7280',
+        fontFamily: 'Outfit-SemiBold',
+        color: '#374151',
         textAlign: 'center',
     },
     photoSection: {
@@ -919,7 +919,7 @@ const styles = StyleSheet.create({
     },
     photoLabel: {
         fontSize: 14,
-        fontWeight: '600',
+        fontFamily: 'Outfit-SemiBold',
         color: '#111827',
         marginBottom: 4,
     },
@@ -961,7 +961,7 @@ const styles = StyleSheet.create({
     },
     termsLink: {
         color: '#1600ff',
-        fontWeight: '500',
+        fontFamily: 'Outfit-Medium',
     },
     continueButton: {
         backgroundColor: '#6366f1',
@@ -982,7 +982,7 @@ const styles = StyleSheet.create({
     continueButtonText: {
         color: 'white',
         fontSize: 16,
-        fontWeight: '500',
+        fontFamily: 'Outfit-Medium',
     },
     loadingContainer: {
         flexDirection: 'row',
@@ -1005,11 +1005,17 @@ const styles = StyleSheet.create({
     },
     modalHeader: {
         alignItems: 'center',
-        marginBottom: 16,
+        marginLeft: 8,
+        fontFamily: 'Outfit-Medium',
+    },
+    title: {
+        fontSize: 20,
+        fontFamily: 'Outfit-Bold',
+        color: '#111827',
     },
     modalTitle: {
         fontSize: 24,
-        fontWeight: '700',
+        fontFamily: 'Outfit-Bold',
         color: '#111827',
         marginBottom: 8,
     },
@@ -1019,7 +1025,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     modalEmail: {
-        fontWeight: '500',
+        fontFamily: 'Outfit-Medium',
         color: '#111827',
     },
     otpInputGroup: {
@@ -1027,7 +1033,7 @@ const styles = StyleSheet.create({
     },
     otpLabel: {
         fontSize: 14,
-        fontWeight: '500',
+        fontFamily: 'Outfit-Medium',
         color: '#111827',
         marginBottom: 8,
     },
@@ -1068,7 +1074,7 @@ const styles = StyleSheet.create({
     modalButtonText: {
         color: 'white',
         fontSize: 16,
-        fontWeight: '500',
+        fontFamily: 'Outfit-Medium',
     },
     modalButtonTextSecondary: {
         color: '#374151',

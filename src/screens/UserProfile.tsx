@@ -302,7 +302,7 @@ export default function UserProfile() {
         id: post.id,
         userId: post.user?.id,
         avatarUrl: post.user?.profile_picture || '/placeholder.svg',
-        username: post.user?.username || post.user?.full_name || 'Unknown User',
+        username: post.user?.full_name || 'Unknown User',
         time: post.created_at || new Date().toISOString(), // Pass raw timestamp for proper relative time calculation
         created_at: post.created_at, // Also include created_at for ProfileActivityCard to use
         timestamp: post.created_at, // Include timestamp as well
@@ -315,6 +315,7 @@ export default function UserProfile() {
         comments: post.comments_count || 0,
         shares: 0, // API doesn't provide shares count
         isLiked: post.is_liked || false,
+        color: post.user.color
     })) || [];
 
     // Redirect to own profile if viewing own profile
@@ -494,7 +495,7 @@ export default function UserProfile() {
                                             {showImage ? (
                                                 <AvatarImage src={collective.logo} />
                                             ) : null}
-                                            <AvatarFallback style={{ backgroundColor: iconColor || '#10B981' }} textStyle={{ color: '#FFFFFF', fontWeight: '600' }}>
+                                            <AvatarFallback style={{ backgroundColor: iconColor || '#10B981' }} textStyle={{ color: '#FFFFFF', fontFamily: 'Outfit-SemiBold' }}>
                                                 {iconLetter}
                                             </AvatarFallback>
                                         </Avatar>
@@ -558,7 +559,7 @@ export default function UserProfile() {
                                             <AvatarImage src={userData.profile_picture || userData.avatar} />
                                             <AvatarFallback
                                                 style={{ backgroundColor: userData.color || getConsistentColor(userData.id, userData.username || userData.first_name || userData.name) }}
-                                                textStyle={{ color: '#FFFFFF', fontSize: 16, fontWeight: '600' }}
+                                                textStyle={{ color: '#FFFFFF', fontSize: 16, fontFamily: 'Outfit-SemiBold' }}
                                             >
                                                 {getInitials(userData.first_name, userData.last_name, userData.username || userData.name)}
                                             </AvatarFallback>
@@ -667,7 +668,7 @@ export default function UserProfile() {
                             <AvatarImage src={userProfile.profile_picture} />
                             <AvatarFallback
                                 style={{ backgroundColor: userProfile.color || getConsistentColor(userProfile.id, userProfile.username || userProfile.first_name) }}
-                                textStyle={{ color: '#FFFFFF', fontSize: 32, fontWeight: '700' }}
+                                textStyle={{ color: '#FFFFFF', fontSize: 32, fontFamily: 'Outfit-Bold' }}
                             >
                                 {getInitials(userProfile.first_name, userProfile.last_name, userProfile.username)}
                             </AvatarFallback>
@@ -692,7 +693,7 @@ export default function UserProfile() {
                                         <Text style={{
                                             color: '#EC4899',
                                             fontSize: 11,
-                                            fontWeight: '600',
+                                            fontFamily: 'Outfit-SemiBold',
                                         }}>
                                             Organizer
                                         </Text>
@@ -717,18 +718,18 @@ export default function UserProfile() {
                     </View>
 
                     {/* People Inspired */}
-                    {userProfile.inspired_people_count > 0 && (
-                        <Text style={{ 
-                            fontSize: 13, 
-                            fontWeight: '700', 
-                            color: '#111827', 
+                    {/* {userProfile.inspired_people_count > 0 && (
+                        <Text style={{
+                            fontSize: 13,
+                            fontFamily: 'Outfit-Bold',
+                            color: '#111827',
                             textAlign: 'center',
-                            
+
                             marginBottom: 12
                         }}>
                             {userProfile.inspired_people_count} {userProfile.inspired_people_count === 1 ? 'Person' : 'People'} Inspired
                         </Text>
-                    )}
+                    )} */}
 
                     {/* Follow Button */}
                     <TouchableOpacity
@@ -774,7 +775,7 @@ export default function UserProfile() {
                     {userProfile.recently_supported_causes && userProfile.recently_supported_causes.length > 0 && (
                         <View style={{ marginTop: 24, paddingHorizontal: 0 }}>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                                <Text style={{ fontSize: 16, fontWeight: '700', color: '#111827' }}>
+                                <Text style={{ fontSize: 16, fontFamily: 'Outfit-Bold', color: '#111827' }}>
                                     Supports
                                 </Text>
                             </View>
@@ -839,7 +840,7 @@ export default function UserProfile() {
                                                     }}>
                                                         <Text style={{
                                                             fontSize: 20,
-                                                            fontWeight: '600',
+                                                            fontFamily: 'Outfit-SemiBold',
                                                             color: 'white',
                                                         }}>
                                                             {cause.name?.charAt(0)?.toUpperCase() || 'N'}
@@ -851,7 +852,7 @@ export default function UserProfile() {
                                                     ellipsizeMode="tail"
                                                     style={{
                                                         fontSize: 12,
-                                                        fontWeight: '600',
+                                                        fontFamily: 'Outfit-SemiBold',
                                                         color: '#111827',
                                                         textAlign: 'center',
                                                         height: 32,
@@ -867,7 +868,7 @@ export default function UserProfile() {
 
                             {/* Show more causes text and link */}
                             {userProfile.recently_supported_causes.length > 5 && (
-                                <View style={{ alignItems: 'center', gap: 8,  marginTop: 4 }}>
+                                <View style={{ alignItems: 'center', gap: 8, marginTop: 4 }}>
                                     {/* <Text style={{ fontSize: 14, color: '#6b7280' }}>
                                         + {userProfile.supported_causes_count - 6} more causes
                                     </Text> */}
@@ -881,7 +882,7 @@ export default function UserProfile() {
                                         <Text style={{
                                             fontSize: 13,
                                             color: PrimaryBlue,
-                                            fontWeight: '500'
+                                            fontFamily: 'Outfit-Medium'
                                         }}>
                                             See all {userProfile.supported_causes_count} →
                                         </Text>
@@ -899,13 +900,13 @@ export default function UserProfile() {
                     {/* Recent Activity */}
                     <View style={styles.activitySection}>
                         {userPosts.length > 0 && (
-                            <View style={{ marginBottom: 16 }}>
-                                <Text style={{ fontSize: 16, fontWeight: '700', color: '#111827', marginBottom: 4 }}>
+                            <View style={{ marginBottom: 0 }}>
+                                <Text style={{ fontSize: 16, fontFamily: 'Outfit-Bold', color: '#111827', marginBottom: 4 }}>
                                     Recent Activity
                                 </Text>
-                                <Text style={{ fontSize: 12, color: '#6B7280' }}>
+                                {/* <Text style={{ fontSize: 12, color: '#6B7280' }}>
                                     Activity, updates, and discoveries from your community
-                                </Text>
+                                </Text> */}
                             </View>
                         )}
                         <PopularPosts
@@ -1011,7 +1012,7 @@ export default function UserProfile() {
                     {/* Header */}
                     <View style={[styles.bottomSheetHeader, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', paddingTop: 10 }]}>
                         <View style={{ flex: 1 }}>
-                            <Text style={{ fontSize: 13, fontWeight: '600', color: '#111827' }}>
+                            <Text style={{ fontSize: 13, fontFamily: 'Outfit-SemiBold', color: '#111827' }}>
                                 Collectives founded by {userProfile.first_name && userProfile.last_name
                                     ? `${userProfile.first_name} ${userProfile.last_name}`
                                     : userProfile.username || 'User'}
@@ -1071,13 +1072,13 @@ export default function UserProfile() {
                                                 <AvatarImage src={imageUrl} />
                                                 <AvatarFallback
                                                     style={avatarBgColor ? { backgroundColor: avatarBgColor } : {}}
-                                                    textStyle={{ color: '#FFFFFF', fontSize: 16, fontWeight: '700' }}
+                                                    textStyle={{ color: '#FFFFFF', fontSize: 16, fontFamily: 'Outfit-Bold' }}
                                                 >
                                                     {initials}
                                                 </AvatarFallback>
                                             </Avatar>
                                             <View style={{ flex: 1 }}>
-                                                <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827', marginBottom: 2 }}>
+                                                <Text style={{ fontSize: 14, fontFamily: 'Outfit-SemiBold', color: '#111827', marginBottom: 2 }}>
                                                     {collectiveName}
                                                 </Text>
                                                 <Text style={{ fontSize: 11, color: '#6B7280', lineHeight: 16 }}>
@@ -1123,7 +1124,7 @@ export default function UserProfile() {
                                 alignItems: 'center',
                             }}
                         >
-                            <Text style={{ color: '#FFFFFF', fontSize: 14, fontWeight: '600' }}>
+                            <Text style={{ color: '#FFFFFF', fontSize: 14, fontFamily: 'Outfit-SemiBold' }}>
                                 Create Your Own Collective
                             </Text>
                         </TouchableOpacity>
@@ -1182,7 +1183,7 @@ const styles = StyleSheet.create({
     retryButtonText: {
         color: 'white',
         fontSize: 14,
-        fontWeight: '600',
+        fontFamily: 'Outfit-SemiBold',
     },
     header: {
         flexDirection: 'row',
@@ -1204,7 +1205,7 @@ const styles = StyleSheet.create({
     },
     headerTitle: {
         fontSize: 18,
-        fontWeight: '700',
+        fontFamily: 'Outfit-Bold',
         color: '#111827',
     },
     menuButton: {
@@ -1252,7 +1253,7 @@ const styles = StyleSheet.create({
     },
     profileName: {
         fontSize: 20,
-        fontWeight: '700',
+        fontFamily: 'Outfit-Bold',
         color: '#111827',
         marginTop: 16,
         marginBottom: 8,
@@ -1291,7 +1292,7 @@ const styles = StyleSheet.create({
     },
     followButtonTextMain: {
         fontSize: 14,
-        fontWeight: '600',
+        fontFamily: 'Outfit-SemiBold',
         color: '#FFFFFF',
     },
     followButtonTextMainOutline: {
@@ -1307,7 +1308,7 @@ const styles = StyleSheet.create({
     },
     supportsTitle: {
         fontSize: 18,
-        fontWeight: '700',
+        fontFamily: 'Outfit-Bold',
         color: '#111827',
         marginBottom: 16,
     },
@@ -1339,12 +1340,12 @@ const styles = StyleSheet.create({
     },
     supportsIconText: {
         fontSize: 20,
-        fontWeight: '700',
+        fontFamily: 'Outfit-Bold',
         color: '#FFFFFF',
     },
     supportsName: {
         fontSize: 12,
-        fontWeight: '600',
+        fontFamily: 'Outfit-SemiBold',
         color: '#111827',
         textAlign: 'center',
         height: 32,
@@ -1361,10 +1362,10 @@ const styles = StyleSheet.create({
     supportsMoreLink: {
         fontSize: 14,
         color: PrimaryBlue,
-        fontWeight: '500',
+        fontFamily: 'Outfit-Medium',
     },
     activitySection: {
-        // paddingVertical: 16,
+        paddingTop: 16,
     },
     bottomSheetContent: {
         flex: 1,
@@ -1384,7 +1385,7 @@ const styles = StyleSheet.create({
     },
     bottomSheetTitle: {
         fontSize: 24,
-        fontWeight: '700',
+        fontFamily: 'Outfit-Bold',
         color: '#111827',
         marginBottom: 4,
     },
@@ -1415,11 +1416,11 @@ const styles = StyleSheet.create({
     tabText: {
         fontSize: 14,
         color: '#111827',
-        fontWeight: '600',
+        fontFamily: 'Outfit-SemiBold',
     },
     activeTabText: {
         color: '#111827',
-        fontWeight: '700',
+        fontFamily: 'Outfit-Bold',
     },
     bottomSheetScrollView: {
         flex: 1,
@@ -1464,7 +1465,7 @@ const styles = StyleSheet.create({
     },
     statsItemName: {
         fontSize: 14,
-        fontWeight: '600',
+        fontFamily: 'Outfit-SemiBold',
         color: '#111827',
         marginBottom: 4,
     },
@@ -1481,7 +1482,7 @@ const styles = StyleSheet.create({
     },
     causeIconText: {
         fontSize: 20,
-        fontWeight: '700',
+        fontFamily: 'Outfit-Bold',
         color: '#FFFFFF',
     },
     badge: {
@@ -1493,7 +1494,7 @@ const styles = StyleSheet.create({
     },
     badgeText: {
         fontSize: 10,
-        fontWeight: '600',
+        fontFamily: 'Outfit-SemiBold',
     },
     viewButton: {
         backgroundColor: PrimaryBlue,
@@ -1503,7 +1504,7 @@ const styles = StyleSheet.create({
     },
     viewButtonText: {
         fontSize: 12,
-        fontWeight: '600',
+        fontFamily: 'Outfit-SemiBold',
         color: '#FFFFFF',
     },
     memberItem: {
@@ -1527,7 +1528,7 @@ const styles = StyleSheet.create({
     },
     memberName: {
         fontSize: 14,
-        fontWeight: '500',
+        fontFamily: 'Outfit-Medium',
         color: '#111827',
         marginBottom: 2,
     },
@@ -1546,7 +1547,7 @@ const styles = StyleSheet.create({
     },
     followButtonText: {
         fontSize: 12,
-        fontWeight: '600',
+        fontFamily: 'Outfit-SemiBold',
         color: '#FFFFFF',
     },
     followingButtonText: {

@@ -365,7 +365,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontFamily: 'Outfit-SemiBold',
     color: '#111827',
   },
   divider: {
@@ -382,7 +382,7 @@ const styles = StyleSheet.create({
   menuItemText: {
     fontSize: 16,
     color: '#111827',
-    fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
   },
   menuButton: {
     flexDirection: 'row',
@@ -399,14 +399,14 @@ const styles = StyleSheet.create({
   menuButtonText: {
     fontSize: 16,
     color: '#111827',
-    fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
   },
   passwordContainer: {
     marginVertical: 10,
   },
   passwordLabel: {
     fontSize: 14,
-    fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
     color: '#111827',
     marginBottom: 8,
   },
@@ -434,7 +434,7 @@ const styles = StyleSheet.create({
   },
   changePasswordButtonText: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: 'Outfit-Bold',
     color: '#111827',
   },
   deleteButton: {
@@ -443,7 +443,7 @@ const styles = StyleSheet.create({
   deleteButtonText: {
     fontSize: 16,
     color: '#ef4444',
-    fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
   },
   disabledButton: {
     opacity: 0.5,
@@ -471,7 +471,7 @@ const styles = StyleSheet.create({
   },
   faqQuestion: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'Outfit-SemiBold',
     color: '#111827',
     flex: 1,
     marginRight: 12,
@@ -508,6 +508,6 @@ const styles = StyleSheet.create({
   supportLinkText: {
     fontSize: 16,
     color: '#111827',
-    fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
   },
 })

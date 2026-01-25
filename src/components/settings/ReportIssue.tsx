@@ -2,7 +2,7 @@ import { View, Text, SafeAreaView, ScrollView, TextInput, TouchableOpacity, Styl
 import React, { useState } from 'react'
 import MainHeaderNav from '../MainHeaderNav'
 import { LightGrey, PrimaryBlue, PrimaryGrey, SecondaryGrey } from '../../Constants/Colors'
-import { AlertCircle, ChevronDown, Info, MessageSquare } from 'lucide-react-native'
+import { ChevronDown, Info, MessageSquare } from 'lucide-react-native'
 import { useMutation } from '@tanstack/react-query'
 import { reportIssue } from '../../services/api/social'
 import { useToast } from '../../contexts/ToastContext'
@@ -19,9 +19,9 @@ export default function ReportIssue() {
   const [showPicker, setShowPicker] = useState(false)
   const [formData, setFormData] = useState({
     type: "",
-    title: "",
+    title: "No title",
     description: "",
-    steps: "",
+    steps: "No steps",
     // email: "",
   })
 
@@ -39,9 +39,9 @@ export default function ReportIssue() {
       // Reset form
       setFormData({
         type: "",
-        title: "",
+        title: "No title",
         description: "",
-        steps: "",
+        steps: "No steps",
         // email: "",
       })
     },
@@ -54,18 +54,18 @@ export default function ReportIssue() {
 
   const handleSubmit = () => {
     // Validate required fields
-    if (!formData.type || !formData.title || !formData.description) {
-      Alert.alert('Error', 'Please fill in all required fields (Type, Title, and Description).')
+    if (!formData.type || !formData.description) {
+      Alert.alert('Error', 'Please fill in all required fields (Type and Description).')
       return
     }
 
     // Prepare payload according to API requirements
     const payload = {
-      title: formData.title,
+      title: 'no title',
       description: formData.description,
       issue_type: formData.type,
       status: "pending",
-      reproduce_steps: formData.steps ,
+      reproduce_steps: 'no steps',
     }
 
     console.log(payload, 'payload')
@@ -83,9 +83,9 @@ export default function ReportIssue() {
   const clearForm = () => {
     setFormData({
       type: "",
-      title: "",
+      title: "No title",
       description: "",
-      steps: "",
+      steps: "No steps",
       // email: "",
     })
   }
@@ -98,15 +98,15 @@ export default function ReportIssue() {
           {/* <MessageSquare size={24} color={PrimaryBlue} /> */}
           <Text style={styles.title}>Report an Issue</Text>
         </View>
-        
+
         <Text style={styles.subtitle}>
           Help us improve CRWD by reporting any issues you encounter or providing feedback.
         </Text>
-        
+
         <View style={styles.form}>
           <View style={styles.formGroup}>
             <Text style={styles.label}>Issue Type</Text>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.selectButton}
               onPress={() => setShowPicker(true)}
             >
@@ -115,14 +115,14 @@ export default function ReportIssue() {
               </Text>
               <ChevronDown size={20} color={PrimaryGrey} />
             </TouchableOpacity>
-            
+
             <Modal
               visible={showPicker}
               transparent={true}
               animationType="slide"
               onRequestClose={() => setShowPicker(false)}
             >
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.modalOverlay}
                 activeOpacity={1}
                 onPress={() => setShowPicker(false)}
@@ -161,8 +161,8 @@ export default function ReportIssue() {
               </TouchableOpacity>
             </Modal>
           </View>
-          
-          <View style={styles.formGroup}>
+
+          {/* <View style={styles.formGroup}>
             <Text style={styles.label}>Title</Text>
             <TextInput
               style={styles.input}
@@ -171,8 +171,8 @@ export default function ReportIssue() {
               placeholder="Brief description of the issue"
               placeholderTextColor={PrimaryGrey}
             />
-          </View>
-          
+          </View> */}
+
           <View style={styles.formGroup}>
             <Text style={styles.label}>Description</Text>
             <TextInput
@@ -186,8 +186,8 @@ export default function ReportIssue() {
               textAlignVertical="top"
             />
           </View>
-          
-          <View style={styles.formGroup}>
+
+          {/* <View style={styles.formGroup}>
             <Text style={styles.label}>Steps to Reproduce</Text>
             <TextInput
               style={styles.textArea}
@@ -199,8 +199,8 @@ export default function ReportIssue() {
               numberOfLines={4}
               textAlignVertical="top"
             />
-          </View>
-          
+          </View> */}
+
           {/* <View style={styles.formGroup}>
             <Text style={styles.label}>Your Email</Text>
             <TextInput
@@ -213,9 +213,9 @@ export default function ReportIssue() {
               autoCapitalize="none"
             />
           </View> */}
-          
+
           <View style={styles.buttonContainer}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[
                 styles.submitButton,
                 reportIssueMutation.isPending && styles.submitButtonDisabled
@@ -229,8 +229,8 @@ export default function ReportIssue() {
                 <Text style={styles.submitButtonText}>Submit Report</Text>
               )}
             </TouchableOpacity>
-            
-            <TouchableOpacity 
+
+            <TouchableOpacity
               style={styles.clearButton}
               onPress={clearForm}
             >
@@ -238,18 +238,18 @@ export default function ReportIssue() {
             </TouchableOpacity>
           </View>
         </View>
-        
+
         <View style={styles.tipsContainer}>
           <Text style={styles.tipsTitle}>Tips for Submitting a Good Report</Text>
           <View style={styles.tipsList}>
             <Text style={styles.tipItem}>• Be specific and provide clear details about the issue</Text>
-            <Text style={styles.tipItem}>• Include steps to reproduce the problem</Text>
+            {/* <Text style={styles.tipItem}>• Include steps to reproduce the problem</Text> */}
             <Text style={styles.tipItem}>• Add screenshots or screen recordings if relevant</Text>
             <Text style={styles.tipItem}>• Mention your device model and OS version</Text>
             <Text style={styles.tipItem}>• Check if the issue has already been reported</Text>
           </View>
         </View>
-        
+
         <View style={styles.bottomPadding} />
       </ScrollView>
     </SafeAreaView>
@@ -273,13 +273,14 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontFamily: 'Outfit-Bold',
   },
   subtitle: {
     fontSize: 14,
-    color: PrimaryGrey,
+    color: '#374151',
     marginBottom: 20,
     lineHeight: 20,
+    fontFamily: 'Outfit-Regular',
   },
   form: {
     gap: 15,
@@ -289,9 +290,9 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
     marginBottom: 8,
-    // color: PrimaryGrey,
+    color: '#111827',
   },
   input: {
     borderWidth: 1,
@@ -321,7 +322,8 @@ const styles = StyleSheet.create({
   },
   selectText: {
     fontSize: 14,
-    color: 'black',
+    color: '#111827',
+    fontFamily: 'Outfit-Regular',
   },
   placeholderText: {
     fontSize: 14,
@@ -343,7 +345,7 @@ const styles = StyleSheet.create({
   },
   pickerDoneText: {
     color: 'white',
-    fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
   },
   buttonContainer: {
     flexDirection: 'row',
@@ -362,7 +364,7 @@ const styles = StyleSheet.create({
   },
   submitButtonText: {
     color: 'white',
-    fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
     fontSize: 14,
   },
   clearButton: {
@@ -375,8 +377,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   clearButtonText: {
-    // color: PrimaryGrey,
-    fontWeight: '500',
+    color: '#374151',
+    fontFamily: 'Outfit-Medium',
     fontSize: 14,
   },
   submitButtonDisabled: {
@@ -406,13 +408,13 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontFamily: 'Outfit-SemiBold',
     color: '#111827',
   },
   modalCloseText: {
     fontSize: 16,
     color: PrimaryBlue,
-    fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
   },
   modalOption: {
     flexDirection: 'row',
@@ -429,34 +431,37 @@ const styles = StyleSheet.create({
   modalOptionText: {
     fontSize: 16,
     color: '#111827',
+    fontFamily: 'Outfit-Regular',
   },
   modalOptionTextSelected: {
     color: PrimaryBlue,
-    fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
   },
   checkmark: {
     fontSize: 18,
     color: PrimaryBlue,
-    fontWeight: '600',
+    fontFamily: 'Outfit-SemiBold',
   },
   tipsContainer: {
-    backgroundColor: LightGrey,
+    backgroundColor: '#f9fafb',
     borderRadius: 8,
-    padding: 15,
+    padding: 16,
     marginBottom: 20,
   },
   tipsTitle: {
     fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 10,
+    fontFamily: 'Outfit-SemiBold',
+    marginBottom: 8,
+    color: '#111827',
   },
   tipsList: {
     gap: 5,
   },
   tipItem: {
     fontSize: 13,
-    color: PrimaryGrey,
+    color: '#4b5563',
     lineHeight: 18,
+    fontFamily: 'Outfit-Regular',
   },
   bottomPadding: {
     height: 40,

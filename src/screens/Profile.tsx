@@ -508,7 +508,7 @@ export default function Profile() {
                                         {showImage ? (
                                             <AvatarImage src={crwd.logo} />
                                         ) : null}
-                                        <AvatarFallback style={{ backgroundColor: iconColor || '#10B981' }} textStyle={{ color: '#FFFFFF', fontWeight: '600' }}>
+                                        <AvatarFallback style={{ backgroundColor: iconColor || '#10B981' }} textStyle={{ color: '#FFFFFF', fontFamily: 'Outfit-SemiBold' }}>
                                             {iconLetter}
                                         </AvatarFallback>
                                     </Avatar>
@@ -565,7 +565,7 @@ export default function Profile() {
                                         <AvatarImage src={member.avatar} />
                                         <AvatarFallback
                                             style={{ backgroundColor: getConsistentColor(member.id || member.username || member.name || 'U', avatarColors) }}
-                                            textStyle={{ color: '#FFFFFF', fontWeight: '600' }}
+                                            textStyle={{ color: '#FFFFFF', fontFamily: 'Outfit-SemiBold' }}
                                         >
                                             {getInitials(member.first_name, member.last_name, member.name, member.username)}
                                         </AvatarFallback>
@@ -680,7 +680,7 @@ export default function Profile() {
 
             {/* Top right buttons */}
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingTop: 24, paddingBottom: 8, borderBottomWidth: 1, borderBottomColor: '#e5e7eb' }}>
-                <Text style={{ fontSize: 18, fontWeight: '600', color: '#111827' }}>Me</Text>
+                <Text style={{ fontSize: 18, fontFamily: 'Outfit-SemiBold', color: '#111827' }}>Me</Text>
                 <View style={{ position: 'relative' }}>
                     <TouchableOpacity
                         onPress={() => setShowMenu(!showMenu)}
@@ -783,7 +783,7 @@ export default function Profile() {
                         backgroundColor: 'white',
                     }}
                 >
-                    <Text style={{ fontSize: 14, color: '#111827', fontWeight: '500' }}>Edit</Text>
+                    <Text style={{ fontSize: 14, color: '#111827', fontFamily: 'Outfit-Medium' }}>Edit</Text>
                 </TouchableOpacity> */}
             </View>
 
@@ -817,7 +817,7 @@ export default function Profile() {
                                 <AvatarImage src={profileData?.profile_picture} />
                                 <AvatarFallback
                                     style={{ backgroundColor: profileData?.color || getConsistentColor(profileData?.id || profileData?.username || 'U', avatarColors) }}
-                                    textStyle={{ color: '#FFFFFF', fontWeight: '600', fontSize: 40 }}
+                                    textStyle={{ color: '#FFFFFF', fontFamily: 'Outfit-SemiBold', fontSize: 40 }}
                                 >
                                     {getInitials(profileData?.first_name, profileData?.last_name, profileData?.username, profileData?.username)}
                                 </AvatarFallback>
@@ -827,7 +827,7 @@ export default function Profile() {
                             <View style={{ flexDirection: 'column', alignItems: 'center', gap: 6, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 8 }}>
                                 <Text style={{
                                     fontSize: 18,
-                                    fontWeight: 'bold',
+                                    fontFamily: 'Outfit-Bold',
                                     color: '#111827',
                                 }}>
                                     {profileData?.first_name && profileData?.last_name
@@ -848,7 +848,7 @@ export default function Profile() {
                                         <Text style={{
                                             color: '#EC4899',
                                             fontSize: 11,
-                                            fontWeight: '600',
+                                            fontFamily: 'Outfit-SemiBold',
                                         }}>
                                             Organizer
                                         </Text>
@@ -896,12 +896,12 @@ export default function Profile() {
 
                     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 16, marginTop: 16 }}>
                         <TouchableOpacity onPress={handleEditProfile} style={{ paddingHorizontal: 16, paddingVertical: 10, borderRadius: 8, borderWidth: 1, borderColor: '#e5e7eb', minWidth: 120 }}>
-                            <Text style={{ fontSize: 14, color: '#595959', fontWeight: '700', textAlign: 'center' }}>Edit Profile</Text>
+                            <Text style={{ fontSize: 14, color: '#595959', fontFamily: 'Outfit-Bold', textAlign: 'center' }}>Edit Profile</Text>
                         </TouchableOpacity>
                         <TouchableOpacity onPress={handleShare} style={{ paddingHorizontal: 16, paddingVertical: 10, borderRadius: 8, borderWidth: 1, borderColor: '#e5e7eb', minWidth: 120 }}>
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, justifyContent: 'center' }}>
                                 <Share2 size={16} color="#595959" />
-                                <Text style={{ fontSize: 14, color: '#595959', fontWeight: '700' }}>Share Profile</Text>
+                                <Text style={{ fontSize: 14, color: '#595959', fontFamily: 'Outfit-Bold' }}>Share Profile</Text>
                             </View>
                         </TouchableOpacity>
                     </View>
@@ -995,7 +995,7 @@ export default function Profile() {
                                                     }}>
                                                         <Text style={{
                                                             fontSize: 20,
-                                                            fontWeight: '600',
+                                                            fontFamily: 'Outfit-SemiBold',
                                                             color: 'white',
                                                         }}>
                                                             {cause.name?.charAt(0)?.toUpperCase() || 'N'}
@@ -1007,7 +1007,7 @@ export default function Profile() {
                                                     ellipsizeMode="tail"
                                                     style={{
                                                         fontSize: 12,
-                                                        fontWeight: '600',
+                                                        fontFamily: 'Outfit-SemiBold',
                                                         color: '#111827',
                                                         textAlign: 'center',
                                                         height: 32,
@@ -1031,7 +1031,7 @@ export default function Profile() {
                                         <Text style={{
                                             fontSize: 13,
                                             color: PrimaryBlue,
-                                            fontWeight: '500'
+                                            fontFamily: 'Outfit-Medium'
                                         }}>
                                             See all {profileData.supported_causes_count} →
                                         </Text>
@@ -1059,7 +1059,7 @@ export default function Profile() {
                             </View>
                         ) : userPosts.length === 0 ? (
                             <View>
-                                <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 16 }}>Recent Activity</Text>
+                                <Text style={{ fontSize: 18, fontFamily: 'Outfit-SemiBold', marginBottom: 16 }}>Recent Activity</Text>
                                 <View style={{
                                     backgroundColor: 'white',
                                     borderRadius: 8,
@@ -1073,7 +1073,7 @@ export default function Profile() {
                                     </View>
                                     <Text style={{
                                         fontSize: 18,
-                                        fontWeight: '600',
+                                        fontFamily: 'Outfit-SemiBold',
                                         color: '#111827',
                                         marginBottom: 8,
                                         textAlign: 'center'
@@ -1094,7 +1094,7 @@ export default function Profile() {
                         {userPosts.length > 0 && (
                             <>
                                 <View style={{ marginBottom: 0 }}>
-                                    <Text style={{ fontSize: 16, fontWeight: '700', color: '#111827', marginBottom: 4 }}>
+                                    <Text style={{ fontSize: 16, fontFamily: 'Outfit-Bold', color: '#111827', marginBottom: 4 }}>
                                         Recent Activity
                                     </Text>
                                     {/* <Text style={{ fontSize: 12, color: '#6B7280' }}>
@@ -1161,7 +1161,7 @@ export default function Profile() {
                                         justifyContent: 'center',
                                         alignItems: 'center'
                                     }}>
-                                        <Text style={{ color: 'white', fontSize: 20, fontWeight: 'bold' }}>✕</Text>
+                                        <Text style={{ color: 'white', fontSize: 20, fontFamily: 'Outfit-Bold' }}>✕</Text>
                                     </View>
                                 </TouchableOpacity>
 
@@ -1248,7 +1248,7 @@ export default function Profile() {
                     {/* Header */}
                     <View style={[styles.bottomSheetHeader, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', paddingVertical: 10 }]}>
                         <View style={{ flex: 1 }}>
-                            <Text style={{ fontSize: 13, fontWeight: '600', color: '#111827' }}>
+                            <Text style={{ fontSize: 13, fontFamily: 'Outfit-SemiBold', color: '#111827' }}>
                                 Collectives founded by {profileData?.first_name && profileData?.last_name
                                     ? `${profileData.first_name} ${profileData.last_name}`
                                     : profileData?.username || 'User'}
@@ -1304,13 +1304,13 @@ export default function Profile() {
                                                 <AvatarImage src={collective.logo || collective.image} />
                                                 <AvatarFallback
                                                     style={{ backgroundColor: avatarBgColor }}
-                                                    textStyle={{ color: '#FFFFFF', fontSize: 16, fontWeight: '700' }}
+                                                    textStyle={{ color: '#FFFFFF', fontSize: 16, fontFamily: 'Outfit-Bold' }}
                                                 >
                                                     {initials}
                                                 </AvatarFallback>
                                             </Avatar>
                                             <View style={{ flex: 1 }}>
-                                                <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827', marginBottom: 2 }}>
+                                                <Text style={{ fontSize: 14, fontFamily: 'Outfit-SemiBold', color: '#111827', marginBottom: 2 }}>
                                                     {collectiveName}
                                                 </Text>
                                                 <Text style={{ fontSize: 11, color: '#6B7280' }}>
@@ -1356,7 +1356,7 @@ export default function Profile() {
                                 alignItems: 'center',
                             }}
                         >
-                            <Text style={{ color: '#FFFFFF', fontSize: 14, fontWeight: '600' }}>
+                            <Text style={{ color: '#FFFFFF', fontSize: 14, fontFamily: 'Outfit-SemiBold' }}>
                                 {adminCollectivesForSheet.length > 0 ? 'Create Another Collective' : 'Create Your Own Collective'}
                             </Text>
                         </TouchableOpacity>
@@ -1398,7 +1398,7 @@ const styles = StyleSheet.create({
     },
     headerName: {
         fontSize: 16,
-        fontWeight: '600',
+        fontFamily: 'Outfit-SemiBold',
         color: '#111827',
         flex: 1,
         textAlign: 'center',
@@ -1413,7 +1413,7 @@ const styles = StyleSheet.create({
     },
     bottomSheetTitle: {
         fontSize: 24,
-        fontWeight: '700',
+        fontFamily: 'Outfit-Bold',
         color: '#111827',
         marginBottom: 4,
     },
@@ -1445,11 +1445,11 @@ const styles = StyleSheet.create({
     tabText: {
         fontSize: 14,
         color: '#111827',
-        fontWeight: '600',
+        fontFamily: 'Outfit-SemiBold',
     },
     activeTabText: {
         color: '#111827',
-        fontWeight: '700',
+        fontFamily: 'Outfit-Bold',
     },
     causeItem: {
         flexDirection: 'row',
@@ -1467,7 +1467,7 @@ const styles = StyleSheet.create({
     },
     causeIconText: {
         fontSize: 20,
-        fontWeight: '700',
+        fontFamily: 'Outfit-Bold',
         color: 'white',
     },
     causeContent: {
@@ -1475,7 +1475,7 @@ const styles = StyleSheet.create({
     },
     causeName: {
         fontSize: 14,
-        fontWeight: '600',
+        fontFamily: 'Outfit-SemiBold',
         color: '#111827',
         marginBottom: 4,
     },
@@ -1511,7 +1511,7 @@ const styles = StyleSheet.create({
     },
     badgeText: {
         fontSize: 10,
-        fontWeight: '600',
+        fontFamily: 'Outfit-SemiBold',
     },
     nonprofitBadge: {
         backgroundColor: '#dbeafe',
@@ -1527,7 +1527,7 @@ const styles = StyleSheet.create({
     },
     statsItemName: {
         fontSize: 14,
-        fontWeight: '500',
+        fontFamily: 'Outfit-Medium',
         color: '#111827',
         marginBottom: 4,
     },
@@ -1545,7 +1545,7 @@ const styles = StyleSheet.create({
     viewButtonText: {
         color: 'white',
         fontSize: 12,
-        fontWeight: '500',
+        fontFamily: 'Outfit-Medium',
     },
     memberItem: {
         flexDirection: 'row',
@@ -1565,7 +1565,7 @@ const styles = StyleSheet.create({
     },
     memberName: {
         fontSize: 14,
-        fontWeight: '500',
+        fontFamily: 'Outfit-Medium',
         color: '#111827',
     },
     memberUsername: {
@@ -1585,7 +1585,7 @@ const styles = StyleSheet.create({
     followButtonText: {
         color: 'white',
         fontSize: 14,
-        fontWeight: '500',
+        fontFamily: 'Outfit-Medium',
     },
     followingButtonText: {
         color: '#6b7280',

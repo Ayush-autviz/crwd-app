@@ -75,31 +75,31 @@ const CauseProfileCard: React.FC<CauseProfileCardProps> = ({ onLearnMoreClick, c
           source={{ uri: causeData?.logo || 'https://randomuser.me/api/portraits/men/32.jpg' }} 
           style={{ width: 56, height: 56, borderRadius: 12 }} 
         /> */}
-        <Avatar style={{borderWidth: 1, borderColor: '#e5e7eb'}} size={48}>
+        <Avatar style={{ borderWidth: 1, borderColor: '#e5e7eb' }} size={48}>
           <AvatarImage src={causeData?.image} />
-          <AvatarFallback style={{ backgroundColor: '#dbeafe' }} textStyle={{ color: '#2563eb', fontWeight: '600' }}>
+          <AvatarFallback style={{ backgroundColor: '#dbeafe' }} textStyle={{ color: '#2563eb', fontFamily: 'Outfit-SemiBold' }}>
             {causeData?.name?.charAt(0).toUpperCase()}
           </AvatarFallback>
         </Avatar>
         <View style={{ flex: 1 }}>
-          <Text style={{ fontSize: 16, fontWeight: '600', color: '#111827', marginBottom: 4 }}>
+          <Text style={{ fontSize: 16, fontFamily: 'Outfit-SemiBold', color: '#111827', marginBottom: 4 }}>
             {causeData?.name || 'Helping Humanity'}
           </Text>
           <Text style={{ fontSize: 12, color: PrimaryGrey }}>
             in {causeData?.collective_count} Collectives · {causeData?.donation_count} donations
           </Text>
         </View>
-        <TouchableOpacity 
+        <TouchableOpacity
           onPress={handleFavoriteClick}
           disabled={favoriteMutation.isPending || unfavoriteMutation.isPending}
-         >
+        >
           {favoriteMutation.isPending || unfavoriteMutation.isPending ? (
             <ActivityIndicator size="small" color={PrimaryBlue} />
           ) : (
-            <Heart 
-              size={16} 
-               color={isFavorited ? 'red' : PrimaryGrey} 
-              fill={isFavorited ? 'red' : 'none'} 
+            <Heart
+              size={16}
+              color={isFavorited ? 'red' : PrimaryGrey}
+              fill={isFavorited ? 'red' : 'none'}
             />
           )}
         </TouchableOpacity>
@@ -111,7 +111,7 @@ const CauseProfileCard: React.FC<CauseProfileCardProps> = ({ onLearnMoreClick, c
           {causeData?.mission || 'This is a bio about Non Profit and how they give back to their community so that users can learn about how their money is supporting others…'}
         </Text>
         <TouchableOpacity onPress={onLearnMoreClick}>
-          <Text style={{ color: PrimaryBlue, fontSize: 14, fontWeight: '500' }}>
+          <Text style={{ color: PrimaryBlue, fontSize: 14, fontFamily: 'Outfit-Medium' }}>
             Learn More
           </Text>
         </TouchableOpacity>
@@ -120,12 +120,12 @@ const CauseProfileCard: React.FC<CauseProfileCardProps> = ({ onLearnMoreClick, c
       {/* Interest Tags */}
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
         {category && (
-          <TouchableOpacity 
-            onPress={() => navigation.navigate('Interests' as never)} 
-            style={{ 
-              backgroundColor: category.background, 
-              paddingHorizontal: 12, 
-              paddingVertical: 6, 
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Interests' as never)}
+            style={{
+              backgroundColor: category.background,
+              paddingHorizontal: 12,
+              paddingVertical: 6,
               borderRadius: 8
             }}
           >
@@ -135,15 +135,15 @@ const CauseProfileCard: React.FC<CauseProfileCardProps> = ({ onLearnMoreClick, c
       </View>
 
       {/* Verified Box */}
-      <View style={{ 
-        backgroundColor: '#eff6ff', 
-        borderRadius: 12, 
+      <View style={{
+        backgroundColor: '#eff6ff',
+        borderRadius: 12,
         padding: 24,
         marginBottom: 16
       }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 }}>
           <Check size={16} color={PrimaryBlue} />
-          <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827' }}>
+          <Text style={{ fontSize: 14, fontFamily: 'Outfit-SemiBold', color: '#111827' }}>
             Verified US Non Profit
           </Text>
         </View>
@@ -162,10 +162,10 @@ const CauseProfileCard: React.FC<CauseProfileCardProps> = ({ onLearnMoreClick, c
 
       {/* Guarantee Note */}
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-        <View style={{ 
-          backgroundColor: '#d1d5db', 
-          borderRadius: 12, 
-          padding: 4 
+        <View style={{
+          backgroundColor: '#d1d5db',
+          borderRadius: 12,
+          padding: 4
         }}>
           <Check size={16} color={PrimaryGrey} />
         </View>

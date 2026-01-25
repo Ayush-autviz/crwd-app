@@ -363,7 +363,7 @@ const styles = StyleSheet.create({
   },
   yearText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
     color: '#111827',
   },
   modalOverlay: {
@@ -385,7 +385,7 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontFamily: 'Outfit-SemiBold',
     marginBottom: 16,
     textAlign: 'center',
   },
@@ -403,7 +403,7 @@ const styles = StyleSheet.create({
     color: '#111827',
   },
   selectedYearText: {
-    fontWeight: '600',
+    fontFamily: 'Outfit-SemiBold',
   },
   summaryCard: {
     backgroundColor: 'white',
@@ -420,7 +420,7 @@ const styles = StyleSheet.create({
   },
   summaryAmount: {
     fontSize: 32,
-    fontWeight: '700',
+    fontFamily: 'Outfit-Bold',
     color: PrimaryBlue,
   },
   infoBanner: {
@@ -470,12 +470,12 @@ const styles = StyleSheet.create({
   },
   receiptDate: {
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: 'Outfit-SemiBold',
     color: '#4B5563',
   },
   receiptAmount: {
     fontSize: 20,
-    fontWeight: '700',
+    fontFamily: 'Outfit-Bold',
     color: '#111827',
   },
   nonprofitsSection: {
@@ -483,7 +483,7 @@ const styles = StyleSheet.create({
   },
   nonprofitsTitle: {
     fontSize: 13,
-    fontWeight: '600',
+    fontFamily: 'Outfit-SemiBold',
     color: '#111827',
     marginBottom: 8,
   },
@@ -500,7 +500,7 @@ const styles = StyleSheet.create({
   },
   nonprofitAmount: {
     fontSize: 13,
-    fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
     color: '#111827',
   },
   receiptFooter: {
@@ -522,7 +522,7 @@ const styles = StyleSheet.create({
   },
   taxTagText: {
     fontSize: 11,
-    fontWeight: '600',
+    fontFamily: 'Outfit-SemiBold',
     color: '#15803d',
   },
   downloadButton: {
@@ -537,7 +537,7 @@ const styles = StyleSheet.create({
   },
   downloadButtonText: {
     fontSize: 13,
-    fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
     color: '#374151',
   },
 });

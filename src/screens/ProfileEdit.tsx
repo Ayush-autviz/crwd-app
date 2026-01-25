@@ -1,13 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  Image, 
-  StyleSheet, 
-  ScrollView, 
-  KeyboardAvoidingView, 
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Image,
+  StyleSheet,
+  ScrollView,
+  KeyboardAvoidingView,
   Platform,
   Alert,
   ActivityIndicator
@@ -29,7 +29,7 @@ export default function ProfileEdit() {
   const { user, setUser } = useAuthStore()
   const { showToast } = useToast()
   const queryClient = useQueryClient()
-  
+
   const [editingField, setEditingField] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     first_name: "",
@@ -82,10 +82,10 @@ export default function ProfileEdit() {
   // Initialize form data when profile data is loaded
   useEffect(() => {
     if (profileData) {
-      const fullName = profileData.first_name && profileData.last_name 
-        ? `${profileData.first_name} ${profileData.last_name}` 
+      const fullName = profileData.first_name && profileData.last_name
+        ? `${profileData.first_name} ${profileData.last_name}`
         : profileData.username || ''
-      
+
       setFormData({
         first_name: profileData.first_name || '',
         last_name: profileData.last_name || '',
@@ -94,7 +94,7 @@ export default function ProfileEdit() {
         bio: profileData.bio || '',
         profile_picture_file: profileData.profile_picture || ''
       })
-      
+
       setTempData({
         first_name: profileData.first_name || '',
         last_name: profileData.last_name || '',
@@ -181,7 +181,7 @@ export default function ProfileEdit() {
 
   const handleImageSave = async (imageUri: string) => {
     const formDataToSend = new FormData()
-    
+
     formDataToSend.append('profile_picture_file', {
       uri: imageUri,
       type: 'image/jpeg',
@@ -270,7 +270,7 @@ export default function ProfileEdit() {
   if (isLoadingProfile) {
     return (
       <SafeAreaView style={styles.container}>
-        <MainHeaderNav show={true} menu={false} title={'Edit Profile'}/>
+        <MainHeaderNav show={true} menu={false} title={'Edit Profile'} />
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <ActivityIndicator size="large" color={PrimaryBlue} />
           <Text style={{ marginTop: 16, fontSize: 16, color: '#6b7280' }}>
@@ -285,18 +285,18 @@ export default function ProfileEdit() {
   if (profileError) {
     return (
       <SafeAreaView style={styles.container}>
-        <MainHeaderNav show={true} menu={false} title={'Edit Profile'}/>
+        <MainHeaderNav show={true} menu={false} title={'Edit Profile'} />
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <Text style={{ fontSize: 16, color: '#ef4444', textAlign: 'center', marginBottom: 16 }}>
             Failed to load profile
           </Text>
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={() => navigation.goBack()}
-            style={{ 
-              paddingHorizontal: 16, 
-              paddingVertical: 8, 
-              backgroundColor: '#374151', 
-              borderRadius: 6 
+            style={{
+              paddingHorizontal: 16,
+              paddingVertical: 8,
+              backgroundColor: '#374151',
+              borderRadius: 6
             }}
           >
             <Text style={{ color: 'white' }}>Go Back</Text>
@@ -308,9 +308,9 @@ export default function ProfileEdit() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <MainHeaderNav show={true} menu={false} title={'Edit Profile'}/>
-      
-      <KeyboardAvoidingView 
+      <MainHeaderNav show={true} menu={false} title={'Edit Profile'} />
+
+      <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
       >
@@ -318,8 +318,8 @@ export default function ProfileEdit() {
           {/* Profile Picture Section */}
           <View style={styles.avatarSection}>
             <View style={styles.avatarContainer}>
-              <Image 
-                source={{ uri: formData.profile_picture_file }} 
+              <Image
+                source={{ uri: formData.profile_picture_file }}
                 style={styles.avatar}
               />
               <TouchableOpacity
@@ -376,11 +376,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#374151',
     marginLeft: 8,
-    fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
   },
   title: {
     fontSize: 20,
-    fontWeight: '700',
+    fontFamily: 'Outfit-Bold',
     color: '#111827',
   },
   avatarSection: {
@@ -411,7 +411,7 @@ const styles = StyleSheet.create({
   },
   editPictureText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: 'Outfit-SemiBold',
     color: '#374151',
   },
   fieldsContainer: {
@@ -434,7 +434,7 @@ const styles = StyleSheet.create({
   fieldLabel: {
     width: '30%',
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'Outfit-SemiBold',
     color: '#374151',
   },
   fieldContent: {

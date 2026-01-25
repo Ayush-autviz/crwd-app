@@ -360,7 +360,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   outlineButtonText: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '700',
     color: '#111827',
     fontFamily: 'Outfit-Bold',
@@ -377,7 +377,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   primaryButtonText: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '600',
     color: '#FFFFFF',
     fontFamily: 'Outfit-SemiBold',

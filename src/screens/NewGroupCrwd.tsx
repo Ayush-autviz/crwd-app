@@ -564,18 +564,9 @@ export default function NewGroupCrwdPage() {
                   <View style={styles.statsItemContent}>
                     <Text style={styles.statsItemName}>{name}</Text>
                     <Text style={styles.statsItemDescription} numberOfLines={2}>
-                      {cause.mission || 'No description available'}
+                      {cause.mission || cause.description || 'No description available'}
                     </Text>
                   </View>
-                  {/* <TouchableOpacity
-                    style={styles.viewButton}
-                    onPress={() => {
-                      statisticsBottomSheetRef.current?.close();
-                      (navigation as any).navigate('CauseScreen', { id: causeId });
-                    }}
-                  >
-                    <Text style={styles.viewButtonText}>View</Text>
-                  </TouchableOpacity> */}
                 </TouchableOpacity>
               );
             })
@@ -617,18 +608,9 @@ export default function NewGroupCrwdPage() {
                     <View style={styles.statsItemContent}>
                       <Text style={styles.statsItemName}>{name}</Text>
                       <Text style={styles.statsItemDescription} numberOfLines={2}>
-                        {cause.mission || 'No description available'}
+                        {cause.mission || cause.description || 'No description available'}
                       </Text>
                     </View>
-                    <TouchableOpacity
-                      style={styles.viewButton}
-                      onPress={() => {
-                        statisticsBottomSheetRef.current?.close();
-                        (navigation as any).navigate('CauseScreen', { id: causeId });
-                      }}
-                    >
-                      <Text style={styles.viewButtonText}>View</Text>
-                    </TouchableOpacity>
                   </TouchableOpacity>
                 );
               })}

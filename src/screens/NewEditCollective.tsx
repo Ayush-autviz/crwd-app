@@ -293,9 +293,9 @@ export default function NewEditCollective() {
     if (isCauseSelected(cause.id)) {
       setSelectedCauses(prev => prev.filter(c => c.id !== cause.id));
     } else {
-      // Check if adding would exceed initial count
-      if (selectedCauses.length >= initialCauseCount) {
-        showToast(`You cannot add more than ${initialCauseCount} cause${initialCauseCount === 1 ? '' : 's'}. You can only remove causes.`, 4000);
+      // Check if adding would exceed the limit of 10 (like in Vite)
+      if (selectedCauses.length >= 10) {
+        showToast('You cannot select more than 10 causes.', 4000);
         return;
       }
       setSelectedCauses(prev => [...prev, cause]);
@@ -417,7 +417,7 @@ export default function NewEditCollective() {
               <Avatar size={64} style={styles.logoAvatar}>
                 {logoType === 'upload' ? (
                   uploadedLogoPreview ? (
-                    <AvatarImage source={{ uri: uploadedLogoPreview }} alt={name} />
+                    <AvatarImage src={uploadedLogoPreview} alt={name} />
                   ) : (
                     <AvatarFallback
                       style={{ backgroundColor: '#f3f4f6' }}
@@ -522,7 +522,7 @@ export default function NewEditCollective() {
             {/* Selected Causes */}
             <View style={styles.selectedCausesCard}>
               <Text style={styles.selectedCausesTitle}>
-                Selected Causes ({selectedCauses.length})
+                Selected Causes ({selectedCauses.length}/10)
               </Text>
               {selectedCauses.length > 0 ? (
                 <View style={styles.selectedCausesList}>
@@ -539,7 +539,7 @@ export default function NewEditCollective() {
                       <View key={cause.id} style={styles.selectedCauseCard}>
                         <View style={styles.selectedCauseContent}>
                           <Avatar size={48} style={styles.selectedCauseAvatar}>
-                            <AvatarImage source={{ uri: causeData.image }} alt={causeData.name} />
+                            <AvatarImage src={causeData.image} alt={causeData.name} />
                             <AvatarFallback
                               style={{ backgroundColor: avatarBgColor }}
                               textStyle={styles.selectedCauseAvatarFallback}
@@ -550,11 +550,11 @@ export default function NewEditCollective() {
                           <View style={styles.selectedCauseInfo}>
                             <View style={styles.selectedCauseHeader}>
                               <Text style={styles.selectedCauseName}>{causeData.name}</Text>
-                              <View style={[styles.selectedCauseCategory, { backgroundColor: `${categoryColor}20` }]}>
+                              {/* <View style={[styles.selectedCauseCategory, { backgroundColor: `${categoryColor}20` }]}>
                                 <Text style={[styles.selectedCauseCategoryText, { color: categoryColor }]}>
                                   {categoryName}
                                 </Text>
-                              </View>
+                              </View> */}
                             </View>
                             <Text style={styles.selectedCauseDescription} numberOfLines={2}>
                               {causeData.mission || causeData.description}
@@ -637,7 +637,7 @@ export default function NewEditCollective() {
                           ]}
                         >
                           <Avatar size={48} style={styles.causeAvatar}>
-                            <AvatarImage source={{ uri: cause.image }} alt={cause.name} />
+                            <AvatarImage src={cause.image} alt={cause.name} />
                             <AvatarFallback
                               style={{ backgroundColor: avatarBgColor }}
                               textStyle={styles.causeAvatarFallback}
@@ -648,11 +648,11 @@ export default function NewEditCollective() {
                           <View style={styles.causeInfo}>
                             <View style={styles.causeHeader}>
                               <Text style={styles.causeName}>{cause.name}</Text>
-                              <View style={[styles.causeCategory, { backgroundColor: `${categoryColor}20` }]}>
+                              {/* <View style={[styles.causeCategory, { backgroundColor: `${categoryColor}20` }]}>
                                 <Text style={[styles.causeCategoryText, { color: categoryColor }]}>
                                   {categoryName}
                                 </Text>
-                              </View>
+                              </View> */}
                             </View>
                             <Text style={styles.causeDescription} numberOfLines={2}>
                               {cause.mission || cause.description}
@@ -958,7 +958,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-SemiBold',
   },
   causesSection: {
-    marginTop: 24,
+    marginTop: 8,
   },
   selectedCausesCard: {
     borderWidth: 1,

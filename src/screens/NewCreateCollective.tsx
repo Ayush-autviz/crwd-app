@@ -724,7 +724,7 @@ export default function NewCreateCollective() {
           </View>
           <Text style={styles.promptTitle}>Lead a Giving Community</Text>
           <Text style={styles.promptDescription}>
-            You pick the causes. You invite the people. They give monthly. No money touches your hands. You just rally the movement.
+            Pick your causes. Name your collective. Invite your people. CRWD handles the donations, you rally the movement.
           </Text>
           <View style={styles.promptButtons}>
             <TouchableOpacity
@@ -764,7 +764,7 @@ export default function NewCreateCollective() {
           </View>
           <Text style={styles.promptTitle}>Lead a Giving Community</Text>
           <Text style={styles.promptDescription}>
-            You pick the causes. You invite the people. They give monthly. No money touches your hands. You just rally the movement.
+            Pick your causes. Name your collective. Invite your people. CRWD handles the donations, you rally the movement.
           </Text>
           <TouchableOpacity
             onPress={() => {

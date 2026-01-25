@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   title: {
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '700',
     color: '#111827',
     fontFamily: 'Outfit-Bold',
@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   linkText: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '700',
     color: '#1600ff',
     fontFamily: 'Outfit-Bold',

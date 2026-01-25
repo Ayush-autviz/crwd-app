@@ -737,7 +737,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   gradientContent: {
-    paddingHorizontal: 16
+    paddingHorizontal: 16,
+    paddingBottom: 12
   },
   scrollView: {
     flex: 1,

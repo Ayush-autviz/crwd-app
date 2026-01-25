@@ -136,7 +136,8 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    fontWeight: '700',
+    fontSize: 18,
+    fontFamily: 'Outfit-Bold',
     color: '#111827',
   },
   subtitle: {
@@ -152,7 +153,7 @@ const styles = StyleSheet.create({
   },
   joinButtonText: {
     fontSize: 12,
-    fontWeight: '700',
+    fontFamily: 'Outfit-Bold',
     color: '#FFFFFF',
   },
   postButton: {
@@ -165,7 +166,7 @@ const styles = StyleSheet.create({
   },
   postButtonText: {
     fontSize: 12,
-    fontWeight: '700',
+    fontFamily: 'Outfit-Bold',
     color: '#1F2937',
   },
   loadingContainer: {
@@ -191,7 +192,7 @@ const styles = StyleSheet.create({
   },
   activitiesTitle: {
     fontSize: 18,
-    fontWeight: '700',
+    fontFamily: 'Outfit-Bold',
     color: '#111827',
     marginBottom: 12,
   },
@@ -233,7 +234,7 @@ const styles = StyleSheet.create({
   },
   dropdownText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
     color: '#111827',
   },
 });

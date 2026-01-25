@@ -394,7 +394,7 @@ export default function PopularPosts({
             {shouldShowTitle && (
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                        <Text style={{ fontSize: 18, fontWeight: '600' }}>{related ? 'Related Posts' : title}</Text>
+                        <Text style={{ fontSize: 18, fontFamily: 'Outfit-SemiBold' }}>{related ? 'Related Posts' : title}</Text>
                         <TouchableOpacity
                             onPress={() => setShowTooltip(!showTooltip)}
                             style={{ padding: 8 }}
@@ -407,7 +407,7 @@ export default function PopularPosts({
                                 alignItems: 'center',
                                 justifyContent: 'center'
                             }}>
-                                <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>?</Text>
+                                <Text style={{ color: 'white', fontSize: 12, fontFamily: 'Outfit-Bold' }}>?</Text>
                             </View>
                         </TouchableOpacity>
                     </View>
@@ -416,7 +416,7 @@ export default function PopularPosts({
                             onPress={handleStartConversation}
                             style={{ padding: 8, backgroundColor: SecondaryGrey, borderRadius: 8 }}
                         >
-                            <Text style={{ fontSize: 14, }}>Create Post
+                            <Text style={{ fontSize: 14, fontFamily: 'Outfit-Medium' }}>Create Post
 
                             </Text>
                         </TouchableOpacity>
@@ -424,7 +424,7 @@ export default function PopularPosts({
                 </View>
             )}
 
-            {subheading && <Text style={{ fontSize: 12, fontStyle: 'italic', color: 'grey', marginBottom: 8 }}>Members share updates, questions and articles here.</Text>}
+            {subheading && <Text style={{ fontSize: 12, fontStyle: 'italic', color: 'grey', marginBottom: 8, fontFamily: 'Outfit-Regular' }}>Members share updates, questions and articles here.</Text>}
 
             {/* Loading State */}
             {isLoading && (
@@ -467,7 +467,7 @@ export default function PopularPosts({
                     <Text style={{
                         color: 'white',
                         fontSize: 12,
-                        fontWeight: '500',
+                        fontFamily: 'Outfit-Medium',
                         textAlign: 'center'
                     }}>
                         You can engage with others in Collectives.
@@ -588,7 +588,7 @@ export default function PopularPosts({
                                     }}>
                                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                                             <Pin size={16} color="#1600ff" />
-                                            <Text style={{ fontSize: 10, fontWeight: '500', color: '#1600ff' }}>
+                                            <Text style={{ fontSize: 10, fontFamily: 'Outfit-Medium', color: '#1600ff' }}>
                                                 PINNED FUNDRAISER
                                             </Text>
                                         </View>
@@ -682,7 +682,7 @@ export default function PopularPosts({
                                             <AvatarImage src={item.avatarUrl} />
                                             <AvatarFallback
                                                 style={{ backgroundColor: avatarBgColor }}
-                                                textStyle={{ color: 'white', fontWeight: '600', fontSize: 14 }}
+                                                textStyle={{ color: 'white', fontFamily: 'Outfit-SemiBold', fontSize: 14 }}
                                             >
                                                 {initials}
                                             </AvatarFallback>
@@ -746,7 +746,7 @@ export default function PopularPosts({
                                                         justifyContent: 'center',
                                                         alignItems: 'center'
                                                     }}>
-                                                        <Text style={{ color: 'white', fontSize: 20, fontWeight: 'bold' }}>
+                                                        <Text style={{ color: 'white', fontSize: 20, fontFamily: 'Outfit-Bold' }}>
                                                             {item.fundraiser.name}
                                                         </Text>
                                                     </View>
@@ -764,7 +764,7 @@ export default function PopularPosts({
                                                         justifyContent: 'center',
                                                         alignItems: 'center'
                                                     }}>
-                                                        <Text style={{ color: 'white', fontSize: 20, fontWeight: 'bold' }}>
+                                                        <Text style={{ color: 'white', fontSize: 20, fontFamily: 'Outfit-Bold' }}>
                                                             {item.fundraiser.name}
                                                         </Text>
                                                     </View>
@@ -773,14 +773,14 @@ export default function PopularPosts({
 
                                             {/* Fundraiser Info - rounded-b-lg only, connected to cover */}
                                             <View style={{ marginBottom: 8, backgroundColor: 'white', padding: 16, borderBottomLeftRadius: 12, borderBottomRightRadius: 12 }}>
-                                                <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#111827', marginBottom: 12 }}>
+                                                <Text style={{ fontSize: 14, fontFamily: 'Outfit-Bold', color: '#111827', marginBottom: 12 }}>
                                                     {item.fundraiser.name}
                                                 </Text>
 
                                                 {/* Amount and Progress */}
                                                 <View style={{ marginBottom: 8 }}>
                                                     <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 8, marginBottom: 6 }}>
-                                                        <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#1600ff' }}>
+                                                        <Text style={{ fontSize: 18, fontFamily: 'Outfit-Bold', color: '#1600ff' }}>
                                                             ${parseFloat(item.fundraiser.current_amount || '0').toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                                                         </Text>
                                                         <Text style={{ fontSize: 12, color: '#6b7280' }}>

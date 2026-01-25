@@ -100,7 +100,7 @@ export default function CollectiveProfile({
           ) : null}
           <AvatarFallback
             style={iconColor ? { backgroundColor: iconColor } : {}}
-            textStyle={{ color: '#FFFFFF', fontSize: 32, fontWeight: '700' }}
+            textStyle={{ color: '#FFFFFF', fontSize: 32, fontFamily: 'Outfit-Bold' }}
           >
             {iconLetter}
           </AvatarFallback>
@@ -169,7 +169,8 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: '800',
+    fontSize: 24,
+    fontFamily: 'Outfit-ExtraBold',
     color: '#111827',
   },
   joinedBadge: {
@@ -180,7 +181,8 @@ const styles = StyleSheet.create({
   },
   joinedText: {
     fontSize: 10,
-    fontWeight: '600',
+    fontSize: 10,
+    fontFamily: 'Outfit-SemiBold',
     color: '#065F46',
   },
   founderRow: {
@@ -192,16 +194,18 @@ const styles = StyleSheet.create({
   founderText: {
     fontSize: 12,
     color: '#6B7280',
+    fontFamily: 'Outfit-Regular',
   },
   founderLink: {
     color: '#1600ff',
-    fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
   },
   description: {
     fontSize: 14,
     color: '#111827',
     lineHeight: 20,
     marginTop: 16,
+    fontFamily: 'Outfit-Regular',
   },
 });
 

@@ -14,6 +14,7 @@ export default function ProfileBio({ bio }: ProfileBioProps) {
         color: '#000',
         // lineHeight: 20,
         textAlign: 'center',
+        fontFamily: 'Outfit-Regular',
       }}>
         {bio}
       </Text>

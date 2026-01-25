@@ -9,10 +9,10 @@ interface ProfileInterestsProps {
   className?: string;
 }
 
-const ProfileInterests: React.FC<ProfileInterestsProps> = ({ 
-  interests, 
-  title, 
-  className 
+const ProfileInterests: React.FC<ProfileInterestsProps> = ({
+  interests,
+  title,
+  className
 }) => {
   const navigation = useNavigation();
 
@@ -23,12 +23,12 @@ const ProfileInterests: React.FC<ProfileInterestsProps> = ({
   return (
     <View style={{ paddingHorizontal: 16, paddingTop: 8, paddingBottom: 16 }}>
       {title && (
-        <Text style={{ fontSize: 14, fontWeight: '600', marginBottom: 8, color: '#111827' }}>
+        <Text style={{ fontSize: 14, fontFamily: 'Outfit-SemiBold', marginBottom: 8, color: '#111827' }}>
           {title}
         </Text>
       )}
-      <ScrollView 
-        horizontal 
+      <ScrollView
+        horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ gap: 8 }}
       >
@@ -46,7 +46,7 @@ const ProfileInterests: React.FC<ProfileInterestsProps> = ({
           >
             <Text style={{
               fontSize: 12,
-              fontWeight: '500',
+              fontFamily: 'Outfit-Medium',
               color: '#374151',
               textAlign: 'center',
             }}>

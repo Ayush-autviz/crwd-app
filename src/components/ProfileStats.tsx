@@ -16,10 +16,10 @@ interface ProfileStatsProps {
     onStatPress?: (tab: 'causes' | 'following' | 'followers' | 'crwds') => void;
 }
 
-export default function ProfileStats({ 
-    causes = 0, 
-    crwds = 0, 
-    followers = 0, 
+export default function ProfileStats({
+    causes = 0,
+    crwds = 0,
+    followers = 0,
     following = 0,
     profileId = '',
     isLoadingCauses = false,
@@ -39,75 +39,75 @@ export default function ProfileStats({
     }
 
     return (
-        <View style={{ 
-            flexDirection: 'row', 
+        <View style={{
+            flexDirection: 'row',
             // backgroundColor: '#f9fafb', 
-            borderRadius: 12, 
+            borderRadius: 12,
             paddingVertical: 16,
             marginTop: 25
         }}>
-            <TouchableOpacity 
+            <TouchableOpacity
                 onPress={() => handleStatsPress('causes')}
                 style={{ flex: 1, alignItems: 'center', justifyContent: "center" }}
             >
                 {isLoadingCauses ? (
                     <ActivityIndicator size="small" color={PrimaryBlue} />
                 ) : (
-                    <View style={{flexDirection: 'row', alignItems: 'center', gap: 4}}>
-                    <Text style={{ fontSize: 12, fontWeight: '600', color: '#595959', textAlign: 'center' }}>
-                        {causes}
-                    </Text>
-                <Text style={{ fontSize: 12, color: '#595959', textAlign: 'center', fontWeight: '600' }}>Causes</Text>
-                </View>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                        <Text style={{ fontSize: 12, fontFamily: 'Outfit-SemiBold', color: '#595959', textAlign: 'center' }}>
+                            {causes}
+                        </Text>
+                        <Text style={{ fontSize: 12, color: '#595959', textAlign: 'center', fontFamily: 'Outfit-Medium' }}>Causes</Text>
+                    </View>
 
                 )}
                 {/* <Text style={{ fontSize: 12, color: PrimaryGrey, textAlign: 'center' }}>Causes</Text> */}
             </TouchableOpacity>
             <View style={{ width: 4, height: 4, backgroundColor: '#595959', marginHorizontal: 8, borderRadius: 5, alignSelf: 'center' }} />
-            <TouchableOpacity 
+            <TouchableOpacity
                 onPress={() => handleStatsPress('crwds')}
                 style={{ flex: 1, alignItems: 'center', justifyContent: "center" }}
             >
                 {isLoadingCrwds ? (
                     <ActivityIndicator size="small" color={PrimaryBlue} />
                 ) : (
-                    <View style={{flexDirection: 'row', alignItems: 'center', gap: 4}}> 
-                        <Text style={{ fontSize: 12, fontWeight: '600', color: '#595959', textAlign: "center" }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                        <Text style={{ fontSize: 12, fontFamily: 'Outfit-SemiBold', color: '#595959', textAlign: "center" }}>
                             {crwds}
                         </Text>
-                        <Text style={{ fontSize: 12, color: '#595959', textAlign: "center", fontWeight: '600' }}>Collectives</Text>
+                        <Text style={{ fontSize: 12, color: '#595959', textAlign: "center", fontFamily: 'Outfit-Medium' }}>Collectives</Text>
                     </View>
                 )}
             </TouchableOpacity>
             <View style={{ width: 4, height: 4, backgroundColor: '#595959', marginHorizontal: 8, borderRadius: 5, alignSelf: 'center' }} />
-            <TouchableOpacity 
+            <TouchableOpacity
                 onPress={() => handleStatsPress('followers')}
                 style={{ flex: 1, alignItems: 'center', justifyContent: "center" }}
             >
                 {isLoadingFollowers ? (
                     <ActivityIndicator size="small" color={PrimaryBlue} />
                 ) : (
-                    <View style={{flexDirection: 'row', alignItems: 'center', gap: 4}}>
-                    <Text style={{ fontSize: 12, fontWeight: '600', color: '#595959', textAlign: "center" }}>
-                        {followers}
-                    </Text>
-                    <Text style={{ fontSize: 12, color: '#595959', textAlign: "center", fontWeight: '600' }}>Followers</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                        <Text style={{ fontSize: 12, fontFamily: 'Outfit-SemiBold', color: '#595959', textAlign: "center" }}>
+                            {followers}
+                        </Text>
+                        <Text style={{ fontSize: 12, color: '#595959', textAlign: "center", fontFamily: 'Outfit-Medium' }}>Followers</Text>
                     </View>
                 )}
             </TouchableOpacity>
             <View style={{ width: 4, height: 4, backgroundColor: '#595959', marginHorizontal: 8, borderRadius: 5, alignSelf: 'center' }} />
-            <TouchableOpacity 
+            <TouchableOpacity
                 onPress={() => handleStatsPress('following')}
                 style={{ flex: 1, alignItems: 'center', justifyContent: "center" }}
             >
                 {isLoadingFollowing ? (
                     <ActivityIndicator size="small" color={PrimaryBlue} />
                 ) : (
-                    <View style={{flexDirection: 'row', alignItems: 'center', gap: 4}}>
-                    <Text style={{ fontSize: 12, fontWeight: '600', color: '#595959', textAlign: "center" }}>
-                        {following}
-                    </Text>
-                    <Text style={{ fontSize: 12, color: '#595959', textAlign: "center", fontWeight: '600' }}>Following</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                        <Text style={{ fontSize: 12, fontFamily: 'Outfit-SemiBold', color: '#595959', textAlign: "center" }}>
+                            {following}
+                        </Text>
+                        <Text style={{ fontSize: 12, color: '#595959', textAlign: "center", fontFamily: 'Outfit-Medium' }}>Following</Text>
                     </View>
                 )}
             </TouchableOpacity>

@@ -219,12 +219,14 @@ const styles = StyleSheet.create({
   },
   bottomSheetTitle: {
     fontSize: 24,
-    fontWeight: '700',
+    fontSize: 24,
+    fontFamily: 'Outfit-Bold',
     color: '#111827',
     marginBottom: 8,
   },
   bottomSheetSubtitle: {
     fontSize: 14,
+    fontFamily: 'Outfit-Regular',
     color: PrimaryGrey,
   },
   fieldContainer: {
@@ -232,12 +234,14 @@ const styles = StyleSheet.create({
   },
   fieldLabel: {
     fontSize: 14,
-    fontWeight: '500',
+    fontSize: 14,
+    fontFamily: 'Outfit-Medium',
     color: '#111827',
     marginBottom: 8,
   },
   input: {
     fontSize: 16,
+    fontFamily: 'Outfit-Regular',
     color: '#111827',
   },
   emailInput: {
@@ -268,7 +272,9 @@ const styles = StyleSheet.create({
   updateButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '700',
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontFamily: 'Outfit-Bold',
   },
   cancelButton: {
     paddingVertical: 15,
@@ -277,7 +283,7 @@ const styles = StyleSheet.create({
   cancelButtonText: {
     color: '#111827',
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'Outfit-SemiBold',
   },
   buttonDisabled: {
     opacity: 0.6,
@@ -290,7 +296,8 @@ const styles = StyleSheet.create({
   },
   otpTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontSize: 18,
+    fontFamily: 'Outfit-SemiBold',
     color: '#111827',
     marginBottom: 8,
     textAlign: 'center',

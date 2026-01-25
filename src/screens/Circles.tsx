@@ -344,12 +344,14 @@ const styles = StyleSheet.create({
     color: '#111827',
     marginBottom: 6,
     textAlign: 'center',
+    fontFamily: 'Outfit-Bold',
   },
   headerSubtitle: {
     fontSize: 14,
     color: '#6B7280',
     textAlign: 'center',
     marginBottom: 12,
+    fontFamily: 'Outfit-Regular',
   },
   createButton: {
     flexDirection: 'row',
@@ -364,6 +366,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '600',
     fontSize: 14,
+    fontFamily: 'Outfit-SemiBold',
   },
   tabsRow: {
     flexDirection: 'row',
@@ -392,6 +395,7 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     fontWeight: '600',
     fontSize: 12,
+    fontFamily: 'Outfit-SemiBold',
   },
   tabTextActive: {
     color: '#111827',
@@ -431,18 +435,21 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '700',
     color: '#FFFFFF',
+    fontFamily: 'Outfit-Bold',
   },
   cardTitle: {
     fontSize: 18,
     fontWeight: '700',
     color: '#111827',
     marginBottom: 2,
+    fontFamily: 'Outfit-Bold',
   },
   cardDescription: {
     fontSize: 14,
     color: '#4B5563',
     marginBottom: 6,
     lineHeight: 20,
+    fontFamily: 'Outfit-Regular',
   },
   founderInfo: {
     flexDirection: 'row',
@@ -453,10 +460,12 @@ const styles = StyleSheet.create({
   founderText: {
     fontSize: 12,
     color: '#6B7280',
+    fontFamily: 'Outfit-Regular',
   },
   nonprofitCount: {
     fontSize: 12,
     color: '#6B7280',
+    fontFamily: 'Outfit-Regular',
   },
   placeholderWrapper: {
     paddingHorizontal: 24,
@@ -468,12 +477,14 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#111827',
     marginBottom: 6,
-    textAlign: 'center'
+    textAlign: 'center',
+    fontFamily: 'Outfit-Bold',
   },
   placeholderDescription: {
     fontSize: 14,
     color: '#6B7280',
     textAlign: 'center',
+    fontFamily: 'Outfit-Regular',
   },
   contentContainer: {
     flex: 1,
@@ -490,6 +501,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     color: PrimaryGrey,
     fontSize: 16,
+    fontFamily: 'Outfit-Regular',
   },
   emptyState: {
     alignItems: 'center',
@@ -508,11 +520,13 @@ const styles = StyleSheet.create({
     color: '#111827',
     marginBottom: 8,
     textAlign: 'center',
+    fontFamily: 'Outfit-SemiBold',
   },
   emptyStateText: {
     color: PrimaryGrey,
     fontSize: 14,
     textAlign: 'center',
+    fontFamily: 'Outfit-Regular',
   },
   scrollContainer: {
     flex: 1,

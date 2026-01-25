@@ -23,14 +23,14 @@ const avatarColors = [
 // Format date to relative time
 const formatTimeAgo = (dateString: string): string => {
   if (!dateString) return '';
-  
+
   try {
     const date = new Date(dateString);
     // Check if date is valid
     if (isNaN(date.getTime())) {
       return '';
     }
-    
+
     const now = new Date();
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
@@ -56,41 +56,41 @@ const getInitials = (name: string): string => {
 
 export default function ActivityCard({ activity }: ActivityCardProps) {
   const navigation = useNavigation();
-  
+
   // Extract username from activity body (e.g., "@jake_long" -> "jake_long")
   const usernameMatch = activity.body?.match(/@(\w+)/);
   const username = usernameMatch ? usernameMatch[1] : null;
-  
+
   // Try to get user ID from various possible fields in activity.data
-  const userId = 
-    activity.data?.new_member_id || 
-    activity.data?.user_id || 
-    activity.data?.donor_id || 
+  const userId =
+    activity.data?.new_member_id ||
+    activity.data?.user_id ||
+    activity.data?.donor_id ||
     activity.data?.member_id ||
     activity.data?.creator_id ||
     null;
-  
+
   // Get user name from activity body or data
   const userName = activity.data?.first_name && activity.data?.last_name
     ? `${activity.data.first_name} ${activity.data.last_name}`
     : activity.data?.username || username || 'Unknown User';
-  
+
   // Get profile picture
   const profilePicture = activity.data?.profile_picture || '';
-  
+
   // Get avatar background color
   const avatarId = userId || username || userName;
   const avatarBgColor = getConsistentColor(avatarId, avatarColors);
   const initials = getInitials(userName);
-  
+
   // Format timestamp - use created_at for proper date parsing (timestamp is already formatted like "2d")
-  const formattedTime = activity.created_at 
+  const formattedTime = activity.created_at
     ? formatTimeAgo(activity.created_at)
     : activity.timestamp || '';
-  
+
   // Determine activity description - use body which contains the full description
   const activityDescription = activity.body || activity.title || '';
-  
+
   // Handle profile navigation
   const handleProfilePress = () => {
     if (userId) {
@@ -99,9 +99,9 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
       (navigation as any).navigate('UserProfile', { username });
     }
   };
-  
+
   const hasProfileLink = !!userId || !!username;
-  
+
   return (
     <View style={styles.card}>
       <View style={styles.content}>
@@ -110,9 +110,9 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
           <TouchableOpacity onPress={handleProfilePress} activeOpacity={0.7}>
             <Avatar size={40}>
               <AvatarImage src={profilePicture} />
-              <AvatarFallback 
+              <AvatarFallback
                 style={{ backgroundColor: avatarBgColor }}
-                textStyle={{ color: '#FFFFFF', fontSize: 12, fontWeight: '700' }}
+                textStyle={{ color: '#FFFFFF', fontSize: 12, fontFamily: 'Outfit-Bold' }}
               >
                 {initials}
               </AvatarFallback>
@@ -121,15 +121,15 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
         ) : (
           <Avatar size={40}>
             <AvatarImage src={profilePicture} />
-            <AvatarFallback 
+            <AvatarFallback
               style={{ backgroundColor: avatarBgColor }}
-              textStyle={{ color: '#FFFFFF', fontSize: 12, fontWeight: '700' }}
+              textStyle={{ color: '#FFFFFF', fontSize: 12, fontFamily: 'Outfit-Bold' }}
             >
               {initials}
             </AvatarFallback>
           </Avatar>
         )}
-        
+
         {/* Content */}
         <View style={styles.textContent}>
           {/* Name and Timestamp */}
@@ -143,7 +143,7 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
             )}
           </View>
           <Text style={styles.timestamp}>{formattedTime}</Text>
-          
+
           {/* Activity Description Box */}
           <View style={styles.descriptionBox}>
             <Text style={styles.descriptionText}>
@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
   },
   userName: {
     fontSize: 14,
-    fontWeight: '700',
+    fontFamily: 'Outfit-Bold',
     color: '#111827',
   },
   timestamp: {
@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
   },
   descriptionText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: 'Outfit-SemiBold',
     color: '#111827',
   },
 });

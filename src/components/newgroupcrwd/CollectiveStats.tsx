@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontSize: 20,
-    fontWeight: '700',
+    fontFamily: 'Outfit-Bold',
     color: '#111827',
     marginBottom: 2,
   },
@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: 10,
-    fontWeight: '600',
+    fontFamily: 'Outfit-Medium',
     color: '#6B7280',
   },
 });

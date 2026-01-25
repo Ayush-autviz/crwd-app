@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  ScrollView, 
-  TouchableOpacity, 
-  TextInput, 
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  TextInput,
   ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
@@ -13,16 +13,16 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { 
-  ArrowLeft, 
-  Edit2, 
-  HelpCircle, 
-  Loader2, 
-  Palette, 
-  Camera, 
-  Search, 
-  X, 
-  Save 
+import {
+  ArrowLeft,
+  Edit2,
+  HelpCircle,
+  Loader2,
+  Palette,
+  Camera,
+  Search,
+  X,
+  Save
 } from 'lucide-react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getCollectiveById, patchCollective, getCollectiveCauses } from '../services/api/crwd';
@@ -72,7 +72,7 @@ export default function NewEditCollective() {
   const [uploadedLogo, setUploadedLogo] = useState<string | null>(null);
   const [uploadedLogoPreview, setUploadedLogoPreview] = useState<string | null>(null);
   const [showLogoCustomization, setShowLogoCustomization] = useState(false);
-  
+
   // Store default values from API
   const [defaultColor, setDefaultColor] = useState<string>('');
   const [defaultLogo, setDefaultLogo] = useState<string | null>(null);
@@ -80,7 +80,7 @@ export default function NewEditCollective() {
   const [initialDescription, setInitialDescription] = useState<string>('');
   const [initialCauseIds, setInitialCauseIds] = useState<number[]>([]);
   const [initialCauseCount, setInitialCauseCount] = useState(0);
-  
+
   // Causes management state
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCauses, setSelectedCauses] = useState<any[]>([]);
@@ -123,18 +123,18 @@ export default function NewEditCollective() {
     if (crwdData) {
       const apiName = crwdData.name || '';
       const apiDescription = crwdData.description || '';
-      
+
       setName(apiName);
       setDescription(apiDescription);
-      
+
       // Store initial values
       setInitialName(apiName);
       setInitialDescription(apiDescription);
-      
+
       // Store default values from API
       setDefaultColor(crwdData.color || '');
       setDefaultLogo(crwdData.logo || null);
-      
+
       // Determine logo type - prioritize logo (image) over color
       if (crwdData.logo) {
         setLogoType('upload');
@@ -206,7 +206,7 @@ export default function NewEditCollective() {
     if (hasNewLogo) {
       // New file uploaded - use FormData
       const formData = new FormData();
-      
+
       // Only add changed fields
       if (nameChanged) {
         formData.append('name', name.trim());
@@ -229,12 +229,12 @@ export default function NewEditCollective() {
       if (colorChanged) {
         formData.append('color', letterLogoColor);
       }
-      
+
       updateMutation.mutate(formData);
     } else {
       // Use JSON - no file upload
       const updateData: any = {};
-      
+
       // Only add changed fields
       if (nameChanged) {
         updateData.name = name.trim();
@@ -349,8 +349,8 @@ export default function NewEditCollective() {
         style={styles.keyboardView}
         keyboardVerticalOffset={100}
       >
-        <ScrollView 
-          style={styles.scrollView} 
+        <ScrollView
+          style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
@@ -534,7 +534,7 @@ export default function NewEditCollective() {
                     const categoryColor = category?.text || '#10B981';
                     const avatarBgColor = getConsistentColor(causeData.id, avatarColors);
                     const initials = getInitials(causeData.name || 'N');
-                    
+
                     return (
                       <View key={cause.id} style={styles.selectedCauseCard}>
                         <View style={styles.selectedCauseContent}>
@@ -581,7 +581,7 @@ export default function NewEditCollective() {
               <Text style={styles.addCausesTitle}>
                 Add or Remove Causes <Text style={styles.required}>*</Text>
               </Text>
-              
+
               {/* Search Bar */}
               <View style={styles.searchContainer}>
                 <Search size={20} color="#9CA3AF" style={styles.searchIcon} />
@@ -606,9 +606,9 @@ export default function NewEditCollective() {
                     const causes = searchTrigger > 0 && searchQuery.trim()
                       ? (causesData?.results || [])
                       : (defaultCausesData?.results || []);
-                    
+
                     // Filter out already selected causes
-                    const availableCauses = causes.filter((cause: any) => 
+                    const availableCauses = causes.filter((cause: any) =>
                       !selectedCauses.some(selected => selected.id === cause.id)
                     );
 
@@ -727,6 +727,7 @@ const styles = StyleSheet.create({
     color: '#111827',
     textAlign: 'center',
     marginRight: 40,
+    fontFamily: 'Outfit-Bold',
   },
   loadingContainer: {
     flex: 1,
@@ -769,10 +770,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#111827',
     marginBottom: 4,
+    fontFamily: 'Outfit-Bold',
   },
   bannerDescription: {
     fontSize: 12,
     color: '#6B7280',
+    fontFamily: 'Outfit-Regular',
   },
   formSection: {
     borderWidth: 1,
@@ -792,6 +795,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#111827',
     flex: 1,
+    fontFamily: 'Outfit-SemiBold',
   },
   required: {
     color: '#EF4444',
@@ -804,6 +808,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     fontSize: 14,
     color: '#111827',
+    fontFamily: 'Outfit-Regular',
   },
   textarea: {
     width: '100%',
@@ -815,6 +820,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#111827',
     textAlignVertical: 'top',
+    fontFamily: 'Outfit-Regular',
   },
   logoSection: {
     flexDirection: 'row',
@@ -835,11 +841,13 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     fontSize: 24,
+    fontFamily: 'Outfit-Bold',
   },
   logoAvatarFallback: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#9CA3AF',
+    fontFamily: 'Outfit-Bold',
   },
   logoInfo: {
     flex: 1,
@@ -848,11 +856,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     color: '#111827',
+    fontFamily: 'Outfit-Bold',
   },
   logoSubtext: {
     fontSize: 12,
     color: '#6B7280',
     marginTop: 4,
+    fontFamily: 'Outfit-Regular',
   },
   customizeButton: {
     flexDirection: 'row',
@@ -868,6 +878,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#111827',
     fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
   },
   customizationSection: {
     marginTop: 24,
@@ -900,6 +911,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#111827',
+    fontFamily: 'Outfit-SemiBold',
   },
   logoTypeButtonTextActive: {
     color: 'white',
@@ -912,6 +924,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#111827',
     marginBottom: 12,
+    fontFamily: 'Outfit-SemiBold',
   },
   colorSwatchesContainer: {
     flexDirection: 'row',
@@ -942,6 +955,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#111827',
+    fontFamily: 'Outfit-SemiBold',
   },
   causesSection: {
     marginTop: 24,
@@ -959,6 +973,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#111827',
     marginBottom: 12,
+    fontFamily: 'Outfit-Bold',
   },
   selectedCausesList: {
     gap: 12,
@@ -985,6 +1000,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
     color: 'white',
+    fontFamily: 'Outfit-Bold',
   },
   selectedCauseInfo: {
     flex: 1,
@@ -1001,6 +1017,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     color: '#111827',
+    fontFamily: 'Outfit-Bold',
   },
   selectedCauseCategory: {
     paddingHorizontal: 8,
@@ -1010,10 +1027,12 @@ const styles = StyleSheet.create({
   selectedCauseCategoryText: {
     fontSize: 10,
     fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
   },
   selectedCauseDescription: {
     fontSize: 12,
     color: '#6B7280',
+    fontFamily: 'Outfit-Regular',
   },
   removeCauseButton: {
     padding: 8,
@@ -1029,6 +1048,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#111827',
     marginBottom: 12,
+    fontFamily: 'Outfit-Bold',
   },
   searchContainer: {
     position: 'relative',
@@ -1048,6 +1068,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     fontSize: 14,
     color: '#111827',
+    fontFamily: 'Outfit-Regular',
   },
   causesListScroll: {
     maxHeight: 400,
@@ -1074,6 +1095,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
     color: 'white',
+    fontFamily: 'Outfit-Bold',
   },
   causeInfo: {
     flex: 1,
@@ -1090,6 +1112,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     color: '#111827',
+    fontFamily: 'Outfit-Bold',
   },
   causeCategory: {
     paddingHorizontal: 8,
@@ -1099,10 +1122,12 @@ const styles = StyleSheet.create({
   causeCategoryText: {
     fontSize: 10,
     fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
   },
   causeDescription: {
     fontSize: 12,
     color: '#6B7280',
+    fontFamily: 'Outfit-Regular',
   },
   radioButton: {
     width: 20,
@@ -1129,6 +1154,7 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     textAlign: 'center',
     paddingVertical: 24,
+    fontFamily: 'Outfit-Regular',
   },
   footer: {
     position: 'absolute',
@@ -1142,7 +1168,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     flexDirection: 'row',
     gap: 12,
-    paddingBottom:  20,
+    paddingBottom: 20,
   },
   cancelButton: {
     flex: 1,
@@ -1157,6 +1183,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#111827',
+    fontFamily: 'Outfit-SemiBold',
   },
   saveButton: {
     flex: 1,
@@ -1175,6 +1202,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: 'white',
+    fontFamily: 'Outfit-SemiBold',
   },
 });
 

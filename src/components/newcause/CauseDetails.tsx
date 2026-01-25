@@ -15,13 +15,13 @@ const getCategoryInfo = (categoryId: string) => {
     const foundCategories = categoryIds
       .map((id) => categories.find((cat) => cat.id === id))
       .filter((cat: any) => cat !== undefined);
-    
+
     // If we found multiple categories, return them as an array
     if (foundCategories.length > 0) {
       return foundCategories;
     }
   }
-  
+
   // Single category or default - return as array for consistency
   const category = categories.find((cat) => cat.id === categoryId) || categories[0];
   return [category];
@@ -98,7 +98,7 @@ export default function CauseDetails({ causeData }: CauseDetailsProps) {
                 key={index}
                 style={[
                   styles.mainFocusBadge,
-                //   { backgroundColor: cat.background },
+                  //   { backgroundColor: cat.background },
                 ]}
               >
                 <Text style={styles.mainFocusText}>{cat.name}</Text>
@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 12,
-    fontWeight: '700',
+    fontFamily: 'Outfit-Bold',
     color: '#111827',
     marginBottom: 4,
     textTransform: 'uppercase',
@@ -149,6 +149,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#374151',
     textTransform: 'uppercase',
+    fontFamily: 'Outfit-Medium',
   },
   categoriesContainer: {
     flexDirection: 'row',
@@ -163,7 +164,7 @@ const styles = StyleSheet.create({
   },
   categoryText: {
     fontSize: 10,
-    fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
     color: '#FFFFFF',
   },
   mainFocusContainer: {
@@ -179,12 +180,13 @@ const styles = StyleSheet.create({
   },
   mainFocusText: {
     fontSize: 12,
-    fontWeight: '500',
+    fontFamily: 'Outfit-SemiBold',
     color: '#1600ff',
   },
   taxId: {
     fontSize: 12,
     color: '#374151',
+    fontFamily: 'Outfit-Medium',
     // marginTop: 4,
   },
 });

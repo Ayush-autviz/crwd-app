@@ -400,12 +400,13 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: '700',
+    fontSize: 18,
+    fontFamily: 'Outfit-Bold',
     color: '#111827',
   },
   editButton: {
     fontSize: 16,
-    fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
     color: PrimaryBlue,
   },
   keyboardView: {
@@ -465,7 +466,8 @@ const styles = StyleSheet.create({
   },
   fieldLabel: {
     fontSize: 14,
-    fontWeight: '700',
+    fontSize: 14,
+    fontFamily: 'Outfit-Bold',
     color: '#111827',
     marginBottom: 4,
   },
@@ -475,6 +477,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     fontSize: 16,
+    fontFamily: 'Outfit-Regular',
     color: PrimaryGrey,
     minHeight: 40,
   },
@@ -517,7 +520,7 @@ const styles = StyleSheet.create({
   },
   cancelButtonText: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: 'Outfit-Bold',
     color: '#111827',
   },
   saveButton: {
@@ -525,7 +528,7 @@ const styles = StyleSheet.create({
   },
   saveButtonText: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: 'Outfit-Bold',
     color: '#FFFFFF',
   },
 })

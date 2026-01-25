@@ -92,7 +92,7 @@ export default function CauseActionButtons({
           </>
         )}
       </TouchableOpacity>
-      
+
       {/* Donate button is commented out in Vite version */}
       {/* <TouchableOpacity
         onPress={handleDonate}
@@ -126,12 +126,12 @@ const styles = StyleSheet.create({
   },
   addToBoxButtonText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'Outfit-SemiBold',
     color: '#000000',
   },
   addedButtonText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'Outfit-SemiBold',
     color: '#16a34a',
   },
   donateButton: {
@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
   },
   donateButtonText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'Outfit-SemiBold',
     color: '#FFFFFF',
   },
 });

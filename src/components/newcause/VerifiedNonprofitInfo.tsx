@@ -41,17 +41,19 @@ const styles = StyleSheet.create({
   },
   verifiedText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontFamily: 'Outfit-SemiBold',
     color: '#2563EB',
   },
   taxId: {
     fontSize: 12,
     color: '#374151',
     marginBottom: 4,
+    fontFamily: 'Outfit-Regular',
   },
   address: {
     fontSize: 12,
     color: '#374151',
+    fontFamily: 'Outfit-Regular',
   },
 });
 

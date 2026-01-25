@@ -70,7 +70,7 @@ export default function CauseProfile({ causeData }: CauseProfileProps) {
           <AvatarImage src={causeData?.image} />
           <AvatarFallback
             style={{ backgroundColor: avatarBgColor }}
-            textStyle={{ color: '#FFFFFF', fontSize: 24, fontWeight: '700' }}
+            textStyle={{ color: '#FFFFFF', fontSize: 24, fontFamily: 'Outfit-Bold' }}
           >
             {firstLetter}
           </AvatarFallback>
@@ -140,13 +140,14 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 18,
-    fontWeight: '700',
+    fontFamily: 'Outfit-Bold',
     color: '#111827',
     marginBottom: 4,
   },
   stats: {
     fontSize: 12,
     color: '#6B7280',
+    fontFamily: 'Outfit-Regular',
   },
   missionSection: {
     gap: 8,
@@ -155,6 +156,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#111827',
     lineHeight: 20,
+    fontFamily: 'Outfit-Regular',
   },
   categoriesContainer: {
     flexDirection: 'row',
@@ -169,7 +171,7 @@ const styles = StyleSheet.create({
   },
   categoryText: {
     fontSize: 12,
-    fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
     color: '#FFFFFF',
   },
 });

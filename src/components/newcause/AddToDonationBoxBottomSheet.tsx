@@ -174,7 +174,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontWeight: '700',
+    fontFamily: 'Outfit-Bold',
     color: '#111827',
     marginBottom: 8,
   },
@@ -182,6 +182,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6B7280',
     marginBottom: 16,
+    fontFamily: 'Outfit-Regular',
   },
   causeCard: {
     flexDirection: 'row',
@@ -211,7 +212,7 @@ const styles = StyleSheet.create({
   avatarFallbackText: {
     color: '#FFFFFF',
     fontSize: 24,
-    fontWeight: '700',
+    fontFamily: 'Outfit-Bold',
   },
   causeContent: {
     flex: 1,
@@ -219,7 +220,7 @@ const styles = StyleSheet.create({
   },
   causeName: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: 'Outfit-Bold',
     color: '#111827',
     marginBottom: 4,
   },
@@ -228,6 +229,7 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     lineHeight: 18,
     marginBottom: 8,
+    fontFamily: 'Outfit-Regular',
   },
   categoryTag: {
     alignSelf: 'flex-start',
@@ -257,7 +259,7 @@ const styles = StyleSheet.create({
   confirmButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'Outfit-SemiBold',
   },
   cancelButton: {
     alignItems: 'center',
@@ -266,7 +268,7 @@ const styles = StyleSheet.create({
   cancelText: {
     color: '#6B7280',
     fontSize: 14,
-    fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
   },
 });
 

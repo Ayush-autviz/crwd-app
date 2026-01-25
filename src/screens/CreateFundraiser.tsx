@@ -1055,11 +1055,13 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
     color: '#111827',
+    fontFamily: 'Outfit-Bold',
   },
   headerSubtitle: {
     fontSize: 14,
     color: '#6B7280',
     marginTop: 2,
+    fontFamily: 'Outfit-Regular',
   },
   progressContainer: {
     flexDirection: 'row',
@@ -1086,6 +1088,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
     color: '#6B7280',
+    fontFamily: 'Outfit-Bold',
   },
   progressNumberActive: {
     color: '#FFFFFF',
@@ -1094,6 +1097,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#6B7280',
+    fontFamily: 'Outfit-SemiBold',
   },
   progressLabelActive: {
     color: PrimaryBlue,
@@ -1139,20 +1143,24 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#1E3A8A',
     marginBottom: 4,
+    fontFamily: 'Outfit-Bold',
   },
   infoTitleOrange: {
     fontSize: 14,
     fontWeight: '700',
     color: '#9A3412',
     marginBottom: 4,
+    fontFamily: 'Outfit-Bold',
   },
   infoText: {
     fontSize: 12,
     color: '#1E40AF',
+    fontFamily: 'Outfit-Regular',
   },
   infoTextOrange: {
     fontSize: 12,
     color: '#C2410C',
+    fontFamily: 'Outfit-Regular',
   },
   section: {
     marginBottom: 24,
@@ -1162,12 +1170,14 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#111827',
     marginBottom: 8,
+    fontFamily: 'Outfit-SemiBold',
   },
   subLabel: {
     fontSize: 14,
     fontWeight: '600',
     color: '#111827',
     marginBottom: 12,
+    fontFamily: 'Outfit-SemiBold',
   },
   required: {
     color: '#EF4444',
@@ -1198,6 +1208,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     color: '#6B7280',
+    fontFamily: 'Outfit-Medium',
   },
   typeButtonTextActive: {
     color: '#111827',
@@ -1230,6 +1241,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#FFFFFF',
     opacity: 0.5,
+    fontFamily: 'Outfit-Bold',
   },
   imagePreviewContainer: {
     position: 'relative',
@@ -1264,10 +1276,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     color: '#6B7280',
+    fontFamily: 'Outfit-Medium',
   },
   uploadSubtext: {
     fontSize: 12,
     color: '#9CA3AF',
+    fontFamily: 'Outfit-Regular',
   },
   input: {
     borderWidth: 1,
@@ -1278,6 +1292,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#111827',
     backgroundColor: '#FFFFFF',
+    fontFamily: 'Outfit-Regular',
   },
   currencyInput: {
     flexDirection: 'row',
@@ -1292,6 +1307,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
     color: '#6B7280',
+    fontFamily: 'Outfit-Medium',
   },
   currencyInputField: {
     flex: 1,
@@ -1299,11 +1315,13 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     fontSize: 16,
     color: '#111827',
+    fontFamily: 'Outfit-Regular',
   },
   helperText: {
     fontSize: 12,
     color: '#6B7280',
     marginTop: 4,
+    fontFamily: 'Outfit-Regular',
   },
   dateInput: {
     borderWidth: 1,
@@ -1317,6 +1335,7 @@ const styles = StyleSheet.create({
   dateInputText: {
     fontSize: 16,
     color: '#111827',
+    fontFamily: 'Outfit-Regular',
   },
   dateInputPlaceholder: {
     color: '#9CA3AF',
@@ -1350,6 +1369,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#111827',
+    fontFamily: 'Outfit-SemiBold',
   },
   datePickerCancelButton: {
     paddingVertical: 8,
@@ -1358,6 +1378,7 @@ const styles = StyleSheet.create({
   datePickerCancelText: {
     fontSize: 16,
     color: '#6B7280',
+    fontFamily: 'Outfit-Medium',
   },
   datePickerDoneButton: {
     paddingVertical: 8,
@@ -1367,6 +1388,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: PrimaryBlue,
+    fontFamily: 'Outfit-Bold',
   },
   datePickerContainer: {
     height: 200,
@@ -1389,6 +1411,7 @@ const styles = StyleSheet.create({
     color: '#111827',
     backgroundColor: '#FFFFFF',
     minHeight: 120,
+    fontFamily: 'Outfit-Regular',
   },
   searchContainer: {
     flexDirection: 'row',
@@ -1407,6 +1430,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     fontSize: 16,
     color: '#111827',
+    fontFamily: 'Outfit-Regular',
   },
   filterContainer: {
     marginBottom: 16,
@@ -1428,6 +1452,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '500',
     color: '#374151',
+    fontFamily: 'Outfit-Medium',
   },
   filterButtonTextActive: {
     color: '#FFFFFF',
@@ -1437,6 +1462,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#111827',
     // marginBottom: 16,
+    fontFamily: 'Outfit-SemiBold',
   },
   nonprofitsList: {
     gap: 12,
@@ -1449,6 +1475,7 @@ const styles = StyleSheet.create({
   emptyStateText: {
     fontSize: 14,
     color: '#6B7280',
+    fontFamily: 'Outfit-Regular',
   },
   nonprofitItem: {
     flexDirection: 'row',
@@ -1469,6 +1496,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: '#FFFFFF',
+    fontFamily: 'Outfit-Bold',
   },
   nonprofitInfo: {
     flex: 1,
@@ -1478,10 +1506,12 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#111827',
     marginBottom: 4,
+    fontFamily: 'Outfit-Bold',
   },
   nonprofitMission: {
     fontSize: 12,
     color: '#6B7280',
+    fontFamily: 'Outfit-Regular',
   },
   checkboxContainer: {
     alignItems: 'center',
@@ -1528,6 +1558,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#FFFFFF',
     opacity: 0.5,
+    fontFamily: 'Outfit-Bold',
   },
   previewContent: {
     paddingTop: 16,
@@ -1537,6 +1568,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: PrimaryBlue,
     marginBottom: 24,
+    fontFamily: 'Outfit-Bold',
   },
   previewStats: {
     flexDirection: 'row',
@@ -1555,16 +1587,19 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     textTransform: 'uppercase',
     marginBottom: 8,
+    fontFamily: 'Outfit-SemiBold',
   },
   previewStatValue: {
     fontSize: 20,
     fontWeight: '700',
     color: PrimaryBlue,
+    fontFamily: 'Outfit-Bold',
   },
   previewStatDate: {
     fontSize: 16,
     fontWeight: '600',
     color: '#111827',
+    fontFamily: 'Outfit-SemiBold',
   },
   previewStory: {
     marginBottom: 24,
@@ -1575,10 +1610,12 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     textTransform: 'uppercase',
     marginBottom: 8,
+    fontFamily: 'Outfit-Medium',
   },
   previewStoryText: {
     fontSize: 14,
     color: '#111827',
+    fontFamily: 'Outfit-Regular',
   },
   previewNonprofits: {
     marginBottom: 16,
@@ -1589,6 +1626,7 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     textTransform: 'uppercase',
     marginBottom: 12,
+    fontFamily: 'Outfit-Medium',
   },
   previewNonprofitsList: {
     gap: 12,
@@ -1611,6 +1649,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
     color: '#FFFFFF',
+    fontFamily: 'Outfit-Bold',
   },
   previewNonprofitInfo: {
     flex: 1,
@@ -1620,10 +1659,12 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#111827',
     marginBottom: 4,
+    fontFamily: 'Outfit-Bold',
   },
   previewNonprofitCategory: {
     fontSize: 12,
     color: '#6B7280',
+    fontFamily: 'Outfit-Regular',
   },
   splitNote: {
     backgroundColor: '#FFFFFF',
@@ -1636,6 +1677,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#374151',
     textAlign: 'center',
+    fontFamily: 'Outfit-Medium',
   },
   footer: {
     flexDirection: 'row',
@@ -1661,6 +1703,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#374151',
     textAlign: 'center',
+    fontFamily: 'Outfit-Medium',
   },
   nextButton: {
     flex: 1,
@@ -1678,6 +1721,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#FFFFFF',
+    fontFamily: 'Outfit-SemiBold',
   },
   launchButton: {
     flex: 1,
@@ -1695,6 +1739,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#FFFFFF',
+    fontFamily: 'Outfit-SemiBold',
   },
   loadingContainer: {
     flex: 1,
@@ -1748,6 +1793,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '700',
     color: '#111827',
+    fontFamily: 'Outfit-Bold',
   },
   successDescription: {
     fontSize: 14,
@@ -1755,6 +1801,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 24,
     lineHeight: 20,
+    fontFamily: 'Outfit-Regular',
   },
   successBold: {
     fontWeight: '700',
@@ -1776,6 +1823,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#FFFFFF',
+    fontFamily: 'Outfit-SemiBold',
   },
   backToCollectiveButton: {
     paddingVertical: 12,
@@ -1790,6 +1838,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#111827',
+    fontFamily: 'Outfit-SemiBold',
   },
   shareButton: {
     flexDirection: 'row',
@@ -1802,6 +1851,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: PrimaryBlue,
+    fontFamily: 'Outfit-SemiBold',
   },
 });
 

@@ -107,7 +107,7 @@ export default function SimilarNonprofits({ similarCauses, isLoading, categoryNa
                 <AvatarImage src={cause.image} />
                 <AvatarFallback
                   style={{ backgroundColor: avatarBgColor }}
-                  textStyle={{ color: '#FFFFFF', fontSize: 20, fontWeight: '700' }}
+                  textStyle={{ color: '#FFFFFF', fontSize: 20, fontFamily: 'Outfit-Bold' }}
                 >
                   {firstLetter}
                 </AvatarFallback>
@@ -139,12 +139,12 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: 'Outfit-Bold',
     color: '#111827',
   },
   seeAllText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
     color: '#1600ff',
   },
   loadingContainer: {
@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
   },
   causeName: {
     fontSize: 14,
-    fontWeight: '700',
+    fontFamily: 'Outfit-Bold',
     color: '#111827',
     marginBottom: 4,
   },
@@ -183,6 +183,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#6B7280',
     lineHeight: 18,
+    fontFamily: 'Outfit-Regular',
   },
 });
 

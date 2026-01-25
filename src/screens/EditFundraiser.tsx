@@ -150,18 +150,18 @@ export default function EditFundraiser() {
       const apiStory = fundraiserData.description || '';
       const apiGoalAmount = fundraiserData.target_amount || '';
       const apiEndDate = fundraiserData.end_date ? new Date(fundraiserData.end_date) : null;
-      
+
       setCampaignTitle(apiTitle);
       setCampaignStory(apiStory);
       setGoalAmount(apiGoalAmount);
       setEndDate(apiEndDate);
-      
+
       // Store initial values
       setInitialTitle(apiTitle);
       setInitialStory(apiStory);
       setInitialGoalAmount(apiGoalAmount);
       setInitialEndDate(apiEndDate);
-      
+
       // Set cover type - prioritize color over image
       if (fundraiserData.color) {
         setCoverType('color');
@@ -190,13 +190,13 @@ export default function EditFundraiser() {
 
   // Check if fundraiser has received donations
   const hasDonations = fundraiserData && parseFloat(fundraiserData.current_amount || '0') > 0;
-  
+
   // Calculate days left
   const daysLeft = endDate
     ? Math.max(0, differenceInDays(endDate, new Date()))
     : fundraiserData?.end_date
-    ? Math.max(0, differenceInDays(new Date(fundraiserData.end_date), new Date()))
-    : 0;
+      ? Math.max(0, differenceInDays(new Date(fundraiserData.end_date), new Date()))
+      : 0;
 
   // Update fundraiser mutation
   const updateFundraiserMutation = useMutation({
@@ -314,17 +314,17 @@ export default function EditFundraiser() {
     const hasNewImage = coverType === 'image' && uploadedCoverImageFile !== null;
     const colorChanged = coverType === 'color' && coverColor !== initialCoverColor;
     const coverTypeChanged = coverType !== initialCoverType;
-    
+
     const coverRemoved = (initialCoverType === 'image' || initialCoverType === 'color') && coverType === 'none';
-    const coverSwitched = (initialCoverType === 'image' && coverType === 'color') || 
-                          (initialCoverType === 'color' && coverType === 'image');
+    const coverSwitched = (initialCoverType === 'image' && coverType === 'color') ||
+      (initialCoverType === 'color' && coverType === 'image');
 
     const endDateISO = endDate ? endDate.toISOString() : '';
 
     // Use FormData if there's a new image upload, otherwise use JSON
     if (hasNewImage) {
       const formData = new FormData();
-      
+
       if (titleChanged) {
         formData.append('name', campaignTitle.trim());
       }
@@ -342,21 +342,21 @@ export default function EditFundraiser() {
           formData.append('cause_ids', causeId.toString());
         });
       }
-      
+
       formData.append('image_file', {
         uri: uploadedCoverImageFile.uri,
         type: uploadedCoverImageFile.type || 'image/jpeg',
         name: uploadedCoverImageFile.fileName || 'image.jpg',
       } as any);
-      
+
       if (coverTypeChanged || coverSwitched) {
         formData.append('color', '');
       }
-      
+
       updateFundraiserMutation.mutate(formData);
     } else {
       const updateData: any = {};
-      
+
       if (titleChanged) {
         updateData.name = campaignTitle.trim();
       }
@@ -372,7 +372,7 @@ export default function EditFundraiser() {
       if (nonprofitsChanged) {
         updateData.cause_ids = selectedNonprofits;
       }
-      
+
       if (coverType === 'image' && coverTypeChanged) {
         updateData.color = '';
       } else if (coverType === 'color' && (colorChanged || coverTypeChanged)) {
@@ -384,7 +384,7 @@ export default function EditFundraiser() {
         updateData.image = null;
         updateData.color = null;
       }
-      
+
       if (Object.keys(updateData).length > 0) {
         updateFundraiserMutation.mutate(updateData);
       } else {
@@ -463,7 +463,7 @@ export default function EditFundraiser() {
   }
 
   // Get available nonprofits to add (exclude already selected ones)
-  const availableNonprofits = causesData?.results?.filter((cause: any) => 
+  const availableNonprofits = causesData?.results?.filter((cause: any) =>
     !selectedNonprofits.includes(cause.id)
   ) || [];
 
@@ -521,7 +521,7 @@ export default function EditFundraiser() {
           {/* Campaign Details */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Campaign Details</Text>
-            
+
             {/* Campaign Title */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Campaign Title</Text>
@@ -612,7 +612,7 @@ export default function EditFundraiser() {
           {/* Cover Design */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Cover Design</Text>
-            
+
             {/* Type Selection Buttons */}
             <View style={styles.coverTypeRow}>
               <TouchableOpacity
@@ -655,7 +655,7 @@ export default function EditFundraiser() {
                     />
                   ))}
                 </View>
-                
+
                 {/* Color Preview Box */}
                 <View style={[styles.previewBox, { backgroundColor: coverColor }]}>
                   <Text style={styles.previewText}>
@@ -747,7 +747,7 @@ export default function EditFundraiser() {
             {/* Add More Nonprofits */}
             <View>
               <Text style={styles.subsectionTitle}>Add More Nonprofits</Text>
-              
+
               {/* Search Bar */}
               <View style={styles.searchContainer}>
                 <Search size={18} color="#9CA3AF" style={styles.searchIcon} />
@@ -865,7 +865,7 @@ export default function EditFundraiser() {
               <Text style={styles.modalDescription}>
                 Choose how much time to add to your campaign. Current end date: {formatDate(endDate)}
               </Text>
-              
+
               <View style={styles.extendOptions}>
                 <TouchableOpacity
                   onPress={() => handleExtendByWeek(1)}
@@ -940,12 +940,14 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#111827',
     marginBottom: 8,
+    fontFamily: 'Outfit-SemiBold',
   },
   errorText: {
     fontSize: 14,
     color: '#6B7280',
     textAlign: 'center',
     marginBottom: 24,
+    fontFamily: 'Outfit-Regular',
   },
   backButton: {
     paddingHorizontal: 24,
@@ -957,6 +959,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#111827',
+    fontFamily: 'Outfit-SemiBold',
   },
   header: {
     flexDirection: 'row',
@@ -980,6 +983,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#111827',
     textAlign: 'center',
+    fontFamily: 'Outfit-Bold',
   },
   headerSpacer: {
     width: 40,
@@ -1008,10 +1012,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: PrimaryBlue,
     marginBottom: 4,
+    fontFamily: 'Outfit-Bold',
   },
   amountGoal: {
     fontSize: 14,
     color: '#374151',
+    fontFamily: 'Outfit-Regular',
   },
   donorsColumn: {
     alignItems: 'flex-end',
@@ -1021,10 +1027,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#111827',
     marginBottom: 4,
+    fontFamily: 'Outfit-Bold',
   },
   donorsLabel: {
     fontSize: 14,
     color: '#374151',
+    fontFamily: 'Outfit-Regular',
   },
   infoBox: {
     flexDirection: 'row',
@@ -1038,6 +1046,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 12,
     color: '#1E40AF',
+    fontFamily: 'Outfit-Regular',
   },
   section: {
     backgroundColor: '#FFFFFF',
@@ -1051,11 +1060,13 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#111827',
     marginBottom: 16,
+    fontFamily: 'Outfit-Bold',
   },
   sectionSubtitle: {
     fontSize: 14,
     color: '#6B7280',
     marginBottom: 16,
+    fontFamily: 'Outfit-Regular',
   },
   inputGroup: {
     marginBottom: 20,
@@ -1065,6 +1076,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#111827',
     marginBottom: 8,
+    fontFamily: 'Outfit-SemiBold',
   },
   input: {
     borderWidth: 1,
@@ -1075,6 +1087,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#111827',
     backgroundColor: '#FFFFFF',
+    fontFamily: 'Outfit-Regular',
   },
   textArea: {
     minHeight: 120,
@@ -1092,6 +1105,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#6B7280',
     zIndex: 1,
+    fontFamily: 'Outfit-Medium',
   },
   amountInput: {
     paddingLeft: 32,
@@ -1111,11 +1125,13 @@ const styles = StyleSheet.create({
   disabledText: {
     fontSize: 12,
     color: '#6B7280',
+    fontFamily: 'Outfit-Regular',
   },
   helperText: {
     fontSize: 12,
     color: '#6B7280',
     marginTop: 4,
+    fontFamily: 'Outfit-Regular',
   },
   dateRow: {
     flexDirection: 'row',
@@ -1133,6 +1149,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#6B7280',
     marginTop: 4,
+    fontFamily: 'Outfit-Regular',
   },
   extendButton: {
     flexDirection: 'row',
@@ -1147,6 +1164,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#FFFFFF',
+    fontFamily: 'Outfit-SemiBold',
   },
   coverTypeRow: {
     flexDirection: 'row',
@@ -1173,6 +1191,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     color: '#374151',
+    fontFamily: 'Outfit-Medium',
   },
   coverTypeTextActive: {
     color: '#FFFFFF',
@@ -1182,6 +1201,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#111827',
     marginBottom: 12,
+    fontFamily: 'Outfit-SemiBold',
   },
   colorSwatches: {
     flexDirection: 'row',
@@ -1211,6 +1231,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#FFFFFF',
     opacity: 0.5,
+    fontFamily: 'Outfit-Bold',
   },
   imagePreviewContainer: {
     position: 'relative',
@@ -1255,10 +1276,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     color: '#6B7280',
+    fontFamily: 'Outfit-Medium',
   },
   uploadSubtext: {
     fontSize: 12,
     color: '#9CA3AF',
+    fontFamily: 'Outfit-Regular',
   },
   selectedSection: {
     marginBottom: 24,
@@ -1294,10 +1317,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#111827',
     marginBottom: 2,
+    fontFamily: 'Outfit-Bold',
   },
   nonprofitDescription: {
     fontSize: 12,
     color: '#6B7280',
+    fontFamily: 'Outfit-Regular',
   },
   nonprofitActions: {
     flexDirection: 'row',
@@ -1314,6 +1339,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '500',
     color: '#1E40AF',
+    fontFamily: 'Outfit-Medium',
   },
   removeButton: {
     padding: 4,
@@ -1342,6 +1368,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#111827',
     paddingVertical: 12,
+    fontFamily: 'Outfit-Regular',
   },
   filterScroll: {
     marginBottom: 16,
@@ -1363,6 +1390,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '500',
     color: '#374151',
+    fontFamily: 'Outfit-Medium',
   },
   filterButtonTextActive: {
     color: '#FFFFFF',
@@ -1378,6 +1406,7 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 14,
     color: '#6B7280',
+    fontFamily: 'Outfit-Regular',
   },
   footerSpacer: {
     height: 20,
@@ -1413,6 +1442,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#FFFFFF',
+    fontFamily: 'Outfit-SemiBold',
   },
   modalOverlay: {
     flex: 1,
@@ -1431,11 +1461,13 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#111827',
     marginBottom: 8,
+    fontFamily: 'Outfit-Bold',
   },
   modalDescription: {
     fontSize: 14,
     color: '#6B7280',
     marginBottom: 24,
+    fontFamily: 'Outfit-Regular',
   },
   extendOptions: {
     gap: 12,
@@ -1452,10 +1484,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#111827',
     marginBottom: 4,
+    fontFamily: 'Outfit-SemiBold',
   },
   extendOptionDate: {
     fontSize: 14,
     color: '#6B7280',
+    fontFamily: 'Outfit-Regular',
   },
   cancelButton: {
     paddingVertical: 12,
@@ -1468,6 +1502,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
     color: PrimaryBlue,
+    fontFamily: 'Outfit-Medium',
   },
 });
 

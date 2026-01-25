@@ -501,12 +501,14 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#111827',
     marginBottom: 8,
+    fontFamily: 'Outfit-SemiBold',
   },
   errorText: {
     fontSize: 14,
     color: '#6B7280',
     textAlign: 'center',
     marginBottom: 24,
+    fontFamily: 'Outfit-Regular',
   },
   backButton: {
     paddingHorizontal: 24,
@@ -518,6 +520,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#111827',
+    fontFamily: 'Outfit-SemiBold',
   },
   scrollView: {
     flex: 1,
@@ -589,6 +592,7 @@ const styles = StyleSheet.create({
   dropdownText: {
     fontSize: 14,
     color: '#374151',
+    fontFamily: 'Outfit-Regular',
   },
   progressCard: {
     backgroundColor: '#FFFFFF',
@@ -611,10 +615,12 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: 'bold',
     color: PrimaryBlue,
+    fontFamily: 'Outfit-Bold',
   },
   amountGoal: {
     fontSize: 14,
     color: '#6B7280',
+    fontFamily: 'Outfit-Regular',
   },
   progressBarContainer: {
     width: '100%',
@@ -637,6 +643,7 @@ const styles = StyleSheet.create({
   progressText: {
     fontSize: 12,
     color: '#6B7280',
+    fontFamily: 'Outfit-Regular',
   },
   content: {
     paddingHorizontal: 16,
@@ -650,6 +657,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#111827',
     marginBottom: 12,
+    fontFamily: 'Outfit-Bold',
   },
   collectiveTag: {
     alignSelf: 'flex-start',
@@ -662,6 +670,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '500',
     color: PrimaryBlue,
+    fontFamily: 'Outfit-Medium',
   },
   statsRow: {
     flexDirection: 'row',
@@ -686,11 +695,13 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#6B7280',
     fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
   },
   statValue: {
     fontSize: 20,
     fontWeight: 'bold',
     color: '#111827',
+    fontFamily: 'Outfit-Bold',
   },
   section: {
     marginBottom: 32,
@@ -700,16 +711,19 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#111827',
     marginBottom: 8,
+    fontFamily: 'Outfit-Bold',
   },
   sectionSubtitle: {
     fontSize: 14,
     color: '#6B7280',
     marginBottom: 16,
+    fontFamily: 'Outfit-Regular',
   },
   storyText: {
     fontSize: 14,
     color: '#374151',
     lineHeight: 22,
+    fontFamily: 'Outfit-Regular',
   },
   organizedByCard: {
     flexDirection: 'row',
@@ -729,10 +743,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#111827',
     marginBottom: 4,
+    fontFamily: 'Outfit-Bold',
   },
   organizedByMembers: {
     fontSize: 12,
     color: '#6B7280',
+    fontFamily: 'Outfit-Regular',
   },
   causesList: {
     gap: 12,
@@ -754,6 +770,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#111827',
+    fontFamily: 'Outfit-Bold',
   },
   supportersList: {
     gap: 12,
@@ -776,15 +793,18 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#111827',
     marginBottom: 4,
+    fontFamily: 'Outfit-Bold',
   },
   supporterDate: {
     fontSize: 12,
     color: '#6B7280',
+    fontFamily: 'Outfit-Regular',
   },
   supporterAmount: {
     fontSize: 16,
     fontWeight: 'bold',
     color: PrimaryBlue,
+    fontFamily: 'Outfit-Bold',
   },
   footerSpacer: {
     height: 20,
@@ -826,12 +846,14 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#6B7280',
     marginRight: 4,
+    fontFamily: 'Outfit-Medium',
   },
   donationInput: {
     flex: 1,
     fontSize: 16,
     color: '#111827',
     padding: 0,
+    fontFamily: 'Outfit-Regular',
   },
   donateButton: {
     backgroundColor: PrimaryBlue,
@@ -850,6 +872,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#FFFFFF',
+    fontFamily: 'Outfit-SemiBold',
   },
 });
 

@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    fontWeight: '700',
+    fontFamily: 'Outfit-Bold',
     color: '#111827',
     marginBottom: 16,
   },
@@ -220,15 +220,16 @@ const styles = StyleSheet.create({
   },
   iconLetter: {
     color: 'white',
+    color: 'white',
     fontSize: 20,
-    fontWeight: '700',
+    fontFamily: 'Outfit-Bold',
   },
   contentContainer: {
     flex: 1,
     minWidth: 0,
   },
   name: {
-    fontWeight: '700',
+    fontFamily: 'Outfit-Bold',
     fontSize: 16,
     color: '#000000',
     marginBottom: 8,
@@ -238,6 +239,7 @@ const styles = StyleSheet.create({
     color: '#374151',
     marginBottom: 12,
     lineHeight: 20,
+    fontFamily: 'Outfit-Regular',
   },
   founderRow: {
     flexDirection: 'row',
@@ -250,7 +252,7 @@ const styles = StyleSheet.create({
     color: '#6b7280',
   },
   founderName: {
-    fontWeight: '600',
+    fontFamily: 'Outfit-SemiBold',
   },
   nonprofitCount: {
     fontSize: 12,
@@ -270,7 +272,7 @@ const styles = StyleSheet.create({
   browseButtonText: {
     color: '#1600ff',
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: 'Outfit-SemiBold',
   },
 });
 

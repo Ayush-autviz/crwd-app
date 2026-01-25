@@ -31,7 +31,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: 'Outfit-Bold',
     color: '#111827',
     marginBottom: 12,
   },
@@ -39,6 +39,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#111827',
     lineHeight: 20,
+    fontFamily: 'Outfit-Regular',
   },
 });
 

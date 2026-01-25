@@ -479,7 +479,8 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: '700',
+    fontSize: 18,
+    fontFamily: 'Outfit-Bold',
     color: '#111827',
     marginBottom: 3,
   },
@@ -487,6 +488,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#6B7280',
     lineHeight: 15,
+    fontFamily: 'Outfit-Regular',
   },
   closeButton: {
     padding: 6,
@@ -506,7 +508,8 @@ const styles = StyleSheet.create({
   },
   capacityErrorText: {
     fontSize: 12,
-    fontWeight: '500',
+    fontSize: 12,
+    fontFamily: 'Outfit-Medium',
     color: '#991B1B',
   },
   selectAllButton: {
@@ -545,12 +548,13 @@ const styles = StyleSheet.create({
   },
   selectAllText: {
     fontSize: 13,
-    fontWeight: '500',
+    fontSize: 13,
+    fontFamily: 'Outfit-Medium',
     color: '#111827',
   },
   selectAllCount: {
     fontSize: 13,
-    fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
     color: PrimaryBlue,
   },
   nonprofitsList: {
@@ -584,7 +588,8 @@ const styles = StyleSheet.create({
   },
   nonprofitAvatarText: {
     fontSize: 16,
-    fontWeight: '700',
+    fontSize: 16,
+    fontFamily: 'Outfit-Bold',
     color: '#FFFFFF',
   },
   nonprofitInfo: {
@@ -593,13 +598,15 @@ const styles = StyleSheet.create({
   },
   nonprofitName: {
     fontSize: 13,
-    fontWeight: '600',
+    fontSize: 13,
+    fontFamily: 'Outfit-SemiBold',
     color: '#111827',
   },
   nonprofitSubtext: {
     fontSize: 11,
     color: '#6B7280',
     marginTop: 2,
+    fontFamily: 'Outfit-Regular',
   },
   nonprofitSubtextRed: {
     fontSize: 11,
@@ -618,6 +625,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#854D0E',
     lineHeight: 16,
+    fontFamily: 'Outfit-Regular',
   },
   footer: {
     paddingHorizontal: 14,
@@ -642,7 +650,7 @@ const styles = StyleSheet.create({
   },
   primaryButtonText: {
     fontSize: 15,
-    fontWeight: '600',
+    fontFamily: 'Outfit-Bold',
     color: '#FFFFFF',
   },
   secondaryButton: {
@@ -653,7 +661,7 @@ const styles = StyleSheet.create({
   },
   secondaryButtonText: {
     fontSize: 13,
-    fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
     color: '#374151',
   },
 });

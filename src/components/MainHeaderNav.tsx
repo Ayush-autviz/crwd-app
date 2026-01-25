@@ -31,40 +31,40 @@ export default function MainHeaderNav({ show = false, menu = true, postButton = 
         <SafeAreaView style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderBottomWidth: 2, borderBottomColor: LightGrey, height: 60 }}>
             <View style={{ flexDirection: 'row', gap: 10, marginLeft: 20 }}>
                 {show &&
-                <TouchableOpacity disabled={!show} onPress={() => navigation.goBack()} style={{marginTop: 1}}>
-                    <ChevronLeft color={show ? '#000' : '#fff'} />
-                </TouchableOpacity>
-}
-                
-                {title && <Text style={{fontSize: 20, fontWeight: 600}}>{title}</Text>}
+                    <TouchableOpacity disabled={!show} onPress={() => navigation.goBack()} style={{ marginTop: 1 }}>
+                        <ChevronLeft color={show ? '#000' : '#fff'} />
+                    </TouchableOpacity>
+                }
+
+                {title && <Text style={{ fontSize: 20, fontFamily: 'Outfit-SemiBold' }}>{title}</Text>}
                 {/* <TouchableOpacity>
                         <AlignJustify color="#fff" />
                     </TouchableOpacity> */}
-                
+
 
             </View>
             {/* <Image source={require('../assets/logo/logo3.webp')} style={{ resizeMode: 'center', width: imageWidth }} /> */}
             {/* <Image source={require('../assets/logo/main.png')} style={{ resizeMode: 'contain', width: 70, height: 60 }} /> */}
-            
+
             <View style={{ flexDirection: 'row', gap: 10, marginRight: 20 }}>
-                    {/* <TouchableOpacity onPress={handlePostPress} disabled={!post}>
+                {/* <TouchableOpacity onPress={handlePostPress} disabled={!post}>
                         <Plus color={post ? '#000' : '#fff'} />
                     </TouchableOpacity> */}
-                    {postButton &&
-                       <TouchableOpacity
-                       onPress={() => navigation.navigate('Post' as never)}
-                       style={{ padding: 8, backgroundColor: '#E5E7EB', borderRadius: 8 }}
-                   >
-                       <Text style={{ fontSize: 14,}}>Post Something</Text>
-                   </TouchableOpacity>
-                    }
-                
-            {menu &&
-             <TouchableOpacity onPress={handleMenuPress} disabled={!menu}>
+                {postButton &&
+                    <TouchableOpacity
+                        onPress={() => navigation.navigate('Post' as never)}
+                        style={{ padding: 8, backgroundColor: '#E5E7EB', borderRadius: 8 }}
+                    >
+                        <Text style={{ fontSize: 14, }}>Post Something</Text>
+                    </TouchableOpacity>
+                }
+
+                {menu &&
+                    <TouchableOpacity onPress={handleMenuPress} disabled={!menu}>
                         <AlignJustify color={menu ? '#000' : '#fff'} />
                     </TouchableOpacity>
-                
-            }
+
+                }
 
 
 

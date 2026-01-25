@@ -95,7 +95,7 @@ export default function SupportedNonprofits({
                 <AvatarImage src={image} />
                 <AvatarFallback
                   style={{ backgroundColor: iconColor }}
-                  textStyle={{ color: '#FFFFFF', fontSize: 14, fontWeight: '600' }}
+                  textStyle={{ color: '#FFFFFF', fontSize: 14, fontFamily: 'Outfit-SemiBold' }}
                 >
                   {name.charAt(0).toUpperCase()}
                 </AvatarFallback>
@@ -135,12 +135,13 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    fontWeight: '700',
+    fontSize: 18,
+    fontFamily: 'Outfit-Bold',
     color: '#111827',
   },
   seeAllText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: 'Outfit-Medium',
     color: '#1600ff',
   },
   loadingContainer: {
@@ -175,7 +176,8 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 12,
-    fontWeight: '700',
+    fontSize: 12,
+    fontFamily: 'Outfit-Bold',
     color: '#111827',
     marginBottom: 4,
   },
@@ -183,6 +185,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#4B5563',
     lineHeight: 16,
+    fontFamily: 'Outfit-Regular',
   },
 });
 

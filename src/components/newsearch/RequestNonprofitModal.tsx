@@ -70,15 +70,15 @@ export default function RequestNonprofitModal({
         ein_number: ein.trim(),
         description: reason.trim() || 'No reason provided',
       });
-      
+
       // Reset form first
       setNonprofitName('');
       setEin('');
       setReason('');
-      
+
       // Close modal first
       onClose();
-      
+
       // Show success toast after modal closes
       setTimeout(() => {
         showToast('Request submitted successfully!', 3000);
@@ -230,6 +230,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '700',
     color: '#111827',
+    fontFamily: 'Outfit-Bold',
   },
   closeButton: {
     padding: 8,
@@ -247,10 +248,12 @@ const styles = StyleSheet.create({
     color: '#374151',
     lineHeight: 20,
     marginBottom: 16,
+    fontFamily: 'Outfit-Regular',
   },
   highlight: {
     color: '#1600ff',
     fontWeight: '600',
+    fontFamily: 'Outfit-SemiBold',
   },
   inputGroup: {
     marginBottom: 16,
@@ -260,6 +263,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#111827',
     marginBottom: 8,
+    fontFamily: 'Outfit-Medium',
   },
   input: {
     borderWidth: 1,
@@ -269,6 +273,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     fontSize: 14,
     backgroundColor: '#FFFFFF',
+    fontFamily: 'Outfit-Regular',
   },
   textArea: {
     height: 100,
@@ -291,6 +296,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#374151',
     fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
   },
   submitButton: {
     flexDirection: 'row',
@@ -308,6 +314,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     color: '#FFFFFF',
+    fontFamily: 'Outfit-Medium',
   },
 });
 

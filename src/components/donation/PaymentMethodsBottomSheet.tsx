@@ -90,7 +90,7 @@ export default function PaymentMethodsBottomSheet({
         }
 
         await updatePaymentMethod({ payment_method_id: paymentMethodId });
-        
+
         // Invalidate payment method query to refresh the UI
         queryClient.invalidateQueries({ queryKey: ['paymentMethod'] });
       }
@@ -247,10 +247,12 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#111827',
     marginBottom: 4,
+    fontFamily: 'Outfit-Bold',
   },
   subtitle: {
     fontSize: 14,
     color: '#6B7280',
+    fontFamily: 'Outfit-Regular',
   },
   closeButton: {
     padding: 8,
@@ -280,6 +282,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     color: '#FFFFFF',
+    fontFamily: 'Outfit-Medium',
   },
   methodsList: {
     gap: 16,
@@ -316,6 +319,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#111827',
+    fontFamily: 'Outfit-SemiBold',
   },
   defaultBadge: {
     backgroundColor: '#DBEAFE',
@@ -327,10 +331,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '500',
     color: '#1E40AF',
+    fontFamily: 'Outfit-Medium',
   },
   methodExpiry: {
     fontSize: 14,
     color: '#6B7280',
+    fontFamily: 'Outfit-Regular',
   },
   loadingCard: {
     flexDirection: 'row',
@@ -370,6 +376,7 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 14,
     color: '#6B7280',
+    fontFamily: 'Outfit-Regular',
   },
   footer: {
     paddingHorizontal: 24,
@@ -384,5 +391,6 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     textAlign: 'center',
     lineHeight: 16,
+    fontFamily: 'Outfit-Regular',
   },
 });

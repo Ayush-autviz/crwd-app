@@ -1592,6 +1592,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     color: '#111827',
+    fontFamily: 'Outfit-Bold',
   },
   headerSpacer: {
     width: 32,
@@ -1600,11 +1601,13 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: '#374151',
     fontWeight: 'bold',
+    fontFamily: 'Outfit-Bold',
   },
   minusIcon: {
     fontSize: 20,
     color: '#6b7280',
     fontWeight: 'bold',
+    fontFamily: 'Outfit-Bold',
   },
   minusIconWhite: {
     color: '#ffffff',
@@ -1634,6 +1637,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     color: '#6b7280',
+    fontFamily: 'Outfit-Medium',
   },
   activeTabText: {
     color: '#ffffff',
@@ -1661,11 +1665,13 @@ const styles = StyleSheet.create({
     color: '#1600ff',
     marginBottom: 8,
     textAlign: 'center',
+    fontFamily: 'Outfit-Bold',
   },
   step1Subtitle: {
     fontSize: 12,
     color: '#6b7280',
     textAlign: 'center',
+    fontFamily: 'Outfit-Regular',
   },
   amountCard: {
     backgroundColor: '#ffffff',
@@ -1688,12 +1694,14 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#1f2937',
     marginBottom: 12,
+    fontFamily: 'Outfit-Bold',
   },
   amountCardDescription: {
     fontSize: 14,
     color: '#6b7280',
     lineHeight: 20,
     marginBottom: 24,
+    fontFamily: 'Outfit-Regular',
   },
   amountSelectorContainer: {
     flexDirection: 'row',
@@ -1721,6 +1729,7 @@ const styles = StyleSheet.create({
     color: '#111827',
     textAlign: 'center',
     marginBottom: 24,
+    fontFamily: 'Outfit-Bold',
   },
   amountDisplay: {
     alignItems: 'center',
@@ -1731,10 +1740,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#1600ff',
     marginBottom: 4,
+    fontFamily: 'Outfit-Bold',
   },
   amountLabel: {
     fontSize: 18,
     color: '#6b7280',
+    fontFamily: 'Outfit-Regular',
   },
   organizationsCard: {
     backgroundColor: '#ffffff',
@@ -1757,6 +1768,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#1f2937',
     marginBottom: 16,
+    fontFamily: 'Outfit-Bold',
   },
   organizationsList: {
     gap: 16,
@@ -1785,6 +1797,7 @@ const styles = StyleSheet.create({
   orgAvatarText: {
     fontSize: 18,
     fontWeight: '600',
+    fontFamily: 'Outfit-SemiBold',
   },
   orgInfo: {
     flex: 1,
@@ -1794,10 +1807,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#1f2937',
     marginBottom: 4,
+    fontFamily: 'Outfit-SemiBold',
   },
   orgDescription: {
     fontSize: 14,
     color: '#6b7280',
+    fontFamily: 'Outfit-Regular',
   },
   checkbox: {
     width: 24,
@@ -1816,6 +1831,7 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 14,
     fontWeight: 'bold',
+    fontFamily: 'Outfit-Bold',
   },
   relatedSection: {
     marginTop: 24,
@@ -1825,6 +1841,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#1f2937',
     marginBottom: 16,
+    fontFamily: 'Outfit-SemiBold',
   },
   selectedSection: {
     marginBottom: 24,
@@ -1834,6 +1851,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#111827',
     marginBottom: 16,
+    fontFamily: 'Outfit-Bold',
   },
   selectedCard: {
     backgroundColor: '#ffffff',
@@ -1848,6 +1866,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#111827',
     marginBottom: 12,
+    fontFamily: 'Outfit-Bold',
   },
   selectedItemRow: {
     flexDirection: 'row',
@@ -1882,10 +1901,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#1f2937',
     marginBottom: 4,
+    fontFamily: 'Outfit-SemiBold',
   },
   summaryCount: {
     fontSize: 14,
     color: '#6b7280',
+    fontFamily: 'Outfit-Regular',
   },
   nextSection: {
     flexDirection: 'row',
@@ -1895,6 +1916,7 @@ const styles = StyleSheet.create({
   nextText: {
     fontSize: 16,
     color: '#6b7280',
+    fontFamily: 'Outfit-Regular',
   },
   nextButton: {
     backgroundColor: PrimaryBlue,
@@ -1909,6 +1931,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#ffffff',
+    fontFamily: 'Outfit-SemiBold',
   },
   nextButtonIcon: {
     fontSize: 16,
@@ -1924,6 +1947,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#ffffff',
+    fontFamily: 'Outfit-SemiBold',
   },
   footer: {
     backgroundColor: '#ffffff',
@@ -1944,6 +1968,7 @@ const styles = StyleSheet.create({
   selectedCount: {
     fontSize: 16,
     color: '#6b7280',
+    fontFamily: 'Outfit-Regular',
   },
   donateButton: {
     backgroundColor: '#2563eb',
@@ -1955,6 +1980,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: '#ffffff',
+    fontFamily: 'Outfit-SemiBold',
   },
   manageButton: {
     backgroundColor: '#ffffff',
@@ -1970,6 +1996,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
     color: '#2563eb',
+    fontFamily: 'Outfit-Medium',
   },
   loaderOverlay: {
     flex: 1,
@@ -1989,6 +2016,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
     color: '#111827',
+    fontFamily: 'Outfit-Medium',
   },
   // New styles for updated UI
   capacityCard: {
@@ -2007,11 +2035,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     color: '#1600ff',
+    fontFamily: 'Outfit-Bold',
   },
   capacityCount: {
     fontSize: 12,
     fontWeight: '500',
     color: '#1600ff',
+    fontFamily: 'Outfit-Medium',
   },
   progressBarContainer: {
     width: '100%',
@@ -2029,6 +2059,7 @@ const styles = StyleSheet.create({
   capacityText: {
     fontSize: 12,
     color: '#1600ff',
+    fontFamily: 'Outfit-Regular',
   },
   selectedCausesSection: {
     marginBottom: 24,
@@ -2043,11 +2074,13 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#111827',
+    fontFamily: 'Outfit-Bold',
   },
   selectedCausesSubtitle: {
     fontSize: 12,
     color: '#6b7280',
     marginTop: 4,
+    fontFamily: 'Outfit-Regular',
   },
   selectedCausesBadge: {
     width: 32,
@@ -2061,6 +2094,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 14,
     fontWeight: 'bold',
+    fontFamily: 'Outfit-Bold',
   },
   selectedCausesList: {
     gap: 12,
@@ -2087,6 +2121,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
+    fontFamily: 'Outfit-Bold',
   },
   selectedCauseInfo: {
     flex: 1,
@@ -2097,10 +2132,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#111827',
     marginBottom: 4,
+    fontFamily: 'Outfit-Bold',
   },
   selectedCauseDescription: {
     fontSize: 12,
     color: '#6b7280',
+    fontFamily: 'Outfit-Regular',
   },
   removeCauseButton: {
     padding: 8,
@@ -2113,6 +2150,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#111827',
     marginBottom: 12,
+    fontFamily: 'Outfit-Bold',
   },
   searchBarContainer: {
     marginBottom: 12,
@@ -2134,6 +2172,7 @@ const styles = StyleSheet.create({
     height: 40,
     fontSize: 14,
     color: '#111827',
+    fontFamily: 'Outfit-Regular',
   },
   requestLinkContainer: {
     alignItems: 'center',
@@ -2144,6 +2183,7 @@ const styles = StyleSheet.create({
     color: '#1600ff',
     textDecorationLine: 'underline',
     fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
   },
   causesList: {
     gap: 12,
@@ -2169,6 +2209,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
+    fontFamily: 'Outfit-Bold',
   },
   causeInfo: {
     flex: 1,
@@ -2179,10 +2220,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#111827',
     marginBottom: 4,
+    fontFamily: 'Outfit-Bold',
   },
   causeDescription: {
     fontSize: 12,
     color: '#6b7280',
+    fontFamily: 'Outfit-Regular',
   },
   addCauseButton: {
     width: 32,
@@ -2195,6 +2238,7 @@ const styles = StyleSheet.create({
   noCausesText: {
     color: '#6b7280',
     textAlign: 'center',
+    fontFamily: 'Outfit-Regular',
   },
   step2Content: {
     padding: 16,
@@ -2215,10 +2259,12 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#111827',
     marginBottom: 4,
+    fontFamily: 'Outfit-Bold',
   },
   currentlySupportingSubtitle: {
     fontSize: 14,
     color: '#6b7280',
+    fontFamily: 'Outfit-Regular',
   },
   causesListContainer: {
     gap: 10,
@@ -2249,6 +2295,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
     color: '#ffffff',
+    fontFamily: 'Outfit-Bold',
   },
   causeInfoStep2: {
     flex: 1,
@@ -2259,10 +2306,12 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#111827',
     marginBottom: 4,
+    fontFamily: 'Outfit-Bold',
   },
   causeDescriptionStep2: {
     fontSize: 12,
     color: '#6b7280',
+    fontFamily: 'Outfit-Regular',
   },
   causeActionsStep2: {
     flexDirection: 'row',
@@ -2276,10 +2325,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: '#111827',
+    fontFamily: 'Outfit-Bold',
   },
   amountPerMonthStep2: {
     fontSize: 12,
     color: '#6b7280',
+    fontFamily: 'Outfit-Regular',
   },
   noCausesContainer: {
     alignItems: 'center',
@@ -2320,6 +2371,7 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 16,
     fontWeight: '600',
+    fontFamily: 'Outfit-SemiBold',
   },
   trashButtonStep2: {
     padding: 8,
@@ -2358,15 +2410,18 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#111827',
     marginBottom: 12,
+    fontFamily: 'Outfit-Bold',
   },
   deleteModalDescription: {
     fontSize: 14,
     color: '#4b5563',
     lineHeight: 20,
+    fontFamily: 'Outfit-Regular',
   },
   deleteModalBold: {
     fontWeight: '600',
     color: '#111827',
+    fontFamily: 'Outfit-SemiBold',
   },
   deleteModalFooter: {
     flexDirection: 'row',
@@ -2385,6 +2440,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#111827',
+    fontFamily: 'Outfit-SemiBold',
   },
   deleteModalConfirmButton: {
     flex: 1,
@@ -2399,6 +2455,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#FFFFFF',
+    fontFamily: 'Outfit-SemiBold',
   },
   deleteModalButtonDisabled: {
     opacity: 0.5,
@@ -2416,6 +2473,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '500',
     color: '#374151',
+    fontFamily: 'Outfit-Medium',
   },
   editActions: {
     flexDirection: 'row',
@@ -2433,6 +2491,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     color: '#4b5563',
+    fontFamily: 'Outfit-Medium',
   },
   saveButton: {
     paddingVertical: 8,
@@ -2444,9 +2503,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     color: '#ffffff',
+    fontFamily: 'Outfit-Medium',
   },
   causeDesc: {
     fontSize: 13,
     color: '#6b7280',
+    fontFamily: 'Outfit-Regular',
   },
 });

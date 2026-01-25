@@ -151,7 +151,7 @@ const CauseCard = React.memo(({
       <Text style={styles.percentLabel}>percent</Text>
 
       {/* Slider */}
-      <View 
+      <View
         style={styles.sliderContainer}
         onTouchStart={(e) => e.stopPropagation()}
       >
@@ -253,10 +253,10 @@ export default function EditDonationSplitBottomSheet({
       const minPercentage = calculateMinPercentage();
       const initialPercentages: Record<number, number> = {};
       const initialInputs: Record<number, string> = {};
-      
+
       // Check if we have existing percentages from boxCauses
       const hasExistingPercentages = boxCauses.some((bc: any) => bc.percentage != null && bc.percentage !== undefined);
-      
+
       if (hasExistingPercentages) {
         // Use existing percentages, but ensure they're at least minimum
         causes.forEach((cause: any) => {
@@ -280,7 +280,7 @@ export default function EditDonationSplitBottomSheet({
           });
         }
       }
-      
+
       // Validate total is 100 and adjust if needed
       let total = causes.reduce((sum, cause) => sum + initialPercentages[cause.id], 0);
       if (Math.abs(total - 100) > 0.01) {
@@ -291,7 +291,7 @@ export default function EditDonationSplitBottomSheet({
           initialInputs[cause.id] = Math.max(minPercentage, adjusted).toFixed(2);
         });
       }
-      
+
       setPercentages(initialPercentages);
       setInputValues(initialInputs);
     }
@@ -313,7 +313,7 @@ export default function EditDonationSplitBottomSheet({
 
     const remainingPercentage = 100 - clampedNewPercentage;
     const currentTotalOthers = otherCauses.reduce((sum, cause) => sum + (percentages[cause.id] || 0), 0);
-    
+
     if (currentTotalOthers === 0) {
       const perOther = remainingPercentage / otherCount;
       if (perOther < minPercentage) {
@@ -333,10 +333,10 @@ export default function EditDonationSplitBottomSheet({
       }
     } else {
       let scaleFactor = remainingPercentage / currentTotalOthers;
-      
+
       const scaledValues: Record<number, number> = {};
       let needsAdjustment = false;
-      
+
       otherCauses.forEach((cause: any) => {
         const scaled = (percentages[cause.id] || 0) * scaleFactor;
         scaledValues[cause.id] = scaled;
@@ -344,7 +344,7 @@ export default function EditDonationSplitBottomSheet({
           needsAdjustment = true;
         }
       });
-      
+
       if (!needsAdjustment) {
         otherCauses.forEach((cause: any) => {
           newPercentages[cause.id] = scaledValues[cause.id];
@@ -354,7 +354,7 @@ export default function EditDonationSplitBottomSheet({
         let remainingAfterMin = remainingPercentage;
         const causesBelowMin: any[] = [];
         const causesAboveMin: any[] = [];
-        
+
         otherCauses.forEach((cause: any) => {
           if (scaledValues[cause.id] < minPercentage) {
             newPercentages[cause.id] = minPercentage;
@@ -365,7 +365,7 @@ export default function EditDonationSplitBottomSheet({
             causesAboveMin.push({ cause, originalValue: scaledValues[cause.id] });
           }
         });
-        
+
         if (causesAboveMin.length > 0 && remainingAfterMin > 0) {
           const totalOriginalAboveMin = causesAboveMin.reduce((sum, item) => sum + item.originalValue, 0);
           if (totalOriginalAboveMin > 0) {
@@ -377,12 +377,12 @@ export default function EditDonationSplitBottomSheet({
             });
           }
         }
-        
+
         let finalTotal = clampedNewPercentage;
         otherCauses.forEach((cause: any) => {
           finalTotal += newPercentages[cause.id];
         });
-        
+
         if (Math.abs(finalTotal - 100) > 0.01) {
           const adjustment = 100 - finalTotal;
           const newChangedValue = clampedNewPercentage + adjustment;
@@ -393,7 +393,7 @@ export default function EditDonationSplitBottomSheet({
         }
       }
     }
-    
+
     let finalTotal = 0;
     causes.forEach((cause: any) => {
       if (newPercentages[cause.id] < minPercentage) {
@@ -402,7 +402,7 @@ export default function EditDonationSplitBottomSheet({
       }
       finalTotal += newPercentages[cause.id];
     });
-    
+
     if (finalTotal > 100) {
       const excess = finalTotal - 100;
       const newChangedValue = newPercentages[changedId] - excess;
@@ -458,7 +458,7 @@ export default function EditDonationSplitBottomSheet({
     const equalPercentage = 100 / causes.length;
     const newPercentages: Record<number, number> = {};
     const newInputValues: Record<number, string> = {};
-    
+
     if (equalPercentage < minPercentage) {
       causes.forEach((cause: any) => {
         newPercentages[cause.id] = minPercentage;
@@ -470,7 +470,7 @@ export default function EditDonationSplitBottomSheet({
         newInputValues[cause.id] = equalPercentage.toFixed(2);
       });
     }
-    
+
     setPercentages(newPercentages);
     setInputValues(newInputValues);
   };
@@ -507,7 +507,7 @@ export default function EditDonationSplitBottomSheet({
       const boxCause = boxCauses?.find((bc: any) => bc.cause?.id === cause.id);
       let attributedCollective = null;
       if (boxCause?.attributed_collectives && Array.isArray(boxCause.attributed_collectives) && boxCause.attributed_collectives.length > 0) {
-        attributedCollective = typeof boxCause.attributed_collectives[0] === 'object' 
+        attributedCollective = typeof boxCause.attributed_collectives[0] === 'object'
           ? boxCause.attributed_collectives[0]?.id || boxCause.attributed_collectives[0]
           : boxCause.attributed_collectives[0];
       } else if (boxCause?.attributed_collective) {
@@ -515,19 +515,19 @@ export default function EditDonationSplitBottomSheet({
           ? boxCause.attributed_collective?.id || boxCause.attributed_collective
           : boxCause.attributed_collective;
       }
-      
+
       const causeData: any = {
         cause_id: cause.id,
         percentage: parseFloat(percentage.toFixed(2)),
       };
-      
-      if (attributedCollective !== null && 
-          attributedCollective !== undefined && 
-          attributedCollective !== 'manual' &&
-          attributedCollective !== 'Manual') {
+
+      if (attributedCollective !== null &&
+        attributedCollective !== undefined &&
+        attributedCollective !== 'manual' &&
+        attributedCollective !== 'Manual') {
         causeData.attributed_collective = attributedCollective;
       }
-      
+
       return causeData;
     });
 
@@ -568,8 +568,8 @@ export default function EditDonationSplitBottomSheet({
         </View>
 
         {/* Content */}
-        <BottomSheetScrollView 
-          style={styles.content} 
+        <BottomSheetScrollView
+          style={styles.content}
           contentContainerStyle={styles.contentContainer}
           keyboardShouldPersistTaps="handled"
         >
@@ -581,13 +581,13 @@ export default function EditDonationSplitBottomSheet({
                 </View>
               );
             }
-            
+
             return (
               <View style={styles.causesList}>
                 {causes.map((cause: any, index: number) => {
                   const percentage = percentages[cause.id] || 0;
                   const displayPercentage = draggingValues[cause.id] ?? percentage;
-                  
+
                   return (
                     <CauseCard
                       key={cause.id}
@@ -679,10 +679,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#111827',
     marginBottom: 2,
+    fontFamily: 'Outfit-Bold',
   },
   headerSubtitle: {
     fontSize: 12,
     color: '#6B7280',
+    fontFamily: 'Outfit-Regular',
   },
   closeButton: {
     padding: 4,
@@ -720,10 +722,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#111827',
     marginBottom: 2,
+    fontFamily: 'Outfit-Bold',
   },
   causeAmount: {
     fontSize: 11,
     color: '#6B7280',
+    fontFamily: 'Outfit-Regular',
   },
   controls: {
     flexDirection: 'row',
@@ -757,6 +761,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     paddingVertical: 6,
     backgroundColor: '#FFFFFF',
+    fontFamily: 'Outfit-SemiBold',
   },
   percentLabel: {
     fontSize: 9,
@@ -764,6 +769,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 4,
     marginBottom: 4,
+    fontFamily: 'Outfit-Regular',
   },
   sliderContainer: {
     marginTop: 6,
@@ -810,6 +816,7 @@ const styles = StyleSheet.create({
   resetButtonText: {
     fontSize: 11,
     color: '#6B7280',
+    fontFamily: 'Outfit-Regular',
   },
   footerButtons: {
     flexDirection: 'row',
@@ -827,6 +834,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#374151',
     fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
   },
   saveButton: {
     flex: 1,
@@ -842,6 +850,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#FFFFFF',
     fontWeight: '600',
+    fontFamily: 'Outfit-SemiBold',
   },
   emptyState: {
     paddingVertical: 40,
@@ -850,5 +859,6 @@ const styles = StyleSheet.create({
   emptyStateText: {
     fontSize: 14,
     color: '#6B7280',
+    fontFamily: 'Outfit-Regular',
   },
 });

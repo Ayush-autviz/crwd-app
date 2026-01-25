@@ -969,6 +969,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#6b7280',
     textAlign: 'center',
+    fontFamily: 'Outfit-Regular',
   },
   donationBoxCard: {
     backgroundColor: '#ffffff',
@@ -992,6 +993,7 @@ const styles = StyleSheet.create({
     color: '#111827',
     textAlign: 'center',
     marginBottom: 16,
+    fontFamily: 'Outfit-Bold',
   },
   amountSelectorContainer: {
     flexDirection: 'row',
@@ -1017,11 +1019,13 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: '700',
     color: PrimaryBlue,
+    fontFamily: 'Outfit-Bold',
   },
   amountLabel: {
     fontSize: 12,
     color: '#111827',
     marginTop: 4,
+    fontFamily: 'Outfit-Regular',
   },
   capacityCard: {
     backgroundColor: '#EFF6FF',
@@ -1038,11 +1042,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     color: PrimaryBlue,
+    fontFamily: 'Outfit-Bold',
   },
   capacityCount: {
     fontSize: 12,
     fontWeight: '500',
     color: PrimaryBlue,
+    fontFamily: 'Outfit-Medium',
   },
   progressBarContainer: {
     marginBottom: 8,
@@ -1062,6 +1068,7 @@ const styles = StyleSheet.create({
   capacityText: {
     fontSize: 12,
     color: PrimaryBlue,
+    fontFamily: 'Outfit-Regular',
   },
   selectedCausesSection: {
     marginBottom: 16,
@@ -1077,10 +1084,12 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#111827',
     marginBottom: 4,
+    fontFamily: 'Outfit-Bold',
   },
   selectedCausesSubtitle: {
     fontSize: 12,
     color: '#6b7280',
+    fontFamily: 'Outfit-Regular',
   },
   selectedCausesBadge: {
     width: 32,
@@ -1094,6 +1103,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
     color: '#ffffff',
+    fontFamily: 'Outfit-Bold',
   },
   selectedCausesList: {
     gap: 8,
@@ -1119,6 +1129,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
     color: '#ffffff',
+    fontFamily: 'Outfit-Bold',
   },
   selectedCauseInfo: {
     flex: 1,
@@ -1128,10 +1139,12 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#111827',
     marginBottom: 4,
+    fontFamily: 'Outfit-Bold',
   },
   selectedCauseDescription: {
     fontSize: 12,
     color: '#6b7280',
+    fontFamily: 'Outfit-Regular',
   },
   removeCauseButton: {
     padding: 8,
@@ -1144,6 +1157,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#111827',
     marginBottom: 12,
+    fontFamily: 'Outfit-Bold',
   },
   searchBarContainer: {
     marginBottom: 12,
@@ -1166,6 +1180,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#111827',
     paddingVertical: 12,
+    fontFamily: 'Outfit-Regular',
   },
   clearButton: {
     padding: 4,
@@ -1178,6 +1193,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: PrimaryBlue,
     textDecorationLine: 'underline',
+    fontFamily: 'Outfit-Regular',
   },
   causesList: {
     gap: 8,
@@ -1190,6 +1206,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontSize: 14,
     color: '#6b7280',
+    fontFamily: 'Outfit-Regular',
   },
   causeItem: {
     flexDirection: 'row',
@@ -1212,6 +1229,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
     color: '#ffffff',
+    fontFamily: 'Outfit-Bold',
   },
   causeInfo: {
     flex: 1,
@@ -1221,10 +1239,12 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#111827',
     marginBottom: 4,
+    fontFamily: 'Outfit-Bold',
   },
   causeDescription: {
     fontSize: 12,
     color: '#6b7280',
+    fontFamily: 'Outfit-Regular',
   },
   addCauseButton: {
     width: 32,
@@ -1238,6 +1258,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6b7280',
     textAlign: 'center',
+    fontFamily: 'Outfit-Regular',
   },
   footer: {
     backgroundColor: '#ffffff',
@@ -1272,6 +1293,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#ffffff',
+    fontFamily: 'Outfit-SemiBold',
   },
   tabContainer: {
     flexDirection: 'row',
@@ -1295,6 +1317,7 @@ const styles = StyleSheet.create({
   tabButtonText: {
     color: '#374151',
     fontWeight: '600',
+    fontFamily: 'Outfit-SemiBold',
   },
   tabButtonTextActive: {
     color: '#ffffff',
@@ -1330,6 +1353,7 @@ const styles = StyleSheet.create({
   orgAvatarText: {
     fontSize: 18,
     fontWeight: '600',
+    fontFamily: 'Outfit-SemiBold',
   },
   orgInfo: {
     flex: 1,
@@ -1339,10 +1363,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#1f2937',
     marginBottom: 4,
+    fontFamily: 'Outfit-SemiBold',
   },
   orgDescription: {
     fontSize: 14,
     color: '#6b7280',
+    fontFamily: 'Outfit-Regular',
   },
   checkbox: {
     width: 24,
@@ -1361,6 +1387,7 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 14,
     fontWeight: 'bold',
+    fontFamily: 'Outfit-Bold',
   },
   modalOverlay: {
     flex: 1,
@@ -1393,6 +1420,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#9ca3af',
     fontWeight: 'bold',
+    fontFamily: 'Outfit-Bold',
   },
   modalBody: {
     alignItems: 'center',
@@ -1403,12 +1431,14 @@ const styles = StyleSheet.create({
     color: '#111827',
     marginBottom: 8,
     textAlign: 'center',
+    fontFamily: 'Outfit-Bold',
   },
   modalDescription: {
     fontSize: 14,
     color: '#6B7280',
     marginBottom: 24,
     textAlign: 'center',
+    fontFamily: 'Outfit-Regular',
   },
   summaryCard: {
     backgroundColor: '#F3F4F6',
@@ -1432,6 +1462,7 @@ const styles = StyleSheet.create({
   },
   heartEmoji: {
     fontSize: 20,
+    fontFamily: 'Outfit-Regular',
   },
   summaryTextContainer: {
     flex: 1,
@@ -1441,10 +1472,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#111827',
     marginBottom: 4,
+    fontFamily: 'Outfit-SemiBold',
   },
   summaryCardAmount: {
     fontSize: 14,
     color: '#6B7280',
+    fontFamily: 'Outfit-Regular',
   },
   supportingText: {
     fontSize: 14,
@@ -1452,5 +1485,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 24,
     lineHeight: 20,
+    fontFamily: 'Outfit-Regular',
   },
 });

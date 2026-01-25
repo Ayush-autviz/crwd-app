@@ -69,6 +69,7 @@ const styles = StyleSheet.create({
     borderColor: '#D1D5DB',
     backgroundColor: '#FFFFFF',
     fontSize: 14,
+    fontFamily: 'Outfit-Regular',
   },
   clearButton: {
     position: 'absolute',

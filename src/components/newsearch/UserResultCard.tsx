@@ -149,10 +149,12 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#111827',
     marginBottom: 4,
+    fontFamily: 'Outfit-Bold',
   },
   bio: {
     fontSize: 12,
     color: '#4B5563',
+    fontFamily: 'Outfit-Regular',
   },
 });
 

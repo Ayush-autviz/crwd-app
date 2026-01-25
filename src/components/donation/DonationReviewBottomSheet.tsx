@@ -426,11 +426,13 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#111827',
     marginBottom: 4,
+    fontFamily: 'Outfit-Bold',
   },
   subtitle: {
     fontSize: 12,
     color: '#6B7280',
     lineHeight: 16,
+    fontFamily: 'Outfit-Regular',
   },
   closeButton: {
     padding: 8,
@@ -456,6 +458,7 @@ const styles = StyleSheet.create({
   summaryLabel: {
     fontSize: 12,
     color: '#6B7280',
+    fontFamily: 'Outfit-Regular',
   },
   summaryLabelRow: {
     flexDirection: 'row',
@@ -490,6 +493,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     // textAlign: 'center',
     lineHeight: 16,
+    fontFamily: 'Outfit-Regular',
   },
   tooltipArrow: {
     position: 'absolute',
@@ -508,6 +512,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#111827',
+    fontFamily: 'Outfit-SemiBold',
   },
   summaryDivider: {
     height: 1,
@@ -518,17 +523,20 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#111827',
+    fontFamily: 'Outfit-SemiBold',
   },
   summaryTotalValue: {
     fontSize: 18,
     fontWeight: '700',
     color: '#1600ff',
+    fontFamily: 'Outfit-Bold',
   },
   disclaimer: {
     fontSize: 10,
     color: '#6B7280',
     lineHeight: 14,
     marginBottom: 16,
+    fontFamily: 'Outfit-Regular',
   },
   causesSection: {
     marginBottom: 16,
@@ -538,6 +546,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#111827',
     marginBottom: 12,
+    fontFamily: 'Outfit-Bold',
   },
   causesList: {
     gap: 6,
@@ -561,6 +570,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: '700',
     fontSize: 12,
+    fontFamily: 'Outfit-Bold',
   },
   causeInfo: {
     flex: 1,
@@ -570,11 +580,13 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     color: '#111827',
+    fontFamily: 'Outfit-SemiBold',
   },
   causeAmount: {
     fontSize: 12,
     fontWeight: '600',
     color: '#111827',
+    fontFamily: 'Outfit-SemiBold',
   },
   footer: {
     paddingHorizontal: 16,
@@ -600,6 +612,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '600',
+    fontFamily: 'Outfit-SemiBold',
   },
   logoAnimationContainer: {
     flex: 1,
@@ -612,6 +625,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: '#1600ff',
+    fontFamily: 'Outfit-SemiBold',
   },
 });
 

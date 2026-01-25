@@ -196,7 +196,7 @@ export default function DonationStep3({
               onPress={() => setSelectedPaymentMethod?.('card')}
             >
               <View style={styles.paymentIconContainer}>
-              <CreditCard size={20} color="#374151" />
+                <CreditCard size={20} color="#374151" />
               </View>
               <Text style={styles.paymentOptionText}>Credit or Debit Card</Text>
               {selectedPaymentMethod === 'card' && (
@@ -225,7 +225,7 @@ export default function DonationStep3({
                   })}
                 />
               </View>
-              
+
               <View style={styles.row}>
                 <View style={[styles.inputContainer, { flex: 1, marginRight: 8 }]}>
                   <Text style={styles.inputLabel}>Expiry Date</Text>
@@ -242,7 +242,7 @@ export default function DonationStep3({
                     })}
                   />
                 </View>
-                
+
                 <View style={[styles.inputContainer, { flex: 1, marginLeft: 8 }]}>
                   <Text style={styles.inputLabel}>CVV</Text>
                   <TextInput
@@ -270,7 +270,7 @@ export default function DonationStep3({
                     onPress={() => setCountryPickerVisible(true)}
                     activeOpacity={0.7}
                   >
-                    <Text style={{ color: cardDetails.country ? '#111827': SecondaryGrey, flexShrink: 1 }} numberOfLines={1} ellipsizeMode='tail'>
+                    <Text style={{ color: cardDetails.country ? '#111827' : SecondaryGrey, flexShrink: 1 }} numberOfLines={1} ellipsizeMode='tail'>
                       {cardDetails.country ? (Country.getCountryByCode(cardDetails.country)?.name || cardDetails.country) : 'Select Country'}
                     </Text>
                   </TouchableOpacity>
@@ -416,6 +416,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#1f2937',
     marginBottom: 16,
+    fontFamily: 'Outfit-Bold',
   },
   organizationsList: {
     gap: 16,
@@ -440,6 +441,7 @@ const styles = StyleSheet.create({
   orgAvatarText: {
     fontSize: 18,
     fontWeight: '600',
+    fontFamily: 'Outfit-SemiBold',
   },
   orgInfo: {
     flex: 1,
@@ -449,10 +451,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#1f2937',
     marginBottom: 4,
+    fontFamily: 'Outfit-SemiBold',
   },
   orgDescription: {
     fontSize: 14,
     color: '#6b7280',
+    fontFamily: 'Outfit-Regular',
   },
   orgActions: {
     flexDirection: 'row',
@@ -477,17 +481,20 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#1f2937',
     marginBottom: 12,
+    fontFamily: 'Outfit-SemiBold',
   },
   distributionDescription: {
     fontSize: 14,
     color: '#6b7280',
     lineHeight: 20,
     marginBottom: 12,
+    fontFamily: 'Outfit-Regular',
   },
   distributionAmount: {
     fontSize: 16,
     fontWeight: '600',
     color: '#2563eb',
+    fontFamily: 'Outfit-SemiBold',
   },
   modalOverlay: {
     position: 'absolute',
@@ -516,12 +523,14 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 16,
-    fontWeight: '600'
+    fontWeight: '600',
+    fontFamily: 'Outfit-SemiBold',
   },
   modalClose: {
     color: '#2563eb',
     fontSize: 14,
-    fontWeight: '500'
+    fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
   },
   modalItem: {
     paddingHorizontal: 16,
@@ -531,7 +540,8 @@ const styles = StyleSheet.create({
   },
   modalItemText: {
     fontSize: 14,
-    color: '#111827'
+    color: '#111827',
+    fontFamily: 'Outfit-Regular',
   },
   actionButtons: {
     paddingHorizontal: 16,
@@ -548,6 +558,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#ffffff',
+    fontFamily: 'Outfit-SemiBold',
   },
   paymentSection: {
     backgroundColor: '#ffffff',
@@ -570,11 +581,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#1f2937',
     marginBottom: 8,
+    fontFamily: 'Outfit-SemiBold',
   },
   paymentSectionSubtitle: {
     fontSize: 14,
     color: '#6b7280',
     marginBottom: 16,
+    fontFamily: 'Outfit-Regular',
   },
   paymentOptions: {
     gap: 12,
@@ -610,6 +623,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
     color: '#374151',
+    fontFamily: 'Outfit-Medium',
   },
   checkmarkContainer: {
     width: 20,
@@ -623,6 +637,7 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 12,
     fontWeight: 'bold',
+    fontFamily: 'Outfit-Bold',
   },
   creditCardIcon: {
     fontSize: 16,
@@ -643,6 +658,7 @@ const styles = StyleSheet.create({
     color: '#374151',
     marginBottom: 8,
     fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
   },
   input: {
     backgroundColor: '#ffffff',
@@ -652,6 +668,7 @@ const styles = StyleSheet.create({
     padding: 12,
     fontSize: 16,
     color: '#111827',
+    fontFamily: 'Outfit-Regular',
   },
   row: {
     flexDirection: 'row',

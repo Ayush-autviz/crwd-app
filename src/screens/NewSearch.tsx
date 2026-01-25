@@ -420,6 +420,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#111827',
     flex: 1,
+    fontFamily: 'Outfit-Bold',
   },
   scrollView: {
     flex: 1,
@@ -450,6 +451,7 @@ const styles = StyleSheet.create({
     borderColor: '#3B82F6',
     backgroundColor: '#F9FAFB',
     fontSize: 14,
+    fontFamily: 'Outfit-Regular',
   },
   surpriseSection: {
     paddingHorizontal: 12,
@@ -461,6 +463,7 @@ const styles = StyleSheet.create({
     color: '#111827',
     marginBottom: 12,
     textTransform: 'uppercase',
+    fontFamily: 'Outfit-Bold',
   },
   surpriseCard: {
     backgroundColor: '#FFFFFF',
@@ -502,10 +505,12 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#111827',
     marginBottom: 4,
+    fontFamily: 'Outfit-Bold',
   },
   surpriseSubtitle: {
     fontSize: 12,
     color: '#4B5563',
+    fontFamily: 'Outfit-Regular',
   },
   resultsHeader: {
     paddingHorizontal: 12,
@@ -515,6 +520,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
     color: '#111827',
+    fontFamily: 'Outfit-Bold',
   },
   resultsSection: {
     paddingHorizontal: 12,
@@ -527,6 +533,7 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     marginBottom: 12,
     textTransform: 'uppercase',
+    fontFamily: 'Outfit-Bold',
   },
   loadingContainer: {
     paddingVertical: 32,
@@ -550,11 +557,13 @@ const styles = StyleSheet.create({
     color: '#374151',
     marginBottom: 12,
     textAlign: 'center',
+    fontFamily: 'Outfit-Regular',
   },
   requestLink: {
     fontSize: 12,
     color: '#1600ff',
     textDecorationLine: 'underline',
+    fontFamily: 'Outfit-Regular',
   },
   emptyTitle: {
     fontSize: 14,
@@ -563,11 +572,13 @@ const styles = StyleSheet.create({
     marginTop: 16,
     marginBottom: 8,
     textAlign: 'center',
+    fontFamily: 'Outfit-SemiBold',
   },
   emptySubtitle: {
     fontSize: 14,
     color: '#6B7280',
     textAlign: 'center',
+    fontFamily: 'Outfit-Regular',
   },
   categoriesSection: {
     marginBottom: 24,
@@ -577,11 +588,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#111827',
     marginBottom: 12,
+    fontFamily: 'Outfit-SemiBold',
   },
   categoryItem: {
     fontSize: 14,
     color: '#374151',
     marginBottom: 8,
+    fontFamily: 'Outfit-Regular',
   },
   browseButtonContainer: {
     alignItems: 'center',
@@ -597,6 +610,7 @@ const styles = StyleSheet.create({
   browseButtonText: {
     fontSize: 14,
     color: '#111827',
+    fontFamily: 'Outfit-SemiBold',
   },
   createButton: {
     backgroundColor: '#2c7fff',
@@ -605,6 +619,7 @@ const styles = StyleSheet.create({
   createButtonText: {
     color: '#FFFFFF',
     fontWeight: '600',
+    fontFamily: 'Outfit-SemiBold',
   },
 });
 

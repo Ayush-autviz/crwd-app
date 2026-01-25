@@ -109,15 +109,18 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#111827',
     marginBottom: 4,
+    fontFamily: 'Outfit-Bold',
   },
   location: {
     fontSize: 12,
     color: '#4B5563',
     marginBottom: 6,
+    fontFamily: 'Outfit-Regular',
   },
   description: {
     fontSize: 12,
     color: '#374151',
+    fontFamily: 'Outfit-Regular',
   },
 });
 

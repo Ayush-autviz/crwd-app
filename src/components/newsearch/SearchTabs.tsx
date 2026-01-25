@@ -62,6 +62,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '500',
     color: '#4B5563',
+    fontFamily: 'Outfit-Medium',
   },
   activeTabText: {
     color: '#2c7fff',

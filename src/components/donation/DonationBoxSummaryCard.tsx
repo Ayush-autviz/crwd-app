@@ -325,6 +325,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#111827',
     marginBottom: 12,
+    fontFamily: 'Outfit-Medium',
   },
   amountRow: {
     flexDirection: 'row',
@@ -341,10 +342,12 @@ const styles = StyleSheet.create({
     fontSize: 36,
     fontWeight: '700',
     color: '#111827',
+    fontFamily: 'Outfit-Bold',
   },
   perMonthText: {
     fontSize: 16,
     color: '#6b7280',
+    fontFamily: 'Outfit-Regular',
   },
   editButton: {
     width: 40,
@@ -366,6 +369,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     color: '#111827',
+    fontFamily: 'Outfit-Bold',
   },
   capacityContainer: {
     backgroundColor: '#EFF6FF',
@@ -383,10 +387,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     color: PrimaryBlue,
+    fontFamily: 'Outfit-Bold',
   },
   capacityCount: {
     fontSize: 14,
     color: '#111827',
+    fontFamily: 'Outfit-Regular',
   },
   progressBarContainer: {
     marginBottom: 8,
@@ -406,17 +412,20 @@ const styles = StyleSheet.create({
   capacityText: {
     fontSize: 14,
     color: PrimaryBlue,
+    fontFamily: 'Outfit-Regular',
   },
   lifetimeAmount: {
     fontSize: 12,
     color: '#6b7280',
     marginTop: 4,
+    fontFamily: 'Outfit-Regular',
   },
   amountInput: {
     fontSize: 36,
     fontWeight: '700',
     color: '#111827',
     minWidth: 80,
+    fontFamily: 'Outfit-Bold',
   },
   amountControls: {
     flexDirection: 'row',
@@ -444,6 +453,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: PrimaryBlue,
     textAlign: 'center',
+    fontFamily: 'Outfit-Regular',
   },
   actionButtons: {
     flexDirection: 'row',
@@ -465,6 +475,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#111827',
+    fontFamily: 'Outfit-SemiBold',
   },
   saveButton: {
     flex: 1,
@@ -478,6 +489,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#FFFFFF',
+    fontFamily: 'Outfit-SemiBold',
   },
   buttonDisabled: {
     opacity: 0.5,
@@ -505,6 +517,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#111827',
+    fontFamily: 'Outfit-SemiBold',
   },
   addCausesButton: {
     flex: 1,
@@ -520,6 +533,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#FFFFFF',
+    fontFamily: 'Outfit-SemiBold',
   },
 })
 

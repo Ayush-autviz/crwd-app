@@ -9,8 +9,7 @@ import {
   TextInput,
 } from 'react-native';
 import { CreditCard as CreditCardIcon } from 'lucide-react-native';
-import { AppleIcon } from 'lucide-react-native';
-import { Apple } from 'lucide-react-native';
+// import { AppleIcon, Apple } from 'lucide-react-native';
 
 interface PaymentSectionProps {
   setCheckout: (value: boolean) => void;
@@ -50,7 +49,7 @@ export default function PaymentSection({ setCheckout, amount }: PaymentSectionPr
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Select Payment Method</Text>
-      
+
       {Platform.OS === 'ios' && (
         <TouchableOpacity
           style={[
@@ -96,7 +95,7 @@ export default function PaymentSection({ setCheckout, amount }: PaymentSectionPr
               })}
             />
           </View>
-          
+
           <View style={styles.row}>
             <View style={[styles.inputContainer, { flex: 1, marginRight: 8 }]}>
               <Text style={styles.inputLabel}>Expiry Date</Text>
@@ -112,7 +111,7 @@ export default function PaymentSection({ setCheckout, amount }: PaymentSectionPr
                 })}
               />
             </View>
-            
+
             <View style={[styles.inputContainer, { flex: 1, marginLeft: 8 }]}>
               <Text style={styles.inputLabel}>CVV</Text>
               <TextInput
@@ -137,7 +136,7 @@ export default function PaymentSection({ setCheckout, amount }: PaymentSectionPr
           // !selectedMethod && styles.disabledButton
         ]}
         onPress={handlePayment}
-        // disabled={!selectedMethod}
+      // disabled={!selectedMethod}
       >
         <Text style={styles.checkoutButtonText}>
           Pay ${amount.toFixed(2)}
@@ -168,6 +167,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#111827',
     marginBottom: 16,
+    fontFamily: 'Outfit-SemiBold',
   },
   paymentOption: {
     flexDirection: 'row',
@@ -192,6 +192,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#374151',
     fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
   },
   cardDetailsContainer: {
     marginTop: 8,
@@ -208,6 +209,7 @@ const styles = StyleSheet.create({
     color: '#374151',
     marginBottom: 8,
     fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
   },
   input: {
     backgroundColor: '#ffffff',
@@ -217,6 +219,7 @@ const styles = StyleSheet.create({
     padding: 12,
     fontSize: 16,
     color: '#111827',
+    fontFamily: 'Outfit-Regular',
   },
   row: {
     flexDirection: 'row',
@@ -236,6 +239,7 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 18,
     fontWeight: '600',
+    fontFamily: 'Outfit-SemiBold',
   },
   securityInfo: {
     flexDirection: 'row',

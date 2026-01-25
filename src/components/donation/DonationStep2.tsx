@@ -83,7 +83,7 @@ export default function DonationStep2({
         {SUGGESTED.map(renderOrganizationCard)}
       </View>
 
-      <View style={{flexDirection:"row",alignItems:"center",justifyContent:'flex-end',gap:4}}>
+      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: 'flex-end', gap: 4 }}>
         <Text style={styles.DiscoverMore}>Discover More</Text>
         <ChevronRight size={16} strokeWidth={2.5} color="#2563eb" />
       </View>
@@ -139,6 +139,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     color: '#6b7280',
+    fontFamily: 'Outfit-SemiBold',
   },
   activeCategoryTabText: {
     color: '#1f2937',
@@ -153,6 +154,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 12,
     letterSpacing: 0.5,
+    fontFamily: 'Outfit-SemiBold',
   },
   orgCard: {
     backgroundColor: '#ffffff',
@@ -184,10 +186,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#1f2937',
     marginBottom: 4,
+    fontFamily: 'Outfit-SemiBold',
   },
   orgDesc: {
     fontSize: 14,
     color: '#6b7280',
+    fontFamily: 'Outfit-Regular',
   },
   orgSection: {
     marginBottom: 24,
@@ -197,6 +201,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#1f2937',
     marginBottom: 16,
+    fontFamily: 'Outfit-Bold',
   },
   checkbox: {
     width: 24,
@@ -215,6 +220,7 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 14,
     fontWeight: 'bold',
+    fontFamily: 'Outfit-Bold',
   },
   nextSection: {
     flexDirection: 'row',
@@ -227,6 +233,7 @@ const styles = StyleSheet.create({
   selectedCount: {
     fontSize: 16,
     color: '#6b7280',
+    fontFamily: 'Outfit-Regular',
   },
   nextButton: {
     backgroundColor: '#22c55e',
@@ -238,10 +245,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#000000',
+    fontFamily: 'Outfit-SemiBold',
   },
   DiscoverMore: {
     fontSize: 14,
     color: '#2563eb',
     fontWeight: 'bold',
+    fontFamily: 'Outfit-Bold',
   },
 });

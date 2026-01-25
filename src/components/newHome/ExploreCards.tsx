@@ -134,11 +134,13 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#111827',
     textAlign: 'center',
+    fontFamily: 'Outfit-Bold',
   },
   subtitle: {
     fontSize: 12,
     color: '#6B7280',
     textAlign: 'center',
+    fontFamily: 'Outfit-Regular',
   },
 });
 

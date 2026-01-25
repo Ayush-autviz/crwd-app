@@ -98,16 +98,19 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '700',
     color: '#111827',
+    fontFamily: 'Outfit-Bold',
   },
   description: {
     fontSize: 14,
     color: '#4B5563',
     marginBottom: 8,
     lineHeight: 18,
+    fontFamily: 'Outfit-Regular',
   },
   bold: {
     fontWeight: '700',
     color: '#000000',
+    fontFamily: 'Outfit-Bold',
   },
   linkContainer: {
     flexDirection: 'row',
@@ -118,6 +121,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
     color: '#1600ff',
+    fontFamily: 'Outfit-Bold',
   },
 });
 

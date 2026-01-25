@@ -78,6 +78,7 @@ const styles = StyleSheet.create({
     color: '#111827',
     marginBottom: 4,
     textAlign: 'left',
+    fontFamily: 'Outfit-Bold',
   },
   cardSubtitle: {
     fontSize: 14,
@@ -85,6 +86,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     marginTop: 4,
     textAlign: 'left',
+    fontFamily: 'Outfit-Regular',
   },
   linkContainer: {
     flexDirection: 'row',
@@ -95,6 +97,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
     color: '#111827',
+    fontFamily: 'Outfit-SemiBold',
   },
 });
 

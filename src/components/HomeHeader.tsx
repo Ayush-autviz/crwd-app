@@ -58,7 +58,7 @@ export default function HomeHeader({ show = false, menu = true, post = true }) {
                     </TouchableOpacity>  */}
 
                 {/* <TouchableOpacity style={{ backgroundColor: PrimaryGreen, padding: 5, borderRadius: 8 }} onPress={() => navigation.navigate('Circles')}>
-                    <Text style={{ color: 'white', fontSize: 14, fontWeight: 'bold' }}>Collectives</Text>
+                    <Text style={{ color: 'white', fontSize: 14, fontWeight: 'bold', fontFamily: 'Outfit-Bold' }}>Collectives</Text>
                 </TouchableOpacity> */}
 
                 {currentUser?.id && (
@@ -84,7 +84,7 @@ export default function HomeHeader({ show = false, menu = true, post = true }) {
                                         paddingHorizontal: 3,
                                     }}
                                 >
-                                    <Text style={{ color: 'white', fontSize: 10, fontWeight: '700' }}>{unreadCount?.data}</Text>
+                                    <Text style={{ color: 'white', fontSize: 10, fontWeight: '700', fontFamily: 'Outfit-Bold' }}>{unreadCount?.data}</Text>
                                 </View>
                             )}
                         </TouchableOpacity>

@@ -649,6 +649,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 8,
     fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
   },
   fundraiserCard: {
     marginBottom: 12,
@@ -677,6 +678,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     textAlign: 'center',
+    fontFamily: 'Outfit-Bold',
   },
   fundraiserInfo: {
     padding: 12,
@@ -685,12 +687,14 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: '#6B7280',
     marginBottom: 4,
+    fontFamily: 'Outfit-Regular',
   },
   fundraiserTitle: {
     fontSize: 14,
     fontWeight: 'bold',
     color: '#111827',
     marginBottom: 12,
+    fontFamily: 'Outfit-Bold',
   },
   fundingProgress: {
     gap: 6,
@@ -704,10 +708,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#1600ff',
+    fontFamily: 'Outfit-Bold',
   },
   goalText: {
     fontSize: 12,
     color: '#6B7280',
+    fontFamily: 'Outfit-Regular',
   },
   progressBar: {
     height: 6,
@@ -727,9 +733,11 @@ const styles = StyleSheet.create({
   statsText: {
     fontSize: 12,
     color: '#111827',
+    fontFamily: 'Outfit-Regular',
   },
   statsBold: {
     fontWeight: '600',
+    fontFamily: 'Outfit-SemiBold',
   },
   followButton: {
     backgroundColor: '#FFFFFF',
@@ -751,9 +759,11 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '600',
     color: '#1600ff',
+    fontFamily: 'Outfit-SemiBold',
   },
   followingButtonText: {
     color: '#FFFFFF',
+    fontFamily: 'Outfit-SemiBold',
   },
   header: {
     flexDirection: 'row',
@@ -787,6 +797,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     color: '#111827',
+    fontFamily: 'Outfit-Bold',
   },
   separator: {
     fontSize: 12,
@@ -795,6 +806,7 @@ const styles = StyleSheet.create({
   username: {
     fontSize: 12,
     color: '#6B7280',
+    fontFamily: 'Outfit-Regular',
   },
   metaRow: {
     flexDirection: 'row',
@@ -805,10 +817,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: PrimaryGrey, // Blue for collective name
     fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
   },
   time: {
     fontSize: 12,
     color: '#6B7280',
+    fontFamily: 'Outfit-Regular',
   },
   postContent: {
     fontSize: 13,
@@ -816,6 +830,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     marginTop: 5,
     lineHeight: 18,
+    fontFamily: 'Outfit-Regular',
   },
   media: {
     width: '100%',
@@ -856,6 +871,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     letterSpacing: 0.5,
     marginBottom: 4,
+    fontFamily: 'Outfit-SemiBold',
   },
   previewTitle: {
     fontSize: 12,
@@ -863,12 +879,14 @@ const styles = StyleSheet.create({
     color: '#111827',
     marginBottom: 4,
     lineHeight: 16,
+    fontFamily: 'Outfit-SemiBold',
   },
   previewDescription: {
     fontSize: 10,
     color: '#4B5563',
     marginBottom: 4,
     lineHeight: 14,
+    fontFamily: 'Outfit-Regular',
   },
   previewDomain: {
     fontSize: 10,
@@ -900,6 +918,7 @@ const styles = StyleSheet.create({
   engagementText: {
     fontSize: 12,
     color: '#4B5563',
+    fontFamily: 'Outfit-Regular',
   },
   likedText: {
     color: '#EF4444',

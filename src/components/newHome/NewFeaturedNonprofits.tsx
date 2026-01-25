@@ -122,11 +122,13 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '700',
     color: '#111827',
+    fontFamily: 'Outfit-Bold',
   },
   seeAll: {
     fontSize: 14,
     fontWeight: '500',
     color: '#1600ff',
+    fontFamily: 'Outfit-Medium',
   },
   scrollContent: {
     paddingRight: 16,
@@ -159,11 +161,13 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#111827',
     marginBottom: 4,
+    fontFamily: 'Outfit-Bold',
   },
   description: {
     fontSize: 12,
     color: '#4B5563',
     lineHeight: 18,
+    fontFamily: 'Outfit-Regular',
   },
 });
 

@@ -512,6 +512,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#000000',
     textTransform: 'lowercase',
+    fontFamily: 'Outfit-Bold',
   },
   navbarRight: {
     flexDirection: 'row',
@@ -532,6 +533,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     fontSize: 14,
+    fontFamily: 'Outfit-Bold',
   },
   menuButton: {
     padding: 4,
@@ -556,6 +558,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 16,
     lineHeight: 40,
+    fontFamily: 'Outfit-Black',
   },
   heroTitleHighlight: {
     color: '#1600ff',
@@ -567,6 +570,7 @@ const styles = StyleSheet.create({
     marginBottom: 32,
     maxWidth: 600,
     lineHeight: 28,
+    fontFamily: 'Outfit-Regular',
   },
   getStartedButton: {
     backgroundColor: '#1600ff',
@@ -579,6 +583,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     fontSize: 18,
+    fontFamily: 'Outfit-Bold',
   },
   verifiedContainer: {
     flexDirection: 'row',
@@ -603,6 +608,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#374151', // gray-700
+    fontFamily: 'Outfit-SemiBold',
   },
   magicSection: {
     // backgroundColor: '#F1F6FF', // Removed as we use LinearGradient now
@@ -615,6 +621,7 @@ const styles = StyleSheet.create({
     color: '#111827',
     textAlign: 'center',
     marginBottom: 12,
+    fontFamily: 'Outfit-ExtraBold',
   },
   magicTitleHighlight: {
     color: '#1600ff',
@@ -624,6 +631,7 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     textAlign: 'center',
     marginBottom: 32,
+    fontFamily: 'Outfit-Regular',
   },
   demoCard: {
     backgroundColor: 'white',
@@ -642,11 +650,13 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     textAlign: 'center',
     marginBottom: 16,
+    fontFamily: 'Outfit-Regular',
   },
   demoCardAmount: {
     fontSize: 36,
     fontWeight: '900',
     color: '#1600ff',
+    fontFamily: 'Outfit-Black',
   },
   sliderContainer: {
     marginBottom: 24,
@@ -671,6 +681,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 14,
     fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
   },
   yearlyImpact: {
     fontSize: 18,
@@ -678,10 +689,12 @@ const styles = StyleSheet.create({
     color: '#1600ff',
     textAlign: 'center',
     marginBottom: 16,
+    fontFamily: 'Outfit-Bold',
   },
   yearlyImpactAmount: {
     fontSize: 24,
     fontWeight: '700',
+    fontFamily: 'Outfit-Bold',
   },
   distributionBar: {
     flexDirection: 'row',
@@ -699,6 +712,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: '600',
     marginBottom: 24,
+    fontFamily: 'Outfit-SemiBold',
   },
   startSupportingButton: {
     flexDirection: 'row',
@@ -714,11 +728,13 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     fontSize: 16,
+    fontFamily: 'Outfit-Bold',
   },
   everyDollarText: {
     fontSize: 14,
     color: '#6B7280',
     textAlign: 'center',
+    fontFamily: 'Outfit-Regular',
   },
   mainMessageSection: {
     padding: 24,
@@ -733,6 +749,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     lineHeight: 26,
     color: '#111827',
+    fontFamily: 'Outfit-ExtraBold',
   },
   mainMessageHighlight: {
     color: PrimaryBlue,
@@ -749,6 +766,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: '600',
     textAlign: 'center',
+    fontFamily: 'Outfit-SemiBold',
   },
   appBanner: {
     position: 'absolute',
@@ -780,10 +798,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     color: '#111827',
+    fontFamily: 'Outfit-Bold',
   },
   appBannerSubtitle: {
     fontSize: 12,
     color: '#6b7280',
+    fontFamily: 'Outfit-Regular',
   },
   appBannerClose: {
     padding: 4,

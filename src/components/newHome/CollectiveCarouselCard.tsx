@@ -254,6 +254,7 @@ const styles = StyleSheet.create({
     minWidth: 50,
     textAlign: 'center',
     fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
   },
   content: {
     flexDirection: 'column',
@@ -287,6 +288,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: '700',
     fontSize: 20,
+    fontFamily: 'Outfit-Bold',
   },
   textContent: {
     flex: 1,
@@ -301,6 +303,7 @@ const styles = StyleSheet.create({
     color: '#111827',
     marginBottom: 4,
     textAlign: 'left',
+    fontFamily: 'Outfit-Bold',
   },
   badge: {
     paddingHorizontal: 8,
@@ -318,6 +321,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '500',
     color: '#DC2626',
+    fontFamily: 'Outfit-Medium',
   },
   founderBadgeText: {
     color: '#DC2626',
@@ -331,10 +335,12 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     lineHeight: 20,
     textAlign: 'left',
+    fontFamily: 'Outfit-Regular',
   },
   bold: {
     fontWeight: '700',
     color: '#111827',
+    fontFamily: 'Outfit-Bold',
   },
   actions: {
     flexDirection: 'row',
@@ -357,6 +363,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
     color: '#111827',
+    fontFamily: 'Outfit-Bold',
   },
   primaryButton: {
     flexDirection: 'row',
@@ -373,5 +380,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     color: '#FFFFFF',
+    fontFamily: 'Outfit-SemiBold',
   },
 });

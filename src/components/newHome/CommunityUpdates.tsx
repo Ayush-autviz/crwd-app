@@ -89,7 +89,11 @@ function PostWithData({ update }: { update: CommunityUpdate }) {
       id: postData.collective.id,
       name: postData.collective.name,
       description: postData.collective.description,
-    } : update.collective,
+    } : update.collective ? {
+      id: typeof update.collective.id === 'string' ? parseInt(update.collective.id) : (update.collective.id || 0),
+      name: update.collective.name,
+      description: undefined,
+    } : undefined,
   };
 
   return <PostResultCard post={post} />;
@@ -392,10 +396,12 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#111827',
     marginBottom: 6,
+    fontFamily: 'Outfit-Bold',
   },
   subtitle: {
     fontSize: 12,
     color: '#6B7280',
+    fontFamily: 'Outfit-Regular',
   },
   updatesList: {
     gap: 10,
@@ -467,15 +473,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     color: '#111827',
+    fontFamily: 'Outfit-Bold',
   },
   username: {
     fontSize: 12,
     color: '#6B7280',
+    fontFamily: 'Outfit-Regular',
   },
   collectiveName: {
     fontSize: 12,
     color: '#6B7280',
     marginTop: 2,
+    fontFamily: 'Outfit-Regular',
   },
   contentBox: {
     borderRadius: 12,
@@ -513,16 +522,19 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#4B5563',
     flex: 1,
+    fontFamily: 'Outfit-SemiBold',
   },
   actionTextDonation: {
     fontSize: 12,
     fontWeight: '600',
     color: '#111827',
     flex: 1,
+    fontFamily: 'Outfit-SemiBold',
   },
   nonprofitCountText: {
     fontSize: 12,
     color: '#6B7280',
+    fontFamily: 'Outfit-Regular',
   },
   joinButton: {
     backgroundColor: '#FFFFFF',
@@ -540,6 +552,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     color: '#1600ff',
+    fontFamily: 'Outfit-SemiBold',
   },
   followButton: {
     backgroundColor: '#FFFFFF',
@@ -561,10 +574,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     color: '#1600ff',
+    fontFamily: 'Outfit-SemiBold',
   },
   followingButtonText: {
     fontSize: 12,
     fontWeight: '600',
     color: '#FFFFFF',
+    fontFamily: 'Outfit-SemiBold',
   },
 });

@@ -209,11 +209,13 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '700',
     color: '#111827',
+    fontFamily: 'Outfit-Bold',
   },
   seeAll: {
     fontSize: 14,
     fontWeight: '500',
     color: '#1600ff',
+    fontFamily: 'Outfit-Medium',
   },
   scrollContent: {
     paddingRight: 16,
@@ -253,6 +255,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: '700',
     fontSize: 18,
+    fontFamily: 'Outfit-Bold',
   },
   cardTitle: {
     fontSize: 14,
@@ -260,6 +263,7 @@ const styles = StyleSheet.create({
     color: '#000000',
     flexShrink: 0,
     flex: 1,
+    fontFamily: 'Outfit-Bold',
   },
   founderRow: {
     flexDirection: 'row',
@@ -271,22 +275,26 @@ const styles = StyleSheet.create({
   founderText: {
     fontSize: 12,
     color: '#6B7280',
+    fontFamily: 'Outfit-Regular',
   },
   founderName: {
     fontWeight: '600',
     color: '#374151',
+    fontFamily: 'Outfit-SemiBold',
   },
   nonprofitCount: {
     fontSize: 12,
     color: '#6B7280',
     marginBottom: 8,
     flexShrink: 0,
+    fontFamily: 'Outfit-Regular',
   },
   description: {
     fontSize: 12,
     color: '#6B7280',
     lineHeight: 18,
     flex: 1,
+    fontFamily: 'Outfit-Regular',
   },
 });
 

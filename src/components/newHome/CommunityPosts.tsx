@@ -129,10 +129,12 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#111827',
     marginBottom: 6,
+    fontFamily: 'Outfit-Bold',
   },
   subtitle: {
     fontSize: 12,
     color: '#4B5563',
+    fontFamily: 'Outfit-Regular',
   },
   postsList: {
     gap: 12,

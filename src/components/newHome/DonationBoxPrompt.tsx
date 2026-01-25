@@ -257,6 +257,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#000',
     marginBottom: 16,
+    fontFamily: 'Outfit-Bold',
   },
   cardsContainer: {
     gap: 12,
@@ -308,6 +309,7 @@ const styles = StyleSheet.create({
     color: '#111827',
     marginBottom: 4,
     textAlign: 'left',
+    fontFamily: 'Outfit-Bold',
   },
   cardDescription: {
     fontSize: 14,
@@ -315,6 +317,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     lineHeight: 18,
     textAlign: 'left',
+    fontFamily: 'Outfit-Regular',
   },
   cardSubtitle: {
     fontSize: 14,
@@ -322,9 +325,11 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     marginTop: 4,
     textAlign: 'left',
+    fontFamily: 'Outfit-Regular',
   },
   bold: {
     fontWeight: '700',
+    fontFamily: 'Outfit-Bold',
   },
   linkContainer: {
     flexDirection: 'row',
@@ -335,16 +340,19 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
     color: '#1600ff',
+    fontFamily: 'Outfit-SemiBold',
   },
   orangeLink: {
     fontSize: 13,
     fontWeight: '600',
     color: '#EA580C',
+    fontFamily: 'Outfit-SemiBold',
   },
   blackLink: {
     fontSize: 13,
     fontWeight: '600',
     color: '#111827',
+    fontFamily: 'Outfit-SemiBold',
   },
 });
 

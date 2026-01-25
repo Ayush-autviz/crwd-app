@@ -529,7 +529,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: '700',
+    fontFamily: 'Outfit-Bold',
     color: '#111827',
     marginBottom: 8,
     textAlign: 'center',
@@ -538,10 +538,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: PrimaryGrey,
     textAlign: 'center',
+    fontFamily: 'Outfit-Regular',
   },
   link: {
     color: '#1600ff',
-    fontWeight: '600',
+    fontFamily: 'Outfit-SemiBold',
   },
   googleButton: {
     flexDirection: 'row',
@@ -567,7 +568,7 @@ const styles = StyleSheet.create({
   googleButtonText: {
     fontSize: 14,
     color: '#374151',
-    fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
   },
   appleButton: {
     flexDirection: 'row',
@@ -592,7 +593,7 @@ const styles = StyleSheet.create({
   appleButtonText: {
     fontSize: 14,
     color: 'white',
-    fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
   },
   divider: {
     flexDirection: 'row',
@@ -609,6 +610,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#6b7280',
     textTransform: 'uppercase',
+    fontFamily: 'Outfit-Medium',
   },
   form: {
     marginBottom: 24,
@@ -618,7 +620,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: 'Outfit-SemiBold',
     color: '#111827',
     marginBottom: 8,
   },
@@ -633,6 +635,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#111827',
     backgroundColor: '#f9fafb',
+    fontFamily: 'Outfit-Regular',
   },
   passwordContainer: {
     flexDirection: 'row',
@@ -648,6 +651,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#111827',
     paddingRight: 48,
+    fontFamily: 'Outfit-Regular',
   },
   eyeButton: {
     padding: 12,
@@ -681,16 +685,17 @@ const styles = StyleSheet.create({
   checkmark: {
     color: 'white',
     fontSize: 10,
-    fontWeight: 'bold',
+    fontFamily: 'Outfit-Bold',
   },
   rememberText: {
     fontSize: 14,
     color: '#111827',
+    fontFamily: 'Outfit-Regular',
   },
   forgotPassword: {
     fontSize: 14,
     color: '#111827',
-    fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
   },
   submitButton: {
     backgroundColor: '#6366f1',
@@ -705,7 +710,7 @@ const styles = StyleSheet.create({
   submitButtonText: {
     color: 'white',
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: 'Outfit-SemiBold',
   },
   loadingContainer: {
     flexDirection: 'row',
@@ -714,7 +719,7 @@ const styles = StyleSheet.create({
   loadingText: {
     color: 'white',
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: 'Outfit-SemiBold',
     marginLeft: 8,
   },
 })

@@ -13,7 +13,7 @@ import {
   Platform,
   FlatList,
 } from 'react-native';
-import { Heart, Search, Check, Loader2, ArrowRight } from 'lucide-react-native';
+import { Heart, Search, Check, Loader2, ArrowRight, Star, Zap } from 'lucide-react-native';
 import { useNavigation, useRoute, CommonActions } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -21,9 +21,9 @@ import { getSurpriseMe, getCausesBySearch } from '../../services/api/crwd';
 import { addCausesToBox } from '../../services/api/donation';
 import { useToast } from '../../contexts/ToastContext';
 import { categories } from '../../Constants/categories';
-import { Star } from 'lucide-react-native';
+
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
-import { Zap } from 'lucide-react-native';
+
 
 type ViewType = 'initial' | 'surprise' | 'browse';
 
@@ -542,7 +542,7 @@ export default function CompleteOnboard() {
                                 <AvatarImage src={cause.image} style={{ width: '100%', height: '100%', borderRadius: 8 }} />
                                 <AvatarFallback
                                   style={{ backgroundColor: avatarBgColor, borderRadius: 8 }}
-                                  textStyle={{ color: '#FFFFFF', fontSize: 14, fontWeight: '700' }}
+                                  textStyle={{ color: '#FFFFFF', fontSize: 14, fontFamily: 'Outfit-Bold' }}
                                 >
                                   {initials}
                                 </AvatarFallback>
@@ -719,7 +719,7 @@ export default function CompleteOnboard() {
                                 <AvatarImage src={cause.image} style={{ width: '100%', height: '100%', borderRadius: 8 }} />
                                 <AvatarFallback
                                   style={{ backgroundColor: avatarBgColor, borderRadius: 8 }}
-                                  textStyle={{ color: '#FFFFFF', fontSize: 14, fontWeight: '700' }}
+                                  textStyle={{ color: '#FFFFFF', fontSize: 14, fontFamily: 'Outfit-Bold' }}
                                 >
                                   {initials}
                                 </AvatarFallback>
@@ -855,7 +855,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: '800',
+    fontFamily: 'Outfit-Bold',
     color: '#111827',
     textAlign: 'center',
     marginBottom: 12,
@@ -866,6 +866,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 32,
     lineHeight: 20,
+    fontFamily: 'Outfit-Regular',
   },
   categoriesContainer: {
     flexDirection: 'row',
@@ -881,7 +882,7 @@ const styles = StyleSheet.create({
   },
   categoryTagText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
     color: 'white',
   },
   optionsContainer: {
@@ -921,7 +922,7 @@ const styles = StyleSheet.create({
   },
   optionTitle: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: 'Outfit-Bold',
     color: '#111827',
     marginBottom: 8,
   },
@@ -929,6 +930,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6b7280',
     textAlign: 'center',
+    fontFamily: 'Outfit-Regular',
   },
   bottomButtons: {
     flexDirection: 'row',
@@ -946,7 +948,7 @@ const styles = StyleSheet.create({
   },
   editButtonText: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: 'Outfit-Bold',
     color: '#111827',
   },
   skipButton: {
@@ -960,7 +962,7 @@ const styles = StyleSheet.create({
   },
   skipButtonText: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: 'Outfit-Bold',
     color: 'white',
   },
   section: {
@@ -974,7 +976,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '700',
+    fontFamily: 'Outfit-Bold',
     color: '#111827',
   },
   changeMethodButton: {
@@ -987,7 +989,7 @@ const styles = StyleSheet.create({
   },
   changeMethodText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
     color: '#374151',
   },
   searchContainer: {
@@ -1008,13 +1010,14 @@ const styles = StyleSheet.create({
     height: 44,
     fontSize: 16,
     color: '#111827',
+    fontFamily: 'Outfit-Regular',
   },
   countContainer: {
     marginBottom: 16,
   },
   countText: {
     fontSize: 18,
-    fontWeight: '700',
+    fontFamily: 'Outfit-Bold',
     color: '#111827',
   },
   causesGrid: {
@@ -1050,7 +1053,7 @@ const styles = StyleSheet.create({
   },
   causeAvatarText: {
     fontSize: 14,
-    fontWeight: '700',
+    fontFamily: 'Outfit-Bold',
     color: 'white',
   },
   causeInfo: {
@@ -1058,7 +1061,7 @@ const styles = StyleSheet.create({
   },
   causeName: {
     fontSize: 14,
-    fontWeight: '700',
+    fontFamily: 'Outfit-Bold',
     color: '#111827',
     marginBottom: 4,
     flexShrink: 1,
@@ -1076,7 +1079,7 @@ const styles = StyleSheet.create({
   },
   causeCategoryText: {
     fontSize: 10,
-    fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
     color: 'white',
   },
   pickDifferentContainer: {
@@ -1090,7 +1093,7 @@ const styles = StyleSheet.create({
   },
   pickDifferentText: {
     fontSize: 16,
-    fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
     color: '#9333ea',
   },
   footerButtons: {
@@ -1109,7 +1112,7 @@ const styles = StyleSheet.create({
   },
   backButtonText: {
     fontSize: 16,
-    fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
     color: '#111827',
   },
   startButton: {
@@ -1125,7 +1128,7 @@ const styles = StyleSheet.create({
   },
   startButtonText: {
     fontSize: 16,
-    fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
     color: 'white',
     textAlign: 'center',
   },
@@ -1144,5 +1147,6 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 14,
     color: '#6b7280',
+    fontFamily: 'Outfit-Regular',
   },
 });

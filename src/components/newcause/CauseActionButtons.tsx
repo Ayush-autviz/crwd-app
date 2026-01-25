@@ -87,7 +87,7 @@ export default function CauseActionButtons({
           </>
         ) : (
           <>
-            <Plus size={20} color="#000000" />
+            <Plus size={20} color="#fff" />
             <Text style={styles.addToBoxButtonText}>Add to Donation Box</Text>
           </>
         )}
@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
   },
   addToBoxButton: {
     width: '100%',
-    backgroundColor: '#aeff30',
+    backgroundColor: '#1661ff',
     paddingVertical: 10,
     borderRadius: 24,
     alignItems: 'center',
@@ -127,12 +127,12 @@ const styles = StyleSheet.create({
   addToBoxButtonText: {
     fontSize: 16,
     fontFamily: 'Outfit-SemiBold',
-    color: '#000000',
+    color: '#fff',
   },
   addedButtonText: {
     fontSize: 16,
     fontFamily: 'Outfit-SemiBold',
-    color: '#16a34a',
+    color: '#fff',
   },
   donateButton: {
     width: '100%',

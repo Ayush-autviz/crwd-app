@@ -953,7 +953,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   logoText: {
-    fontWeight: '800',
+    fontFamily: 'Outfit-Bold',
     color: '#111827',
     letterSpacing: -0.5,
   },
@@ -966,7 +966,7 @@ const styles = StyleSheet.create({
   },
   heading1: {
     fontSize: 32,
-    fontWeight: '900',
+    fontFamily: 'Outfit-Black',
     color: '#111827',
     textAlign: 'center',
     marginBottom: 12,
@@ -974,7 +974,7 @@ const styles = StyleSheet.create({
   },
   heading2: {
     fontSize: 32,
-    fontWeight: '900',
+    fontFamily: 'Outfit-Black',
     color: '#1600ff',
     textAlign: 'center',
     // lineHeight: 40,
@@ -998,7 +998,7 @@ const styles = StyleSheet.create({
   appleButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
   },
   googleButton: {
     width: '100%',
@@ -1015,7 +1015,7 @@ const styles = StyleSheet.create({
   googleButtonText: {
     color: '#111827',
     fontSize: 16,
-    fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
   },
   emailButton: {
     width: '100%',
@@ -1030,7 +1030,7 @@ const styles = StyleSheet.create({
   emailButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
   },
   buttonDisabled: {
     opacity: 0.6,
@@ -1042,6 +1042,7 @@ const styles = StyleSheet.create({
     marginBottom: 32,
     paddingHorizontal: 16,
     maxWidth: 400,
+    fontFamily: 'Outfit-Regular',
   },
   link: {
     color: '#1600ff',
@@ -1053,10 +1054,11 @@ const styles = StyleSheet.create({
   loginText: {
     fontSize: 14,
     color: '#6b7280',
+    fontFamily: 'Outfit-Regular',
   },
   loginLink: {
     color: '#1600ff',
-    fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
     textDecorationLine: 'underline',
   },
   logo: {

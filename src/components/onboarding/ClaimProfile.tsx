@@ -782,6 +782,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#f9fafb',
         fontSize: 14,
         color: '#111827',
+        fontFamily: 'Outfit-Regular',
     },
     errorText: {
         fontSize: 12,
@@ -837,8 +838,8 @@ const styles = StyleSheet.create({
         color: '#6b7280',
     },
     signInLink: {
-        color: '#1600ff',
-        fontFamily: 'Outfit-Medium',
+        color: '#6366f1',
+        fontFamily: 'Outfit-SemiBold',
     },
     stepIndicator: {
         alignItems: 'center',
@@ -1005,8 +1006,7 @@ const styles = StyleSheet.create({
     },
     modalHeader: {
         alignItems: 'center',
-        marginLeft: 8,
-        fontFamily: 'Outfit-Medium',
+        marginBottom: 24,
     },
     title: {
         fontSize: 20,
@@ -1023,6 +1023,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#6b7280',
         textAlign: 'center',
+        fontFamily: 'Outfit-Regular',
     },
     modalEmail: {
         fontFamily: 'Outfit-Medium',
@@ -1086,5 +1087,6 @@ const styles = StyleSheet.create({
     modalCloseText: {
         fontSize: 14,
         color: '#6b7280',
+        fontFamily: 'Outfit-Regular',
     },
 })

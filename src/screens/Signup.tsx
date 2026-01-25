@@ -1,13 +1,13 @@
 import React, { useState } from 'react'
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  Image, 
-  StyleSheet, 
-  ScrollView, 
-  KeyboardAvoidingView, 
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Image,
+  StyleSheet,
+  ScrollView,
+  KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
   Alert
@@ -85,7 +85,7 @@ export default function Signup() {
         });
       }
       showToast('Google signup successful!');
-      
+
       if (response.user && !response.user.last_login_at) {
         (navigation as any).navigate('NonProfitInterests', { fromAuth: true })
       } else {
@@ -102,9 +102,9 @@ export default function Signup() {
     mutationFn: emailRegistration,
     onSuccess: () => {
       showToast('Account created successfully! Please verify your email.', 'success')
-      navigation.navigate('VerificationCode', { 
+      navigation.navigate('VerificationCode', {
         email: formData.email,
-        fromSignup: true 
+        fromSignup: true
       } as never)
     },
     onError: (error: any) => {
@@ -136,7 +136,7 @@ export default function Signup() {
     setIsGoogleLoading(true)
     try {
       const result = await googleLogin();
-      
+
       if (result && result.url) {
         if (await InAppBrowser.isAvailable()) {
           const authResult = await InAppBrowser.openAuth(
@@ -149,7 +149,7 @@ export default function Signup() {
               enableDefaultShare: false,
             }
           )
-          
+
           if (authResult.type === 'success' && authResult.url) {
             const codeMatch = authResult.url.match(/[?&]code=([^&]+)/);
             const code = codeMatch ? decodeURIComponent(codeMatch[1]) : null;
@@ -168,7 +168,7 @@ export default function Signup() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView 
+      <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
       >
@@ -176,15 +176,15 @@ export default function Signup() {
           <View style={styles.card}>
             {/* Logo and Header */}
             <View style={styles.header}>
-              <Image 
-                source={require('../assets/logo/logo3.webp')} 
+              <Image
+                source={require('../assets/logo/logo3.webp')}
                 style={styles.logo}
                 resizeMode="contain"
               />
               <Text style={styles.title}>Create your account</Text>
               <Text style={styles.subtitle}>
                 Already have an account?{' '}
-                <Text 
+                <Text
                   style={styles.link}
                   onPress={() => navigation.navigate('Login' as never)}
                 >
@@ -194,7 +194,7 @@ export default function Signup() {
             </View>
 
             {/* Google Signup Button */}
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[styles.googleButton, (isGoogleLoading || googleCallbackMutation.isPending) && styles.googleButtonDisabled]}
               onPress={handleGoogleSignup}
               disabled={isGoogleLoading || googleCallbackMutation.isPending}
@@ -296,9 +296,9 @@ export default function Signup() {
                     <Text style={styles.passwordStrengthTitle}>Password must contain:</Text>
                     <View style={styles.passwordStrengthList}>
                       <View style={styles.passwordStrengthItem}>
-                        <Check 
-                          size={12} 
-                          color={passwordStrength.hasMinLength ? '#10b981' : '#d1d5db'} 
+                        <Check
+                          size={12}
+                          color={passwordStrength.hasMinLength ? '#10b981' : '#d1d5db'}
                         />
                         <Text style={[
                           styles.passwordStrengthText,
@@ -308,9 +308,9 @@ export default function Signup() {
                         </Text>
                       </View>
                       <View style={styles.passwordStrengthItem}>
-                        <Check 
-                          size={12} 
-                          color={passwordStrength.hasUppercase ? '#10b981' : '#d1d5db'} 
+                        <Check
+                          size={12}
+                          color={passwordStrength.hasUppercase ? '#10b981' : '#d1d5db'}
                         />
                         <Text style={[
                           styles.passwordStrengthText,
@@ -320,9 +320,9 @@ export default function Signup() {
                         </Text>
                       </View>
                       <View style={styles.passwordStrengthItem}>
-                        <Check 
-                          size={12} 
-                          color={passwordStrength.hasLowercase ? '#10b981' : '#d1d5db'} 
+                        <Check
+                          size={12}
+                          color={passwordStrength.hasLowercase ? '#10b981' : '#d1d5db'}
                         />
                         <Text style={[
                           styles.passwordStrengthText,
@@ -332,9 +332,9 @@ export default function Signup() {
                         </Text>
                       </View>
                       <View style={styles.passwordStrengthItem}>
-                        <Check 
-                          size={12} 
-                          color={passwordStrength.hasNumber ? '#10b981' : '#d1d5db'} 
+                        <Check
+                          size={12}
+                          color={passwordStrength.hasNumber ? '#10b981' : '#d1d5db'}
                         />
                         <Text style={[
                           styles.passwordStrengthText,
@@ -344,9 +344,9 @@ export default function Signup() {
                         </Text>
                       </View>
                       <View style={styles.passwordStrengthItem}>
-                        <Check 
-                          size={12} 
-                          color={passwordStrength.hasSpecialChar ? '#10b981' : '#d1d5db'} 
+                        <Check
+                          size={12}
+                          color={passwordStrength.hasSpecialChar ? '#10b981' : '#d1d5db'}
                         />
                         <Text style={[
                           styles.passwordStrengthText,
@@ -383,14 +383,14 @@ export default function Signup() {
             {/* Terms */}
             <Text style={styles.termsText}>
               By creating an account, you agree to our{' '}
-              <Text 
+              <Text
                 style={styles.termsLink}
                 onPress={() => navigation.navigate('Settings' as never)}
               >
                 Terms of Service
               </Text>
               {' '}and{' '}
-              <Text 
+              <Text
                 style={styles.termsLink}
                 onPress={() => navigation.navigate('Settings' as never)}
               >
@@ -444,7 +444,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontWeight: '600',
+    fontFamily: 'Outfit-Bold',
     color: '#111827',
     marginBottom: 8,
     textAlign: 'center',
@@ -453,10 +453,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: PrimaryGrey,
     textAlign: 'center',
+    fontFamily: 'Outfit-Regular',
   },
   link: {
     color: '#111827',
-    fontWeight: '600',
+    fontFamily: 'Outfit-SemiBold',
   },
   googleButton: {
     flexDirection: 'row',
@@ -482,7 +483,7 @@ const styles = StyleSheet.create({
   googleButtonText: {
     fontSize: 14,
     color: '#374151',
-    fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
   },
   divider: {
     flexDirection: 'row',
@@ -499,6 +500,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#6b7280',
     textTransform: 'uppercase',
+    fontFamily: 'Outfit-Medium',
   },
   form: {
     marginBottom: 24,
@@ -516,7 +518,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
     color: '#374151',
     marginBottom: 4,
   },
@@ -588,7 +590,7 @@ const styles = StyleSheet.create({
   submitButtonText: {
     color: 'white',
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: 'Outfit-SemiBold',
   },
   loadingContainer: {
     flexDirection: 'row',
@@ -597,7 +599,7 @@ const styles = StyleSheet.create({
   loadingText: {
     color: 'white',
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: 'Outfit-SemiBold',
     marginLeft: 8,
   },
   termsText: {
@@ -608,6 +610,6 @@ const styles = StyleSheet.create({
   },
   termsLink: {
     color: '#374151',
-    fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
   },
 })

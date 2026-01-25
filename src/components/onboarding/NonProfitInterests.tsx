@@ -314,7 +314,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: '700',
+    fontFamily: 'Outfit-Bold',
     color: '#111827',
     textAlign: 'center',
     marginBottom: 12,
@@ -342,7 +342,7 @@ const styles = StyleSheet.create({
   },
   categoryButtonText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
     textAlign: 'center',
   },
   selectedCountContainer: {
@@ -351,7 +351,7 @@ const styles = StyleSheet.create({
   selectedCountText: {
     fontSize: 14,
     color: '#6366f1',
-    fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
     textAlign: 'center',
   },
   buttonContainer: {
@@ -375,7 +375,7 @@ const styles = StyleSheet.create({
   continueButtonText: {
     color: 'white',
     fontSize: 16,
-    fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
   },
   loadingContainer: {
     flexDirection: 'row',
@@ -390,5 +390,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6b7280',
     textDecorationLine: 'underline',
+    fontFamily: 'Outfit-Regular',
   },
 });

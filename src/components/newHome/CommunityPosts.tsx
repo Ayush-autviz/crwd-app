@@ -30,7 +30,7 @@ export default function CommunityPosts({
           <View style={styles.heading}>
             <Text style={styles.title}>Community Updates</Text>
             <Text style={styles.subtitle}>
-              Activity, updates, and discoveries from your community
+              Updates and discoveries from your community
             </Text>
           </View>
         )}
@@ -54,7 +54,7 @@ export default function CommunityPosts({
         <View style={styles.heading}>
           <Text style={styles.title}>Community Updates</Text>
           <Text style={styles.subtitle}>
-            Activity, updates, and discoveries from your community
+            Updates and discoveries from your community
           </Text>
         </View>
       )}

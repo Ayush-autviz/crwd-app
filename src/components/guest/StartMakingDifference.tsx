@@ -47,6 +47,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     textAlign: 'center',
     // lineHeight: 40,
+    fontFamily: 'Outfit-Black',
   },
   subtitle: {
     fontSize: 17,
@@ -55,6 +56,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     maxWidth: 600,
     // lineHeight: 28,
+    fontFamily: 'Outfit-Regular',
   },
   button: {
     backgroundColor: '#aeff30',
@@ -71,6 +73,7 @@ const styles = StyleSheet.create({
     color: 'black',
     fontWeight: '900',
     fontSize: 18,
+    fontFamily: 'Outfit-Black',
   },
 });
 

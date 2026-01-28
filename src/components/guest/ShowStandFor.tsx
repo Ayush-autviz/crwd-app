@@ -53,6 +53,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         // lineHeight: 32,
         maxWidth: 500,
+        fontFamily: 'Outfit-ExtraBold',
     },
     description: {
         fontSize: 16,
@@ -61,6 +62,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         maxWidth: 500,
         lineHeight: 24,
+        fontFamily: 'Outfit-Regular',
     },
     image: {
         width: '100%',
@@ -77,5 +79,6 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: 16,
         fontWeight: 'bold',
+        fontFamily: 'Outfit-Bold',
     },
 });

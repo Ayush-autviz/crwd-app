@@ -98,6 +98,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 32,
     lineHeight: 36,
+    fontFamily: 'Outfit-ExtraBold',
   },
   headingHighlight: {
     color: '#1600ff',
@@ -135,6 +136,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     color: PrimaryBlue,
+    fontFamily: 'Outfit-Bold',
   },
   stepCirclePink: {
     width: 48,
@@ -149,6 +151,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     color: '#ec4899',
+    fontFamily: 'Outfit-Bold',
   },
   stepCirclePurple: {
     width: 48,
@@ -163,6 +166,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     color: '#a855f7',
+    fontFamily: 'Outfit-Bold',
   },
   stepTitle: {
     fontSize: 14,
@@ -170,6 +174,7 @@ const styles = StyleSheet.create({
     color: '#111827',
     textAlign: 'center',
     marginBottom: 12,
+    fontFamily: 'Outfit-SemiBold',
   },
   amountButtonsContainer: {
     flexDirection: 'row',
@@ -187,19 +192,21 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 12,
     fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
   },
   amountSubtext: {
     fontSize: 12,
     color: '#6b7280',
     textAlign: 'center',
+    fontFamily: 'Outfit-Regular',
   },
   benefitsMessage: {
     fontSize: 18,
     fontWeight: '800',
     color: '#1600ff',
-    textAlign: 'center',
     lineHeight: 24,
     marginTop: 16,
+    fontFamily: 'Outfit-ExtraBold',
   },
 });
 

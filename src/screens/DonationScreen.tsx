@@ -559,7 +559,7 @@ export default function DonationScreen() {
   if (!currentUser?.id) {
     return (
       <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }} edges={['top', 'left', 'right']}>
-        <MainHeaderNav title={'Donation Box'} />
+        <MainHeaderNav title={'Donation Box'} menu={false} />
         <View style={{
           flex: 1,
           justifyContent: 'center',

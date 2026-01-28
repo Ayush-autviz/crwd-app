@@ -124,12 +124,14 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: '800',
     color: '#111827',
+    fontFamily: 'Outfit-ExtraBold',
   },
   subtitle: {
     fontSize: 14,
     color: '#6b7280',
     lineHeight: 20,
     maxWidth: 800,
+    fontFamily: 'Outfit-Regular',
   },
   grid: {
     flexDirection: 'row',
@@ -170,6 +172,7 @@ const styles = StyleSheet.create({
   readTime: {
     fontSize: 12,
     color: '#6b7280',
+    fontFamily: 'Outfit-Regular',
   },
   articleTitle: {
     fontWeight: 'bold',
@@ -177,11 +180,13 @@ const styles = StyleSheet.create({
     color: '#111827',
     marginBottom: 8,
     lineHeight: 24,
+    fontFamily: 'Outfit-Bold',
   },
   articleDescription: {
     fontSize: 14,
     color: '#6b7280',
     lineHeight: 20,
+    fontFamily: 'Outfit-Regular',
   },
 });
 

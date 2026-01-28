@@ -424,7 +424,7 @@ export default function GuestHome() {
                     <TouchableOpacity
                       style={styles.menuItem}
                       onPress={() => {
-                        navigation.navigate('Circles' as never);
+                        navigation.navigate('Collectives' as never);
                         handleCloseMenu();
                       }}
                     >
@@ -434,7 +434,7 @@ export default function GuestHome() {
                     <TouchableOpacity
                       style={styles.menuItem}
                       onPress={() => {
-                        navigation.navigate('Donation' as never);
+                        navigation.navigate('Donate' as never);
                         handleCloseMenu();
                       }}
                     >
@@ -451,7 +451,7 @@ export default function GuestHome() {
                     <TouchableOpacity
                       style={styles.menuItem}
                       onPress={() => {
-                        navigation.navigate('Waitlist' as never);
+                        navigation.navigate('TermsOfUse' as never);
                         handleCloseMenu();
                       }}
                     >
@@ -848,6 +848,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#111827',
     fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
   },
   menuSeparator: {
     borderTopWidth: 1,

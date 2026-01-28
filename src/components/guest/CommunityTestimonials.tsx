@@ -160,12 +160,14 @@ const styles = StyleSheet.create({
     color: '#111827',
     marginBottom: 16,
     textAlign: 'center',
+    fontFamily: 'Outfit-ExtraBold',
   },
   subtitle: {
     fontSize: 14,
     color: '#6b7280',
     textAlign: 'center',
     marginBottom: 24,
+    fontFamily: 'Outfit-Regular',
   },
   loadingContainer: {
     paddingVertical: 48,
@@ -199,17 +201,20 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#111827',
     marginBottom: 2,
+    fontFamily: 'Outfit-Bold',
   },
   collectiveName: {
     fontSize: 14,
     color: '#1600ff',
     fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
   },
   postContent: {
     fontSize: 14,
     color: '#111827',
     marginBottom: 16,
     lineHeight: 20,
+    fontFamily: 'Outfit-Regular',
   },
   engagementRow: {
     flexDirection: 'row',
@@ -226,6 +231,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#111827',
     fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
   },
 });
 

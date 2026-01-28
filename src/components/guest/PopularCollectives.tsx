@@ -62,6 +62,7 @@ export default function PopularCollectives() {
         founder: {
           name: founderName,
           profile_picture: collective.created_by?.profile_picture || '',
+          color: collective.created_by?.color || '',
         },
         nonprofit_count:
           collective.causes_count ||
@@ -248,12 +249,14 @@ const styles = StyleSheet.create({
     color: '#111827',
     marginBottom: 8,
     textAlign: 'center',
+    fontFamily: 'Outfit-ExtraBold',
   },
   subtitle: {
     fontSize: 14,
     color: '#6b7280',
     textAlign: 'center',
     marginBottom: 24,
+    fontFamily: 'Outfit-Regular',
   },
   loadingContainer: {
     paddingVertical: 48,
@@ -303,12 +306,14 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     fontSize: 24,
+    fontFamily: 'Outfit-Bold',
   },
   cardTitle: {
     flex: 1,
     fontWeight: 'bold',
     fontSize: 18,
     color: '#111827',
+    fontFamily: 'Outfit-Bold',
   },
   founderRow: {
     flexDirection: 'row',
@@ -319,17 +324,20 @@ const styles = StyleSheet.create({
   founderText: {
     fontSize: 12,
     color: '#6b7280',
+    fontFamily: 'Outfit-Regular',
   },
   nonprofitCount: {
     fontSize: 12,
     color: '#6b7280',
     marginBottom: 12,
+    fontFamily: 'Outfit-Medium',
   },
   description: {
     fontSize: 14,
     color: '#6b7280',
     lineHeight: 20,
     marginBottom: 16,
+    fontFamily: 'Outfit-Regular',
   },
   viewButton: {
     borderWidth: 1,
@@ -343,6 +351,7 @@ const styles = StyleSheet.create({
     color: '#a854f7',
     fontWeight: '500',
     fontSize: 14,
+    fontFamily: 'Outfit-Medium',
   },
   buttonsContainer: {
     alignItems: 'center',
@@ -361,6 +370,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     fontSize: 16,
+    fontFamily: 'Outfit-Bold',
   },
   seeAllButton: {
     borderWidth: 1,
@@ -376,6 +386,7 @@ const styles = StyleSheet.create({
     color: '#a854f7',
     fontWeight: '500',
     fontSize: 16,
+    fontFamily: 'Outfit-Medium',
   },
 });
 

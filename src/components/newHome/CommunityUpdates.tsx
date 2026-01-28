@@ -216,7 +216,7 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
               <AvatarImage src={update.data?.profile_picture} />
               <AvatarFallback
                 style={{ backgroundColor: update.data?.color || '#1600ff' }}
-                textStyle={{ color: '#FFFFFF', fontSize: 16 }}
+                textStyle={{ color: '#FFFFFF', fontSize: 15 }}
               >
                 {update.user.name
                   .charAt(0)
@@ -261,7 +261,7 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
           <View style={styles.actionTextContainer}>
             {/* Action Text */}
             <Text style={styles.actionText}>
-              {userName} {cleanActionText}
+              {cleanActionText}
             </Text>
             {/* Supporting X nonprofits - Only on second line if it exists */}
             {nonprofitCount > 0 && (
@@ -286,7 +286,7 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
             <AvatarImage src={update.data?.profile_picture} />
             <AvatarFallback
               style={{ backgroundColor: update.data?.color || '#1600ff' }}
-              textStyle={{ color: '#FFFFFF', fontSize: 16 }}
+              textStyle={{ color: '#FFFFFF', fontSize: 15 }}
             >
               {update.user.name
                 .charAt(0)
@@ -403,7 +403,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Bold',
   },
   subtitle: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#6B7280',
     fontFamily: 'Outfit-Regular',
   },
@@ -474,18 +474,18 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   userName: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '700',
     color: '#111827',
     fontFamily: 'Outfit-Bold',
   },
   username: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#6B7280',
     fontFamily: 'Outfit-Regular',
   },
   collectiveName: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#6B7280',
     marginTop: 2,
     fontFamily: 'Outfit-Regular',
@@ -522,21 +522,21 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   actionText: {
-    fontSize: 12,
+    fontSize: 15,
     fontWeight: '600',
     color: '#4B5563',
     flex: 1,
     fontFamily: 'Outfit-SemiBold',
   },
   actionTextDonation: {
-    fontSize: 12,
+    fontSize: 15,
     fontWeight: '600',
     color: '#111827',
     flex: 1,
     fontFamily: 'Outfit-SemiBold',
   },
   nonprofitCountText: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#6B7280',
     fontFamily: 'Outfit-Regular',
   },
@@ -553,7 +553,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   joinButtonText: {
-    fontSize: 12,
+    fontSize: 15,
     fontWeight: '600',
     color: '#1600ff',
     fontFamily: 'Outfit-SemiBold',
@@ -575,13 +575,13 @@ const styles = StyleSheet.create({
     borderColor: '#1600ff',
   },
   followButtonText: {
-    fontSize: 12,
+    fontSize: 15,
     fontWeight: '600',
     color: '#1600ff',
     fontFamily: 'Outfit-SemiBold',
   },
   followingButtonText: {
-    fontSize: 12,
+    fontSize: 15,
     fontWeight: '600',
     color: '#FFFFFF',
     fontFamily: 'Outfit-SemiBold',

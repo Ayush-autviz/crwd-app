@@ -316,7 +316,7 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
                 <AvatarImage src={user.profile_picture} />
                 <AvatarFallback
                   style={{ backgroundColor: avatarBgColor }}
-                  textStyle={{ color: '#FFFFFF', fontSize: 16, fontWeight: '700' }}
+                  textStyle={{ color: '#FFFFFF', fontSize: 15, fontWeight: '700' }}
                 >
                   {initials}
                 </AvatarFallback>
@@ -484,7 +484,7 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
 
           {/* Fundraiser Info - rounded-b-lg only, connected to cover */}
           <View style={{ marginBottom: 8, backgroundColor: 'white', padding: 16, borderBottomLeftRadius: 12, borderBottomRightRadius: 12, borderWidth: 1, borderColor: '#E5E7EB', borderTopWidth: 0 }}>
-            <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#111827', marginBottom: 12 }}>
+            <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#111827', marginBottom: 12 }}>
               {post.fundraiser.name}
             </Text>
 
@@ -557,17 +557,17 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
             )}
             <View style={{ padding: 12 }}>
               {post.preview_details.site_name && (
-                <Text style={{ fontSize: 10, color: '#6B7280', textTransform: 'uppercase', marginBottom: 4 }}>
+                <Text style={{ fontSize: 14, color: '#6B7280', textTransform: 'uppercase', marginBottom: 4 }}>
                   {post.preview_details.site_name.toUpperCase()}
                 </Text>
               )}
               {post.preview_details.title && (
-                <Text style={{ fontSize: 16, fontWeight: '600', color: '#111827', marginBottom: 4 }} numberOfLines={2}>
+                <Text style={{ fontSize: 15, fontWeight: '600', color: '#111827', marginBottom: 4 }} numberOfLines={2}>
                   {post.preview_details.title}
                 </Text>
               )}
               {post.preview_details.description && (
-                <Text style={{ fontSize: 12, color: '#4B5563' }} numberOfLines={2}>
+                <Text style={{ fontSize: 14, color: '#4B5563' }} numberOfLines={2}>
                   {post.preview_details.description}
                 </Text>
               )}
@@ -690,7 +690,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Regular',
   },
   fundraiserTitle: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: 'bold',
     color: '#111827',
     marginBottom: 12,
@@ -756,7 +756,7 @@ const styles = StyleSheet.create({
     borderColor: '#1600ff',
   },
   followButtonText: {
-    fontSize: 10,
+    fontSize: 15,
     fontWeight: '600',
     color: '#1600ff',
     fontFamily: 'Outfit-SemiBold',
@@ -794,38 +794,38 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   name: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
     color: '#111827',
     fontFamily: 'Outfit-Bold',
   },
   separator: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#9CA3AF',
   },
   username: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#6B7280',
     fontFamily: 'Outfit-Regular',
   },
   metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    // gap: 4,
+    gap: 4,
   },
   collectiveName: {
-    fontSize: 13,
+    fontSize: 14,
     color: PrimaryGrey, // Blue for collective name
     fontWeight: '500',
     fontFamily: 'Outfit-Medium',
   },
   time: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#6B7280',
     fontFamily: 'Outfit-Regular',
   },
   postContent: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#111827',
     marginBottom: 10,
     marginTop: 5,
@@ -866,7 +866,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   previewSiteName: {
-    fontSize: 9,
+    fontSize: 14,
     color: '#6B7280',
     fontWeight: '600',
     letterSpacing: 0.5,
@@ -874,22 +874,22 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-SemiBold',
   },
   previewTitle: {
-    fontSize: 12,
+    fontSize: 15,
     fontWeight: '600',
     color: '#111827',
     marginBottom: 4,
-    lineHeight: 16,
+    lineHeight: 20,
     fontFamily: 'Outfit-SemiBold',
   },
   previewDescription: {
-    fontSize: 10,
+    fontSize: 14,
     color: '#4B5563',
     marginBottom: 4,
-    lineHeight: 14,
+    lineHeight: 18,
     fontFamily: 'Outfit-Regular',
   },
   previewDomain: {
-    fontSize: 10,
+    fontSize: 14,
     color: '#6B7280',
   },
   engagement: {
@@ -916,7 +916,7 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   engagementText: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#4B5563',
     fontFamily: 'Outfit-Regular',
   },

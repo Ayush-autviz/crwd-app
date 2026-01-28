@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   cardTitle: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
     color: '#111827',
     marginBottom: 4,
@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Bold',
   },
   cardSubtitle: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#4B5563',
     marginBottom: 8,
     marginTop: 4,
@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   blackLink: {
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: '600',
     color: '#111827',
     fontFamily: 'Outfit-SemiBold',

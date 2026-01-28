@@ -130,14 +130,14 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   title: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '700',
     color: '#111827',
     textAlign: 'center',
     fontFamily: 'Outfit-Bold',
   },
   subtitle: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#6B7280',
     textAlign: 'center',
     fontFamily: 'Outfit-Regular',

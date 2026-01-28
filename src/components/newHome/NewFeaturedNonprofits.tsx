@@ -119,13 +119,13 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   title: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '700',
     color: '#111827',
     fontFamily: 'Outfit-Bold',
   },
   seeAll: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '500',
     color: '#1600ff',
     fontFamily: 'Outfit-Medium',
@@ -142,8 +142,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E5E7EB',
     backgroundColor: '#FFFFFF',
-    minWidth: 240,
-    maxWidth: 280,
+    minWidth: 260,
+    maxWidth: 300,
     marginRight: 12,
   },
   avatar: {
@@ -157,14 +157,14 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   cardTitle: {
-    fontSize: 12,
+    fontSize: 15,
     fontWeight: '700',
     color: '#111827',
     marginBottom: 4,
     fontFamily: 'Outfit-Bold',
   },
   description: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#4B5563',
     lineHeight: 18,
     fontFamily: 'Outfit-Regular',

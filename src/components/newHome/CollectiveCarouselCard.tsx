@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   navText: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#374151',
     minWidth: 50,
     textAlign: 'center',
@@ -318,7 +318,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#A855F7',
   },
   badgeText: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '500',
     color: '#DC2626',
     fontFamily: 'Outfit-Medium',
@@ -330,10 +330,10 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   description: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#374151',
     marginBottom: 16,
-    lineHeight: 20,
+    lineHeight: 22,
     textAlign: 'left',
     fontFamily: 'Outfit-Regular',
   },
@@ -360,7 +360,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   outlineButtonText: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '700',
     color: '#111827',
     fontFamily: 'Outfit-Bold',
@@ -377,7 +377,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   primaryButtonText: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '600',
     color: '#FFFFFF',
     fontFamily: 'Outfit-SemiBold',

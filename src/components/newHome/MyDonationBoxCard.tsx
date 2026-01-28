@@ -95,16 +95,16 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   title: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
     color: '#111827',
     fontFamily: 'Outfit-Bold',
   },
   description: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#4B5563',
     marginBottom: 8,
-    lineHeight: 18,
+    lineHeight: 22,
     fontFamily: 'Outfit-Regular',
   },
   bold: {
@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   linkText: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '700',
     color: '#1600ff',
     fontFamily: 'Outfit-Bold',

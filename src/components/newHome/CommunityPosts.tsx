@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Bold',
   },
   subtitle: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#4B5563',
     fontFamily: 'Outfit-Regular',
   },

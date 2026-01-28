@@ -1713,10 +1713,10 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
+    fontFamily: 'Outfit-SemiBold',
     fontWeight: '600',
     color: '#111827',
     flex: 1,
-    fontFamily: 'Outfit-SemiBold',
   },
   required: {
     color: '#EF4444',
@@ -1727,9 +1727,9 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     paddingHorizontal: 12,
     paddingVertical: 12,
-    fontSize: 14,
+    fontSize: 16,
     color: '#111827',
-    fontFamily: 'Outfit-Regular',
+    fontFamily: 'Outfit-Medium',
   },
   inputItalic: {
     fontStyle: 'italic',
@@ -1741,10 +1741,10 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     paddingHorizontal: 12,
     paddingVertical: 12,
-    fontSize: 14,
+    fontSize: 16,
     color: '#111827',
     textAlignVertical: 'top',
-    fontFamily: 'Outfit-Regular',
+    fontFamily: 'Outfit-Medium',
   },
   logoSection: {
     flexDirection: 'row',
@@ -1783,7 +1783,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Bold',
   },
   logoSubtext: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#6B7280',
     marginTop: 4,
     fontFamily: 'Outfit-Regular',
@@ -1799,7 +1799,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   customizeButtonText: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#111827',
     fontWeight: '500',
     fontFamily: 'Outfit-Medium',
@@ -1967,12 +1967,12 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   selectedCauseCategoryText: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '500',
     fontFamily: 'Outfit-Medium',
   },
   selectedCauseDescription: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#6B7280',
     marginBottom: 8,
     fontFamily: 'Outfit-Regular',
@@ -2009,7 +2009,7 @@ const styles = StyleSheet.create({
     paddingLeft: 40,
     paddingRight: 12,
     paddingVertical: 12,
-    fontSize: 14,
+    fontSize: 16,
     color: '#111827',
     fontFamily: 'Outfit-Regular',
   },
@@ -2100,12 +2100,12 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   causeCategoryText: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '500',
     fontFamily: 'Outfit-Medium',
   },
   causeDescription: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#6B7280',
     fontFamily: 'Outfit-Regular',
   },
@@ -2136,7 +2136,7 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
   },
   noCausesText: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#6B7280',
     textAlign: 'center',
     paddingVertical: 24,
@@ -2164,8 +2164,8 @@ const styles = StyleSheet.create({
   footerButtonText: {
     color: 'white',
     fontSize: 16,
-    fontWeight: '600',
-    fontFamily: 'Outfit-SemiBold',
+    fontWeight: '700',
+    fontFamily: 'Outfit-Bold',
   },
   footerButtonDisabled: {
     backgroundColor: '#D1D5DB',
@@ -2178,8 +2178,8 @@ const styles = StyleSheet.create({
   footerButtonTextDisabled: {
     color: 'white',
     fontSize: 16,
-    fontWeight: '600',
-    fontFamily: 'Outfit-SemiBold',
+    fontWeight: '700',
+    fontFamily: 'Outfit-Bold',
   },
   // Review styles
   reviewContent: {
@@ -2224,7 +2224,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Bold',
   },
   reviewLabel: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '500',
     color: '#6B7280',
     textTransform: 'uppercase',
@@ -2275,7 +2275,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Bold',
   },
   reviewCauseDescription: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#6B7280',
     marginBottom: 8,
     fontFamily: 'Outfit-Regular',
@@ -2292,7 +2292,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   reviewCauseCategoryText: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '500',
     fontFamily: 'Outfit-Medium',
   },
@@ -2302,7 +2302,7 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   reviewNoteText: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#4B5563',
     textAlign: 'center',
     fontFamily: 'Outfit-Medium',

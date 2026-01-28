@@ -256,9 +256,14 @@ export default function FundraiserDetail() {
                 <Text style={styles.progressText}>
                   {fundraiserData.progress_percentage?.toFixed(2) || '0.00'}% of goal
                 </Text>
-                {daysLeft > 0 && (
+                {fundraiserData.is_active && daysLeft > 0 && (
                   <Text style={styles.progressText}>
                     {daysLeft} day{daysLeft !== 1 ? 's' : ''} left
+                  </Text>
+                )}
+                {!fundraiserData.is_active && (
+                  <Text style={styles.progressText}>
+                    Fundraiser Ended
                   </Text>
                 )}
               </View>
@@ -768,7 +773,7 @@ const styles = StyleSheet.create({
   },
   causeName: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '700',
     color: '#111827',
     fontFamily: 'Outfit-Bold',
   },
@@ -790,7 +795,7 @@ const styles = StyleSheet.create({
   },
   supporterName: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '700',
     color: '#111827',
     marginBottom: 4,
     fontFamily: 'Outfit-Bold',

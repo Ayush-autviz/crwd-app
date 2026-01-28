@@ -17,6 +17,7 @@ interface CollectiveProfileProps {
   };
   description?: string;
   isJoined?: boolean;
+  perks?: string;
 }
 
 export default function CollectiveProfile({
@@ -27,6 +28,7 @@ export default function CollectiveProfile({
   founder,
   description,
   isJoined = false,
+  perks,
 }: CollectiveProfileProps) {
   const navigation = useNavigation();
 
@@ -205,6 +207,25 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     marginTop: 16,
     fontFamily: 'Outfit-Regular',
+  },
+  perksContainer: {
+    marginTop: 24,
+    padding: 16,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 12,
+  },
+  perksTitle: {
+    fontSize: 16,
+    fontFamily: 'Outfit-Bold',
+    fontWeight: '700',
+    color: '#111827',
+    marginBottom: 8,
+  },
+  perksText: {
+    fontSize: 14,
+    fontFamily: 'Outfit-Regular',
+    color: '#374151',
+    lineHeight: 20,
   },
 });
 

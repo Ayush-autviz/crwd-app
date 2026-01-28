@@ -13,7 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute, useNavigation, CommonActions } from '@react-navigation/native';
 import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Check, Share2, Loader2, X } from 'lucide-react-native';
+import { Check, Share2, Loader2, X, Heart } from 'lucide-react-native';
 import BottomSheet, { BottomSheetView, BottomSheetBackdrop, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import {
   getCollectiveById,
@@ -54,6 +54,7 @@ export default function NewGroupCrwdPage() {
   const [showCommentsSheet, setShowCommentsSheet] = useState(false);
   const [selectedPost, setSelectedPost] = useState<any>(null);
   const [showJoinModal, setShowJoinModal] = useState(false);
+  const [showFounderPerk, setShowFounderPerk] = useState(true);
 
   const handleBack = () => {
     const params = route.params as any;
@@ -834,6 +835,7 @@ export default function NewGroupCrwdPage() {
             founder={crwdData.created_by}
             description={crwdData.description}
             isJoined={crwdData.is_joined}
+            perks={crwdData.perks}
           />
 
           <CollectiveStats
@@ -962,6 +964,38 @@ export default function NewGroupCrwdPage() {
               setShowStatisticsModal(true);
             }}
           />
+
+          {showFounderPerk && (
+            <View style={styles.founderPerkCard}>
+              {/* Icon Container */}
+              <View style={styles.founderPerkIcon}>
+                <Heart size={20} color="#FFFFFF" />
+              </View>
+
+              {/* Content Container */}
+              <TouchableOpacity
+                onPress={() => isAdmin ? (navigation as any).navigate('CreateFundraiser', { collectiveId: crwdId }) : (navigation as any).navigate('NewCreateCollective')}
+                style={styles.founderPerkContent}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.founderPerkTitle}>
+                  Founder Perk: Create Fundraisers
+                </Text>
+                <Text style={styles.founderPerkText}>
+                  Respond to current events by creating fundraisers with any nonprofits you choose.
+                </Text>
+              </TouchableOpacity>
+
+              {/* Close Button */}
+              <TouchableOpacity
+                onPress={() => setShowFounderPerk(false)}
+                style={styles.founderPerkClose}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <X size={18} color="#9CA3AF" />
+              </TouchableOpacity>
+            </View>
+          )}
 
 
           <CommunityActivity
@@ -1576,6 +1610,50 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'Outfit-Regular',
     color: '#6B7280',
+  },
+  founderPerkCard: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#FFF8F1',
+    borderWidth: 1,
+    borderColor: '#F5E6D3',
+    borderRadius: 12,
+    padding: 20,
+    marginHorizontal: 12,
+    marginTop: 16,
+    position: 'relative',
+  },
+  founderPerkIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#F54E6D',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  founderPerkContent: {
+    flex: 1,
+    paddingRight: 24, // Space for close button
+  },
+  founderPerkTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#111827',
+    marginBottom: 4,
+    fontFamily: 'Outfit-Bold',
+  },
+  founderPerkText: {
+    fontSize: 14,
+    color: '#4B5563',
+    lineHeight: 20,
+    fontFamily: 'Outfit-Regular',
+  },
+  founderPerkClose: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    padding: 4,
   },
 });
 

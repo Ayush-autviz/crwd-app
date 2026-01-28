@@ -1162,9 +1162,9 @@ const styles = StyleSheet.create({
   },
   extendButtonText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#FFFFFF',
-    fontFamily: 'Outfit-SemiBold',
+    fontFamily: 'Outfit-Bold',
   },
   coverTypeRow: {
     flexDirection: 'row',
@@ -1440,9 +1440,9 @@ const styles = StyleSheet.create({
   },
   saveButtonText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#FFFFFF',
-    fontFamily: 'Outfit-SemiBold',
+    fontFamily: 'Outfit-Bold',
   },
   modalOverlay: {
     flex: 1,
@@ -1500,9 +1500,9 @@ const styles = StyleSheet.create({
   },
   cancelButtonText: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '700',
     color: PrimaryBlue,
-    fontFamily: 'Outfit-Medium',
+    fontFamily: 'Outfit-Bold',
   },
 });
 

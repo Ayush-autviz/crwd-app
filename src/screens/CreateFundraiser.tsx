@@ -65,7 +65,7 @@ const getInitials = (name: string) => {
   const words = name.split(' ').filter(Boolean);
   if (words.length === 0) return 'N';
   if (words.length === 1) return words[0].charAt(0).toUpperCase();
-  return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase();
+  return (words[0].charAt(0)).toUpperCase();
 };
 
 // Filter categories for the fundraiser page - use all categories except "All"
@@ -845,7 +845,7 @@ export default function CreateFundraiser() {
                         style={styles.nonprofitItem}
                       >
                         <Avatar style={styles.nonprofitAvatar}>
-                          <AvatarImage source={{ uri: nonprofit.image || undefined }} />
+                          <AvatarImage src={nonprofit.image || undefined} />
                           <AvatarFallback
                             style={{ backgroundColor: avatarBgColor }}
                           >
@@ -931,7 +931,7 @@ export default function CreateFundraiser() {
                       return (
                         <View key={nonprofit.id} style={styles.previewNonprofitItem}>
                           <Avatar style={styles.previewNonprofitAvatar}>
-                            <AvatarImage source={{ uri: nonprofit.image || undefined }} />
+                            <AvatarImage src={nonprofit.image || undefined} />
                             <AvatarFallback style={{ backgroundColor: avatarBgColor }}>
                               <Text style={styles.previewAvatarText}>{initials}</Text>
                             </AvatarFallback>
@@ -1153,12 +1153,12 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Bold',
   },
   infoText: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#1E40AF',
     fontFamily: 'Outfit-Regular',
   },
   infoTextOrange: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#C2410C',
     fontFamily: 'Outfit-Regular',
   },
@@ -1449,7 +1449,7 @@ const styles = StyleSheet.create({
     backgroundColor: PrimaryBlue,
   },
   filterButtonText: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '500',
     color: '#374151',
     fontFamily: 'Outfit-Medium',
@@ -1459,10 +1459,9 @@ const styles = StyleSheet.create({
   },
   selectedCount: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#111827',
-    // marginBottom: 16,
-    fontFamily: 'Outfit-SemiBold',
+    fontFamily: 'Outfit-Bold',
   },
   nonprofitsList: {
     gap: 12,
@@ -1479,7 +1478,7 @@ const styles = StyleSheet.create({
   },
   nonprofitItem: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: 8,
     padding: 10,
     borderWidth: 1,
@@ -1509,7 +1508,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Bold',
   },
   nonprofitMission: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#6B7280',
     fontFamily: 'Outfit-Regular',
   },
@@ -1644,6 +1643,7 @@ const styles = StyleSheet.create({
   previewNonprofitAvatar: {
     width: 48,
     height: 48,
+    borderRadius: 10
   },
   previewAvatarText: {
     fontSize: 12,
@@ -1700,10 +1700,10 @@ const styles = StyleSheet.create({
   },
   cancelButtonText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: '700',
     color: '#374151',
     textAlign: 'center',
-    fontFamily: 'Outfit-Medium',
+    fontFamily: 'Outfit-Bold',
   },
   nextButton: {
     flex: 1,
@@ -1719,9 +1719,9 @@ const styles = StyleSheet.create({
   },
   nextButtonText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#FFFFFF',
-    fontFamily: 'Outfit-SemiBold',
+    fontFamily: 'Outfit-Bold',
   },
   launchButton: {
     flex: 1,
@@ -1737,9 +1737,9 @@ const styles = StyleSheet.create({
   },
   launchButtonText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#FFFFFF',
-    fontFamily: 'Outfit-SemiBold',
+    fontFamily: 'Outfit-Bold',
   },
   loadingContainer: {
     flex: 1,

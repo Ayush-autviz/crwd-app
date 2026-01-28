@@ -370,7 +370,7 @@ const styles = StyleSheet.create({
   },
   dropdownText: {
     fontSize: 15,
-    fontFamily: 'Outfit-SemiBold',
+    fontFamily: 'Outfit-Medium',
     color: '#111827',
   },
   separator: {

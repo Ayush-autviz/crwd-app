@@ -815,7 +815,7 @@ const styles = StyleSheet.create({
   },
   collectiveName: {
     fontSize: 14,
-    color: PrimaryGrey, // Blue for collective name
+    color: PrimaryGrey,
     fontWeight: '500',
     fontFamily: 'Outfit-Medium',
   },

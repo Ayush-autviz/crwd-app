@@ -28,7 +28,7 @@ export default function MainHeaderNav({ show = false, menu = true, postButton = 
 
 
     return (
-        <SafeAreaView style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderBottomWidth: 2, borderBottomColor: LightGrey, height: 60, paddingHorizontal: 16 }}>
+        <SafeAreaView style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderBottomWidth: 2, borderBottomColor: '#E5E7EB', height: 60, paddingHorizontal: 16 }}>
             <View style={{ flexDirection: 'row', gap: 10, marginLeft: 16 }}>
                 {show &&
                     <TouchableOpacity disabled={!show} onPress={() => navigation.goBack()} style={{ marginTop: 1 }}>

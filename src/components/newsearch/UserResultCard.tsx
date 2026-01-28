@@ -145,14 +145,14 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   name: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '700',
     color: '#111827',
     marginBottom: 4,
     fontFamily: 'Outfit-Bold',
   },
   bio: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#4B5563',
     fontFamily: 'Outfit-Regular',
   },

@@ -494,7 +494,7 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
                 <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#1600ff' }}>
                   ${parseFloat(post.fundraiser.current_amount || '0').toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                 </Text>
-                <Text style={{ fontSize: 12, color: '#6b7280' }}>
+                <Text style={{ fontSize: 14, color: '#6b7280' }}>
                   raised of ${parseFloat(post.fundraiser.target_amount || '0').toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} goal
                 </Text>
               </View>
@@ -516,19 +516,19 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
               {/* Donors and Days Left */}
               <View style={{ flexDirection: 'row', gap: 12 }}>
                 {post.fundraiser.total_donors !== undefined && (
-                  <Text style={{ fontSize: 12, color: '#111827' }}>
+                  <Text style={{ fontSize: 14, color: '#111827' }}>
                     <Text style={{ fontWeight: '600' }}>{post.fundraiser.total_donors}</Text> donor{post.fundraiser.total_donors !== 1 ? 's' : ''}
                   </Text>
                 )}
                 {post.fundraiser.end_date && post.fundraiser.is_active && (
-                  <Text style={{ fontSize: 12, color: '#111827' }}>
+                  <Text style={{ fontSize: 14, color: '#111827' }}>
                     <Text style={{ fontWeight: '600' }}>
                       {Math.max(0, Math.ceil((new Date(post.fundraiser.end_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))}
                     </Text> days left
                   </Text>
                 )}
                 {!post.fundraiser.is_active && (
-                  <Text style={{ fontSize: 12, color: '#666', fontWeight: '500' }}>
+                  <Text style={{ fontSize: 14, color: '#666', fontWeight: '500' }}>
                     Fundraiser Ended
                   </Text>
                 )}
@@ -684,7 +684,7 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   startedFundraiserText: {
-    fontSize: 10,
+    fontSize: 14,
     color: '#6B7280',
     marginBottom: 4,
     fontFamily: 'Outfit-Regular',
@@ -711,7 +711,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Bold',
   },
   goalText: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#6B7280',
     fontFamily: 'Outfit-Regular',
   },
@@ -731,7 +731,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   statsText: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#111827',
     fontFamily: 'Outfit-Regular',
   },

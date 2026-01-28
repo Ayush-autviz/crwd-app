@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   introText: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#374151',
     lineHeight: 20,
     marginBottom: 16,
@@ -259,7 +259,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   label: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '500',
     color: '#111827',
     marginBottom: 8,
@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    fontSize: 14,
+    fontSize: 15,
     backgroundColor: '#FFFFFF',
     fontFamily: 'Outfit-Regular',
   },
@@ -293,7 +293,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   cancelText: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#374151',
     fontWeight: '500',
     fontFamily: 'Outfit-Medium',
@@ -311,7 +311,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#D1D5DB',
   },
   submitText: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '500',
     color: '#FFFFFF',
     fontFamily: 'Outfit-Medium',

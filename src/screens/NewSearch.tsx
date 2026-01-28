@@ -450,7 +450,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#3B82F6',
     backgroundColor: '#F9FAFB',
-    fontSize: 14,
+    fontSize: 15,
     fontFamily: 'Outfit-Regular',
   },
   surpriseSection: {
@@ -458,7 +458,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   sectionTitle: {
-    fontSize: 10,
+    fontSize: 14,
     fontWeight: '700',
     color: '#111827',
     marginBottom: 12,
@@ -501,14 +501,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   surpriseTitle: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '700',
     color: '#111827',
     marginBottom: 4,
     fontFamily: 'Outfit-Bold',
   },
   surpriseSubtitle: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#4B5563',
     fontFamily: 'Outfit-Regular',
   },
@@ -517,7 +517,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   resultsTitle: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '700',
     color: '#111827',
     fontFamily: 'Outfit-Bold',
@@ -528,7 +528,7 @@ const styles = StyleSheet.create({
     paddingBottom: 80,
   },
   sectionHeader: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '700',
     color: '#6B7280',
     marginBottom: 12,
@@ -553,20 +553,20 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   emptyText: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#374151',
     marginBottom: 12,
     textAlign: 'center',
     fontFamily: 'Outfit-Regular',
   },
   requestLink: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#1600ff',
     textDecorationLine: 'underline',
     fontFamily: 'Outfit-Regular',
   },
   emptyTitle: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '600',
     color: '#374151',
     marginTop: 16,
@@ -584,14 +584,14 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   categoriesTitle: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '600',
     color: '#111827',
     marginBottom: 12,
     fontFamily: 'Outfit-SemiBold',
   },
   categoryItem: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#374151',
     marginBottom: 8,
     fontFamily: 'Outfit-Regular',
@@ -608,7 +608,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   browseButtonText: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#111827',
     fontFamily: 'Outfit-SemiBold',
   },

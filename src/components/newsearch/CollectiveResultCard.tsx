@@ -250,14 +250,14 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   title: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '700',
     color: '#111827',
     marginBottom: 4,
     fontFamily: 'Outfit-Bold',
   },
   description: {
-    fontSize: 12,
+    fontSize: 15,
     color: '#4B5563',
     marginBottom: 8,
     fontFamily: 'Outfit-Regular',
@@ -269,18 +269,18 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   founderText: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#4B5563',
     fontFamily: 'Outfit-Regular',
   },
   founderNameLink: {
     color: '#1600ff',
     fontWeight: '600',
-    fontSize: 12,
+    fontSize: 14,
     fontFamily: 'Outfit-SemiBold',
   },
   nonprofitCount: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#4B5563',
     fontFamily: 'Outfit-Regular',
   },

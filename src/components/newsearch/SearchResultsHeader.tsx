@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#D1D5DB',
     backgroundColor: '#FFFFFF',
-    fontSize: 14,
+    fontSize: 15,
     fontFamily: 'Outfit-Regular',
   },
   clearButton: {

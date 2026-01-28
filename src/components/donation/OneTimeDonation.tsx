@@ -949,7 +949,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   emptyStateSubtext: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#9ca3af',
     marginTop: 4,
     textAlign: 'center',
@@ -966,7 +966,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   headerSubtitle: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#6b7280',
     textAlign: 'center',
     fontFamily: 'Outfit-Regular',
@@ -1022,7 +1022,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Bold',
   },
   amountLabel: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#111827',
     marginTop: 4,
     fontFamily: 'Outfit-Regular',
@@ -1045,7 +1045,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Bold',
   },
   capacityCount: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '500',
     color: PrimaryBlue,
     fontFamily: 'Outfit-Medium',
@@ -1066,7 +1066,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   capacityText: {
-    fontSize: 12,
+    fontSize: 13,
     color: PrimaryBlue,
     fontFamily: 'Outfit-Regular',
   },
@@ -1087,7 +1087,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Bold',
   },
   selectedCausesSubtitle: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#6b7280',
     fontFamily: 'Outfit-Regular',
   },
@@ -1100,7 +1100,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   selectedCausesBadgeText: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '700',
     color: '#ffffff',
     fontFamily: 'Outfit-Bold',
@@ -1142,7 +1142,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Bold',
   },
   selectedCauseDescription: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#6b7280',
     fontFamily: 'Outfit-Regular',
   },
@@ -1242,7 +1242,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Bold',
   },
   causeDescription: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#6b7280',
     fontFamily: 'Outfit-Regular',
   },

@@ -705,7 +705,7 @@ export default function ManageDonationBoxScreen() {
       </View>
 
       <View style={styles.container}>
-        <ScrollView style={styles.content} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
+        <ScrollView style={styles.content} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 0 }}>
           {/* Donation Box Summary Card */}
           <View style={styles.summaryCardContainer}>
             <View style={styles.summaryCard}>
@@ -1500,6 +1500,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#111827',
     marginLeft: 8,
+    fontFamily: 'Outfit-Bold',
   },
   headerSpacer: {
     width: 32,
@@ -1544,6 +1545,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#111827',
     marginBottom: 12,
+    fontFamily: 'Outfit-Medium',
   },
   amountRow: {
     flexDirection: 'row',
@@ -1573,6 +1575,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: PrimaryGrey,
+    fontFamily: 'Outfit-SemiBold',
   },
   amountDisplayContainer: {
     flexDirection: 'row',
@@ -1584,11 +1587,13 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#111827',
     minWidth: 80,
+    fontFamily: 'Outfit-Bold',
   },
   lifetimeAmount: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#6b7280',
     marginTop: 4,
+    fontFamily: 'Outfit-Regular',
   },
   billingCycleBanner: {
     backgroundColor: '#DBEAFE',
@@ -1599,9 +1604,10 @@ const styles = StyleSheet.create({
     borderColor: '#BFDBFE',
   },
   billingCycleText: {
-    fontSize: 12,
+    fontSize: 13,
     color: PrimaryBlue,
     textAlign: 'center',
+    fontFamily: 'Outfit-Regular',
   },
   amountControls: {
     flexDirection: 'row',
@@ -1620,6 +1626,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     color: '#111827',
+    fontFamily: 'Outfit-Bold',
   },
   capacityContainer: {
     backgroundColor: '#EFF6FF',
@@ -1637,10 +1644,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     color: PrimaryBlue,
+    fontFamily: 'Outfit-Bold',
   },
   capacityCount: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#111827',
+    fontFamily: 'Outfit-Regular',
   },
   progressBarContainer: {
     marginBottom: 8,
@@ -1658,8 +1667,9 @@ const styles = StyleSheet.create({
     backgroundColor: PrimaryBlue,
   },
   capacityText: {
-    fontSize: 14,
+    fontSize: 13,
     color: PrimaryBlue,
+    fontFamily: 'Outfit-Regular',
   },
   actionButtonsRow: {
     flexDirection: 'row',
@@ -1681,6 +1691,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#111827',
     fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
   },
   actionButtonTextUnderline: {
     // textDecorationLine: 'underline',
@@ -1691,9 +1702,10 @@ const styles = StyleSheet.create({
     right: 16,
   },
   transactionLinkText: {
-    fontSize: 12,
+    fontSize: 13,
     color: 'rgba(255, 255, 255, 0.8)',
     textDecorationLine: 'underline',
+    fontFamily: 'Outfit-Regular',
   },
   amountSection: {
     alignItems: 'center',
@@ -1723,10 +1735,12 @@ const styles = StyleSheet.create({
     fontSize: 36,
     fontWeight: '700',
     color: '#111827',
+    fontFamily: 'Outfit-Bold',
   },
   perMonthText: {
     fontSize: 16,
     color: '#6b7280',
+    fontFamily: 'Outfit-Regular',
   },
   amountControlsContainer: {
     flexDirection: 'row',
@@ -1770,6 +1784,7 @@ const styles = StyleSheet.create({
     color: '#6b7280',
     textAlign: 'center',
     marginBottom: 16,
+    fontFamily: 'Outfit-Regular',
   },
   actionButtons: {
     flexDirection: 'row',
@@ -1819,6 +1834,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     color: '#6b7280',
+    fontFamily: 'Outfit-Medium',
   },
   tabTextActive: {
     color: '#ffffff',
@@ -1843,17 +1859,20 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     marginBottom: 16,
     textTransform: 'uppercase',
+    fontFamily: 'Outfit-SemiBold',
   },
   sectionTitleLarge: {
     fontSize: 16,
     fontWeight: '700',
     color: '#111827',
     marginBottom: 4,
+    fontFamily: 'Outfit-Bold',
   },
   sectionSubtitle: {
-    fontSize: 11,
+    fontSize: 13,
     color: '#6b7280',
     marginBottom: 12,
+    fontFamily: 'Outfit-Regular',
   },
   causeCard: {
     backgroundColor: 'white',
@@ -1883,6 +1902,7 @@ const styles = StyleSheet.create({
   causeIconText: {
     fontSize: 18,
     fontWeight: '700',
+    fontFamily: 'Outfit-Bold',
   },
   causeActions: {
     flexDirection: 'row',
@@ -1896,10 +1916,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     color: '#111827',
+    fontFamily: 'Outfit-Bold',
   },
   amountPerMonth: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#6b7280',
+    fontFamily: 'Outfit-Regular',
   },
   collectiveHeader: {
     flexDirection: 'row',
@@ -1926,6 +1948,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#111827',
     marginBottom: 12,
+    fontFamily: 'Outfit-SemiBold',
   },
   collectiveCausesList: {
     gap: 12,
@@ -1949,8 +1972,9 @@ const styles = StyleSheet.create({
   },
   collectiveCauseIconText: {
     color: '#2563eb',
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '600',
+    fontFamily: 'Outfit-SemiBold',
   },
   collectiveCauseInfo: {
     flex: 1,
@@ -1959,11 +1983,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#111827',
     fontSize: 14,
+    fontFamily: 'Outfit-SemiBold',
   },
   collectiveCauseDescription: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#6b7280',
     marginTop: 4,
+    fontFamily: 'Outfit-Regular',
   },
   searchContainer: {
     flexDirection: 'row',
@@ -1997,15 +2023,17 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 16,
     fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
   },
   resultsSection: {
     marginBottom: 24,
   },
   resultsTitle: {
-    fontSize: 12,
+    fontSize: 15,
     fontWeight: '600',
     color: '#374151',
     marginBottom: 10,
+    fontFamily: 'Outfit-SemiBold',
   },
   list: {
     gap: 12,
@@ -2043,19 +2071,22 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#ffffff',
+    fontFamily: 'Outfit-Bold',
   },
   causeInfo: {
     flex: 1,
   },
   causeName: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '700',
     color: '#111827',
     marginBottom: 2,
+    fontFamily: 'Outfit-Bold',
   },
   causeDescription: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#6b7280',
+    fontFamily: 'Outfit-Regular',
   },
   removeButton: {
     flexDirection: 'row',
@@ -2067,8 +2098,9 @@ const styles = StyleSheet.create({
     // borderRadius: 6,
   },
   removeText: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#6b7280',
+    fontFamily: 'Outfit-Regular',
   },
   resultItem: {
     flexDirection: 'row',
@@ -2088,10 +2120,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#111827',
     marginBottom: 4,
+    fontFamily: 'Outfit-SemiBold',
   },
   resultDescription: {
     fontSize: 14,
     color: '#6b7280',
+    fontFamily: 'Outfit-Regular',
   },
   checkbox: {
     width: 24,
@@ -2140,6 +2174,7 @@ const styles = StyleSheet.create({
     color: '#6b7280',
     textAlign: 'center',
     lineHeight: 20,
+    fontFamily: 'Outfit-Regular',
   },
   footer: {
     backgroundColor: '#ffffff',
@@ -2172,6 +2207,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#ffffff',
+    fontFamily: 'Outfit-SemiBold',
   },
   deactivateButton: {
     backgroundColor: '#ffffff',
@@ -2188,6 +2224,7 @@ const styles = StyleSheet.create({
     color: '#dc2626',
     fontSize: 16,
     fontWeight: '600',
+    fontFamily: 'Outfit-SemiBold',
   },
   nextPaymentSection: {
     paddingHorizontal: 32,
@@ -2210,10 +2247,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     color: '#111827',
+    fontFamily: 'Outfit-Medium',
   },
   nextPaymentDate: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#6b7280',
+    fontFamily: 'Outfit-Regular',
   },
   nextPaymentAmount: {
     alignItems: 'flex-end',
@@ -2223,17 +2262,20 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     color: '#111827',
+    fontFamily: 'Outfit-Medium',
   },
   nextPaymentFrequency: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#6b7280',
+    fontFamily: 'Outfit-Regular',
   },
   allocationNote: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#9ca3af',
     textAlign: 'center',
     marginTop: 20,
     paddingHorizontal: 32,
+    fontFamily: 'Outfit-Regular',
   },
   modalOverlay: {
     flex: 1,
@@ -2254,12 +2296,14 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#111827',
     marginBottom: 12,
+    fontFamily: 'Outfit-SemiBold',
   },
   modalDescription: {
     fontSize: 14,
     color: '#6b7280',
     marginBottom: 24,
     lineHeight: 20,
+    fontFamily: 'Outfit-Regular',
   },
   modalActions: {
     flexDirection: 'row',
@@ -2277,6 +2321,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     color: '#374151',
+    fontFamily: 'Outfit-Medium',
   },
   modalRemoveButton: {
     paddingVertical: 10,
@@ -2288,6 +2333,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     color: '#ffffff',
+    fontFamily: 'Outfit-Medium',
   },
   editSplitButton: {
     flexDirection: 'row',
@@ -2299,8 +2345,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   editSplitButtonText: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '500',
     color: '#374151',
+    fontFamily: 'Outfit-Medium',
   },
 });

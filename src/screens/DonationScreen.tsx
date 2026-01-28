@@ -1246,7 +1246,7 @@ export default function DonationScreen() {
                                           {cause.mission || cause.description || 'Making a positive impact'}
                                         </Text>
                                       </View>
-                                      <View style={{ alignItems: 'flex-end', marginRight: 12 }}>
+                                      {/* <View style={{ alignItems: 'flex-end', marginRight: 12 }}>
                                         <Text style={{ fontWeight: '700', fontSize: 13, color: '#111827' }}>
                                           {(() => {
                                             const customPercentage = getCausePercentage(cause.id);
@@ -1260,7 +1260,7 @@ export default function DonationScreen() {
                                         <Text style={{ fontSize: 11, color: '#6B7280' }}>
                                           ${getAmountPerItem(cause.id).toFixed(2)}/mo
                                         </Text>
-                                      </View>
+                                      </View> */}
                                       <TouchableOpacity
                                         onPress={() => {
                                           setItemToDelete({ id: cause.id.toString(), name: cause.name, type: 'cause' });
@@ -1379,6 +1379,12 @@ export default function DonationScreen() {
                       {createBoxMutation.isPending ? 'Creating...' : 'Continue to Review'}
                     </Text>
                   </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => navigation.navigate('Home' as never)}
+                    style={styles.skipButton}
+                  >
+                    <Text style={styles.skipButtonText}>Skip for now</Text>
+                  </TouchableOpacity>
                 </View>
               )}
 
@@ -1391,6 +1397,12 @@ export default function DonationScreen() {
                     <Text style={styles.continueButtonText}>
                       Continue to Review
                     </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => navigation.navigate('Home' as never)}
+                    style={styles.skipButton}
+                  >
+                    <Text style={styles.skipButtonText}>Skip for now</Text>
                   </TouchableOpacity>
                 </View>
               )}
@@ -1668,7 +1680,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Bold',
   },
   step1Subtitle: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#6b7280',
     textAlign: 'center',
     fontFamily: 'Outfit-Regular',
@@ -2038,7 +2050,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Bold',
   },
   capacityCount: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '500',
     color: '#1600ff',
     fontFamily: 'Outfit-Medium',
@@ -2057,7 +2069,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   capacityText: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#1600ff',
     fontFamily: 'Outfit-Regular',
   },
@@ -2077,7 +2089,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Bold',
   },
   selectedCausesSubtitle: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#6b7280',
     marginTop: 4,
     fontFamily: 'Outfit-Regular',
@@ -2135,7 +2147,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Bold',
   },
   selectedCauseDescription: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#6b7280',
     fontFamily: 'Outfit-Regular',
   },
@@ -2179,7 +2191,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   requestLink: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#1600ff',
     textDecorationLine: 'underline',
     fontWeight: '500',
@@ -2223,7 +2235,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Bold',
   },
   causeDescription: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#6b7280',
     fontFamily: 'Outfit-Regular',
   },
@@ -2309,7 +2321,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Bold',
   },
   causeDescriptionStep2: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#6b7280',
     fontFamily: 'Outfit-Regular',
   },
@@ -2328,7 +2340,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Bold',
   },
   amountPerMonthStep2: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#6b7280',
     fontFamily: 'Outfit-Regular',
   },
@@ -2509,5 +2521,17 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#6b7280',
     fontFamily: 'Outfit-Regular',
+  },
+  skipButton: {
+    paddingBottom: 10,
+    paddingTop: 6,
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  skipButtonText: {
+    fontSize: 14,
+    color: '#6b7280',
+    fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
   },
 });

@@ -415,7 +415,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Regular',
   },
   lifetimeAmount: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#6b7280',
     marginTop: 4,
     fontFamily: 'Outfit-Regular',
@@ -450,7 +450,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   billingCycleText: {
-    fontSize: 12,
+    fontSize: 13,
     color: PrimaryBlue,
     textAlign: 'center',
     fontFamily: 'Outfit-Regular',

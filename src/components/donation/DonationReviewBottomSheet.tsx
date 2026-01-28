@@ -307,7 +307,7 @@ const DonationReviewBottomSheet = forwardRef<any, DonationReviewBottomSheetProps
                   {showPlatformFeeTooltip && (
                     <View style={styles.tooltip}>
                       <Text style={styles.tooltipText}>
-                        This fee covers payment processing and platform operations
+                        The platform fee covers payment processing and keeps CRWD running at no cost to nonprofits.
                       </Text>
                       <View style={styles.tooltipArrow} />
                     </View>
@@ -429,7 +429,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Bold',
   },
   subtitle: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#6B7280',
     lineHeight: 16,
     fontFamily: 'Outfit-Regular',
@@ -456,7 +456,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   summaryLabel: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#6B7280',
     fontFamily: 'Outfit-Regular',
   },
@@ -569,7 +569,7 @@ const styles = StyleSheet.create({
   causeAvatarText: {
     color: '#FFFFFF',
     fontWeight: '700',
-    fontSize: 12,
+    fontSize: 13,
     fontFamily: 'Outfit-Bold',
   },
   causeInfo: {
@@ -577,13 +577,13 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   causeName: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '600',
     color: '#111827',
     fontFamily: 'Outfit-SemiBold',
   },
   causeAmount: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '600',
     color: '#111827',
     fontFamily: 'Outfit-SemiBold',

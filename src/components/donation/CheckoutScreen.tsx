@@ -1162,7 +1162,7 @@ const styles = StyleSheet.create({
   },
   collectiveCauseIconText: {
     color: '#2563eb',
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '600',
     fontFamily: 'Outfit-SemiBold',
   },
@@ -1176,7 +1176,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-SemiBold',
   },
   collectiveCauseDescription: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#6b7280',
     marginTop: 4,
     fontFamily: 'Outfit-Regular',
@@ -1305,7 +1305,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Regular',
   },
   taxNote: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#9ca3af',
     marginBottom: 8,
     fontFamily: 'Outfit-Regular',
@@ -1512,7 +1512,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Medium',
   },
   downloadText: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#6B7280',
     textAlign: 'center',
     fontFamily: 'Outfit-Regular',
@@ -1676,7 +1676,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Bold',
   },
   pauseModalSubtitle: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#6B7280',
     lineHeight: 16,
     fontFamily: 'Outfit-Regular',
@@ -1716,7 +1716,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-SemiBold',
   },
   pauseOptionSubtext: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#6B7280',
     fontFamily: 'Outfit-Regular',
   },
@@ -1731,7 +1731,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   pauseCancelText: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#EF4444',
     fontWeight: '500',
     textAlign: 'center',
@@ -1765,7 +1765,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   editSplitButtonText: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '500',
     color: '#374151',
     fontFamily: 'Outfit-Medium',

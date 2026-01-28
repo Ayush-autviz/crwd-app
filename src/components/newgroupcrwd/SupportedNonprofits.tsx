@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
+import { truncateAtFirstPeriod } from '../../utils/truncateFirstPeriod';
 
 interface Nonprofit {
   id: number;
@@ -104,13 +105,13 @@ export default function SupportedNonprofits({
               {/* Content */}
               <View style={styles.content}>
                 {/* Title */}
-                <Text style={styles.name} numberOfLines={2}>
+                <Text style={styles.name} numberOfLines={1}>
                   {name}
                 </Text>
 
                 {/* Description */}
                 <Text style={styles.description} numberOfLines={3}>
-                  {description}
+                  {truncateAtFirstPeriod(description)}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -153,7 +154,7 @@ const styles = StyleSheet.create({
     paddingRight: 12,
   },
   card: {
-    width: 240,
+    width: 260,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#E5E7EB',
@@ -182,7 +183,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   description: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#4B5563',
     lineHeight: 20,
     fontFamily: 'Outfit-Regular',

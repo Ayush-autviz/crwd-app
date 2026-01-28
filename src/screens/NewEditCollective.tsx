@@ -32,6 +32,7 @@ import { useToast } from '../contexts/ToastContext';
 import { useAuthStore } from '../store/store';
 import { categories } from '../Constants/categories';
 import * as ImagePicker from 'react-native-image-picker';
+import { truncateAtFirstPeriod } from '../utils/truncateFirstPeriod';
 
 const getCategoryById = (categoryId: string | undefined) => {
   if (!categoryId) return null;
@@ -556,8 +557,8 @@ export default function NewEditCollective() {
                                 </Text>
                               </View> */}
                             </View>
-                            <Text style={styles.selectedCauseDescription} numberOfLines={2}>
-                              {causeData.mission || causeData.description}
+                            <Text style={styles.selectedCauseDescription}>
+                              {truncateAtFirstPeriod(causeData.mission || causeData.description)}
                             </Text>
                           </View>
                           <TouchableOpacity
@@ -654,8 +655,8 @@ export default function NewEditCollective() {
                                 </Text>
                               </View> */}
                             </View>
-                            <Text style={styles.causeDescription} numberOfLines={2}>
-                              {cause.mission || cause.description}
+                            <Text style={styles.causeDescription}>
+                              {truncateAtFirstPeriod(cause.mission || cause.description)}
                             </Text>
                           </View>
                           <View style={[styles.radioButton, isSelected && styles.radioButtonSelected]}>

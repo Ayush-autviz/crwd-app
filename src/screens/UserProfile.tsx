@@ -16,6 +16,7 @@ import PopularPosts from '../components/PopularPosts'
 import { PrimaryBlue, PrimaryGrey } from '../Constants/Colors'
 import { WEB_BASE_URL } from '../Constants/url'
 import CommentsBottomSheet from '../components/post/CommentsBottomSheet'
+import { truncateAtFirstPeriod } from '../utils/truncateFirstPeriod'
 
 // Avatar colors for consistent fallback styling
 const avatarColors = [
@@ -474,8 +475,8 @@ export default function UserProfile() {
                                 </Avatar>
                                 <View style={styles.statsItemContent}>
                                     <Text style={styles.statsItemName}>{cause.name || 'Unknown Cause'}</Text>
-                                    <Text style={styles.statsItemDescription} numberOfLines={2}>
-                                        {cause.description || 'Supporting this cause'}
+                                    <Text style={styles.statsItemDescription}>
+                                        {truncateAtFirstPeriod(cause.description || 'Supporting this cause')}
                                     </Text>
                                 </View>
                             </TouchableOpacity>
@@ -1470,7 +1471,7 @@ const styles = StyleSheet.create({
         marginBottom: 4,
     },
     statsItemDescription: {
-        fontSize: 14,
+        fontSize: 13,
         color: '#6B7280',
         fontFamily: 'Outfit-Regular',
     },

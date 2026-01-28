@@ -11,8 +11,8 @@
 
 export const truncateAtFirstPeriod = (
   text: string,
-  minChars = 50,
-  maxChars = 100
+  minChars = 45,
+  maxChars = 110
 ): string => {
   if (!text) return text;
 

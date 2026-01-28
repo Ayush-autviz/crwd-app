@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
 import { categories } from '../../Constants/categories';
+import { truncateAtFirstPeriod } from '../../utils/truncateFirstPeriod';
+
 
 interface CauseProfileProps {
   causeData: any;
@@ -88,7 +90,7 @@ export default function CauseProfile({ causeData }: CauseProfileProps) {
       {/* Mission Statement */}
       <View style={styles.missionSection}>
         <Text style={styles.mission}>
-          {causeData?.mission || causeData?.description}
+          {truncateAtFirstPeriod(causeData?.mission || causeData?.description)}
         </Text>
 
         {/* Category Tags */}

@@ -46,6 +46,7 @@ import ConfettiCannon from 'react-native-confetti-cannon';
 import CrwdAnimation from '../components/ui/CrwdAnimation';
 import { WEB_BASE_URL } from '../Constants/url';
 import LinearGradient from 'react-native-linear-gradient';
+import { truncateAtFirstPeriod } from '../utils/truncateFirstPeriod';
 
 const getCategoryById = (categoryId: string | undefined) => {
   return categories.find(cat => cat.id === categoryId) || null;
@@ -864,8 +865,8 @@ export default function NewCreateCollective() {
                         </Avatar>
                         <View style={styles.reviewCauseInfo}>
                           <Text style={styles.reviewCauseName}>{causeData.name}</Text>
-                          <Text style={styles.reviewCauseDescription} numberOfLines={2}>
-                            {causeData.mission || causeData.description}
+                          <Text style={styles.reviewCauseDescription}>
+                            {truncateAtFirstPeriod(causeData.mission || causeData.description)}
                           </Text>
                           <View style={styles.reviewCauseCategoriesContainer}>
                             {categoryNames.map((name, index) => {
@@ -1294,8 +1295,8 @@ export default function NewCreateCollective() {
                                 })}
                               </View>
                             </View>
-                            <Text style={styles.selectedCauseDescription} numberOfLines={2}>
-                              {causeData.mission || causeData.description}
+                            <Text style={styles.selectedCauseDescription} >
+                              {truncateAtFirstPeriod(causeData.mission || causeData.description)}
                             </Text>
                           </View>
                           <TouchableOpacity
@@ -1405,8 +1406,8 @@ export default function NewCreateCollective() {
                                     })}
                                   </View>
                                 </View>
-                                <Text style={styles.causeDescription} numberOfLines={2}>
-                                  {cause.mission || cause.description}
+                                <Text style={styles.causeDescription}>
+                                  {truncateAtFirstPeriod(cause.mission || cause.description)}
                                 </Text>
                               </View>
                               <View style={[styles.radioButton, isSelected && styles.radioButtonSelected]}>
@@ -1545,8 +1546,8 @@ export default function NewCreateCollective() {
                                   })}
                                 </View>
                               </View>
-                              <Text style={styles.causeDescription} numberOfLines={2}>
-                                {cause.mission || cause.description}
+                              <Text style={styles.causeDescription}>
+                                {truncateAtFirstPeriod(cause.mission || cause.description)}
                               </Text>
                             </View>
                             <View style={[styles.radioButton, isSelected && styles.radioButtonSelected]}>

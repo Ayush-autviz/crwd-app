@@ -14,6 +14,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getFavoriteCauses, getFavoriteCollectives } from '../services/api/social';
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/Avatar';
 import { PrimaryBlue } from '../Constants/Colors';
+import { truncateAtFirstPeriod } from '../utils/truncateFirstPeriod';
 
 type TabType = 'Nonprofits' | 'Collectives';
 
@@ -153,8 +154,8 @@ export default function NewSavedScreen() {
                         <Text style={styles.cardTitle} numberOfLines={1}>
                           {cause.name}
                         </Text>
-                        <Text style={styles.cardDescription} numberOfLines={2}>
-                          {cause.mission || cause.description || 'No description available'}
+                        <Text style={styles.cardDescription}>
+                          {truncateAtFirstPeriod(cause.mission || cause.description || 'No description available')}
                         </Text>
                       </View>
                     </View>
@@ -232,7 +233,7 @@ export default function NewSavedScreen() {
                             <AvatarImage src={founder.profile_picture} alt={founder.username} />
                             <AvatarFallback
                               style={{
-                                backgroundColor: getConsistentColor(founder.id, avatarColors),
+                                backgroundColor: founder.color || getConsistentColor(founder.id, avatarColors),
                               }}
                               textStyle={styles.founderAvatarText}
                             >

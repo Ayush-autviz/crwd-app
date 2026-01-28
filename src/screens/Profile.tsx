@@ -23,6 +23,7 @@ import { DoorOpenIcon } from 'lucide-react-native'
 import { useToast } from '../contexts/ToastContext'
 import { WEB_BASE_URL } from '../Constants/url'
 import CommentsBottomSheet from '../components/post/CommentsBottomSheet'
+import { truncateAtFirstPeriod } from '../utils/truncateFirstPeriod'
 
 type RootStackParamList = {
     ProfileEdit: undefined;
@@ -472,7 +473,7 @@ export default function Profile() {
                                 <View style={styles.causeContent}>
                                     <Text style={styles.causeName}>{cause.name}</Text>
                                     <Text style={styles.causeDescription} numberOfLines={2}>
-                                        {cause.description || 'Supporting this cause'}
+                                        {truncateAtFirstPeriod(cause.description || 'Supporting this cause')}
                                     </Text>
                                 </View>
                             </TouchableOpacity>
@@ -1456,7 +1457,7 @@ const styles = StyleSheet.create({
         marginBottom: 4,
     },
     causeDescription: {
-        fontSize: 14,
+        fontSize: 13,
         color: '#6b7280',
         fontFamily: 'Outfit-Regular',
         // lineHeight: 20,

@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
+import { truncateAtFirstPeriod } from '../../utils/truncateFirstPeriod';
 
 interface SimilarNonprofitsProps {
   similarCauses: any[];
@@ -114,8 +115,8 @@ export default function SimilarNonprofits({ similarCauses, isLoading, categoryNa
               </Avatar>
               <View style={styles.causeInfo}>
                 <Text style={styles.causeName}>{cause.name}</Text>
-                <Text style={styles.causeDescription} numberOfLines={2}>
-                  {cause.mission || cause.description}
+                <Text style={styles.causeDescription}>
+                  {truncateAtFirstPeriod(cause.mission || cause.description)}
                 </Text>
               </View>
             </TouchableOpacity>

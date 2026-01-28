@@ -94,7 +94,7 @@ export default function NewFeaturedNonprofits({
                 <Text style={styles.cardTitle} numberOfLines={1}>{nonprofit.name}</Text>
 
                 {/* Description */}
-                <Text style={styles.description} numberOfLines={3}>
+                <Text style={styles.description} >
                   {truncateAtFirstPeriod(description)}
                 </Text>
               </View>
@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Bold',
   },
   description: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#4B5563',
     lineHeight: 18,
     fontFamily: 'Outfit-Regular',

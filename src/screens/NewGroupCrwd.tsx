@@ -38,6 +38,7 @@ import { Share } from 'react-native';
 import CommentsBottomSheet from '../components/post/CommentsBottomSheet';
 import JoinCollectiveBottomSheet from '../components/newgroupcrwd/JoinCollectiveBottomSheet';
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/Avatar';
+import { truncateAtFirstPeriod } from '../utils/truncateFirstPeriod';
 
 export default function NewGroupCrwdPage() {
   const route = useRoute();
@@ -564,8 +565,8 @@ export default function NewGroupCrwdPage() {
                   </Avatar>
                   <View style={styles.statsItemContent}>
                     <Text style={styles.statsItemName}>{name}</Text>
-                    <Text style={styles.statsItemDescription} numberOfLines={2}>
-                      {cause.mission || cause.description || 'No description available'}
+                    <Text style={styles.statsItemDescription}>
+                      {truncateAtFirstPeriod(cause.mission || cause.description || 'No description available')}
                     </Text>
                   </View>
                 </TouchableOpacity>
@@ -1488,7 +1489,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   statsItemDescription: {
-    fontSize: 14,
+    fontSize: 13,
     fontFamily: 'Outfit-Regular',
     color: '#6B7280',
   },

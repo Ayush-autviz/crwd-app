@@ -37,6 +37,7 @@ import { categories } from '../Constants/categories';
 import { getFundraiserById, getCollectiveById, getCausesBySearch, patchFundraiser } from '../services/api/crwd';
 import { useToast } from '../contexts/ToastContext';
 import { differenceInDays } from 'date-fns';
+import { truncateAtFirstPeriod } from '../utils/truncateFirstPeriod';
 
 // Avatar colors for consistent fallback styling
 const avatarColors = [
@@ -809,8 +810,8 @@ export default function EditFundraiser() {
                         </Avatar>
                         <View style={styles.nonprofitInfo}>
                           <Text style={styles.nonprofitName}>{nonprofit.name}</Text>
-                          <Text style={styles.nonprofitDescription} numberOfLines={1}>
-                            {nonprofit.mission || nonprofit.description || 'Nonprofit organization'}
+                          <Text style={styles.nonprofitDescription} >
+                            {truncateAtFirstPeriod(nonprofit.mission || nonprofit.description || 'Nonprofit organization')}
                           </Text>
                         </View>
                         <TouchableOpacity

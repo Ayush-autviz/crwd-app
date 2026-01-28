@@ -805,9 +805,9 @@ export default function UserProfile() {
                                                 borderRadius: 8,
                                                 borderWidth: 1,
                                                 borderColor: '#e5e7eb',
-                                                padding: 12,
+                                                paddingVertical: 6,
                                                 alignItems: 'center',
-                                                height: 100,
+                                                // height: 100,
                                                 justifyContent: 'space-between',
                                             }}>
                                                 {cause.image || cause.logo ? (
@@ -1190,8 +1190,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 16,
-        paddingVertical: 12,
-        borderBottomWidth: 1,
+        height: 60,
+        borderBottomWidth: 2,
         borderBottomColor: '#E5E7EB',
     },
     headerLeft: {

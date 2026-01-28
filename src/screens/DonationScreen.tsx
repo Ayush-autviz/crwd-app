@@ -1572,9 +1572,9 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    height: 64,
+    height: 60,
     paddingHorizontal: 16,
-    borderBottomWidth: 1,
+    borderBottomWidth: 2,
     borderBottomColor: '#e5e7eb',
   },
   headerButton: {

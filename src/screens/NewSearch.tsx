@@ -406,9 +406,9 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
+    paddingHorizontal: 16,
+    height: 60,
+    borderBottomWidth: 2,
     borderBottomColor: '#E5E7EB',
   },
   backButton: {

@@ -30,7 +30,7 @@ export default function ExploreCards() {
       icon: Users,
       iconColor: '#8B5CF6',
       bgColor: '#F3E8FF',
-      title: 'Browse CRWDs',
+      title: 'Browse Collectives',
       subtitle: 'Discover communities you can join',
       onPress: () => {
         // Navigate to bottom tabs "Collectives" tab

@@ -316,7 +316,7 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
                 <AvatarImage src={user.profile_picture} />
                 <AvatarFallback
                   style={{ backgroundColor: avatarBgColor }}
-                  textStyle={{ color: '#FFFFFF', fontSize: 14, fontWeight: '700' }}
+                  textStyle={{ color: '#FFFFFF', fontSize: 16, fontWeight: '700' }}
                 >
                   {initials}
                 </AvatarFallback>
@@ -484,7 +484,7 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
 
           {/* Fundraiser Info - rounded-b-lg only, connected to cover */}
           <View style={{ marginBottom: 8, backgroundColor: 'white', padding: 16, borderBottomLeftRadius: 12, borderBottomRightRadius: 12, borderWidth: 1, borderColor: '#E5E7EB', borderTopWidth: 0 }}>
-            <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#111827', marginBottom: 12 }}>
+            <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#111827', marginBottom: 12 }}>
               {post.fundraiser.name}
             </Text>
 
@@ -562,7 +562,7 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
                 </Text>
               )}
               {post.preview_details.title && (
-                <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827', marginBottom: 4 }} numberOfLines={2}>
+                <Text style={{ fontSize: 16, fontWeight: '600', color: '#111827', marginBottom: 4 }} numberOfLines={2}>
                   {post.preview_details.title}
                 </Text>
               )}
@@ -690,7 +690,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Regular',
   },
   fundraiserTitle: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#111827',
     marginBottom: 12,
@@ -794,7 +794,7 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   name: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '700',
     color: '#111827',
     fontFamily: 'Outfit-Bold',
@@ -811,10 +811,10 @@ const styles = StyleSheet.create({
   metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    // gap: 4,
   },
   collectiveName: {
-    fontSize: 12,
+    fontSize: 13,
     color: PrimaryGrey, // Blue for collective name
     fontWeight: '500',
     fontFamily: 'Outfit-Medium',
@@ -825,11 +825,11 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Regular',
   },
   postContent: {
-    fontSize: 13,
+    fontSize: 16,
     color: '#111827',
     marginBottom: 10,
     marginTop: 5,
-    lineHeight: 18,
+    lineHeight: 20,
     fontFamily: 'Outfit-Regular',
   },
   media: {

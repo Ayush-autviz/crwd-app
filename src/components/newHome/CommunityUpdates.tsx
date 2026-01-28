@@ -31,6 +31,10 @@ interface CommunityUpdate {
   commentsCount?: number;
   postId?: string | number | null;
   isJoinNotification?: boolean;
+  data?: {
+    profile_picture?: string;
+    color?: string;
+  };
 }
 
 interface CommunityUpdatesProps {
@@ -209,9 +213,9 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
           <View style={styles.userInfo}>
             {/* Avatar */}
             <Avatar size={44} style={styles.avatar}>
-              <AvatarImage src={update.user.avatar} />
+              <AvatarImage src={update.data?.profile_picture} />
               <AvatarFallback
-                style={{ backgroundColor: update.user.color || '#1600ff' }}
+                style={{ backgroundColor: update.data?.color || '#1600ff' }}
                 textStyle={{ color: '#FFFFFF', fontSize: 16 }}
               >
                 {update.user.name
@@ -231,7 +235,7 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
                 >
                   <Text style={styles.userName}>{update.user.name}</Text>
                 </TouchableOpacity>
-                <Text style={styles.username}>@{update.user.username}</Text>
+                {/* <Text style={styles.username}>@{update.user.username}</Text> */}
               </View>
             </View>
           </View>
@@ -279,9 +283,9 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
         <View style={styles.userInfo}>
           {/* Avatar */}
           <Avatar size={44} style={styles.avatar}>
-            <AvatarImage src={update.user.avatar} />
+            <AvatarImage src={update.data?.profile_picture} />
             <AvatarFallback
-              style={{ backgroundColor: update.user.color || '#1600ff' }}
+              style={{ backgroundColor: update.data?.color || '#1600ff' }}
               textStyle={{ color: '#FFFFFF', fontSize: 16 }}
             >
               {update.user.name
@@ -301,7 +305,7 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
               >
                 <Text style={styles.userName}>{update.user.name}</Text>
               </TouchableOpacity>
-              <Text style={styles.username}>@{update.user.username}</Text>
+              {/* <Text style={styles.username}>@{update.user.username}</Text> */}
             </View>
             {/* {update.collective && (
               <Text style={styles.collectiveName}>{update.collective.name}</Text>

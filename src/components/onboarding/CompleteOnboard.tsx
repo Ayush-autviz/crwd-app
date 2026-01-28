@@ -18,7 +18,7 @@ import { useNavigation, useRoute, CommonActions } from '@react-navigation/native
 import LinearGradient from 'react-native-linear-gradient';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getSurpriseMe, getCausesBySearch } from '../../services/api/crwd';
-import { addCausesToBox } from '../../services/api/donation';
+import { createDonationBox } from '../../services/api/donation';
 import { useToast } from '../../contexts/ToastContext';
 import { categories } from '../../Constants/categories';
 
@@ -84,13 +84,13 @@ export default function CompleteOnboard() {
     refetchOnMount: true,
   });
 
-  // Add causes to donation box mutation (not used in handleStartWithNonprofits, but kept for potential future use)
-  const addToBoxMutation = useMutation({
-    mutationFn: async (causeIds: number[]) => {
-      return await addCausesToBox({ cause_ids: causeIds });
+  // Create donation box mutation
+  const createBoxMutation = useMutation({
+    mutationFn: async (data: any) => {
+      return await createDonationBox(data);
     },
     onSuccess: () => {
-      showToast('Nonprofits added to donation box!');
+      showToast('Donation box created!');
       queryClient.invalidateQueries({ queryKey: ['donationBox'] });
       // Check if we should redirect to CreateCRWD (matching Vite behavior)
       if (redirectTo && redirectTo === 'CreateCRWD') {
@@ -114,7 +114,7 @@ export default function CompleteOnboard() {
       }
     },
     onError: (error: any) => {
-      showToast(error?.response?.data?.message || 'Failed to add nonprofits to donation box');
+      showToast(error?.response?.data?.message || 'Failed to create donation box');
     },
   });
 
@@ -197,54 +197,11 @@ export default function CompleteOnboard() {
     }
 
     if (selectedCauses.length > 0) {
-      // Get full cause data for selected causes based on current view
-      let selectedCausesData: any[] = [];
-
-      if (view === 'surprise') {
-        selectedCausesData = surpriseCauses.filter((cause: any) =>
-          selectedCauses.includes(cause.id)
-        );
-      } else if (view === 'browse') {
-        selectedCausesData = browseCauses.filter((cause: any) =>
-          selectedCauses.includes(cause.id)
-        );
-      }
-
-      // Navigate to bottom tab "Donate" with preselected causes
-      // Use reset to show bottom tabs and navigate to Donate tab
-      navigation.reset({
-        index: 0,
-        routes: [
-          {
-            name: 'DrawerNav' as never,
-            state: {
-              routes: [
-                {
-                  name: 'MainTabs' as never,
-                  state: {
-                    routes: [
-                      { name: 'Home' as never },
-                      { name: 'Search' as never },
-                      {
-                        name: 'Donate' as never,
-                        params: {
-                          initialTab: 'setup',
-                          preselectedCauses: selectedCauses, // IDs
-                          preselectedCausesData: selectedCausesData, // Full cause objects
-                        },
-                      },
-                      { name: 'Collectives' as never },
-                      { name: 'Profile' as never },
-                    ],
-                    index: 2, // Donate tab index
-                  },
-                },
-              ],
-              index: 0,
-            },
-          },
-        ],
-      });
+      const requestData = {
+        monthly_amount: "10",
+        causes: selectedCauses.map(id => ({ cause_id: id }))
+      };
+      createBoxMutation.mutate(requestData);
     } else {
       // If no causes selected, check redirectTo
       if (redirectTo === 'CreateCRWD') {
@@ -599,14 +556,14 @@ export default function CompleteOnboard() {
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={handleStartWithNonprofits}
-                  disabled={selectedCauses.length === 0}
+                  disabled={selectedCauses.length === 0 || createBoxMutation.isPending}
                   style={[
                     styles.startButton,
-                    selectedCauses.length === 0 && styles.startButtonDisabled
+                    (selectedCauses.length === 0 || createBoxMutation.isPending) && styles.startButtonDisabled
                   ]}
                 >
                   <Text style={styles.startButtonText}>
-                    Start with {selectedCauses.length} Nonprofit{selectedCauses.length !== 1 ? 's' : ''} →
+                    {createBoxMutation.isPending ? 'Creating...' : `Start with ${selectedCauses.length} Nonprofit${selectedCauses.length !== 1 ? 's' : ''} →`}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -770,14 +727,14 @@ export default function CompleteOnboard() {
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={handleStartWithNonprofits}
-                  disabled={selectedCauses.length === 0}
+                  disabled={selectedCauses.length === 0 || createBoxMutation.isPending}
                   style={[
                     styles.startButton,
-                    selectedCauses.length === 0 && styles.startButtonDisabled
+                    (selectedCauses.length === 0 || createBoxMutation.isPending) && styles.startButtonDisabled
                   ]}
                 >
                   <Text style={styles.startButtonText}>
-                    Start with {selectedCauses.length} Nonprofit{selectedCauses.length !== 1 ? 's' : ''} →
+                    {createBoxMutation.isPending ? 'Creating...' : `Start with ${selectedCauses.length} Nonprofit${selectedCauses.length !== 1 ? 's' : ''} →`}
                   </Text>
                 </TouchableOpacity>
               </View>

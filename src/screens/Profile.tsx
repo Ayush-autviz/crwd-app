@@ -679,7 +679,7 @@ export default function Profile() {
             {/* <MainHeaderNav title={'Me'} menu={false} /> */}
 
             {/* Top right buttons */}
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingTop: 24, paddingBottom: 8, borderBottomWidth: 1, borderBottomColor: '#e5e7eb' }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 12, paddingHorizontal: 16, height: 60, borderBottomWidth: 2, borderBottomColor: '#e5e7eb' }}>
                 <Text style={{ fontSize: 18, fontFamily: 'Outfit-SemiBold', color: '#111827' }}>Me</Text>
                 <View style={{ position: 'relative' }}>
                     <TouchableOpacity

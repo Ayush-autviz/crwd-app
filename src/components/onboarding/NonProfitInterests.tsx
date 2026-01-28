@@ -326,6 +326,7 @@ const styles = StyleSheet.create({
     marginBottom: 32,
     lineHeight: 20,
     paddingHorizontal: 8,
+    fontFamily: 'Outfit-Regular',
   },
   categoriesContainer: {
     flexDirection: 'row',

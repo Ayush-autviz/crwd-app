@@ -10,7 +10,7 @@ import PopularPosts from '../components/PopularPosts'
 import ProfileInterests from '../components/ProfileInterests'
 import { PrimaryBlue, PrimaryGrey, LightGrey } from '../Constants/Colors'
 import { useNavigation, NavigationProp } from '@react-navigation/native'
-import { Share2, Flag, ChevronRight, Ellipsis, MessageCircle, MessageSquare, ArrowLeft, X } from 'lucide-react-native'
+import { Share2, Flag, ChevronRight, Ellipsis, MessageCircle, MessageSquare, ArrowLeft, X, Users } from 'lucide-react-native'
 import { getPosts, getUserProfileById, getUserFollowers, getUserFollowing, getFavoriteCauses, getSupportedCausesByUserId, followUser, unfollowUser } from '../services/api/social'
 import { getUserCollectives, getJoinCollective } from '../services/api/crwd'
 import { useAuthStore } from '../store/store'
@@ -1055,37 +1055,14 @@ export default function Profile() {
                                 <Text style={{ marginTop: 10, color: PrimaryGrey }}>Loading...</Text>
                             </View>
                         ) : userPosts.length === 0 ? (
-                            <View>
-                                <Text style={{ fontSize: 18, fontFamily: 'Outfit-SemiBold', marginBottom: 16 }}>Recent Activity</Text>
-                                <View style={{
-                                    backgroundColor: 'white',
-                                    borderRadius: 8,
-                                    borderWidth: 1,
-                                    borderColor: '#e5e7eb',
-                                    padding: 48,
-                                    alignItems: 'center',
-                                }}>
-                                    <View style={{ marginBottom: 16 }}>
-                                        <MessageSquare size={48} color="#d1d5db" />
-                                    </View>
-                                    <Text style={{
-                                        fontSize: 17,
-                                        fontFamily: 'Outfit-SemiBold',
-                                        color: '#111827',
-                                        marginBottom: 8,
-                                        textAlign: 'center'
-                                    }}>
-                                        No posts yet
-                                    </Text>
-                                    <Text style={{
-                                        fontSize: 15,
-                                        color: '#6b7280',
-                                        textAlign: 'center',
-                                        maxWidth: 300
-                                    }}>
-                                        This user hasn't shared any posts yet. Check back later to see their activity.
-                                    </Text>
+                            <View style={styles.emptyContainer}>
+                                <View style={styles.emptyIconContainer}>
+                                    <Users size={48} color="#1600ff" strokeWidth={1.5} />
                                 </View>
+                                <Text style={styles.emptyTitle}>No posts yet</Text>
+                                <Text style={styles.emptyDescription}>
+                                    Posts appear when you share updates in your collectives. Join or start a collective to start sharing your impact!
+                                </Text>
                             </View>
                         ) : null}
                         {userPosts.length > 0 && (
@@ -1591,5 +1568,40 @@ const styles = StyleSheet.create({
     },
     followingButtonText: {
         color: '#6b7280',
+    },
+    emptyContainer: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 12,
+        // borderWidth: 1,
+        // borderColor: '#E5E7EB',
+        paddingVertical: 48,
+        paddingHorizontal: 24,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginVertical: 16,
+    },
+    emptyIconContainer: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        backgroundColor: '#EFF6FF',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 16,
+    },
+    emptyTitle: {
+        fontSize: 18,
+        fontWeight: '700',
+        color: '#111827',
+        marginTop: 8,
+        marginBottom: 8,
+        fontFamily: 'Outfit-Bold',
+    },
+    emptyDescription: {
+        fontSize: 15,
+        color: '#6B7280',
+        textAlign: 'center',
+        maxWidth: 300,
+        fontFamily: 'Outfit-Regular',
     },
 });

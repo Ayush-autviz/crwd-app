@@ -1036,7 +1036,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   termsText: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#6b7280',
     textAlign: 'center',
     marginBottom: 32,

@@ -1,13 +1,13 @@
 import React, { useState } from 'react'
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  Image, 
-  StyleSheet, 
-  ScrollView, 
-  KeyboardAvoidingView, 
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Image,
+  StyleSheet,
+  ScrollView,
+  KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
   Alert
@@ -20,9 +20,10 @@ import { PrimaryGrey, PrimaryBlue, LightGrey } from '../Constants/Colors'
 export default function ResetPassword() {
   const navigation = useNavigation()
   const route = useRoute()
-  const email = route.params?.email || ''
-  const verificationCode = route.params?.verificationCode || ''
-  
+  const params = route.params as { email?: string; verificationCode?: string } || {}
+  const email = params.email || ''
+  const verificationCode = params.verificationCode || ''
+
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -83,11 +84,11 @@ export default function ResetPassword() {
       // Simulate API call to reset password
       await new Promise(resolve => setTimeout(resolve, 1500))
       Alert.alert(
-        'Success', 
+        'Success',
         'Your password has been reset successfully!',
         [
-          { 
-            text: 'OK', 
+          {
+            text: 'OK',
             onPress: () => navigation.navigate('Login' as never)
           }
         ]
@@ -101,7 +102,7 @@ export default function ResetPassword() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView 
+      <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
       >
@@ -158,8 +159,8 @@ export default function ResetPassword() {
                         style={[
                           styles.strengthBar,
                           {
-                            backgroundColor: passwordStrength >= level 
-                              ? getPasswordStrengthColor() 
+                            backgroundColor: passwordStrength >= level
+                              ? getPasswordStrengthColor()
                               : '#e5e7eb'
                           }
                         ]}
@@ -219,7 +220,7 @@ export default function ResetPassword() {
           </View>
 
           {/* Back to Verification */}
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.backButton}
             onPress={() => navigation.navigate('VerificationCode', { email } as never)}
           >
@@ -253,7 +254,7 @@ const styles = StyleSheet.create({
   logo: {
     width: 100,
     height: 100,
-   // marginBottom: 24,
+    // marginBottom: 24,
   },
   title: {
     fontSize: 28,
@@ -261,16 +262,19 @@ const styles = StyleSheet.create({
     color: '#111827',
     marginBottom: 16,
     textAlign: 'center',
+    fontFamily: 'Outfit-Bold',
   },
   subtitle: {
     fontSize: 16,
     color: PrimaryGrey,
     textAlign: 'center',
     lineHeight: 24,
+    fontFamily: 'Outfit-Regular',
   },
   emailText: {
     color: '#111827',
     fontWeight: '600',
+    fontFamily: 'Outfit-SemiBold',
   },
   form: {
     marginBottom: 32,
@@ -283,6 +287,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#374151',
     marginBottom: 8,
+    fontFamily: 'Outfit-Medium',
   },
   passwordContainer: {
     flexDirection: 'row',
@@ -297,6 +302,7 @@ const styles = StyleSheet.create({
     padding: 16,
     fontSize: 16,
     color: '#111827',
+    fontFamily: 'Outfit-Regular',
   },
   eyeButton: {
     padding: 16,
@@ -317,11 +323,13 @@ const styles = StyleSheet.create({
   strengthText: {
     fontSize: 14,
     color: PrimaryGrey,
+    fontFamily: 'Outfit-Regular',
   },
   errorText: {
     fontSize: 14,
     color: '#ef4444',
     marginTop: 4,
+    fontFamily: 'Outfit-Regular',
   },
   submitButton: {
     backgroundColor: '#111827',
@@ -334,6 +342,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: '600',
+    fontFamily: 'Outfit-Medium',
   },
   loadingContainer: {
     flexDirection: 'row',
@@ -344,6 +353,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,
+    fontFamily: 'Outfit-Medium',
   },
   backButton: {
     flexDirection: 'row',
@@ -356,5 +366,6 @@ const styles = StyleSheet.create({
     color: '#374151',
     marginLeft: 8,
     fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
   },
 }) 

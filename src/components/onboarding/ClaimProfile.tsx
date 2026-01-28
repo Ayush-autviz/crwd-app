@@ -785,9 +785,10 @@ const styles = StyleSheet.create({
         fontFamily: 'Outfit-Regular',
     },
     errorText: {
-        fontSize: 12,
+        fontSize: 13,
         color: '#ef4444',
         marginTop: 4,
+        fontFamily: 'Outfit-Regular',
     },
     passwordContainer: {
         position: 'relative',
@@ -815,9 +816,10 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     },
     passwordStrengthTitle: {
-        fontSize: 12,
+        fontSize: 13,
         color: '#6b7280',
         marginBottom: 8,
+        fontFamily: 'Outfit-Regular',
     },
     passwordStrengthList: {
         gap: 4,
@@ -828,7 +830,8 @@ const styles = StyleSheet.create({
         gap: 8,
     },
     passwordStrengthText: {
-        fontSize: 12,
+        fontSize: 13,
+        fontFamily: 'Outfit-Regular',
     },
     signInContainer: {
         alignItems: 'center',
@@ -925,8 +928,9 @@ const styles = StyleSheet.create({
         marginBottom: 4,
     },
     photoSubtext: {
-        fontSize: 12,
+        fontSize: 13,
         color: '#6b7280',
+        fontFamily: 'Outfit-Regular',
     },
     formFields: {
         marginBottom: 24,

@@ -1411,8 +1411,8 @@ const styles = StyleSheet.create({
     emptyContainer: {
         backgroundColor: '#FFFFFF',
         borderRadius: 12,
-        borderWidth: 1,
-        borderColor: '#E5E7EB',
+        // borderWidth: 1,
+        // borderColor: '#E5E7EB',
         paddingVertical: 48,
         paddingHorizontal: 24,
         alignItems: 'center',

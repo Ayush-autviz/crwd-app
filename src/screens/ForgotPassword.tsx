@@ -1,12 +1,12 @@
 import React, { useState } from 'react'
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  StyleSheet, 
-  ScrollView, 
-  KeyboardAvoidingView, 
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
 } from 'react-native'
@@ -57,14 +57,14 @@ export default function ForgotPassword() {
         end={{ x: 1, y: 1 }}
         style={styles.gradient}
       >
-        <KeyboardAvoidingView 
+        <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.keyboardView}
         >
           <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
             <View style={styles.card}>
               {/* Back Button */}
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.backButton}
                 onPress={() => navigation.navigate('Login' as never)}
               >
@@ -120,7 +120,7 @@ export default function ForgotPassword() {
               <View style={styles.footer}>
                 <Text style={styles.footerText}>
                   Remember your password?{' '}
-                  <Text 
+                  <Text
                     style={styles.footerLink}
                     onPress={() => navigation.navigate('Login' as never)}
                   >
@@ -169,6 +169,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6b7280',
     marginLeft: 8,
+    fontFamily: 'Outfit-Medium',
   },
   header: {
     marginBottom: 32,
@@ -179,12 +180,14 @@ const styles = StyleSheet.create({
     color: '#111827',
     marginBottom: 8,
     textAlign: 'center',
+    fontFamily: 'Outfit-Bold',
   },
   subtitle: {
     fontSize: 14,
     color: '#6b7280',
     textAlign: 'center',
     lineHeight: 20,
+    fontFamily: 'Outfit-Regular',
   },
   form: {
     marginBottom: 24,
@@ -197,6 +200,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#111827',
     marginBottom: 8,
+    fontFamily: 'Outfit-Medium',
   },
   required: {
     color: '#ef4444',
@@ -209,6 +213,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#111827',
     backgroundColor: '#f9fafb',
+    fontFamily: 'Outfit-Regular',
   },
   submitButton: {
     backgroundColor: '#6366f1',
@@ -222,8 +227,9 @@ const styles = StyleSheet.create({
   },
   submitButtonText: {
     color: 'white',
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
+    fontFamily: 'Outfit-Medium',
   },
   loadingContainer: {
     flexDirection: 'row',
@@ -231,9 +237,10 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     color: 'white',
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,
+    fontFamily: 'Outfit-Medium',
   },
   footer: {
     alignItems: 'center',
@@ -242,9 +249,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6b7280',
     textAlign: 'center',
+    fontFamily: 'Outfit-Regular',
   },
   footerLink: {
     color: '#1600ff',
     fontWeight: '600',
+    fontFamily: 'Outfit-SemiBold',
   },
 })

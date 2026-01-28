@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  StyleSheet, 
-  ScrollView, 
-  KeyboardAvoidingView, 
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
 } from 'react-native'
@@ -24,7 +24,7 @@ export default function VerificationCode() {
   const route = useRoute()
   const email = (route.params as any)?.email || 'your email'
   const { showToast } = useToast()
-  
+
   const [code, setCode] = useState(['', '', '', '', '', ''])
   const [timeLeft, setTimeLeft] = useState(300) // 5 minutes
   const [showNewPassword, setShowNewPassword] = useState(false)
@@ -83,7 +83,7 @@ export default function VerificationCode() {
     if (!/^\d*$/.test(value)) {
       return
     }
-    
+
     if (value.length > 1) {
       return // Prevent multiple characters
     }
@@ -106,10 +106,10 @@ export default function VerificationCode() {
 
   const handlePaste = (e: any) => {
     const pastedData = e.nativeEvent.text?.slice(0, 6) || ''
-    
+
     // Only allow numbers in pasted data
     const numericData = pastedData.replace(/\D/g, '').slice(0, 6)
-    
+
     const newCode = numericData.split('').concat(Array(6).fill('')).slice(0, 6)
     setCode(newCode)
 
@@ -165,14 +165,14 @@ export default function VerificationCode() {
         end={{ x: 1, y: 1 }}
         style={styles.gradient}
       >
-        <KeyboardAvoidingView 
+        <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.keyboardView}
         >
           <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
             <View style={styles.card}>
               {/* Back Button */}
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.backButton}
                 onPress={() => navigation.navigate('ForgotPassword' as never)}
               >
@@ -212,7 +212,6 @@ export default function VerificationCode() {
                         value={digit}
                         onChangeText={(value) => handleCodeChange(index, value)}
                         onKeyPress={(e) => handleKeyDown(index, e)}
-                        onPaste={index === 0 ? handlePaste : undefined}
                         keyboardType="numeric"
                         maxLength={1}
                         textAlign="center"
@@ -374,6 +373,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6b7280',
     marginLeft: 8,
+    fontFamily: 'Outfit-Medium',
   },
   header: {
     marginBottom: 32,
@@ -385,6 +385,7 @@ const styles = StyleSheet.create({
     color: '#111827',
     marginBottom: 8,
     textAlign: 'center',
+    fontFamily: 'Outfit-Bold',
   },
   subtitleContainer: {
     alignItems: 'center',
@@ -394,6 +395,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6b7280',
     textAlign: 'center',
+    fontFamily: 'Outfit-Regular',
   },
   emailContainer: {
     flexDirection: 'row',
@@ -405,6 +407,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#111827',
+    fontFamily: 'Outfit-SemiBold',
   },
   form: {
     marginBottom: 24,
@@ -418,6 +421,7 @@ const styles = StyleSheet.create({
     color: '#111827',
     marginBottom: 12,
     textAlign: 'center',
+    fontFamily: 'Outfit-Medium',
   },
   codeInputsContainer: {
     flexDirection: 'row',
@@ -436,6 +440,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#111827',
     textAlign: 'center',
+    fontFamily: 'Outfit-SemiBold',
   },
   codeInputFilled: {
     borderColor: '#9ca3af',
@@ -448,6 +453,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#111827',
     marginBottom: 8,
+    fontFamily: 'Outfit-Medium',
   },
   required: {
     color: '#ef4444',
@@ -466,6 +472,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#111827',
     paddingRight: 48,
+    fontFamily: 'Outfit-Regular',
   },
   eyeButton: {
     padding: 12,
@@ -484,8 +491,9 @@ const styles = StyleSheet.create({
   },
   submitButtonText: {
     color: 'white',
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
+    fontFamily: 'Outfit-Medium',
   },
   loadingContainer: {
     flexDirection: 'row',
@@ -493,9 +501,10 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     color: 'white',
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,
+    fontFamily: 'Outfit-Medium',
   },
   resendContainer: {
     alignItems: 'center',
@@ -506,6 +515,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6b7280',
     textAlign: 'center',
+    fontFamily: 'Outfit-Regular',
   },
   resendButton: {
     paddingVertical: 8,
@@ -520,13 +530,15 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#111827',
     fontWeight: '600',
+    fontFamily: 'Outfit-SemiBold',
   },
   footer: {
     alignItems: 'center',
   },
   footerText: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#6b7280',
     textAlign: 'center',
+    fontFamily: 'Outfit-Regular',
   },
 })

@@ -1035,7 +1035,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   causeCategoryText: {
-    fontSize: 10,
+    fontSize: 11,
     fontFamily: 'Outfit-Medium',
     color: 'white',
   },

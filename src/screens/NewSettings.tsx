@@ -407,7 +407,8 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontFamily: 'Outfit-SemiBold',
+    fontFamily: 'Outfit-Bold',
+    fontWeight: '700',
     color: '#111827',
   },
   divider: {
@@ -422,9 +423,9 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   menuItemText: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#111827',
-    fontFamily: 'Outfit-Medium',
+    fontFamily: 'Outfit-SemiBold',
   },
   menuButton: {
     flexDirection: 'row',
@@ -439,16 +440,17 @@ const styles = StyleSheet.create({
     marginVertical: 8,
   },
   menuButtonText: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#111827',
-    fontFamily: 'Outfit-Medium',
+    fontFamily: 'Outfit-SemiBold',
   },
   passwordContainer: {
     marginVertical: 10,
   },
   passwordLabel: {
     fontSize: 14,
-    fontFamily: 'Outfit-Medium',
+    fontFamily: 'Outfit-Bold',
+    fontWeight: '700',
     color: '#111827',
     marginBottom: 8,
   },
@@ -463,7 +465,8 @@ const styles = StyleSheet.create({
   },
   passwordInput: {
     flex: 1,
-    fontSize: 16,
+    fontSize: 15,
+    fontFamily: 'Outfit-Regular',
     color: '#111827',
   },
   changePasswordButton: {
@@ -475,17 +478,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   changePasswordButtonText: {
-    fontSize: 16,
+    fontSize: 15,
     fontFamily: 'Outfit-Bold',
+    fontWeight: '700',
     color: '#111827',
   },
   deleteButton: {
     marginVertical: 10,
   },
   deleteButtonText: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#ef4444',
-    fontFamily: 'Outfit-Medium',
+    fontFamily: 'Outfit-SemiBold',
   },
   disabledButton: {
     opacity: 0.5,
@@ -512,7 +516,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 0,
   },
   faqQuestion: {
-    fontSize: 16,
+    fontSize: 15,
     fontFamily: 'Outfit-SemiBold',
     color: '#111827',
     flex: 1,
@@ -536,6 +540,7 @@ const styles = StyleSheet.create({
   },
   faqAnswerText: {
     fontSize: 14,
+    fontFamily: 'Outfit-Regular',
     color: PrimaryGrey,
     lineHeight: 20,
   },
@@ -548,8 +553,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 0,
   },
   supportLinkText: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#111827',
-    fontFamily: 'Outfit-Medium',
+    fontFamily: 'Outfit-SemiBold',
   },
 })

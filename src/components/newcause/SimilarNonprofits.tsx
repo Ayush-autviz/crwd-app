@@ -138,13 +138,14 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   title: {
-    fontSize: 16,
+    fontSize: 18,
     fontFamily: 'Outfit-Bold',
+    fontWeight: '700',
     color: '#111827',
   },
   seeAllText: {
-    fontSize: 14,
-    fontFamily: 'Outfit-Medium',
+    fontSize: 15,
+    fontFamily: 'Outfit-SemiBold',
     color: '#1600ff',
   },
   loadingContainer: {
@@ -174,15 +175,16 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   causeName: {
-    fontSize: 14,
+    fontSize: 15,
     fontFamily: 'Outfit-Bold',
+    fontWeight: '700',
     color: '#111827',
     marginBottom: 4,
   },
   causeDescription: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#6B7280',
-    lineHeight: 18,
+    lineHeight: 20,
     fontFamily: 'Outfit-Regular',
   },
 });

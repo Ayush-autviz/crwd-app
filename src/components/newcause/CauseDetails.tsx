@@ -139,17 +139,18 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   sectionTitle: {
-    fontSize: 12,
+    fontSize: 14,
     fontFamily: 'Outfit-Bold',
+    fontWeight: '700',
     color: '#111827',
     marginBottom: 4,
     textTransform: 'uppercase',
   },
   addressText: {
-    fontSize: 12,
+    fontSize: 15,
     color: '#374151',
     textTransform: 'uppercase',
-    fontFamily: 'Outfit-Medium',
+    fontFamily: 'Outfit-Regular',
   },
   categoriesContainer: {
     flexDirection: 'row',
@@ -163,7 +164,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   categoryText: {
-    fontSize: 10,
+    fontSize: 14,
     fontFamily: 'Outfit-Medium',
     color: '#FFFFFF',
   },
@@ -179,14 +180,14 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   mainFocusText: {
-    fontSize: 12,
+    fontSize: 15,
     fontFamily: 'Outfit-SemiBold',
     color: '#1600ff',
   },
   taxId: {
-    fontSize: 12,
+    fontSize: 15,
     color: '#374151',
-    fontFamily: 'Outfit-Medium',
+    fontFamily: 'Outfit-Regular',
     // marginTop: 4,
   },
 });

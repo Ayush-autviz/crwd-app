@@ -20,27 +20,51 @@ const avatarColors = [
   '#ec4899', '#f43f5e'
 ];
 
-// Format date to relative time
+// Format date to match PopularPosts style
 const formatTimeAgo = (dateString: string): string => {
   if (!dateString) return '';
 
-  try {
-    const date = new Date(dateString);
-    // Check if date is valid
-    if (isNaN(date.getTime())) {
-      return '';
+  // Check if it's already a relative time string (like "1h ago", "2d ago")
+  if (dateString.includes('ago') || dateString.includes('just now')) {
+    return dateString;
+  }
+
+  let date: Date;
+  // Handle DD/MM/YYYY format
+  const ddmmyyyyMatch = dateString.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (ddmmyyyyMatch) {
+    const [, day, month, year] = ddmmyyyyMatch;
+    date = new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`);
+  } else {
+    date = new Date(dateString);
+  }
+
+  if (isNaN(date.getTime())) {
+    return dateString;
+  }
+
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  const diffInHours = Math.floor(diffInSeconds / 3600);
+
+  if (diffInSeconds < 60) {
+    return 'just now';
+  } else if (diffInMinutes < 60) {
+    return `${diffInMinutes} minute${diffInMinutes === 1 ? '' : 's'} ago`;
+  } else if (diffInHours < 24) {
+    return `${diffInHours} hour${diffInHours === 1 ? '' : 's'} ago`;
+  } else {
+    const currentYear = now.getFullYear();
+    const postYear = date.getFullYear();
+    const options: Intl.DateTimeFormatOptions = {
+      month: 'long',
+      day: 'numeric',
+    };
+    if (postYear !== currentYear) {
+      options.year = 'numeric';
     }
-
-    const now = new Date();
-    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-    if (diffInSeconds < 60) return 'just now';
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
-    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
-    return date.toLocaleDateString();
-  } catch {
-    return '';
+    return date.toLocaleDateString('en-US', options);
   }
 };
 
@@ -132,7 +156,7 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
 
         {/* Content */}
         <View style={styles.textContent}>
-          {/* Name and Timestamp */}
+          {/* Name and Timestamp Row */}
           <View style={styles.nameRow}>
             {hasProfileLink ? (
               <TouchableOpacity onPress={handleProfilePress} activeOpacity={0.7}>
@@ -141,8 +165,8 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
             ) : (
               <Text style={styles.userName}>{userName}</Text>
             )}
+            <Text style={styles.timestamp}>{formattedTime}</Text>
           </View>
-          <Text style={styles.timestamp}>{formattedTime}</Text>
 
           {/* Activity Description Box */}
           <View style={styles.descriptionBox}>
@@ -168,26 +192,29 @@ const styles = StyleSheet.create({
   content: {
     flexDirection: 'row',
     gap: 12,
-    padding: 12,
+    padding: 10,
   },
   textContent: {
     flex: 1,
     minWidth: 0,
   },
   nameRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 4,
+    // flexDirection: 'row',
+    // alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 4,
+    marginBottom: 8,
   },
   userName: {
-    fontSize: 14,
+    fontSize: 15,
     fontFamily: 'Outfit-Bold',
+    fontWeight: '700',
     color: '#111827',
   },
   timestamp: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#6B7280',
-    marginBottom: 8,
+    fontFamily: 'Outfit-Regular',
   },
   descriptionBox: {
     backgroundColor: '#F0FDF4',
@@ -196,8 +223,9 @@ const styles = StyleSheet.create({
   },
   descriptionText: {
     fontSize: 14,
-    fontFamily: 'Outfit-SemiBold',
+    fontFamily: 'Outfit-Medium',
     color: '#111827',
+    lineHeight: 22,
   },
 });
 

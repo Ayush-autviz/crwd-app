@@ -84,13 +84,13 @@ export default function Account() {
   useEffect(() => {
     if (profileData) {
       const data = {
-        first_name: profileData.first_name || '',
-        last_name: profileData.last_name || '',
-        username: profileData.username || '',
-        email: user?.email || profileData.email || '',
-        location: profileData.location || '',
-        bio: profileData.bio || '',
-        profile_picture_file: profileData.profile_picture || ''
+        first_name: profileData?.first_name || '',
+        last_name: profileData?.last_name || '',
+        username: profileData?.username || '',
+        email: user?.email || profileData?.email || '',
+        location: profileData?.location || '',
+        bio: profileData?.bio || '',
+        profile_picture_file: profileData?.profile_picture || ''
       }
       setFormData(data)
       setOriginalData(data)
@@ -228,9 +228,9 @@ export default function Account() {
                   style={styles.profilePicture}
                 />
               ) : (
-                <View style={[styles.profilePicture, { backgroundColor: profileData.color }]}>
+                <View style={[styles.profilePicture, { backgroundColor: profileData?.color || PrimaryBlue }]}>
                   {/* <User size={50} color="#FFFFFF" /> */}
-                  <Text style={styles.initials}>{profileData.first_name.charAt(0).toUpperCase()}</Text>
+                  <Text style={styles.initials}>{(profileData?.first_name || user?.first_name || 'U').charAt(0).toUpperCase()}</Text>
                 </View>
               )}
             </TouchableOpacity>
@@ -400,13 +400,13 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 18,
-    fontSize: 18,
     fontFamily: 'Outfit-Bold',
+    fontWeight: '700',
     color: '#111827',
   },
   editButton: {
-    fontSize: 16,
-    fontFamily: 'Outfit-Medium',
+    fontSize: 15,
+    fontFamily: 'Outfit-SemiBold',
     color: PrimaryBlue,
   },
   keyboardView: {
@@ -466,8 +466,8 @@ const styles = StyleSheet.create({
   },
   fieldLabel: {
     fontSize: 14,
-    fontSize: 14,
     fontFamily: 'Outfit-Bold',
+    fontWeight: '700',
     color: '#111827',
     marginBottom: 4,
   },
@@ -476,7 +476,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 10,
-    fontSize: 16,
+    fontSize: 15,
     fontFamily: 'Outfit-Regular',
     color: PrimaryGrey,
     minHeight: 40,
@@ -519,16 +519,18 @@ const styles = StyleSheet.create({
     borderColor: SecondaryGrey,
   },
   cancelButtonText: {
-    fontSize: 16,
+    fontSize: 15,
     fontFamily: 'Outfit-Bold',
+    fontWeight: '700',
     color: '#111827',
   },
   saveButton: {
     backgroundColor: PrimaryBlue,
   },
   saveButtonText: {
-    fontSize: 16,
+    fontSize: 15,
     fontFamily: 'Outfit-Bold',
+    fontWeight: '700',
     color: '#FFFFFF',
   },
 })

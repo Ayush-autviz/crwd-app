@@ -139,13 +139,14 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   name: {
-    fontSize: 18,
+    fontSize: 20,
     fontFamily: 'Outfit-Bold',
+    fontWeight: '700',
     color: '#111827',
     marginBottom: 4,
   },
   stats: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#6B7280',
     fontFamily: 'Outfit-Regular',
   },
@@ -153,9 +154,9 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   mission: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#111827',
-    lineHeight: 20,
+    lineHeight: 22,
     fontFamily: 'Outfit-Regular',
   },
   categoriesContainer: {
@@ -170,7 +171,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   categoryText: {
-    fontSize: 12,
+    fontSize: 14,
     fontFamily: 'Outfit-Medium',
     color: '#FFFFFF',
   },

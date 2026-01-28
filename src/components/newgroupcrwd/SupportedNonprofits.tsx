@@ -135,13 +135,13 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    fontSize: 18,
     fontFamily: 'Outfit-Bold',
+    fontWeight: '700',
     color: '#111827',
   },
   seeAllText: {
-    fontSize: 14,
-    fontFamily: 'Outfit-Medium',
+    fontSize: 15,
+    fontFamily: 'Outfit-SemiBold',
     color: '#1600ff',
   },
   loadingContainer: {
@@ -175,16 +175,16 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   name: {
-    fontSize: 12,
-    fontSize: 12,
+    fontSize: 15,
     fontFamily: 'Outfit-Bold',
+    fontWeight: '700',
     color: '#111827',
     marginBottom: 4,
   },
   description: {
-    fontSize: 11,
+    fontSize: 14,
     color: '#4B5563',
-    lineHeight: 16,
+    lineHeight: 20,
     fontFamily: 'Outfit-Regular',
   },
 });

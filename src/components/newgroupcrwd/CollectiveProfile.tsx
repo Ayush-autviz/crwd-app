@@ -169,8 +169,8 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontSize: 24,
     fontFamily: 'Outfit-ExtraBold',
+    fontWeight: '800',
     color: '#111827',
   },
   joinedBadge: {
@@ -180,7 +180,6 @@ const styles = StyleSheet.create({
     borderRadius: 9999,
   },
   joinedText: {
-    fontSize: 10,
     fontSize: 10,
     fontFamily: 'Outfit-SemiBold',
     color: '#065F46',
@@ -192,7 +191,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   founderText: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#6B7280',
     fontFamily: 'Outfit-Regular',
   },
@@ -201,9 +200,9 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Medium',
   },
   description: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#111827',
-    lineHeight: 20,
+    lineHeight: 22,
     marginTop: 16,
     fontFamily: 'Outfit-Regular',
   },

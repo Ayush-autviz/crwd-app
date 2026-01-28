@@ -479,15 +479,15 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 18,
-    fontSize: 18,
     fontFamily: 'Outfit-Bold',
+    fontWeight: '700',
     color: '#111827',
     marginBottom: 3,
   },
   headerDescription: {
-    fontSize: 11,
+    fontSize: 14,
     color: '#6B7280',
-    lineHeight: 15,
+    lineHeight: 20,
     fontFamily: 'Outfit-Regular',
   },
   closeButton: {
@@ -507,7 +507,6 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   capacityErrorText: {
-    fontSize: 12,
     fontSize: 12,
     fontFamily: 'Outfit-Medium',
     color: '#991B1B',
@@ -547,14 +546,13 @@ const styles = StyleSheet.create({
     borderColor: '#D1D5DB',
   },
   selectAllText: {
-    fontSize: 13,
-    fontSize: 13,
-    fontFamily: 'Outfit-Medium',
+    fontSize: 15,
+    fontFamily: 'Outfit-SemiBold',
     color: '#111827',
   },
   selectAllCount: {
-    fontSize: 13,
-    fontFamily: 'Outfit-Medium',
+    fontSize: 15,
+    fontFamily: 'Outfit-SemiBold',
     color: PrimaryBlue,
   },
   nonprofitsList: {
@@ -597,13 +595,12 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   nonprofitName: {
-    fontSize: 13,
-    fontSize: 13,
+    fontSize: 15,
     fontFamily: 'Outfit-SemiBold',
     color: '#111827',
   },
   nonprofitSubtext: {
-    fontSize: 11,
+    fontSize: 14,
     color: '#6B7280',
     marginTop: 2,
     fontFamily: 'Outfit-Regular',
@@ -622,9 +619,9 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   infoBannerText: {
-    fontSize: 11,
+    fontSize: 14,
     color: '#854D0E',
-    lineHeight: 16,
+    lineHeight: 20,
     fontFamily: 'Outfit-Regular',
   },
   footer: {
@@ -651,6 +648,7 @@ const styles = StyleSheet.create({
   primaryButtonText: {
     fontSize: 15,
     fontFamily: 'Outfit-Bold',
+    fontWeight: '700',
     color: '#FFFFFF',
   },
   secondaryButton: {
@@ -660,7 +658,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   secondaryButtonText: {
-    fontSize: 13,
+    fontSize: 15,
     fontFamily: 'Outfit-Medium',
     color: '#374151',
   },

@@ -184,6 +184,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontFamily: 'Outfit-Bold',
+    fontWeight: '700',
     color: '#111827',
     marginBottom: 16,
   },
@@ -220,7 +221,6 @@ const styles = StyleSheet.create({
   },
   iconLetter: {
     color: 'white',
-    color: 'white',
     fontSize: 20,
     fontFamily: 'Outfit-Bold',
   },
@@ -230,15 +230,16 @@ const styles = StyleSheet.create({
   },
   name: {
     fontFamily: 'Outfit-Bold',
-    fontSize: 16,
+    fontWeight: '700',
+    fontSize: 15,
     color: '#000000',
     marginBottom: 8,
   },
   description: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#374151',
     marginBottom: 12,
-    lineHeight: 20,
+    lineHeight: 22,
     fontFamily: 'Outfit-Regular',
   },
   founderRow: {
@@ -248,15 +249,17 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   founderText: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#6b7280',
+    fontFamily: 'Outfit-Regular',
   },
   founderName: {
     fontFamily: 'Outfit-SemiBold',
   },
   nonprofitCount: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#6b7280',
+    fontFamily: 'Outfit-Regular',
   },
   buttonContainer: {
     marginTop: 24,
@@ -271,8 +274,9 @@ const styles = StyleSheet.create({
   },
   browseButtonText: {
     color: '#1600ff',
-    fontSize: 14,
-    fontFamily: 'Outfit-SemiBold',
+    fontSize: 15,
+    fontFamily: 'Outfit-Bold',
+    fontWeight: '700',
   },
 });
 

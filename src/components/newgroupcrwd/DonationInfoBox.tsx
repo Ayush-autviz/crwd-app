@@ -56,13 +56,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
-    fontSize: 14,
+    fontSize: 15,
+    fontFamily: 'Outfit-Bold',
     fontWeight: '700',
     color: '#111827',
     marginBottom: 4,
   },
   subtitle: {
-    fontSize: 10,
+    fontSize: 14,
+    fontFamily: 'Outfit-Regular',
     color: '#6B7280',
   },
 });

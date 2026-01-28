@@ -1357,6 +1357,7 @@ const styles = StyleSheet.create({
   },
   bottomSheetTitle: {
     fontSize: 20,
+    fontFamily: 'Outfit-Bold',
     fontWeight: '700',
     color: '#111827',
   },
@@ -1364,7 +1365,8 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   bottomSheetSubtitle: {
-    fontSize: 12,
+    fontSize: 14,
+    fontFamily: 'Outfit-Regular',
     color: '#6B7280',
   },
   tabsContainer: {
@@ -1391,12 +1393,13 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   tabText: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 15,
+    fontFamily: 'Outfit-SemiBold',
     color: '#6B7280',
   },
   activeTabText: {
     color: '#111827',
+    fontFamily: 'Outfit-Bold',
     fontWeight: '700',
   },
   // tabIndicator removed
@@ -1444,13 +1447,15 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   statsItemName: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 15,
+    fontFamily: 'Outfit-Bold',
+    fontWeight: '700',
     color: '#111827',
     marginBottom: 4,
   },
   statsItemDescription: {
-    fontSize: 12,
+    fontSize: 14,
+    fontFamily: 'Outfit-Regular',
     color: '#6B7280',
   },
   viewButton: {
@@ -1460,8 +1465,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   viewButtonText: {
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: 14,
+    fontFamily: 'Outfit-Bold',
+    fontWeight: '700',
     color: '#FFFFFF',
   },
   memberItem: {
@@ -1484,8 +1490,9 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   memberName: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 15,
+    fontFamily: 'Outfit-Bold',
+    fontWeight: '700',
     color: '#111827',
   },
   founderBadge: {
@@ -1500,7 +1507,8 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   memberRole: {
-    fontSize: 12,
+    fontSize: 14,
+    fontFamily: 'Outfit-Regular',
     color: '#6B7280',
   },
   donationSummaryBox: {
@@ -1519,6 +1527,7 @@ const styles = StyleSheet.create({
   },
   donationSummaryAmount: {
     fontSize: 24,
+    fontFamily: 'Outfit-Bold',
     fontWeight: '700',
     color: '#2563EB',
     marginBottom: 4,
@@ -1547,8 +1556,9 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   donationName: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 15,
+    fontFamily: 'Outfit-Bold',
+    fontWeight: '700',
     color: '#111827',
   },
   collectiveBadge: {
@@ -1563,7 +1573,8 @@ const styles = StyleSheet.create({
     color: '#2563EB',
   },
   donationTime: {
-    fontSize: 12,
+    fontSize: 14,
+    fontFamily: 'Outfit-Regular',
     color: '#6B7280',
   },
 });

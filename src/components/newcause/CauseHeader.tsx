@@ -247,6 +247,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontFamily: 'Outfit-Bold',
+    fontWeight: '700',
     color: '#111827',
     flex: 1,
     textAlign: 'center',
@@ -296,8 +297,8 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   dropdownText: {
-    fontSize: 14,
-    fontFamily: 'Outfit-Medium',
+    fontSize: 15,
+    fontFamily: 'Outfit-SemiBold',
     color: '#111827',
   },
   separator: {

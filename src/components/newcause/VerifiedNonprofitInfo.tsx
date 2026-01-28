@@ -40,18 +40,18 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   verifiedText: {
-    fontSize: 12,
+    fontSize: 14,
     fontFamily: 'Outfit-SemiBold',
     color: '#2563EB',
   },
   taxId: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#374151',
     marginBottom: 4,
     fontFamily: 'Outfit-Regular',
   },
   address: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#374151',
     fontFamily: 'Outfit-Regular',
   },

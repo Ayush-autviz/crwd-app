@@ -30,15 +30,16 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   title: {
-    fontSize: 16,
+    fontSize: 18,
     fontFamily: 'Outfit-Bold',
+    fontWeight: '700',
     color: '#111827',
     marginBottom: 12,
   },
   mission: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#111827',
-    lineHeight: 20,
+    lineHeight: 22,
     fontFamily: 'Outfit-Regular',
   },
 });

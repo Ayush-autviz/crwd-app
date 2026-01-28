@@ -136,8 +136,8 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    fontSize: 18,
     fontFamily: 'Outfit-Bold',
+    fontWeight: '700',
     color: '#111827',
   },
   subtitle: {
@@ -152,8 +152,9 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   joinButtonText: {
-    fontSize: 12,
+    fontSize: 15,
     fontFamily: 'Outfit-Bold',
+    fontWeight: '700',
     color: '#FFFFFF',
   },
   postButton: {
@@ -165,8 +166,9 @@ const styles = StyleSheet.create({
     borderColor: '#E5E7EB',
   },
   postButtonText: {
-    fontSize: 12,
+    fontSize: 15,
     fontFamily: 'Outfit-Bold',
+    fontWeight: '700',
     color: '#1F2937',
   },
   loadingContainer: {
@@ -175,7 +177,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   loadingText: {
-    fontSize: 12,
+    fontSize: 14,
+    fontFamily: 'Outfit-Regular',
     color: '#6B7280',
   },
   emptyContainer: {
@@ -183,7 +186,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   emptyText: {
-    fontSize: 12,
+    fontSize: 14,
+    fontFamily: 'Outfit-Regular',
     color: '#6B7280',
     textAlign: 'center',
   },
@@ -233,8 +237,8 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   dropdownText: {
-    fontSize: 14,
-    fontFamily: 'Outfit-Medium',
+    fontSize: 15,
+    fontFamily: 'Outfit-SemiBold',
     color: '#111827',
   },
 });

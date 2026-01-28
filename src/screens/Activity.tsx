@@ -524,7 +524,7 @@ export default function Activity() {
                         parts.push(
                             <Text
                                 key="donor"
-                                style={{ fontFamily: 'Outfit-SemiBold', color: '#374151', fontSize: 12 }}
+                                style={{ fontFamily: 'Outfit-SemiBold', color: '#374151', fontSize: 14 }}
                                 onPress={() => {
                                     (navigation as any).navigate('UserProfile', { userId: item.userId.toString() });
                                 }}
@@ -534,14 +534,14 @@ export default function Activity() {
                         );
                     } else {
                         parts.push(
-                            <Text key="donor-text" style={{ color: '#374151', fontSize: 12 }}>
+                            <Text key="donor-text" style={{ color: '#374151', fontSize: 14 }}>
                                 {donorPart}
                             </Text>
                         );
                     }
 
                     parts.push(
-                        <Text key="donated-to" style={{ color: '#374151', fontSize: 12 }}>
+                        <Text key="donated-to" style={{ color: '#374151', fontSize: 14 }}>
                             {' '}donated to{' '}
                         </Text>
                     );
@@ -555,7 +555,7 @@ export default function Activity() {
                         parts.push(
                             <Text
                                 key="nonprofit"
-                                style={{ fontFamily: 'Outfit-SemiBold', color: '#374151', fontSize: 12 }}
+                                style={{ fontFamily: 'Outfit-SemiBold', color: '#374151', fontSize: 14 }}
                                 onPress={() => {
                                     (navigation as any).navigate('CauseDetail', { causeId: item.nonprofitId });
                                 }}
@@ -565,7 +565,7 @@ export default function Activity() {
                         );
                     } else {
                         parts.push(
-                            <Text key="nonprofit-text" style={{ color: '#374151', fontSize: 12 }}>
+                            <Text key="nonprofit-text" style={{ color: '#374151', fontSize: 14 }}>
                                 {nonprofitName}
                             </Text>
                         );
@@ -573,24 +573,24 @@ export default function Activity() {
 
                     if (suffix) {
                         parts.push(
-                            <Text key="suffix" style={{ color: '#374151', fontSize: 12 }}>
+                            <Text key="suffix" style={{ color: '#374151', fontSize: 14 }}>
                                 {suffix}
                             </Text>
                         );
                     }
 
-                    return <Text style={{ color: '#374151', fontSize: 12 }}>{parts}</Text>;
+                    return <Text style={{ color: '#374151', fontSize: 14 }}>{parts}</Text>;
                 }
             }
 
             // Handle donation type with collective format
             if (item.type === 'donation') {
                 return (
-                    <Text style={{ color: '#374151', fontSize: 12 }}>
+                    <Text style={{ color: '#374151', fontSize: 14 }}>
                         Your collective{' '}
                         {item.collectiveId && item.collectiveName ? (
                             <Text
-                                style={{ fontFamily: 'Outfit-SemiBold', color: '#374151', fontSize: 12 }}
+                                style={{ fontFamily: 'Outfit-SemiBold', color: '#374151', fontSize: 14 }}
                                 onPress={() => {
                                     if (item.collectiveId) {
                                         (navigation as any).navigate('GroupCRWD', { crwdId: item.collectiveId.toString() });
@@ -600,7 +600,7 @@ export default function Activity() {
                                 {item.collectiveName}
                             </Text>
                         ) : (
-                            <Text style={{ color: '#374151', fontSize: 12 }}>
+                            <Text style={{ color: '#374151', fontSize: 14 }}>
                                 {item.collectiveName || 'Community Champions'}
                             </Text>
                         )}
@@ -621,7 +621,7 @@ export default function Activity() {
                     while ((match = memberPattern.exec(description)) !== null) {
                         if (match.index > lastIndex) {
                             parts.push(
-                                <Text key={`text-${match.index}`} style={{ color: '#374151', fontSize: 12 }}>
+                                <Text key={`text-${match.index}`} style={{ color: '#374151', fontSize: 14 }}>
                                     {description.substring(lastIndex, match.index)}
                                 </Text>
                             );
@@ -629,7 +629,7 @@ export default function Activity() {
                         parts.push(
                             <Text
                                 key={`member-${match.index}`}
-                                style={{ fontFamily: 'Outfit-SemiBold', color: '#374151', fontSize: 12 }}
+                                style={{ fontFamily: 'Outfit-SemiBold', color: '#374151', fontSize: 14 }}
                                 onPress={() => {
                                     (navigation as any).navigate('UserProfile', { userId: item.userId.toString() });
                                 }}
@@ -649,7 +649,7 @@ export default function Activity() {
                         if (match.index >= lastIndex) {
                             if (match.index > lastIndex) {
                                 parts.push(
-                                    <Text key={`text-${match.index}`} style={{ color: '#374151', fontSize: 12 }}>
+                                    <Text key={`text-${match.index}`} style={{ color: '#374151', fontSize: 14 }}>
                                         {description.substring(lastIndex, match.index)}
                                     </Text>
                                 );
@@ -657,7 +657,7 @@ export default function Activity() {
                             parts.push(
                                 <Text
                                     key={`collective-${match.index}`}
-                                    style={{ fontFamily: 'Outfit-SemiBold', color: '#374151', fontSize: 12 }}
+                                    style={{ fontFamily: 'Outfit-SemiBold', color: '#374151', fontSize: 14 }}
                                     onPress={() => {
                                         (navigation as any).navigate('GroupCRWD', { crwdId: item.collectiveId.toString() });
                                     }}
@@ -672,16 +672,16 @@ export default function Activity() {
 
                 if (lastIndex < description.length) {
                     parts.push(
-                        <Text key="text-end" style={{ color: '#374151', fontSize: 12 }}>
+                        <Text key="text-end" style={{ color: '#374151', fontSize: 14 }}>
                             {description.substring(lastIndex)}
                         </Text>
                     );
                 }
 
                 return parts.length > 0 ? (
-                    <Text style={{ color: '#374151', fontSize: 12 }}>{parts}</Text>
+                    <Text style={{ color: '#374151', fontSize: 14 }}>{parts}</Text>
                 ) : (
-                    <Text style={{ color: '#374151', fontSize: 12 }}>{description}</Text>
+                    <Text style={{ color: '#374151', fontSize: 14 }}>{description}</Text>
                 );
             }
 
@@ -757,7 +757,7 @@ export default function Activity() {
                 // Add text before match
                 if (matchItem.index > lastIndex) {
                     parts.push(
-                        <Text key={`text-${matchItem.index}`} style={{ color: '#374151', fontSize: 12 }}>
+                        <Text key={`text-${matchItem.index}`} style={{ color: '#374151', fontSize: 14 }}>
                             {description.substring(lastIndex, matchItem.index)}
                         </Text>
                     );
@@ -769,7 +769,7 @@ export default function Activity() {
                         parts.push(
                             <Text
                                 key={`user-${matchItem.index}`}
-                                style={{ fontFamily: 'Outfit-SemiBold', color: '#374151', fontSize: 12 }}
+                                style={{ fontFamily: 'Outfit-SemiBold', color: '#374151', fontSize: 14 }}
                                 onPress={() => {
                                     (navigation as any).navigate('UserProfile', { userId: matchItem.userId });
                                 }}
@@ -779,7 +779,7 @@ export default function Activity() {
                         );
                     } else {
                         parts.push(
-                            <Text key={`user-text-${matchItem.index}`} style={{ color: '#374151', fontSize: 12 }}>
+                            <Text key={`user-text-${matchItem.index}`} style={{ color: '#374151', fontSize: 14 }}>
                                 {description.substring(matchItem.index, matchItem.index + matchItem.length)}
                             </Text>
                         );
@@ -789,7 +789,7 @@ export default function Activity() {
                         parts.push(
                             <Text
                                 key={`collective-${matchItem.index}`}
-                                style={{ fontFamily: 'Outfit-SemiBold', color: '#374151', fontSize: 12 }}
+                                style={{ fontFamily: 'Outfit-SemiBold', color: '#374151', fontSize: 14 }}
                                 onPress={() => {
                                     (navigation as any).navigate('GroupCRWD', { crwdId: matchItem.collectiveId });
                                 }}
@@ -799,7 +799,7 @@ export default function Activity() {
                         );
                     } else {
                         parts.push(
-                            <Text key={`collective-text-${matchItem.index}`} style={{ color: '#374151', fontSize: 12 }}>
+                            <Text key={`collective-text-${matchItem.index}`} style={{ color: '#374151', fontSize: 14 }}>
                                 {description.substring(matchItem.index, matchItem.index + matchItem.length)}
                             </Text>
                         );
@@ -812,16 +812,16 @@ export default function Activity() {
             // Add remaining text
             if (lastIndex < description.length) {
                 parts.push(
-                    <Text key="text-end" style={{ color: '#374151', fontSize: 12 }}>
+                    <Text key="text-end" style={{ color: '#374151', fontSize: 14 }}>
                         {description.substring(lastIndex)}
                     </Text>
                 );
             }
 
             return parts.length > 0 ? (
-                <Text style={{ color: '#374151', fontSize: 12 }}>{parts}</Text>
+                <Text style={{ color: '#374151', fontSize: 14, fontFamily: 'Outfit-Regular', lineHeight: 20 }}>{parts}</Text>
             ) : (
-                <Text style={{ color: '#374151', fontSize: 12 }}>{description}</Text>
+                <Text style={{ color: '#374151', fontSize: 14, fontFamily: 'Outfit-Regular', lineHeight: 20 }}>{description}</Text>
             );
         };
 
@@ -869,17 +869,18 @@ export default function Activity() {
                         <Text style={{
                             fontFamily: 'Outfit-Bold',
                             color: '#111827',
-                            fontSize: 14,
+                            fontSize: 15,
+                            fontWeight: '700',
                             marginBottom: 4
                         }}>
                             {item.title}
                         </Text>
                         {/* Description - matching vite font size and color */}
-                        <Text style={{ color: '#374151', fontSize: 12, marginBottom: 6 }}>
+                        <View style={{ marginBottom: 6 }}>
                             {renderDescription()}
-                        </Text>
+                        </View>
                         {/* Time - matching vite font size */}
-                        <Text style={{ color: '#9CA3AF', fontSize: 10 }}>
+                        <Text style={{ color: '#9CA3AF', fontSize: 13, fontFamily: 'Outfit-Regular' }}>
                             {item.time}
                         </Text>
                     </View>
@@ -939,8 +940,8 @@ export default function Activity() {
                             {!item.isDonation && (
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                                        <Text style={{ fontFamily: 'Outfit-SemiBold', fontSize: 14, color: '#111' }}>{item.username}</Text>
-                                        <Text style={{ fontSize: 12, color: PrimaryGrey }}>• {item.time}</Text>
+                                        <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 15, fontWeight: '700', color: '#111' }}>{item.username}</Text>
+                                        <Text style={{ fontSize: 14, fontFamily: 'Outfit-Regular', color: PrimaryGrey }}>• {item.time}</Text>
                                     </View>
                                     {/* <MoreHorizontal size={16} color={PrimaryGrey} /> */}
                                 </View>
@@ -952,38 +953,38 @@ export default function Activity() {
                                         (navigation as any).navigate('GroupCRWD', { collectiveId: item.collectiveId.toString() });
                                     }
                                 }}>
-                                    <Text style={{ fontSize: 12, color: PrimaryBlue, marginTop: 2 }}>{item.org}</Text>
+                                    <Text style={{ fontSize: 14, fontFamily: 'Outfit-Medium', color: PrimaryBlue, marginTop: 2 }}>{item.org}</Text>
                                 </TouchableOpacity>
                             )}
 
                             <View style={{ marginTop: 8, marginBottom: 12 }}>
                                 {item.isJoin ? (
                                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                                        <Text style={{ color: '#374151' }}>{item.text}</Text>
+                                        <Text style={{ color: '#374151', fontSize: 15, fontFamily: 'Outfit-Regular' }}>{item.text}</Text>
                                         {item.groupName && (
                                             <TouchableOpacity onPress={() => {
                                                 if (item.collectiveId) {
                                                     (navigation as any).navigate('GroupCRWD', { collectiveId: item.collectiveId.toString() });
                                                 }
                                             }}>
-                                                <Text style={{ color: PrimaryBlue, fontFamily: 'Outfit-SemiBold' }}>{item.groupName}</Text>
+                                                <Text style={{ color: PrimaryBlue, fontFamily: 'Outfit-SemiBold', fontSize: 15 }}>{item.groupName}</Text>
                                             </TouchableOpacity>
                                         )}
                                     </View>
                                 ) : item.isPost ? (
                                     <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
-                                        <Text style={{ color: '#374151' }}>{item.text}</Text>
+                                        <Text style={{ color: '#374151', fontSize: 15, fontFamily: 'Outfit-Regular' }}>{item.text}</Text>
                                         {item.postId && (
                                             <TouchableOpacity onPress={() => {
                                                 (navigation as any).navigate('PostDetail', { postId: item.postId });
                                             }}>
-                                                <Text style={{ color: PrimaryBlue, textDecorationLine: 'underline' }}>post</Text>
+                                                <Text style={{ color: PrimaryBlue, textDecorationLine: 'underline', fontSize: 15, fontFamily: 'Outfit-SemiBold' }}>post</Text>
                                             </TouchableOpacity>
                                         )}
                                     </View>
                                 ) : (
                                     <View>
-                                        <Text style={{ color: '#374151', lineHeight: 20 }}>{item.text}</Text>
+                                        <Text style={{ color: '#374151', fontSize: 15, fontFamily: 'Outfit-Regular', lineHeight: 22 }}>{item.text}</Text>
                                     </View>
                                 )}
                             </View>

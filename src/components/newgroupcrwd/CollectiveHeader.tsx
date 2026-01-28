@@ -320,9 +320,8 @@ const styles = StyleSheet.create({
   title: {
     flex: 1,
     fontSize: 18,
-    flex: 1,
-    fontSize: 18,
     fontFamily: 'Outfit-Bold',
+    fontWeight: '700',
     color: '#111827',
     marginHorizontal: 8,
   },
@@ -370,8 +369,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   dropdownText: {
-    fontSize: 14,
-    fontSize: 14,
+    fontSize: 15,
     fontFamily: 'Outfit-SemiBold',
     color: '#111827',
   },

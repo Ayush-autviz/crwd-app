@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
     color: '#1600ff',
   },
   statLabel: {
-    fontSize: 10,
+    fontSize: 14,
     fontFamily: 'Outfit-Medium',
     color: '#6B7280',
   },

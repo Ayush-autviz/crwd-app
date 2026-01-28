@@ -126,6 +126,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
+    fontFamily: 'Outfit-Bold',
     fontWeight: '700',
     color: '#111827',
     marginBottom: 12,
@@ -171,8 +172,9 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   name: {
-    fontSize: 10,
-    fontWeight: '600',
+    fontSize: 14,
+    fontFamily: 'Outfit-Bold',
+    fontWeight: '700',
     color: '#111827',
     textAlign: 'center',
     flex: 1,

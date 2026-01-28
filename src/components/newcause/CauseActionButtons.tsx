@@ -125,14 +125,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#dcfce7',
   },
   addToBoxButtonText: {
-    fontSize: 16,
-    fontFamily: 'Outfit-SemiBold',
+    fontSize: 15,
+    fontFamily: 'Outfit-Bold',
+    fontWeight: '700',
     color: '#fff',
   },
   addedButtonText: {
-    fontSize: 16,
-    fontFamily: 'Outfit-SemiBold',
-    color: '#fff',
+    fontSize: 15,
+    fontFamily: 'Outfit-Bold',
+    fontWeight: '700',
+    color: '#16a34a',
   },
   donateButton: {
     width: '100%',
@@ -143,8 +145,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   donateButtonText: {
-    fontSize: 16,
-    fontFamily: 'Outfit-SemiBold',
+    fontSize: 15,
+    fontFamily: 'Outfit-Bold',
+    fontWeight: '700',
     color: '#FFFFFF',
   },
 });

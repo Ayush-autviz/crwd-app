@@ -54,14 +54,14 @@ export default function ProfileStats({
                     <ActivityIndicator size="small" color={PrimaryBlue} />
                 ) : (
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                        <Text style={{ fontSize: 12, fontFamily: 'Outfit-SemiBold', color: '#595959', textAlign: 'center' }}>
+                        <Text style={{ fontSize: 14, fontFamily: 'Outfit-SemiBold', color: '#595959', textAlign: 'center' }}>
                             {causes}
                         </Text>
-                        <Text style={{ fontSize: 12, color: '#595959', textAlign: 'center', fontFamily: 'Outfit-Medium' }}>Causes</Text>
+                        <Text style={{ fontSize: 14, color: '#595959', textAlign: 'center', fontFamily: 'Outfit-Medium' }}>Causes</Text>
                     </View>
 
                 )}
-                {/* <Text style={{ fontSize: 12, color: PrimaryGrey, textAlign: 'center' }}>Causes</Text> */}
+                {/* <Text style={{ fontSize: 14, color: PrimaryGrey, textAlign: 'center' }}>Causes</Text> */}
             </TouchableOpacity>
             <View style={{ width: 4, height: 4, backgroundColor: '#595959', marginHorizontal: 8, borderRadius: 5, alignSelf: 'center' }} />
             <TouchableOpacity
@@ -72,10 +72,10 @@ export default function ProfileStats({
                     <ActivityIndicator size="small" color={PrimaryBlue} />
                 ) : (
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                        <Text style={{ fontSize: 12, fontFamily: 'Outfit-SemiBold', color: '#595959', textAlign: "center" }}>
+                        <Text style={{ fontSize: 14, fontFamily: 'Outfit-SemiBold', color: '#595959', textAlign: "center" }}>
                             {crwds}
                         </Text>
-                        <Text style={{ fontSize: 12, color: '#595959', textAlign: "center", fontFamily: 'Outfit-Medium' }}>Collectives</Text>
+                        <Text style={{ fontSize: 14, color: '#595959', textAlign: "center", fontFamily: 'Outfit-Medium' }}>Collectives</Text>
                     </View>
                 )}
             </TouchableOpacity>
@@ -88,10 +88,10 @@ export default function ProfileStats({
                     <ActivityIndicator size="small" color={PrimaryBlue} />
                 ) : (
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                        <Text style={{ fontSize: 12, fontFamily: 'Outfit-SemiBold', color: '#595959', textAlign: "center" }}>
+                        <Text style={{ fontSize: 14, fontFamily: 'Outfit-SemiBold', color: '#595959', textAlign: "center" }}>
                             {followers}
                         </Text>
-                        <Text style={{ fontSize: 12, color: '#595959', textAlign: "center", fontFamily: 'Outfit-Medium' }}>Followers</Text>
+                        <Text style={{ fontSize: 14, color: '#595959', textAlign: "center", fontFamily: 'Outfit-Medium' }}>Followers</Text>
                     </View>
                 )}
             </TouchableOpacity>
@@ -104,10 +104,10 @@ export default function ProfileStats({
                     <ActivityIndicator size="small" color={PrimaryBlue} />
                 ) : (
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                        <Text style={{ fontSize: 12, fontFamily: 'Outfit-SemiBold', color: '#595959', textAlign: "center" }}>
+                        <Text style={{ fontSize: 14, fontFamily: 'Outfit-SemiBold', color: '#595959', textAlign: "center" }}>
                             {following}
                         </Text>
-                        <Text style={{ fontSize: 12, color: '#595959', textAlign: "center", fontFamily: 'Outfit-Medium' }}>Following</Text>
+                        <Text style={{ fontSize: 14, color: '#595959', textAlign: "center", fontFamily: 'Outfit-Medium' }}>Following</Text>
                     </View>
                 )}
             </TouchableOpacity>

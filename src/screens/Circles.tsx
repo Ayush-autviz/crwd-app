@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '700',
     color: '#111827',
     marginBottom: 6,
@@ -347,7 +347,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Bold',
   },
   headerSubtitle: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#6B7280',
     textAlign: 'center',
     marginBottom: 12,
@@ -365,7 +365,7 @@ const styles = StyleSheet.create({
   createButtonText: {
     color: '#fff',
     fontWeight: '600',
-    fontSize: 14,
+    fontSize: 15,
     fontFamily: 'Outfit-SemiBold',
   },
   tabsRow: {
@@ -394,7 +394,7 @@ const styles = StyleSheet.create({
   tabText: {
     color: '#6B7280',
     fontWeight: '600',
-    fontSize: 12,
+    fontSize: 14,
     fontFamily: 'Outfit-SemiBold',
   },
   tabTextActive: {
@@ -438,14 +438,14 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Bold',
   },
   cardTitle: {
-    fontSize: 18,
+    fontSize: 15,
     fontWeight: '700',
     color: '#111827',
     marginBottom: 2,
     fontFamily: 'Outfit-Bold',
   },
   cardDescription: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#4B5563',
     marginBottom: 6,
     lineHeight: 20,
@@ -458,12 +458,12 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   founderText: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#6B7280',
     fontFamily: 'Outfit-Regular',
   },
   nonprofitCount: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#6B7280',
     fontFamily: 'Outfit-Regular',
   },
@@ -500,7 +500,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 10,
     color: PrimaryGrey,
-    fontSize: 16,
+    fontSize: 15,
     fontFamily: 'Outfit-Regular',
   },
   emptyState: {
@@ -515,7 +515,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   emptyStateTitle: {
-    fontSize: 18,
+    fontSize: 15,
     fontWeight: '600',
     color: '#111827',
     marginBottom: 8,
@@ -524,7 +524,7 @@ const styles = StyleSheet.create({
   },
   emptyStateText: {
     color: PrimaryGrey,
-    fontSize: 14,
+    fontSize: 15,
     textAlign: 'center',
     fontFamily: 'Outfit-Regular',
   },

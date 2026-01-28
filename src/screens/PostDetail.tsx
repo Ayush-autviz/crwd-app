@@ -434,7 +434,7 @@ export default function PostDetail() {
                     (navigation as any).navigate('UserProfile', { userId: comment.userId.toString() });
                   }
                 }}>
-                  <Text style={{ fontWeight: '500', fontSize: 14 }}>{comment.username}</Text>
+                  <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '700', fontSize: 15, color: '#111827' }}>{comment.username}</Text>
                 </TouchableOpacity>
                 {isOwnComment && (
                   <View style={{ position: 'relative' }}>
@@ -482,10 +482,10 @@ export default function PostDetail() {
                   </View>
                 )}
               </View>
-              <Text style={{ fontSize: 14 }}>{comment.content}</Text>
+              <Text style={{ fontSize: 15, fontFamily: 'Outfit-Regular', color: '#111827', lineHeight: 20 }}>{comment.content}</Text>
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, marginTop: 8 }}>
-              <Text style={{ fontSize: 12, color: PrimaryGrey }}>
+              <Text style={{ fontSize: 14, color: PrimaryGrey, fontFamily: 'Outfit-Regular' }}>
                 {formatDistanceToNow(comment.timestamp, { addSuffix: true })}
               </Text>
               {/* <button
@@ -723,22 +723,22 @@ export default function PostDetail() {
   };
 
   // Handle back button and navigation
-  useEffect(() => {
-    const unsubscribe = navigation.addListener('beforeRemove', (e) => {
-      if (!comment.trim()) {
-        // If no comment, allow navigation
-        return;
-      }
+  // useEffect(() => {
+  //   const unsubscribe = navigation.addListener('beforeRemove', (e) => {
+  //     if (!comment.trim()) {
+  //       // If no comment, allow navigation
+  //       return;
+  //     }
 
-      // Prevent default behavior of leaving the screen
-      e.preventDefault();
+  //     // Prevent default behavior of leaving the screen
+  //     e.preventDefault();
 
-      // Show confirmation modal
-      setShowExitConfirmation(true);
-    });
+  //     // Show confirmation modal
+  //     setShowExitConfirmation(true);
+  //   });
 
-    return unsubscribe;
-  }, [navigation, comment]);
+  //   return unsubscribe;
+  // }, [navigation, comment]);
 
   const handleConfirmExit = () => {
     setShowExitConfirmation(false);
@@ -909,7 +909,7 @@ export default function PostDetail() {
                       (navigation as any).navigate('UserProfile', { userId: post.user.id.toString() });
                     }
                   }}>
-                    <Text style={{ fontSize: 14, fontWeight: '500' }}>{post.username}</Text>
+                    <Text style={{ fontSize: 15, fontFamily: 'Outfit-Bold', fontWeight: '700', color: '#111827' }}>{post.username}</Text>
                   </TouchableOpacity>
                   {/* <Text style={{ fontSize: 14, color: PrimaryGrey }}>•</Text> */}
                   {/* <Text style={{ fontSize: 12, color: PrimaryGrey }}>
@@ -918,7 +918,7 @@ export default function PostDetail() {
                       : post.time}
                   </Text> */}
                 </View>
-                <Text style={{ fontSize: 12, color: PrimaryGrey, marginTop: 5 }}>
+                <Text style={{ fontSize: 14, color: PrimaryGrey, marginTop: 5, fontFamily: 'Outfit-Regular' }}>
                   {post.created_at || post.timestamp
                     ? formatDistanceToNow(new Date(post.created_at || post.timestamp as string), { addSuffix: true })
                     : post.time}
@@ -926,7 +926,7 @@ export default function PostDetail() {
               </View>
             </View>
 
-            <Text style={{ fontSize: 14, marginTop: 12, lineHeight: 20 }}>{post.text}</Text>
+            <Text style={{ fontSize: 15, marginTop: 12, lineHeight: 22, color: '#111827', fontFamily: 'Outfit-Regular' }}>{post.text}</Text>
 
             {/* Show preview card if previewDetails exists, otherwise show image */}
             {post.previewDetails ? (
@@ -1060,18 +1060,18 @@ export default function PostDetail() {
                 {comments
                   .filter((comment) => !comment.parentComment)
                   .map((comment) => (
-                  <Comment
-                    key={comment.id}
-                    comment={comment}
-                    onReply={handleReplyAction}
-                    onLike={handleCommentLike}
-                    onToggleReplies={toggleReplies}
-                    onFetchReplies={fetchReplies}
-                    onDelete={handleDeleteComment}
-                    isExpanded={expandedComments.has(comment.id)}
-                    isLoadingReplies={loadingReplies.has(comment.id)}
-                  />
-                ))}
+                    <Comment
+                      key={comment.id}
+                      comment={comment}
+                      onReply={handleReplyAction}
+                      onLike={handleCommentLike}
+                      onToggleReplies={toggleReplies}
+                      onFetchReplies={fetchReplies}
+                      onDelete={handleDeleteComment}
+                      isExpanded={expandedComments.has(comment.id)}
+                      isLoadingReplies={loadingReplies.has(comment.id)}
+                    />
+                  ))}
               </View>
             )}
           </View>
@@ -1082,8 +1082,9 @@ export default function PostDetail() {
           <View style={{
             borderTopWidth: 1,
             borderTopColor: '#E5E5E5',
-            padding: 16,
-            backgroundColor: 'white'
+            paddingHorizontal: 16,
+            backgroundColor: 'white',
+            paddingTop: 8
           }}>
             {replyingTo && (
               <View style={{
@@ -1116,7 +1117,7 @@ export default function PostDetail() {
               backgroundColor: '#F9FAFB',
               borderRadius: 8,
               overflow: 'hidden',
-              marginBottom: 8
+              marginBottom: 4
             }}>
               <View style={{ width: 4, backgroundColor: PrimaryBlue }} />
               <TextInput

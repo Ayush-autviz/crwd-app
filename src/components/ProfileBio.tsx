@@ -10,8 +10,8 @@ export default function ProfileBio({ bio }: ProfileBioProps) {
   return (
     <View style={{}}>
       <Text style={{
-        fontSize: 14,
-        color: '#000',
+        fontSize: 15,
+        color: '#6b7280',
         // lineHeight: 20,
         textAlign: 'center',
         fontFamily: 'Outfit-Regular',

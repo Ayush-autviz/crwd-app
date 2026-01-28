@@ -45,7 +45,7 @@ const ProfileInterests: React.FC<ProfileInterestsProps> = ({
             }}
           >
             <Text style={{
-              fontSize: 12,
+              fontSize: 14,
               fontFamily: 'Outfit-Medium',
               color: '#374151',
               textAlign: 'center',

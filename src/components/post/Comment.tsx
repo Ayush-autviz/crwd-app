@@ -232,7 +232,7 @@ const styles = StyleSheet.create({
   },
   avatarFallbackText: {
     color: '#FFFFFF',
-    fontWeight: 'bold',
+    fontFamily: 'Outfit-Bold',
     fontSize: 12,
   },
   textContainer: {
@@ -250,8 +250,8 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   displayName: {
-    fontWeight: '600',
-    fontSize: 14,
+    fontFamily: 'Outfit-SemiBold',
+    fontSize: 15,
     color: '#111827',
   },
   menuButton: {
@@ -280,10 +280,12 @@ const styles = StyleSheet.create({
   menuItemText: {
     fontSize: 14,
     color: '#EF4444',
+    fontFamily: 'Outfit-Regular',
   },
   content: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#111827',
+    fontFamily: 'Outfit-Regular',
   },
   actions: {
     flexDirection: 'row',
@@ -293,8 +295,9 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
   timestamp: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#6B7280',
+    fontFamily: 'Outfit-Regular',
   },
   actionButton: {
     flexDirection: 'row',
@@ -302,9 +305,9 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   actionText: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#6B7280',
-    fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
   },
   repliesContainer: {
     marginLeft: 40,

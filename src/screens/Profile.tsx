@@ -51,9 +51,9 @@ const getInitials = (firstName?: string, lastName?: string, name?: string, usern
     }
     if (name) {
         const words = name.split(' ').filter(Boolean);
-        if (words.length >= 2) {
-            return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase();
-        }
+        // if (words.length >= 2) {
+        //     return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase();
+        // }
         return words[0]?.charAt(0).toUpperCase() || 'U';
     }
     return username?.charAt(0).toUpperCase() || 'U';
@@ -337,27 +337,29 @@ export default function Profile() {
     };
 
     // Transform statistics data
+    // Transform statistics data
     const statsCauses = statsCausesData?.results?.map((item: any) => {
         const cause = item.cause || item;
+        const imageUrl = cause.image || cause.avatar || cause.logo || cause.profile_picture || '';
+        console.log(`Mapping cause ${cause.name}: image=${imageUrl}`);
         return {
             name: cause.name || 'Unknown Cause',
-            avatar: cause.image || cause.avatar || '',
+            avatar: imageUrl,
             id: cause.id,
-            description: cause.mission || '',
+            description: cause.mission || cause.description || '',
         };
     }) || [];
 
     const statsCrwds = statsCollectivesData?.data?.map((item: any) => {
         const collective = item.collective || item;
+        const imageUrl = collective.logo || collective.image || collective.avatar || collective.created_by?.profile_picture || '';
+        console.log(`Mapping collective ${collective.name}: image=${imageUrl}`);
         return {
             name: collective.name || 'Unknown Collective',
-            avatar: collective.created_by?.profile_picture || collective.avatar || collective.image || '',
-            logo: collective.logo || undefined,
-            color: collective.color || undefined,
-            role: item.role || 'Member',
+            avatar: imageUrl,
             id: collective.id,
-            description: collective.description || '',
             member_count: collective.member_count || 0,
+            color: collective.color || undefined,
         };
     }) || [];
 
@@ -372,6 +374,7 @@ export default function Profile() {
             avatar: userData.profile_picture || userData.avatar || '',
             id: userData.id,
             is_following: isFollowing,
+            color: userData.color || undefined,
         };
     }) || [];
 
@@ -386,6 +389,7 @@ export default function Profile() {
             avatar: userData.profile_picture || userData.avatar || '',
             id: userData.id,
             is_following: isFollowing,
+            color: userData.color || undefined,
         };
     }) || [];
 
@@ -440,7 +444,7 @@ export default function Profile() {
                 return (
                     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 40 }}>
                         <ActivityIndicator size="large" color={PrimaryBlue} />
-                        <Text style={{ marginTop: 10, fontSize: 16, color: PrimaryGrey }}>Loading causes...</Text>
+                        <Text style={{ marginTop: 10, fontSize: 15, color: PrimaryGrey }}>Loading causes...</Text>
                     </View>
                 );
             }
@@ -459,11 +463,12 @@ export default function Profile() {
                                     (navigation as any).navigate('CauseScreen', { causeId: cause.id });
                                 }}
                             >
-                                <View style={[styles.causeIcon, { backgroundColor: causeBgColor }]}>
-                                    <Text style={styles.causeIconText}>
+                                <Avatar size={48} style={{ borderRadius: 10 }}>
+                                    <AvatarImage src={cause.avatar} />
+                                    <AvatarFallback style={{ backgroundColor: causeBgColor }} textStyle={{ color: '#FFFFFF', fontFamily: 'Outfit-Bold', fontSize: 20 }}>
                                         {cause.name?.charAt(0)?.toUpperCase() || 'N'}
-                                    </Text>
-                                </View>
+                                    </AvatarFallback>
+                                </Avatar>
                                 <View style={styles.causeContent}>
                                     <Text style={styles.causeName}>{cause.name}</Text>
                                     <Text style={styles.causeDescription} numberOfLines={2}>
@@ -474,7 +479,7 @@ export default function Profile() {
                         );
                     }) : (
                         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 40 }}>
-                            <Text style={{ fontSize: 16, color: PrimaryGrey }}>No causes found</Text>
+                            <Text style={{ fontSize: 15, color: PrimaryGrey, fontFamily: 'Outfit-Regular' }}>No causes found</Text>
                         </View>
                     )}
                 </View>
@@ -486,55 +491,44 @@ export default function Profile() {
                 return (
                     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 40 }}>
                         <ActivityIndicator size="large" color={PrimaryBlue} />
-                        <Text style={{ marginTop: 10, fontSize: 16, color: PrimaryGrey }}>Loading collectives...</Text>
+                        <Text style={{ marginTop: 10, fontSize: 15, color: PrimaryGrey }}>Loading collectives...</Text>
                     </View>
                 );
             }
             return (
                 <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
                     {statsCrwds.length > 0 ? statsCrwds.map((crwd: any, index: number) => {
-                        // Priority: 1. Use color (with white text), 2. Use logo (image), 3. Fallback to generated color with letter
-                        const hasColor = crwd.color;
-                        const hasLogo = crwd.logo &&
-                            (crwd.logo.startsWith('http') || crwd.logo.startsWith('/') || crwd.logo.startsWith('data:'));
-                        const iconColor = hasColor || (!hasLogo ? '#10B981' : undefined);
-                        const showImage = hasLogo && !hasColor;
+                        const hasImage = crwd.avatar &&
+                            (crwd.avatar.startsWith('http') || crwd.avatar.startsWith('/') || crwd.avatar.startsWith('data:'));
+                        const iconColor = crwd.color || (!hasImage ? '#10B981' : undefined);
                         const iconLetter = crwd.name.charAt(0).toUpperCase();
 
                         return (
-                            <View key={crwd.id || index} style={styles.statsItem}>
-                                <View style={styles.statsItemLeft}>
-                                    <Avatar size={40} style={{ borderRadius: 10 }}>
-                                        {showImage ? (
-                                            <AvatarImage src={crwd.logo} />
-                                        ) : null}
-                                        <AvatarFallback style={{ backgroundColor: iconColor || '#10B981' }} textStyle={{ color: '#FFFFFF', fontFamily: 'Outfit-SemiBold' }}>
-                                            {iconLetter}
-                                        </AvatarFallback>
-                                    </Avatar>
-                                    <TouchableOpacity
-                                        // style={styles.viewButton}
-                                        onPress={() => {
-                                            bottomSheetRef.current?.close();
-                                            (navigation as any).navigate('GroupCRWD', { collectiveId: crwd.id });
-                                        }}
-                                    >
-                                        <View style={styles.statsItemInfo}>
-                                            {/* <View style={[styles.badge, styles.crwdBadge]}>
-                                            <Text style={[styles.badgeText, styles.crwdText]}>Collective</Text>
-                                        </View> */}
-                                            <Text style={styles.statsItemName}>{crwd.name}</Text>
-                                            <Text style={styles.statsItemDescription} numberOfLines={1}>{crwd.member_count} members</Text>
-                                        </View>
-                                    </TouchableOpacity>
+                            <TouchableOpacity
+                                key={crwd.id || index}
+                                style={styles.causeItem}
+                                onPress={() => {
+                                    bottomSheetRef.current?.close();
+                                    (navigation as any).navigate('GroupCRWD', { id: crwd.id.toString() });
+                                }}
+                            >
+                                <Avatar size={48} style={{ borderRadius: 10 }}>
+                                    {hasImage ? (
+                                        <AvatarImage src={crwd.avatar} />
+                                    ) : null}
+                                    <AvatarFallback style={{ backgroundColor: iconColor || '#10B981' }} textStyle={{ color: '#FFFFFF', fontFamily: 'Outfit-Bold', fontSize: 20 }}>
+                                        {iconLetter}
+                                    </AvatarFallback>
+                                </Avatar>
+                                <View style={styles.causeContent}>
+                                    <Text style={styles.causeName}>{crwd.name}</Text>
+                                    <Text style={styles.causeDescription} numberOfLines={1}>{crwd.member_count} members</Text>
                                 </View>
-
-
-                            </View>
+                            </TouchableOpacity>
                         );
                     }) : (
                         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 40 }}>
-                            <Text style={{ fontSize: 16, color: PrimaryGrey }}>No collectives found</Text>
+                            <Text style={{ fontSize: 15, color: PrimaryGrey, fontFamily: 'Outfit-Regular' }}>No collectives found</Text>
                         </View>
                     )}
                 </ScrollView>
@@ -549,7 +543,7 @@ export default function Profile() {
                 return (
                     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 40 }}>
                         <ActivityIndicator size="large" color={PrimaryBlue} />
-                        <Text style={{ marginTop: 10, fontSize: 16, color: PrimaryGrey }}>Loading {title.toLowerCase()}...</Text>
+                        <Text style={{ marginTop: 10, fontSize: 15, color: PrimaryGrey }}>Loading {title.toLowerCase()}...</Text>
                     </View>
                 );
             }
@@ -561,10 +555,10 @@ export default function Profile() {
                         return (
                             <View key={member.id || index} style={styles.memberItem}>
                                 <View style={styles.memberInfo}>
-                                    <Avatar size={40}>
+                                    <Avatar size={48}>
                                         <AvatarImage src={member.avatar} />
                                         <AvatarFallback
-                                            style={{ backgroundColor: getConsistentColor(member.id || member.username || member.name || 'U', avatarColors) }}
+                                            style={{ backgroundColor: member.color || getConsistentColor(member.id || member.username || member.name || 'U', avatarColors) }}
                                             textStyle={{ color: '#FFFFFF', fontFamily: 'Outfit-SemiBold' }}
                                         >
                                             {getInitials(member.first_name, member.last_name, member.name, member.username)}
@@ -590,7 +584,7 @@ export default function Profile() {
                         );
                     }) : (
                         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 40 }}>
-                            <Text style={{ fontSize: 16, color: PrimaryGrey }}>No {title.toLowerCase()} found</Text>
+                            <Text style={{ fontSize: 15, color: PrimaryGrey, fontFamily: 'Outfit-Regular' }}>No {title.toLowerCase()} found</Text>
                         </View>
                     )}
                 </ScrollView>
@@ -640,7 +634,7 @@ export default function Profile() {
                 <MainHeaderNav title={'Me'} show menu={false} />
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                     <ActivityIndicator size="large" color={PrimaryBlue} />
-                    <Text style={{ marginTop: 16, fontSize: 16, color: '#6b7280' }}>
+                    <Text style={{ marginTop: 16, fontSize: 15, color: '#6b7280' }}>
                         Loading profile...
                     </Text>
                 </View>
@@ -680,7 +674,7 @@ export default function Profile() {
 
             {/* Top right buttons */}
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 12, paddingHorizontal: 16, height: 60, borderBottomWidth: 2, borderBottomColor: '#e5e7eb' }}>
-                <Text style={{ fontSize: 18, fontFamily: 'Outfit-SemiBold', color: '#111827' }}>Me</Text>
+                <Text style={{ fontSize: 17, fontFamily: 'Outfit-SemiBold', color: '#111827' }}>Me</Text>
                 <View style={{ position: 'relative' }}>
                     <TouchableOpacity
                         onPress={() => setShowMenu(!showMenu)}
@@ -824,7 +818,7 @@ export default function Profile() {
                             </Avatar>
                         </TouchableOpacity>
                         <View style={{ alignItems: 'center', marginVertical: 16 }}>
-                            <View style={{ flexDirection: 'column', alignItems: 'center', gap: 6, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 8 }}>
+                            <View style={{ flexDirection: 'column', alignItems: 'center', gap: 8 }}>
                                 <Text style={{
                                     fontSize: 18,
                                     fontFamily: 'Outfit-Bold',
@@ -847,7 +841,7 @@ export default function Profile() {
                                     >
                                         <Text style={{
                                             color: '#EC4899',
-                                            fontSize: 11,
+                                            fontSize: 14,
                                             fontFamily: 'Outfit-SemiBold',
                                         }}>
                                             Organizer
@@ -858,15 +852,15 @@ export default function Profile() {
                         </View>
 
                         {/* Location and Link */}
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                            {profileData?.location && (
+                        {profileData?.location && (
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                                     {/* <Text style={{ fontSize: 16, color: '#6b7280' }}>📍</Text> */}
                                     <MapPin size={16} color="#6b7280" />
                                     <Text style={{ fontSize: 14, color: '#6b7280' }}>{profileData.location}</Text>
                                 </View>
-                            )}
-                            {/* {profileData?.username && (
+
+                                {/* {profileData?.username && (
                                 <TouchableOpacity>
                                     <Text style={{ fontSize: 12, color: PrimaryBlue,}}>
                                         {profileData.username}
@@ -876,8 +870,12 @@ export default function Profile() {
                             <Text style={{ fontSize: 12, color: '#6b7280' }}>
                                 Active since {profileData?.date_joined ? new Date(profileData.date_joined).getFullYear() : '2023'}
                             </Text> */}
-                        </View>
+                            </View>
+                        )}
                     </View>
+
+                    {profileData?.bio && <ProfileBio bio={profileData.bio} />}
+
 
                     {/* People Inspired */}
                     {/* {profileData?.inspired_people_count > 0 && (
@@ -894,14 +892,14 @@ export default function Profile() {
                     )} */}
 
 
-                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 16, marginTop: 16 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 16, marginTop: 8 }}>
                         <TouchableOpacity onPress={handleEditProfile} style={{ paddingHorizontal: 16, paddingVertical: 10, borderRadius: 8, borderWidth: 1, borderColor: '#e5e7eb', minWidth: 120 }}>
-                            <Text style={{ fontSize: 14, color: '#595959', fontFamily: 'Outfit-Bold', textAlign: 'center' }}>Edit Profile</Text>
+                            <Text style={{ fontSize: 15, color: '#595959', fontFamily: 'Outfit-Bold', textAlign: 'center' }}>Edit Profile</Text>
                         </TouchableOpacity>
                         <TouchableOpacity onPress={handleShare} style={{ paddingHorizontal: 16, paddingVertical: 10, borderRadius: 8, borderWidth: 1, borderColor: '#e5e7eb', minWidth: 120 }}>
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, justifyContent: 'center' }}>
                                 <Share2 size={16} color="#595959" />
-                                <Text style={{ fontSize: 14, color: '#595959', fontFamily: 'Outfit-Bold' }}>Share Profile</Text>
+                                <Text style={{ fontSize: 15, color: '#595959', fontFamily: 'Outfit-Bold' }}>Share Profile</Text>
                             </View>
                         </TouchableOpacity>
                     </View>
@@ -1006,7 +1004,7 @@ export default function Profile() {
                                                     numberOfLines={2}
                                                     ellipsizeMode="tail"
                                                     style={{
-                                                        fontSize: 12,
+                                                        fontSize: 13,
                                                         fontFamily: 'Outfit-SemiBold',
                                                         color: '#111827',
                                                         textAlign: 'center',
@@ -1029,7 +1027,7 @@ export default function Profile() {
                                     </Text> */}
                                     <TouchableOpacity onPress={handleMoreInterests}>
                                         <Text style={{
-                                            fontSize: 13,
+                                            fontSize: 14,
                                             color: PrimaryBlue,
                                             fontFamily: 'Outfit-Medium'
                                         }}>
@@ -1047,7 +1045,6 @@ export default function Profile() {
                     {/* <View style={{ height: 1, backgroundColor: '#e5e7eb', marginHorizontal: 8, marginTop: 16 }}></View> */}
 
                     {/* Profile Bio */}
-                    {profileData?.bio && <ProfileBio bio={profileData.bio} />}
 
 
                     {/* Recent Activity */}
@@ -1072,7 +1069,7 @@ export default function Profile() {
                                         <MessageSquare size={48} color="#d1d5db" />
                                     </View>
                                     <Text style={{
-                                        fontSize: 18,
+                                        fontSize: 17,
                                         fontFamily: 'Outfit-SemiBold',
                                         color: '#111827',
                                         marginBottom: 8,
@@ -1081,7 +1078,7 @@ export default function Profile() {
                                         No posts yet
                                     </Text>
                                     <Text style={{
-                                        fontSize: 14,
+                                        fontSize: 15,
                                         color: '#6b7280',
                                         textAlign: 'center',
                                         maxWidth: 300
@@ -1248,7 +1245,7 @@ export default function Profile() {
                     {/* Header */}
                     <View style={[styles.bottomSheetHeader, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', paddingVertical: 10 }]}>
                         <View style={{ flex: 1 }}>
-                            <Text style={{ fontSize: 13, fontFamily: 'Outfit-SemiBold', color: '#111827' }}>
+                            <Text style={{ fontSize: 15, fontFamily: 'Outfit-SemiBold', color: '#111827' }}>
                                 Collectives founded by {profileData?.first_name && profileData?.last_name
                                     ? `${profileData.first_name} ${profileData.last_name}`
                                     : profileData?.username || 'User'}
@@ -1310,10 +1307,10 @@ export default function Profile() {
                                                 </AvatarFallback>
                                             </Avatar>
                                             <View style={{ flex: 1 }}>
-                                                <Text style={{ fontSize: 14, fontFamily: 'Outfit-SemiBold', color: '#111827', marginBottom: 2 }}>
+                                                <Text style={{ fontSize: 15, fontFamily: 'Outfit-SemiBold', color: '#111827', marginBottom: 2 }}>
                                                     {collectiveName}
                                                 </Text>
-                                                <Text style={{ fontSize: 11, color: '#6B7280' }}>
+                                                <Text style={{ fontSize: 14, color: '#6B7280', fontFamily: 'Outfit-Regular' }}>
                                                     {collective.member_count || 0} member{collective.member_count !== 1 ? 's' : ''}
                                                 </Text>
                                             </View>
@@ -1324,7 +1321,7 @@ export default function Profile() {
                             </View>
                         ) : (
                             <View style={{ padding: 32, alignItems: 'center' }}>
-                                <Text style={{ fontSize: 12, color: '#6B7280' }}>
+                                <Text style={{ fontSize: 15, color: '#6B7280', fontFamily: 'Outfit-Regular' }}>
                                     No collectives found
                                 </Text>
                             </View>
@@ -1336,7 +1333,7 @@ export default function Profile() {
                         {/* Motivational Message */}
                         {adminCollectivesForSheet.length > 0 && (
                             <View style={{ marginBottom: 12, alignItems: 'center' }}>
-                                <Text style={{ fontSize: 11, color: '#6B7280', textAlign: 'center' }}>
+                                <Text style={{ fontSize: 14, color: '#6B7280', textAlign: 'center', fontFamily: 'Outfit-Regular' }}>
                                     Keep building your impact! Create another Collective to bring even more people together.
                                 </Text>
                             </View>
@@ -1356,7 +1353,7 @@ export default function Profile() {
                                 alignItems: 'center',
                             }}
                         >
-                            <Text style={{ color: '#FFFFFF', fontSize: 14, fontFamily: 'Outfit-SemiBold' }}>
+                            <Text style={{ color: '#FFFFFF', fontSize: 15, fontFamily: 'Outfit-SemiBold' }}>
                                 {adminCollectivesForSheet.length > 0 ? 'Create Another Collective' : 'Create Your Own Collective'}
                             </Text>
                         </TouchableOpacity>
@@ -1420,6 +1417,7 @@ const styles = StyleSheet.create({
     bottomSheetSubtitle: {
         fontSize: 14,
         color: '#6b7280',
+        fontFamily: 'Outfit-Regular',
     },
     tabsContainer: {
         flexDirection: 'row',
@@ -1455,6 +1453,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         paddingVertical: 16,
+        gap: 8
         // paddingHorizontal: 16,
     },
     causeIcon: {
@@ -1474,14 +1473,15 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     causeName: {
-        fontSize: 14,
+        fontSize: 15,
         fontFamily: 'Outfit-SemiBold',
         color: '#111827',
         marginBottom: 4,
     },
     causeDescription: {
-        fontSize: 12,
+        fontSize: 14,
         color: '#6b7280',
+        fontFamily: 'Outfit-Regular',
         // lineHeight: 20,
     },
     statsItem: {
@@ -1526,15 +1526,16 @@ const styles = StyleSheet.create({
         color: '#16a34a',
     },
     statsItemName: {
-        fontSize: 14,
-        fontFamily: 'Outfit-Medium',
+        fontSize: 15,
+        fontFamily: 'Outfit-SemiBold',
         color: '#111827',
         marginBottom: 4,
     },
     statsItemDescription: {
-        fontSize: 12,
+        fontSize: 14,
         color: PrimaryGrey,
         lineHeight: 16,
+        fontFamily: 'Outfit-Regular',
     },
     viewButton: {
         backgroundColor: PrimaryBlue,
@@ -1544,7 +1545,7 @@ const styles = StyleSheet.create({
     },
     viewButtonText: {
         color: 'white',
-        fontSize: 12,
+        fontSize: 14,
         fontFamily: 'Outfit-Medium',
     },
     memberItem: {
@@ -1564,14 +1565,15 @@ const styles = StyleSheet.create({
         marginLeft: 12,
     },
     memberName: {
-        fontSize: 14,
+        fontSize: 15,
         fontFamily: 'Outfit-Medium',
         color: '#111827',
     },
     memberUsername: {
-        fontSize: 12,
+        fontSize: 14,
         color: PrimaryGrey,
         marginTop: 2,
+        fontFamily: 'Outfit-Regular',
     },
     followButton: {
         backgroundColor: PrimaryBlue,

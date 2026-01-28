@@ -588,7 +588,7 @@ export default function PopularPosts({
                                     }}>
                                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                                             <Pin size={16} color="#1600ff" />
-                                            <Text style={{ fontSize: 10, fontFamily: 'Outfit-Medium', color: '#1600ff' }}>
+                                            <Text style={{ fontSize: 12, fontFamily: 'Outfit-Medium', color: '#1600ff' }}>
                                                 PINNED FUNDRAISER
                                             </Text>
                                         </View>
@@ -783,7 +783,7 @@ export default function PopularPosts({
                                                         <Text style={{ fontSize: 18, fontFamily: 'Outfit-Bold', color: '#1600ff' }}>
                                                             ${parseFloat(item.fundraiser.current_amount || '0').toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                                                         </Text>
-                                                        <Text style={{ fontSize: 12, color: '#6b7280' }}>
+                                                        <Text style={{ fontSize: 14, color: '#6b7280' }}>
                                                             raised of ${parseFloat(item.fundraiser.target_amount || '0').toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} goal
                                                         </Text>
                                                     </View>
@@ -805,8 +805,8 @@ export default function PopularPosts({
                                                     {/* Donors and Days Left */}
                                                     <View style={{ flexDirection: 'row', gap: 12 }}>
                                                         {item.fundraiser.total_donors !== undefined && (
-                                                            <Text style={{ fontSize: 12, color: '#111827' }}>
-                                                                <Text style={{ fontWeight: '600' }}>{item.fundraiser.total_donors}</Text> donor{item.fundraiser.total_donors !== 1 ? 's' : ''}
+                                                            <Text style={{ fontSize: 12, color: '#111827', fontFamily: 'Outfit-Regular' }}>
+                                                                <Text style={{ fontFamily: 'Outfit-SemiBold' }}>{item.fundraiser.total_donors}</Text> donor{item.fundraiser.total_donors !== 1 ? 's' : ''}
                                                             </Text>
                                                         )}
                                                         {item.fundraiser.end_date && (() => {
@@ -814,8 +814,8 @@ export default function PopularPosts({
                                                             const now = new Date();
                                                             const daysLeft = Math.max(0, Math.floor((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
                                                             return (
-                                                                <Text style={{ fontSize: 12, color: '#111827' }}>
-                                                                    <Text style={{ fontWeight: '600' }}>{daysLeft}</Text> days left
+                                                                <Text style={{ fontSize: 12, color: '#111827', fontFamily: 'Outfit-Regular' }}>
+                                                                    <Text style={{ fontFamily: 'Outfit-SemiBold' }}>{daysLeft}</Text> days left
                                                                 </Text>
                                                             );
                                                         })()}
@@ -835,7 +835,7 @@ export default function PopularPosts({
                                                         justifyContent: 'center',
                                                         alignItems: 'center'
                                                     }}>
-                                                        <Text style={{ color: 'white', fontSize: 20, fontWeight: 'bold' }}>
+                                                        <Text style={{ color: 'white', fontSize: 20, fontFamily: 'Outfit-Bold' }}>
                                                             {item.fundraiser.name}
                                                         </Text>
                                                     </View>
@@ -853,25 +853,25 @@ export default function PopularPosts({
                                                         justifyContent: 'center',
                                                         alignItems: 'center'
                                                     }}>
-                                                        <Text style={{ color: 'white', fontSize: 20, fontWeight: 'bold' }}>
+                                                        <Text style={{ color: 'white', fontSize: 20, fontFamily: 'Outfit-Bold' }}>
                                                             {item.fundraiser.name}
                                                         </Text>
                                                     </View>
                                                 )}
                                             </View>
                                             <View style={{ marginBottom: 8, backgroundColor: '#EFF6FF', padding: 16, borderBottomLeftRadius: 12, borderBottomRightRadius: 12 }}>
-                                                <Text style={{ fontSize: 12, color: '#6b7280', marginBottom: 4 }}>
+                                                <Text style={{ fontSize: 12, color: '#6b7280', marginBottom: 4, fontFamily: 'Outfit-Regular' }}>
                                                     Started a fundraiser
                                                 </Text>
-                                                <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#111827', marginBottom: 12 }}>
+                                                <Text style={{ fontSize: 14, fontFamily: 'Outfit-Bold', color: '#111827', marginBottom: 12 }}>
                                                     {item.fundraiser.name}
                                                 </Text>
                                                 <View style={{ marginBottom: 8 }}>
                                                     <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 8, marginBottom: 6 }}>
-                                                        <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#1600ff' }}>
+                                                        <Text style={{ fontSize: 16, fontFamily: 'Outfit-Bold', color: '#1600ff' }}>
                                                             ${parseFloat(item.fundraiser.current_amount || '0').toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                                                         </Text>
-                                                        <Text style={{ fontSize: 12, color: '#374151' }}>
+                                                        <Text style={{ fontSize: 12, color: '#374151', fontFamily: 'Outfit-Regular' }}>
                                                             raised of ${parseFloat(item.fundraiser.target_amount || '0').toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} goal
                                                         </Text>
                                                     </View>
@@ -929,17 +929,17 @@ export default function PopularPosts({
                                             {/* Preview Content */}
                                             <View style={{ padding: 12 }}>
                                                 {item.previewDetails.site_name && (
-                                                    <Text style={{ fontSize: 10, color: '#6B7280', textTransform: 'uppercase', marginBottom: 4 }}>
+                                                    <Text style={{ fontSize: 10, color: '#6B7280', textTransform: 'uppercase', marginBottom: 4, fontFamily: 'Outfit-SemiBold' }}>
                                                         {item.previewDetails.site_name}
                                                     </Text>
                                                 )}
                                                 {item.previewDetails.title && (
-                                                    <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827', marginBottom: 4 }} numberOfLines={2}>
+                                                    <Text style={{ fontSize: 14, fontFamily: 'Outfit-SemiBold', color: '#111827', marginBottom: 4 }} numberOfLines={2}>
                                                         {item.previewDetails.title}
                                                     </Text>
                                                 )}
                                                 {item.previewDetails.description && (
-                                                    <Text style={{ fontSize: 12, color: '#4B5563' }} numberOfLines={2}>
+                                                    <Text style={{ fontSize: 12, color: '#4B5563', fontFamily: 'Outfit-Regular' }} numberOfLines={2}>
                                                         {item.previewDetails.description}
                                                     </Text>
                                                 )}
@@ -1078,7 +1078,7 @@ export default function PopularPosts({
                             }}>
                                 <Text style={{
                                     fontSize: 18,
-                                    fontWeight: '600',
+                                    fontFamily: 'Outfit-SemiBold',
                                     color: '#111827',
                                     marginBottom: 8
                                 }}>
@@ -1087,7 +1087,8 @@ export default function PopularPosts({
                                 <Text style={{
                                     fontSize: 14,
                                     color: '#6b7280',
-                                    marginBottom: 20
+                                    marginBottom: 20,
+                                    fontFamily: 'Outfit-Regular'
                                 }}>
                                     Are you sure you want to delete this post? This action cannot be undone.
                                 </Text>
@@ -1108,7 +1109,7 @@ export default function PopularPosts({
                                             opacity: deletePostMutation.isPending ? 0.5 : 1
                                         }}
                                     >
-                                        <Text style={{ color: '#111827', fontSize: 14, fontWeight: '500' }}>
+                                        <Text style={{ color: '#111827', fontSize: 14, fontFamily: 'Outfit-Medium' }}>
                                             Cancel
                                         </Text>
                                     </TouchableOpacity>
@@ -1130,12 +1131,12 @@ export default function PopularPosts({
                                         {deletePostMutation.isPending ? (
                                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                                                 <ActivityIndicator size="small" color="white" />
-                                                <Text style={{ color: 'white', fontSize: 14, fontWeight: '500' }}>
+                                                <Text style={{ color: 'white', fontSize: 14, fontFamily: 'Outfit-Medium' }}>
                                                     Deleting...
                                                 </Text>
                                             </View>
                                         ) : (
-                                            <Text style={{ color: 'white', fontSize: 14, fontWeight: '500' }}>
+                                            <Text style={{ color: 'white', fontSize: 14, fontFamily: 'Outfit-Medium' }}>
                                                 Delete
                                             </Text>
                                         )}
@@ -1179,13 +1180,15 @@ const styles = StyleSheet.create({
         gap: 2,
     },
     username: {
-        fontSize: 14,
-        fontWeight: '600',
+        fontSize: 15,
+        // fontWeight: '600',
         color: '#111827',
+        fontFamily: 'Outfit-Bold',
     },
     date: {
-        fontSize: 12,
+        fontSize: 13,
         color: '#6b7280',
+        fontFamily: 'Outfit-Regular',
     },
     tag: {
         paddingHorizontal: 10,
@@ -1196,6 +1199,7 @@ const styles = StyleSheet.create({
         fontSize: 11,
         fontWeight: '500',
         color: 'white',
+        fontFamily: 'Outfit-Medium',
     },
     menuButton: {
         padding: 4,
@@ -1228,6 +1232,7 @@ const styles = StyleSheet.create({
     fundraiserMenuText: {
         fontSize: 14,
         color: '#111827',
+        fontFamily: 'Outfit-Regular',
     },
     fundraiserMenuTextDanger: {
         color: '#DC2626',
@@ -1238,10 +1243,11 @@ const styles = StyleSheet.create({
         marginVertical: 4,
     },
     postText: {
-        fontSize: 14,
+        fontSize: 15,
         color: '#111827',
         lineHeight: 20,
         marginBottom: 12,
+        fontFamily: 'Outfit-Regular',
     },
     mediaContainer: {
         width: '100%',
@@ -1272,31 +1278,36 @@ const styles = StyleSheet.create({
     },
     placeholderIconText: {
         fontSize: 48,
+        fontFamily: 'Outfit-Bold',
     },
     previewContent: {
         padding: 12,
     },
     previewSiteName: {
-        fontSize: 10,
+        fontSize: 12,
         color: '#6b7280',
         textTransform: 'uppercase',
         letterSpacing: 0.5,
         marginBottom: 4,
+        fontFamily: 'Outfit-SemiBold',
     },
     previewTitle: {
-        fontSize: 14,
+        fontSize: 15,
         fontWeight: '600',
         color: '#111827',
         marginBottom: 4,
+        fontFamily: 'Outfit-SemiBold',
     },
     previewDescription: {
-        fontSize: 12,
+        fontSize: 14,
         color: '#6b7280',
         marginBottom: 4,
+        fontFamily: 'Outfit-Regular',
     },
     previewDomain: {
-        fontSize: 11,
+        fontSize: 12,
         color: '#6b7280',
+        fontFamily: 'Outfit-Regular',
     },
     postFooter: {
         flexDirection: 'row',
@@ -1322,6 +1333,7 @@ const styles = StyleSheet.create({
     footerCount: {
         fontSize: 14,
         color: '#6b7280',
+        fontFamily: 'Outfit-Regular',
     },
     shareButton: {
         padding: 4,
@@ -1354,6 +1366,7 @@ const styles = StyleSheet.create({
     tooltipText: {
         fontSize: 14,
         color: '#111',
+        fontFamily: 'Outfit-Medium',
     },
     loadMoreButton: {
         backgroundColor: 'white',
@@ -1370,6 +1383,7 @@ const styles = StyleSheet.create({
         color: PrimaryBlue,
         fontSize: 14,
         fontWeight: '500',
+        fontFamily: 'Outfit-Medium',
     },
     loadingContainer: {
         padding: 40,
@@ -1380,6 +1394,7 @@ const styles = StyleSheet.create({
         marginTop: 12,
         fontSize: 14,
         color: PrimaryGrey,
+        fontFamily: 'Outfit-Regular',
     },
     errorContainer: {
         padding: 20,
@@ -1391,6 +1406,7 @@ const styles = StyleSheet.create({
     },
     errorText: {
         fontSize: 14,
+        fontFamily: 'Outfit-Regular',
     },
     emptyContainer: {
         backgroundColor: '#FFFFFF',
@@ -1418,11 +1434,13 @@ const styles = StyleSheet.create({
         color: '#111827',
         marginTop: 8,
         marginBottom: 8,
+        fontFamily: 'Outfit-Bold',
     },
     emptyDescription: {
-        fontSize: 14,
+        fontSize: 15,
         color: '#6B7280',
         textAlign: 'center',
         maxWidth: 300,
+        fontFamily: 'Outfit-Regular',
     },
 });

@@ -534,11 +534,12 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   headerSubtitle: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#6B7280',
+    fontFamily: 'Outfit-Regular',
   },
   headerTitle: {
-    fontWeight: '600',
+    fontFamily: 'Outfit-SemiBold',
     color: '#111827',
   },
   closeButton: {
@@ -565,14 +566,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   originalPostDisplayName: {
-    fontWeight: '600',
-    fontSize: 14,
+    fontFamily: 'Outfit-SemiBold',
+    fontSize: 15,
     color: '#111827',
     marginBottom: 2,
   },
   originalPostText: {
-    fontSize: 13,
+    fontSize: 14,
     color: '#374151',
+    fontFamily: 'Outfit-Regular',
   },
   commentsListContainer: {
     paddingHorizontal: 16,
@@ -589,6 +591,7 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize: 14,
     color: '#6B7280',
+    fontFamily: 'Outfit-Regular',
   },
   emptyStateContainer: {
     alignItems: 'center',
@@ -596,14 +599,15 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   emptyStateText: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#6B7280',
     textAlign: 'center',
     maxWidth: '80%',
+    fontFamily: 'Outfit-Regular',
   },
   commentsCountText: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 15,
+    fontFamily: 'Outfit-SemiBold',
     color: '#111827',
     marginBottom: 16,
   },
@@ -630,14 +634,15 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   replyingToLabel: {
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: 13,
+    fontFamily: 'Outfit-SemiBold',
     color: PrimaryBlue,
     marginBottom: 2,
   },
   replyingToText: {
-    fontSize: 12,
+    fontSize: 13,
     color: PrimaryGrey,
+    fontFamily: 'Outfit-Regular',
   },
   replyingToClose: {
     padding: 4,
@@ -655,8 +660,9 @@ const styles = StyleSheet.create({
   },
   commentInput: {
     flex: 1,
-    fontSize: 14,
+    fontSize: 15,
     color: '#111827',
+    fontFamily: 'Outfit-Regular',
     paddingHorizontal: 12,
     paddingVertical: Platform.OS === 'ios' ? 12 : 8,
     maxHeight: 100,
@@ -680,8 +686,8 @@ const styles = StyleSheet.create({
   },
   replyButtonText: {
     color: 'white',
-    fontWeight: '600',
-    fontSize: 14,
+    fontFamily: 'Outfit-SemiBold',
+    fontSize: 15,
   },
   replyButtonTextDisabled: {
     color: '#9CA3AF',

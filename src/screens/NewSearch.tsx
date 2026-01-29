@@ -22,6 +22,7 @@ import CollectiveResultCard from '../components/newsearch/CollectiveResultCard';
 import UserResultCard from '../components/newsearch/UserResultCard';
 import PostResultCard from '../components/newsearch/PostResultCard';
 import RequestNonprofitModal from '../components/newsearch/RequestNonprofitModal';
+import MainHeaderNav from '../components/MainHeaderNav';
 
 type TabType = 'Causes' | 'Collectives' | 'Users' | 'Posts';
 
@@ -184,16 +185,20 @@ export default function NewSearchPage() {
           onSearch={handleSearch}
         />
       ) : (
-        <View style={styles.header}>
-          {/* <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={styles.backButton}
-            activeOpacity={0.7}
-          >
-            <ArrowLeft size={20} color="#374151" />
-          </TouchableOpacity> */}
-          <Text style={styles.headerTitle}>Search</Text>
-        </View>
+        // <View style={styles.header}>
+        //   {/* <TouchableOpacity
+        //     onPress={() => navigation.goBack()}
+        //     style={styles.backButton}
+        //     activeOpacity={0.7}
+        //   >
+        //     <ArrowLeft size={20} color="#374151" />
+        //   </TouchableOpacity> */}
+        //   <Text style={styles.headerTitle}>Search</Text>
+        // </View>
+        <MainHeaderNav
+          title="Search"
+          menu={false}
+        />
       )}
 
       <ScrollView

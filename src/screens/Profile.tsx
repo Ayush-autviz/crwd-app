@@ -632,7 +632,7 @@ export default function Profile() {
     if (profileLoading) {
         return (
             <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }} edges={['top', 'left', 'right']}>
-                <MainHeaderNav title={'Me'} show menu={false} />
+                <MainHeaderNav title={'Me'} menu={false} />
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                     <ActivityIndicator size="large" color={PrimaryBlue} />
                     <Text style={{ marginTop: 16, fontSize: 15, color: '#6b7280' }}>
@@ -675,7 +675,7 @@ export default function Profile() {
 
             {/* Top right buttons */}
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 12, paddingHorizontal: 16, height: 60, borderBottomWidth: 2, borderBottomColor: '#e5e7eb' }}>
-                <Text style={{ fontSize: 17, fontFamily: 'Outfit-SemiBold', color: '#111827' }}>Me</Text>
+                <Text style={{ fontSize: 20, fontFamily: 'Outfit-SemiBold', color: '#111827' }}>Me</Text>
                 <View style={{ position: 'relative' }}>
                     <TouchableOpacity
                         onPress={() => setShowMenu(!showMenu)}
@@ -1026,7 +1026,10 @@ export default function Profile() {
                                     {/* <Text style={{ fontSize: 14, color: '#6b7280' }}>
                                         + {profileData.supported_causes_count - 6} more causes
                                     </Text> */}
-                                    <TouchableOpacity onPress={handleMoreInterests}>
+                                    <TouchableOpacity onPress={() => {
+                                        setActiveStatsTab('causes');
+                                        bottomSheetRef.current?.present();
+                                    }}>
                                         <Text style={{
                                             fontSize: 14,
                                             color: PrimaryBlue,

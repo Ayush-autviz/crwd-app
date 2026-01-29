@@ -237,7 +237,7 @@ export default function NonProfitInterests() {
                 ) : (
                   <View style={styles.continueButtonContent}>
                     <Text style={styles.continueButtonText}>Continue</Text>
-                    <ArrowRight size={16} color="white" />
+                    {/* <ArrowRight size={16} color="white" /> */}
                   </View>
                 )}
               </TouchableOpacity>

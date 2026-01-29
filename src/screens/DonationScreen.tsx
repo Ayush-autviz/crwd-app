@@ -1602,9 +1602,9 @@ const styles = StyleSheet.create({
     flex: 1,
     // textAlign: 'center',
     fontSize: 20,
-    fontWeight: 'bold',
+    // fontWeight: 'bold',
     color: '#111827',
-    fontFamily: 'Outfit-Bold',
+    fontFamily: 'Outfit-SemiBold',
   },
   headerSpacer: {
     width: 32,

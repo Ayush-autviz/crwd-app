@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   ScrollView,
   StyleSheet,
+  Alert
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import {
@@ -14,11 +15,70 @@ import {
   Users,
   TrendingUp,
   CheckCircle2,
+  Trash2
 } from 'lucide-react-native'
 import { PrimaryGrey, PrimaryBlue } from '../Constants/Colors'
 import MainHeaderNav from '../components/MainHeaderNav'
+import { useNavigation } from '@react-navigation/native'
+import { useAuthStore } from '../store/store'
+import { useMutation } from '@tanstack/react-query'
+import { deactivateAccount } from '../services/api/auth'
+import { useToast } from '../contexts/ToastContext'
 
 export default function About() {
+  const navigation = useNavigation()
+  const { user: currentUser, setUser, setToken } = useAuthStore()
+  const { showToast } = useToast()
+
+  // Deactivate account mutation
+  const deactivateAccountMutation = useMutation({
+    mutationFn: deactivateAccount,
+    onSuccess: () => {
+      setUser({})
+      setToken({ access_token: '', refresh_token: '' })
+      showToast('Account deactivated successfully', 3000)
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'SplashScreen' as never }],
+      })
+    },
+    onError: (error: any) => {
+      console.error('Error deactivating account:', error)
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to deactivate account'
+      showToast(errorMessage, 3000)
+    },
+  })
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      'Delete Account',
+      'Are you sure you want to permanently delete your account? This action cannot be undone and all your data will be lost.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => {
+            Alert.alert(
+              'Final Confirmation',
+              'This is your last chance. Your account will be permanently deleted. Are you absolutely sure?',
+              [
+                { text: 'No, Keep My Account', style: 'cancel' },
+                {
+                  text: 'Yes, Delete Forever',
+                  style: 'destructive',
+                  onPress: () => deactivateAccountMutation.mutate(),
+                },
+              ],
+              { cancelable: true }
+            )
+          },
+        },
+      ],
+      { cancelable: true }
+    )
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <MainHeaderNav show menu={false} title={'About'} />
@@ -254,6 +314,33 @@ export default function About() {
             </View>
           </View>
         </View>
+
+        {/* Delete Account Section */}
+        {currentUser?.id && (
+          <View style={{ marginTop: 20, marginBottom: 20 }}>
+            <TouchableOpacity
+              onPress={handleDeleteAccount}
+              disabled={deactivateAccountMutation.isPending}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 10,
+                paddingVertical: 12,
+                opacity: deactivateAccountMutation.isPending ? 0.5 : 1
+              }}
+            >
+              <Trash2 size={20} color="#ef4444" />
+              <Text style={{
+                fontSize: 15,
+                color: '#ef4444',
+                fontFamily: 'Outfit-SemiBold'
+              }}>
+                {deactivateAccountMutation.isPending ? 'Deactivating...' : 'Delete Account'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
         <View style={styles.bottomPadding} />
       </ScrollView>

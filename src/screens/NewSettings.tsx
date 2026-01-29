@@ -9,12 +9,11 @@ import ChangePasswordSheet from '../components/newsettings/ChangePasswordSheet'
 import ChangeEmailSheet from '../components/newsettings/ChangeEmailSheet'
 import RequestNonprofitModal from '../components/newsearch/RequestNonprofitModal'
 import PaymentMethodsBottomSheet from '../components/donation/PaymentMethodsBottomSheet'
-import { CircleHelp, CreditCard, FileText, Info, Lock, Mail, MessageSquare, Shield, Trash2, Eye, Bookmark, Heart, ChevronDown, UserPlus, DoorOpenIcon } from 'lucide-react-native'
+import { CircleHelp, CreditCard, FileText, Info, Lock, Mail, MessageSquare, Shield, Eye, Bookmark, Heart, ChevronDown, UserPlus, DoorOpenIcon } from 'lucide-react-native'
 import { LightGrey, PrimaryBlue, PrimaryGrey, SecondaryGrey } from '../Constants/Colors'
 import { useNavigation } from '@react-navigation/native'
 import { useAuthStore } from '../store/store'
 import { useMutation } from '@tanstack/react-query'
-import { deactivateAccount } from '../services/api/auth'
 import { useToast } from '../contexts/ToastContext'
 
 export default function NewSettings() {
@@ -62,24 +61,7 @@ export default function NewSettings() {
     }
   ]
 
-  // Deactivate account mutation
-  const deactivateAccountMutation = useMutation({
-    mutationFn: deactivateAccount,
-    onSuccess: () => {
-      setUser({})
-      setToken({ access_token: '', refresh_token: '' })
-      showToast('Account deactivated successfully', 3000)
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'SplashScreen' as never }],
-      })
-    },
-    onError: (error: any) => {
-      console.error('Error deactivating account:', error)
-      const errorMessage = error.response?.data?.message || error.message || 'Failed to deactivate account'
-      showToast(errorMessage, 3000)
-    },
-  })
+
 
   // ... (handleDeleteAccount, openPasswordSheet, openEmailSheet stay the same) ...
   const handleLogout = () => {
@@ -105,35 +87,7 @@ export default function NewSettings() {
     )
   }
 
-  const handleDeleteAccount = () => {
-    Alert.alert(
-      'Delete Account',
-      'Are you sure you want to permanently delete your account? This action cannot be undone and all your data will be lost.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => {
-            Alert.alert(
-              'Final Confirmation',
-              'This is your last chance. Your account will be permanently deleted. Are you absolutely sure?',
-              [
-                { text: 'No, Keep My Account', style: 'cancel' },
-                {
-                  text: 'Yes, Delete Forever',
-                  style: 'destructive',
-                  onPress: () => deactivateAccountMutation.mutate(),
-                },
-              ],
-              { cancelable: true }
-            )
-          },
-        },
-      ],
-      { cancelable: true }
-    )
-  }
+
 
   const openPasswordSheet = () => {
     passwordBottomSheetRef.current?.expand()
@@ -314,43 +268,21 @@ export default function NewSettings() {
             </View>
           </View>
 
-          {/* Delete Account Section */}
           {currentUser?.id && (
-            <>
-              <View style={styles.section}>
-                <TouchableOpacity
-                  onPress={handleDeleteAccount}
-                  disabled={deactivateAccountMutation.isPending}
-                  style={[
-                    styles.menuItem,
-                    styles.deleteButton,
-                    deactivateAccountMutation.isPending && styles.disabledButton
-                  ]}
-                >
-                  <Trash2 size={20} color="#ef4444" />
-                  <Text style={styles.deleteButtonText}>
-                    {deactivateAccountMutation.isPending ? 'Deactivating...' : 'Delete Account'}
-                  </Text>
-                </TouchableOpacity>
-
-              </View>
-
-              <View style={styles.section}>
-
-                <TouchableOpacity
-                  onPress={handleLogout}
-                  style={[
-                    styles.menuItem,
-                    styles.deleteButton,
-                  ]}
-                >
-                  <DoorOpenIcon size={20} color="#ef4444" />
-                  <Text style={styles.deleteButtonText}>
-                    Log Out
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </>
+            <View style={styles.section}>
+              <TouchableOpacity
+                onPress={handleLogout}
+                style={[
+                  styles.menuItem,
+                  styles.deleteButton,
+                ]}
+              >
+                <DoorOpenIcon size={20} color="#ef4444" />
+                <Text style={styles.deleteButtonText}>
+                  Log Out
+                </Text>
+              </TouchableOpacity>
+            </View>
           )}
 
           <View style={styles.bottomSpacing} />
@@ -374,7 +306,7 @@ export default function NewSettings() {
           onClose={() => setShowPaymentMethodsSheet(false)}
         />
       </SafeAreaView>
-    </GestureHandlerRootView>
+    </GestureHandlerRootView >
   )
 }
 

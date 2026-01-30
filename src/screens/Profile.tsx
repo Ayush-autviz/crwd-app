@@ -937,7 +937,6 @@ export default function Profile() {
                             <View style={{
                                 flexDirection: 'row',
                                 flexWrap: 'wrap',
-
                                 marginHorizontal: -6,
                             }}>
                                 {profileData.recently_supported_causes.slice(0, 6).map((cause: any, i: number) => {
@@ -956,19 +955,20 @@ export default function Profile() {
                                         >
                                             <View style={{
                                                 backgroundColor: 'white',
-                                                borderRadius: 8,
+                                                borderRadius: 12,
                                                 borderWidth: 1,
                                                 borderColor: '#e5e7eb',
-                                                paddingVertical: 6,
+                                                paddingVertical: 12,
+                                                paddingHorizontal: 8,
                                                 alignItems: 'center',
-                                                // height: 100,
-                                                justifyContent: 'space-between',
+                                                height: 120,
+                                                justifyContent: 'flex-start',
                                             }}>
                                                 {cause.image || cause.logo ? (
                                                     <View style={{
                                                         width: 48,
                                                         height: 48,
-                                                        borderRadius: 8,
+                                                        borderRadius: 10,
                                                         marginBottom: 8,
                                                         overflow: 'hidden',
                                                     }}>
@@ -977,7 +977,7 @@ export default function Profile() {
                                                             style={{
                                                                 width: 48,
                                                                 height: 48,
-                                                                borderRadius: 8,
+                                                                borderRadius: 10,
                                                             }}
                                                             resizeMode="cover"
                                                         />
@@ -986,7 +986,7 @@ export default function Profile() {
                                                     <View style={{
                                                         width: 48,
                                                         height: 48,
-                                                        borderRadius: 8,
+                                                        borderRadius: 10,
                                                         backgroundColor: bgColor,
                                                         justifyContent: 'center',
                                                         alignItems: 'center',
@@ -1009,7 +1009,7 @@ export default function Profile() {
                                                         fontFamily: 'Outfit-SemiBold',
                                                         color: '#111827',
                                                         textAlign: 'center',
-                                                        height: 32,
+                                                        lineHeight: 18,
                                                     }}
                                                 >
                                                     {cause.name}
@@ -1035,7 +1035,7 @@ export default function Profile() {
                                             color: PrimaryBlue,
                                             fontFamily: 'Outfit-Medium'
                                         }}>
-                                            See all {profileData.supported_causes_count} →
+                                            See all
                                         </Text>
                                     </TouchableOpacity>
                                 </View>

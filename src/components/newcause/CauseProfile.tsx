@@ -80,10 +80,10 @@ export default function CauseProfile({ causeData }: CauseProfileProps) {
 
         <View style={styles.info}>
           <Text style={styles.name}>{causeData?.name}</Text>
-          <Text style={styles.stats}>
+          {/* <Text style={styles.stats}>
             in {causeData?.collective_count || 0} Collectives •{' '}
             {causeData?.donation_count || 0} donations
-          </Text>
+          </Text> */}
         </View>
       </View>
 
@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
   },
   profileSection: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     gap: 12,
   },
   avatar: {

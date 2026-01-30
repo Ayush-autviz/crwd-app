@@ -204,7 +204,7 @@ export default function CollectiveCarouselCard({
                   </>
                 )}
               </TouchableOpacity>
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 style={styles.primaryButton}
                 activeOpacity={0.7}
                 onPress={() => {
@@ -212,7 +212,7 @@ export default function CollectiveCarouselCard({
                 }}
               >
                 <Text style={styles.primaryButtonText}>Share</Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
           </View>
         </View>

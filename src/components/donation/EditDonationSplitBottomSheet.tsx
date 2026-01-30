@@ -131,7 +131,7 @@ const CauseCard = React.memo(({
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.percentageInput}
-            value={inputValue || '0'}
+            value={parseInt(inputValue).toString() || '0'}
             onChangeText={(value) => onInputChange(cause.id, value)}
             onBlur={() => onInputBlur(cause.id)}
             keyboardType="numeric"
@@ -233,15 +233,55 @@ export default function EditDonationSplitBottomSheet({
   );
 
   // Calculate minimum percentage based on $0.20 minimum donation
-  const calculateMinPercentage = () => {
-    const netAmount = monthlyAmount * 0.9; // 90% after fees
+  const calculateMinPercentage = useCallback(() => {
+    const netAmount = monthlyAmount * 0.9;
     const MIN_DONATION = 0.20;
     return (MIN_DONATION / netAmount) * 100;
-  };
+  }, [monthlyAmount]);
 
-  // Initialize percentages - use existing if available, otherwise equal split
+  // --- THE MATH FIXER ---
+  // This ensures the sum is EXACTLY 100.00%
+  const forceSumTo100 = useCallback((currentPercentages: Record<number, number>) => {
+    const ids = Object.keys(currentPercentages).map(Number);
+    if (ids.length === 0) return currentPercentages;
+
+    // 1. Find the ID with the largest percentage to absorb the remainder/rounding error
+    let largestId = ids[0];
+    let largestValue = currentPercentages[ids[0]];
+
+    ids.forEach(id => {
+      if (currentPercentages[id] > largestValue) {
+        largestValue = currentPercentages[id];
+        largestId = id;
+      }
+    });
+
+    // 2. Sum everyone ELSE
+    let sumOfOthers = 0;
+    const fixedPercentages = { ...currentPercentages };
+
+    ids.forEach(id => {
+      if (id !== largestId) {
+        // Ensure others are rounded to 2 decimals nicely
+        const val = parseFloat(fixedPercentages[id].toFixed(2));
+        fixedPercentages[id] = val;
+        sumOfOthers += val;
+      }
+    });
+
+    // 3. Force the largest one to fill the gap exactly
+    const remaining = 100 - sumOfOthers;
+
+    // Safety check: ensure we don't accidentally make it negative 
+    if (remaining >= 0) {
+      fixedPercentages[largestId] = parseFloat(remaining.toFixed(2));
+    }
+
+    return fixedPercentages;
+  }, []);
+
+  // Initialize percentages
   useEffect(() => {
-    // Reset when modal closes
     if (!isOpen) {
       setPercentages({});
       setInputValues({});
@@ -251,51 +291,42 @@ export default function EditDonationSplitBottomSheet({
 
     if (causes && Array.isArray(causes) && causes.length > 0 && isOpen) {
       const minPercentage = calculateMinPercentage();
-      const initialPercentages: Record<number, number> = {};
-      const initialInputs: Record<number, string> = {};
+      let initialPercentages: Record<number, number> = {};
 
-      // Check if we have existing percentages from boxCauses
-      const hasExistingPercentages = boxCauses.some((bc: any) => bc.percentage != null && bc.percentage !== undefined);
+      const hasExistingPercentages = boxCauses.some((bc: any) => bc.percentage != null);
 
       if (hasExistingPercentages) {
-        // Use existing percentages, but ensure they're at least minimum
         causes.forEach((cause: any) => {
           const boxCause = boxCauses.find((bc: any) => bc.cause?.id === cause.id);
           const existingPercentage = boxCause?.percentage || (100 / causes.length);
           initialPercentages[cause.id] = Math.max(minPercentage, existingPercentage);
-          initialInputs[cause.id] = Math.max(minPercentage, existingPercentage).toFixed(2);
         });
       } else {
-        // Equal split, but ensure each is at least minimum
         const equalPercentage = 100 / causes.length;
-        if (equalPercentage < minPercentage) {
-          causes.forEach((cause: any) => {
-            initialPercentages[cause.id] = minPercentage;
-            initialInputs[cause.id] = minPercentage.toFixed(2);
-          });
-        } else {
-          causes.forEach((cause: any) => {
-            initialPercentages[cause.id] = equalPercentage;
-            initialInputs[cause.id] = equalPercentage.toFixed(2);
-          });
-        }
-      }
-
-      // Validate total is 100 and adjust if needed
-      let total = causes.reduce((sum, cause) => sum + initialPercentages[cause.id], 0);
-      if (Math.abs(total - 100) > 0.01) {
-        const adjustment = (100 - total) / causes.length;
+        const targetPercentage = equalPercentage < minPercentage ? minPercentage : equalPercentage;
         causes.forEach((cause: any) => {
-          const adjusted = initialPercentages[cause.id] + adjustment;
-          initialPercentages[cause.id] = Math.max(minPercentage, adjusted);
-          initialInputs[cause.id] = Math.max(minPercentage, adjusted).toFixed(2);
+          initialPercentages[cause.id] = targetPercentage;
         });
       }
+
+      // Force sum to 100
+      initialPercentages = forceSumTo100(initialPercentages);
+
+      const initialInputs: Record<number, string> = {};
+      causes.forEach((cause: any) => {
+        initialInputs[cause.id] = (initialPercentages[cause.id] || 0).toFixed(2);
+      });
 
       setPercentages(initialPercentages);
       setInputValues(initialInputs);
     }
-  }, [causes, isOpen, boxCauses, monthlyAmount]);
+  }, [causes, isOpen, boxCauses, monthlyAmount, calculateMinPercentage, forceSumTo100]);
+
+  // Sync Input Values from Percentages
+  // Note: We don't have focusedInput state here like the web, so we update purely on percentage change
+  // If this causes typing issues, we might need a focus state like in Vite, but React Native inputs handle focus differently. 
+  // For now, let's keep it simple: input values update if not editing.
+  // Actually, let's rely on handleInputChange for active typing and only sync on drastic external changes or blur.
 
   const adjustPercentages = (changedId: number, newPercentage: number) => {
     const otherCauses = causes.filter((c: any) => c.id !== changedId);
@@ -305,136 +336,60 @@ export default function EditDonationSplitBottomSheet({
     if (otherCount === 0) return;
 
     const newPercentages: Record<number, number> = { ...percentages };
-    const newInputValues: Record<number, string> = { ...inputValues };
 
-    const clampedNewPercentage = Math.max(minPercentage, Math.min(100, newPercentage));
+    // 1. Clamp the changed value
+    let clampedNewPercentage = Math.max(minPercentage, Math.min(100, newPercentage));
+
+    // Ensure this value leaves enough room for everyone else to have the minimum
+    const maxAllowed = 100 - (otherCount * minPercentage);
+    if (clampedNewPercentage > maxAllowed) {
+      clampedNewPercentage = maxAllowed;
+    }
+
     newPercentages[changedId] = clampedNewPercentage;
-    newInputValues[changedId] = clampedNewPercentage.toFixed(2);
 
     const remainingPercentage = 100 - clampedNewPercentage;
     const currentTotalOthers = otherCauses.reduce((sum, cause) => sum + (percentages[cause.id] || 0), 0);
 
-    if (currentTotalOthers === 0) {
+    // 2. Distribute remaining among others
+    if (currentTotalOthers <= 0.01) {
       const perOther = remainingPercentage / otherCount;
-      if (perOther < minPercentage) {
-        otherCauses.forEach((cause: any) => {
-          newPercentages[cause.id] = minPercentage;
-          newInputValues[cause.id] = minPercentage.toFixed(2);
-        });
-        const totalForOthers = minPercentage * otherCount;
-        const adjustedPercentage = 100 - totalForOthers;
-        newPercentages[changedId] = Math.max(minPercentage, adjustedPercentage);
-        newInputValues[changedId] = Math.max(minPercentage, adjustedPercentage).toFixed(2);
-      } else {
-        otherCauses.forEach((cause: any) => {
-          newPercentages[cause.id] = perOther;
-          newInputValues[cause.id] = perOther.toFixed(2);
-        });
-      }
+      otherCauses.forEach((cause: any) => { newPercentages[cause.id] = perOther; });
     } else {
-      let scaleFactor = remainingPercentage / currentTotalOthers;
-
-      const scaledValues: Record<number, number> = {};
-      let needsAdjustment = false;
-
+      const scaleFactor = remainingPercentage / currentTotalOthers;
       otherCauses.forEach((cause: any) => {
         const scaled = (percentages[cause.id] || 0) * scaleFactor;
-        scaledValues[cause.id] = scaled;
-        if (scaled < minPercentage) {
-          needsAdjustment = true;
-        }
+        newPercentages[cause.id] = Math.max(minPercentage, scaled);
       });
-
-      if (!needsAdjustment) {
-        otherCauses.forEach((cause: any) => {
-          newPercentages[cause.id] = scaledValues[cause.id];
-          newInputValues[cause.id] = scaledValues[cause.id].toFixed(2);
-        });
-      } else {
-        let remainingAfterMin = remainingPercentage;
-        const causesBelowMin: any[] = [];
-        const causesAboveMin: any[] = [];
-
-        otherCauses.forEach((cause: any) => {
-          if (scaledValues[cause.id] < minPercentage) {
-            newPercentages[cause.id] = minPercentage;
-            newInputValues[cause.id] = minPercentage.toFixed(2);
-            remainingAfterMin -= minPercentage;
-            causesBelowMin.push(cause);
-          } else {
-            causesAboveMin.push({ cause, originalValue: scaledValues[cause.id] });
-          }
-        });
-
-        if (causesAboveMin.length > 0 && remainingAfterMin > 0) {
-          const totalOriginalAboveMin = causesAboveMin.reduce((sum, item) => sum + item.originalValue, 0);
-          if (totalOriginalAboveMin > 0) {
-            const newScaleFactor = remainingAfterMin / totalOriginalAboveMin;
-            causesAboveMin.forEach((item) => {
-              const newValue = item.originalValue * newScaleFactor;
-              newPercentages[item.cause.id] = Math.max(minPercentage, newValue);
-              newInputValues[item.cause.id] = Math.max(minPercentage, newValue).toFixed(2);
-            });
-          }
-        }
-
-        let finalTotal = clampedNewPercentage;
-        otherCauses.forEach((cause: any) => {
-          finalTotal += newPercentages[cause.id];
-        });
-
-        if (Math.abs(finalTotal - 100) > 0.01) {
-          const adjustment = 100 - finalTotal;
-          const newChangedValue = clampedNewPercentage + adjustment;
-          if (newChangedValue >= minPercentage) {
-            newPercentages[changedId] = newChangedValue;
-            newInputValues[changedId] = newChangedValue.toFixed(2);
-          }
-        }
-      }
     }
 
-    let finalTotal = 0;
-    causes.forEach((cause: any) => {
-      if (newPercentages[cause.id] < minPercentage) {
-        newPercentages[cause.id] = minPercentage;
-        newInputValues[cause.id] = minPercentage.toFixed(2);
-      }
-      finalTotal += newPercentages[cause.id];
+    // 3. Force exact sum
+    const finalPercentages = forceSumTo100(newPercentages);
+
+    setPercentages(finalPercentages);
+
+    // Update inputs to match
+    const newInputValues: Record<number, string> = {};
+    Object.keys(finalPercentages).forEach(key => {
+      newInputValues[Number(key)] = finalPercentages[Number(key)].toFixed(2);
     });
-
-    if (finalTotal > 100) {
-      const excess = finalTotal - 100;
-      const newChangedValue = newPercentages[changedId] - excess;
-      if (newChangedValue >= minPercentage) {
-        newPercentages[changedId] = newChangedValue;
-        newInputValues[changedId] = newChangedValue.toFixed(2);
-      }
-    }
-
-    setPercentages(newPercentages);
     setInputValues(newInputValues);
   };
 
   const handlePercentageChange = (causeId: number, value: number) => {
-    const minPercentage = calculateMinPercentage();
-    const clampedValue = Math.max(minPercentage, Math.min(100, value));
-    adjustPercentages(causeId, clampedValue);
+    adjustPercentages(causeId, value);
   };
 
   const handleInputChange = (causeId: number, value: string) => {
-    const numValue = parseFloat(value) || 0;
     setInputValues({ ...inputValues, [causeId]: value });
-    if (!isNaN(numValue) && numValue >= 0 && numValue <= 100) {
-      handlePercentageChange(causeId, numValue);
-    }
   };
 
   const handleInputBlur = (causeId: number) => {
     const minPercentage = calculateMinPercentage();
     const numValue = parseFloat(inputValues[causeId] || '0') || 0;
     const clampedValue = Math.max(minPercentage, Math.min(100, numValue));
-    setInputValues({ ...inputValues, [causeId]: clampedValue.toFixed(2) });
+
+    setInputValues(prev => ({ ...prev, [causeId]: clampedValue.toFixed(2) }));
     adjustPercentages(causeId, clampedValue);
   };
 
@@ -442,37 +397,38 @@ export default function EditDonationSplitBottomSheet({
     const minPercentage = calculateMinPercentage();
     const current = percentages[causeId] || 0;
     if (current > minPercentage) {
-      handlePercentageChange(causeId, Math.max(minPercentage, current - 1));
+      adjustPercentages(causeId, Math.max(minPercentage, current - 1));
     }
   };
 
   const handleIncrease = (causeId: number) => {
     const current = percentages[causeId] || 0;
     if (current < 100) {
-      handlePercentageChange(causeId, Math.min(100, current + 1));
+      adjustPercentages(causeId, Math.min(100, current + 1));
     }
   };
 
   const handleReset = () => {
     const minPercentage = calculateMinPercentage();
     const equalPercentage = 100 / causes.length;
-    const newPercentages: Record<number, number> = {};
-    const newInputValues: Record<number, string> = {};
+    let newPercentages: Record<number, number> = {};
 
-    if (equalPercentage < minPercentage) {
-      causes.forEach((cause: any) => {
-        newPercentages[cause.id] = minPercentage;
-        newInputValues[cause.id] = minPercentage.toFixed(2);
-      });
-    } else {
-      causes.forEach((cause: any) => {
-        newPercentages[cause.id] = equalPercentage;
-        newInputValues[cause.id] = equalPercentage.toFixed(2);
-      });
-    }
+    const target = equalPercentage < minPercentage ? minPercentage : equalPercentage;
+
+    causes.forEach((cause: any) => {
+      newPercentages[cause.id] = target;
+    });
+
+    // Force exact sum
+    newPercentages = forceSumTo100(newPercentages);
+
+    const inputs: Record<number, string> = {};
+    Object.keys(newPercentages).forEach(key => {
+      inputs[Number(key)] = newPercentages[Number(key)].toFixed(2);
+    });
 
     setPercentages(newPercentages);
-    setInputValues(newInputValues);
+    setInputValues(inputs);
   };
 
   // Mutation for updating donation box
@@ -494,7 +450,7 @@ export default function EditDonationSplitBottomSheet({
       const currentPercentage = percentages[cause.id] || 0;
       const boxCause = boxCauses?.find((bc: any) => bc.cause?.id === cause.id);
       const initialPercentage = boxCause?.percentage || (100 / causes.length);
-      return Math.abs(currentPercentage - initialPercentage) > 0.01;
+      return Math.abs(currentPercentage - initialPercentage) > 0.1;
     });
 
     if (!hasChanges) {

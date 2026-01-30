@@ -33,6 +33,7 @@ import ExploreCards from '../components/newHome/ExploreCards';
 import CommentsBottomSheet from '../components/post/CommentsBottomSheet';
 
 import GuestHome from '../components/GuestHome';
+import { NewHomeSkeleton } from '../components/newHome/NewHomeSkeleton';
 
 export default function NewHome() {
   const { user, token } = useAuthStore();
@@ -141,6 +142,8 @@ export default function NewHome() {
     queryFn: getNotifications,
     enabled: !!token?.access_token,
   });
+
+  const isLoading = collectivesLoading || nonprofitsLoading || donationBoxLoading || joinedCollectivesLoading;
 
   // Extract unique user IDs from community notifications
   const uniqueUserIds = useMemo(() => {
@@ -535,187 +538,191 @@ export default function NewHome() {
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <HomeHeader />
 
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Main Content */}
-        <View style={styles.mainContent}>
-          {/* Personalized Greeting */}
+      {isLoading ? (
+        <NewHomeSkeleton />
+      ) : (
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Main Content */}
+          <View style={styles.mainContent}>
+            {/* Personalized Greeting */}
 
-          {/* My Donation Box Card or Prompt */}
-          <LinearGradient
-            colors={['#EFF6FF', '#FAF5FF', '#FDF2F8']}
-            start={{ x: 0, y: 0.5 }}
-            end={{ x: 1, y: 0.5 }}
-            style={styles.gradientContainer}
-          >
-            <View style={styles.gradientContent}>
-              {token?.access_token ? (
-                <>
-                  {donationBoxLoading ? (
-                    <View style={styles.loadingCard}>
-                      <ActivityIndicator size="large" color="#1600ff" />
-                    </View>
-                  ) : donationBoxInfo ? (
-                    <>
-                      <HelloGreeting />
-                      <MyDonationBoxCard
-                        monthlyAmount={donationBoxInfo.monthlyAmount || 10}
-                        causeCount={donationBoxInfo.causeCount || 0}
-                      />
-                    </>
-                  ) : donationBoxData &&
-                    !isDonationBoxNotFound &&
-                    !isDonationBoxActive &&
-                    inactiveBoxCauseCount > 0 ? (
-                    // Donation box exists but is not active - show prompt with cause count
-                    <DonationBoxPrompt
-                      causeCount={inactiveBoxCauseCount}
-                      hasJoinedCollectives={(transformedAttributingCollectives?.length || 0) > 0}
-                    />
-                  ) : (
-                    <DonationBoxPrompt
-                      hasJoinedCollectives={(transformedAttributingCollectives?.length || 0) > 0}
-                    />
-                  )}
-
-                  {/* Collective Carousel Card - Show joined collectives or Create Collective Card */}
-                  <View style={{ width: '100%' }} collapsable={false}>
-                    {/* Loading */}
-                    <View
-                      style={[
-                        { width: '100%' },
-                        !joinedCollectivesLoading && { display: 'none' },
-                      ]}
-                    >
+            {/* My Donation Box Card or Prompt */}
+            <LinearGradient
+              colors={['#EFF6FF', '#FAF5FF', '#FDF2F8']}
+              start={{ x: 0, y: 0.5 }}
+              end={{ x: 1, y: 0.5 }}
+              style={styles.gradientContainer}
+            >
+              <View style={styles.gradientContent}>
+                {token?.access_token ? (
+                  <>
+                    {donationBoxLoading ? (
                       <View style={styles.loadingCard}>
                         <ActivityIndicator size="large" color="#1600ff" />
                       </View>
-                    </View>
-
-                    {/* Carousel */}
-                    <View
-                      style={[
-                        { width: '100%' },
-                        (joinedCollectivesLoading ||
-                          !transformedAttributingCollectives ||
-                          transformedAttributingCollectives.length === 0) &&
-                        { display: 'none' },
-                      ]}
-                    >
-                      <CollectiveCarouselCard
-                        collectives={transformedAttributingCollectives ?? []}
+                    ) : donationBoxInfo ? (
+                      <>
+                        <HelloGreeting />
+                        <MyDonationBoxCard
+                          monthlyAmount={donationBoxInfo.monthlyAmount || 10}
+                          causeCount={donationBoxInfo.causeCount || 0}
+                        />
+                      </>
+                    ) : donationBoxData &&
+                      !isDonationBoxNotFound &&
+                      !isDonationBoxActive &&
+                      inactiveBoxCauseCount > 0 ? (
+                      // Donation box exists but is not active - show prompt with cause count
+                      <DonationBoxPrompt
+                        causeCount={inactiveBoxCauseCount}
+                        hasJoinedCollectives={(transformedAttributingCollectives?.length || 0) > 0}
                       />
+                    ) : (
+                      <DonationBoxPrompt
+                        hasJoinedCollectives={(transformedAttributingCollectives?.length || 0) > 0}
+                      />
+                    )}
+
+                    {/* Collective Carousel Card - Show joined collectives or Create Collective Card */}
+                    <View style={{ width: '100%' }} collapsable={false}>
+                      {/* Loading */}
+                      <View
+                        style={[
+                          { width: '100%' },
+                          !joinedCollectivesLoading && { display: 'none' },
+                        ]}
+                      >
+                        <View style={styles.loadingCard}>
+                          <ActivityIndicator size="large" color="#1600ff" />
+                        </View>
+                      </View>
+
+                      {/* Carousel */}
+                      <View
+                        style={[
+                          { width: '100%' },
+                          (joinedCollectivesLoading ||
+                            !transformedAttributingCollectives ||
+                            transformedAttributingCollectives.length === 0) &&
+                          { display: 'none' },
+                        ]}
+                      >
+                        <CollectiveCarouselCard
+                          collectives={transformedAttributingCollectives ?? []}
+                        />
+                      </View>
+
+                      {/* Create */}
+                      <View
+                        style={[
+                          { width: '100%' },
+                          (joinedCollectivesLoading ||
+                            (transformedAttributingCollectives &&
+                              transformedAttributingCollectives.length > 0)) &&
+                          { display: 'none' },
+                        ]}
+                      >
+                        <CreateCollectiveCard />
+                      </View>
                     </View>
 
-                    {/* Create */}
-                    <View
-                      style={[
-                        { width: '100%' },
-                        (joinedCollectivesLoading ||
-                          (transformedAttributingCollectives &&
-                            transformedAttributingCollectives.length > 0)) &&
-                        { display: 'none' },
-                      ]}
-                    >
-                      <CreateCollectiveCard />
-                    </View>
-                  </View>
 
-
-                </>
-              ) : null}
-            </View>
-          </LinearGradient>
+                  </>
+                ) : null}
+              </View>
+            </LinearGradient>
 
 
 
-          {/* 2 Posts - Above Featured Nonprofits */}
-          {token?.access_token && (
-            <CommunityPosts
-              limit={2}
-              startIndex={0}
-              showHeading={true}
-              onCommentPress={(post) => {
-                // Find the original post data to get firstName and lastName
-                setSelectedPost({
-                  id: typeof post.id === 'string' ? parseInt(post.id) : post.id,
-                  username: post.user?.username || post.username || 'Unknown User',
-                  text: post.content || post.text || '',
-                  avatarUrl: post.user?.avatar || post.user?.profile_picture || post.avatarUrl || '',
-                  firstName: post.user?.first_name || post.user?.firstName || post.firstName,
-                  lastName: post.user?.last_name || post.user?.lastName || post.lastName,
-                });
-                setShowCommentsSheet(true);
-              }}
-            />
-          )}
+            {/* 2 Posts - Above Featured Nonprofits */}
+            {token?.access_token && (
+              <CommunityPosts
+                limit={2}
+                startIndex={0}
+                showHeading={true}
+                onCommentPress={(post) => {
+                  // Find the original post data to get firstName and lastName
+                  setSelectedPost({
+                    id: typeof post.id === 'string' ? parseInt(post.id) : post.id,
+                    username: post.user?.username || post.username || 'Unknown User',
+                    text: post.content || post.text || '',
+                    avatarUrl: post.user?.avatar || post.user?.profile_picture || post.avatarUrl || '',
+                    firstName: post.user?.first_name || post.user?.firstName || post.firstName,
+                    lastName: post.user?.last_name || post.user?.lastName || post.lastName,
+                  });
+                  setShowCommentsSheet(true);
+                }}
+              />
+            )}
 
-          {/* Featured Nonprofits Section */}
-          {nonprofitsLoading ? (
-            <View style={styles.loadingCard}>
-              <ActivityIndicator size="large" color="#1600ff" />
-            </View>
-          ) : (
-            <NewFeaturedNonprofits
-              nonprofits={filteredFeaturedNonprofits}
-              seeAllLink="/search"
-            />
-          )}
+            {/* Featured Nonprofits Section */}
+            {nonprofitsLoading ? (
+              <View style={styles.loadingCard}>
+                <ActivityIndicator size="large" color="#1600ff" />
+              </View>
+            ) : (
+              <NewFeaturedNonprofits
+                nonprofits={filteredFeaturedNonprofits}
+                seeAllLink="/search"
+              />
+            )}
 
-          {/* 1 Post - After Featured Nonprofits */}
-          {token?.access_token && (
-            <CommunityPosts
-              limit={1}
-              startIndex={2}
-              showHeading={false}
-              onCommentPress={(post) => {
-                // Find the original post data to get firstName and lastName
-                setSelectedPost({
-                  id: typeof post.id === 'string' ? parseInt(post.id) : post.id,
-                  username: post.user?.username || post.username || 'Unknown User',
-                  text: post.content || post.text || '',
-                  avatarUrl: post.user?.avatar || post.user?.profile_picture || post.avatarUrl || '',
-                  firstName: post.user?.first_name || post.user?.firstName || post.firstName,
-                  lastName: post.user?.last_name || post.user?.lastName || post.lastName,
-                });
-                setShowCommentsSheet(true);
-              }}
-            />
-          )}
+            {/* 1 Post - After Featured Nonprofits */}
+            {token?.access_token && (
+              <CommunityPosts
+                limit={1}
+                startIndex={2}
+                showHeading={false}
+                onCommentPress={(post) => {
+                  // Find the original post data to get firstName and lastName
+                  setSelectedPost({
+                    id: typeof post.id === 'string' ? parseInt(post.id) : post.id,
+                    username: post.user?.username || post.username || 'Unknown User',
+                    text: post.content || post.text || '',
+                    avatarUrl: post.user?.avatar || post.user?.profile_picture || post.avatarUrl || '',
+                    firstName: post.user?.first_name || post.user?.firstName || post.firstName,
+                    lastName: post.user?.last_name || post.user?.lastName || post.lastName,
+                  });
+                  setShowCommentsSheet(true);
+                }}
+              />
+            )}
 
-          {/* Suggested Collectives Section */}
-          {collectivesLoading ? (
-            <View style={styles.loadingCard}>
-              <ActivityIndicator size="large" color="#1600ff" />
-            </View>
-          ) : (
-            <NewSuggestedCollectives
-              collectives={filteredSuggestedCollectives}
-              seeAllLink="/search"
-            />
-          )}
+            {/* Suggested Collectives Section */}
+            {collectivesLoading ? (
+              <View style={styles.loadingCard}>
+                <ActivityIndicator size="large" color="#1600ff" />
+              </View>
+            ) : (
+              <NewSuggestedCollectives
+                collectives={filteredSuggestedCollectives}
+                seeAllLink="/search"
+              />
+            )}
 
-          {/* All Community Updates - Below Suggested Collectives */}
-          {token?.access_token && (
-            <>
-              {notificationsLoading ? null : allCommunityUpdates.length > 0 ? (
-                <CommunityUpdates updates={allCommunityUpdates} showHeading={false} />
-              ) : null}
-            </>
-          )}
+            {/* All Community Updates - Below Suggested Collectives */}
+            {token?.access_token && (
+              <>
+                {notificationsLoading ? null : allCommunityUpdates.length > 0 ? (
+                  <CommunityUpdates updates={allCommunityUpdates} showHeading={false} />
+                ) : null}
+              </>
+            )}
 
-          {/* Explore Cards */}
-          <ExploreCards />
+            {/* Explore Cards */}
+            <ExploreCards />
 
-          {/* Footer */}
+            {/* Footer */}
 
-          <View />
+            <View />
 
-        </View>
-      </ScrollView>
+          </View>
+        </ScrollView>
+      )}
 
       {/* Comments Bottom Sheet */}
       {selectedPost && (

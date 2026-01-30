@@ -588,7 +588,7 @@ export default function OneTimeDonation({
           </View>
 
           {/* Donation Box Capacity Section */}
-          <View style={styles.capacityCard}>
+          {/* <View style={styles.capacityCard}>
             <View style={styles.capacityHeader}>
               <Text style={styles.capacityTitle}>Donation Box Capacity</Text>
               <Text style={styles.capacityCount}>{currentCapacity}/{maxCapacity} causes</Text>
@@ -601,7 +601,7 @@ export default function OneTimeDonation({
             <Text style={styles.capacityText}>
               For every ${donationAmount}, you can support {maxCapacity} cause{maxCapacity !== 1 ? 's' : ''}.
             </Text>
-          </View>
+          </View> */}
         </View>
 
         {/* Your Selected Causes */}

@@ -813,19 +813,20 @@ export default function UserProfile() {
                                         >
                                             <View style={{
                                                 backgroundColor: 'white',
-                                                borderRadius: 8,
+                                                borderRadius: 12,
                                                 borderWidth: 1,
                                                 borderColor: '#e5e7eb',
-                                                paddingVertical: 6,
+                                                paddingVertical: 12,
+                                                paddingHorizontal: 8,
                                                 alignItems: 'center',
-                                                // height: 100,
-                                                justifyContent: 'space-between',
+                                                height: 120,
+                                                justifyContent: 'flex-start',
                                             }}>
                                                 {cause.image || cause.logo ? (
                                                     <View style={{
                                                         width: 48,
                                                         height: 48,
-                                                        borderRadius: 8,
+                                                        borderRadius: 10,
                                                         marginBottom: 8,
                                                         overflow: 'hidden',
                                                     }}>
@@ -834,7 +835,7 @@ export default function UserProfile() {
                                                             style={{
                                                                 width: 48,
                                                                 height: 48,
-                                                                borderRadius: 8,
+                                                                borderRadius: 10,
                                                             }}
                                                             resizeMode="cover"
                                                         />
@@ -843,7 +844,7 @@ export default function UserProfile() {
                                                     <View style={{
                                                         width: 48,
                                                         height: 48,
-                                                        borderRadius: 8,
+                                                        borderRadius: 10,
                                                         backgroundColor: bgColor,
                                                         justifyContent: 'center',
                                                         alignItems: 'center',
@@ -866,7 +867,7 @@ export default function UserProfile() {
                                                         fontFamily: 'Outfit-SemiBold',
                                                         color: '#111827',
                                                         textAlign: 'center',
-                                                        height: 32,
+                                                        lineHeight: 18,
                                                     }}
                                                 >
                                                     {cause.name}
@@ -894,7 +895,7 @@ export default function UserProfile() {
                                             color: PrimaryBlue,
                                             fontFamily: 'Outfit-Medium'
                                         }}>
-                                            See all {userProfile.supported_causes_count} →
+                                            See all
                                         </Text>
                                     </TouchableOpacity>
                                 </View>

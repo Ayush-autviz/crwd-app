@@ -145,7 +145,7 @@ const Circles = () => {
 
         {/* Supporting nonprofits count */}
         <Text style={styles.nonprofitCount}>
-          Supporting {circle.causes_count || circle.supported_causes_count || 0} nonprofits
+          Supporting {circle.causes_count} nonprofit{circle.causes_count > 1 ? 's' : ''}
         </Text>
       </TouchableOpacity>
     );
@@ -224,7 +224,7 @@ const Circles = () => {
 
         {/* Supporting nonprofits count */}
         <Text style={styles.nonprofitCount}>
-          Supporting {item.causes_count || item.supported_causes_count || 0} nonprofits
+          Supporting {item.causes_count} nonprofit{item.causes_count > 1 ? 's' : ''}
         </Text>
       </TouchableOpacity>
     )
@@ -316,7 +316,7 @@ const Circles = () => {
               keyExtractor={(item) => String(item.id)}
               renderItem={renderDiscoverItem}
               contentContainerStyle={styles.listContent}
-              ItemSeparatorComponent={() => <View style={styles.separator} />}
+              // ItemSeparatorComponent={() => <View style={styles.separator} />}
               showsVerticalScrollIndicator={false}
             />
           )}
@@ -402,7 +402,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     // paddingHorizontal: 16,
-    paddingTop: 4,
+    // paddingTop: 4,
     paddingBottom: 32,
     gap: 10,
   },

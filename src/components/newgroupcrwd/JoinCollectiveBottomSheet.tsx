@@ -108,6 +108,7 @@ interface JoinCollectiveBottomSheetProps {
   onJoin: (selectedNonprofits: Nonprofit[], collectiveId: string, shouldSetupDonationBox: boolean) => void;
   isJoining?: boolean;
   donationBox?: any;
+  founderName?: string;
 }
 
 export default function JoinCollectiveBottomSheet({
@@ -119,6 +120,7 @@ export default function JoinCollectiveBottomSheet({
   onJoin,
   isJoining = false,
   donationBox,
+  founderName,
 }: JoinCollectiveBottomSheetProps) {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const [selectedNonprofitIds, setSelectedNonprofitIds] = useState<Set<number>>(new Set());
@@ -300,9 +302,7 @@ export default function JoinCollectiveBottomSheet({
             <Text style={styles.headerDescription}>
               {isAtCapacity
                 ? "Your donation box is at capacity. Increase your donation to add more nonprofits."
-                : hasDonationBox
-                  ? "Optionally add these nonprofits to your donation box. You can manage them anytime from your profile."
-                  : "Would you like to set up your donation box to support these nonprofits?"
+                : `${founderName || collectiveName} chose these nonprofits to support. Add them to your donation box to support them too.`
               }
             </Text>
           </View>
@@ -376,10 +376,11 @@ export default function JoinCollectiveBottomSheet({
           {!isAtCapacity && (
             <View style={styles.infoBanner}>
               <Text style={styles.infoBannerText}>
-                {hasDonationBox
+                {/* {hasDonationBox
                   ? "Selected nonprofits will be added to your donation box. You can manage them anytime from your profile."
                   : "Set up your donation box to start supporting these nonprofits with a monthly donation."
-                }
+                } */}
+                Your donation box holds nonprofits you want to donate to. You can set up recurring or one-time donations anytime.
               </Text>
             </View>
           )}
@@ -611,16 +612,16 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   infoBanner: {
-    backgroundColor: '#FFF3C7',
+    backgroundColor: '#EEF2FF',
     borderWidth: 1,
-    borderColor: '#FDE047',
+    borderColor: '#C7D2FE',
     borderRadius: 8,
     padding: 10,
     marginBottom: 12,
   },
   infoBannerText: {
     fontSize: 14,
-    color: '#854D0E',
+    color: '#312E81',
     lineHeight: 20,
     fontFamily: 'Outfit-Regular',
   },

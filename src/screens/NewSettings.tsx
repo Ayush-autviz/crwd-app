@@ -15,6 +15,8 @@ import { useNavigation } from '@react-navigation/native'
 import { useAuthStore } from '../store/store'
 import { useMutation } from '@tanstack/react-query'
 import { useToast } from '../contexts/ToastContext'
+import messaging from '@react-native-firebase/messaging';
+import { unregisterToken } from '../services/api/auth';
 
 export default function NewSettings() {
   const navigation = useNavigation()
@@ -73,7 +75,15 @@ export default function NewSettings() {
         {
           text: 'Log Out',
           style: 'destructive',
-          onPress: () => {
+          onPress: async () => {
+            try {
+              const fcmToken = await messaging().getToken();
+              if (fcmToken) {
+                await unregisterToken({ token: fcmToken });
+              }
+            } catch (error) {
+              console.error('Error unregistering token:', error);
+            }
             logout()
             showToast('Logged out successfully', 3000)
             navigation.reset({

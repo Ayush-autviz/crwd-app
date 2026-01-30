@@ -17,7 +17,8 @@ import { useAuthStore } from '../store/store'
 import { Pencil } from 'lucide-react-native'
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/Avatar'
 import { useMutation } from '@tanstack/react-query'
-import { logout } from '../services/api/auth'
+import { logout, unregisterToken } from '../services/api/auth'
+import messaging from '@react-native-firebase/messaging';
 import { MapPin } from 'lucide-react-native'
 import { DoorOpenIcon } from 'lucide-react-native'
 import { useToast } from '../contexts/ToastContext'
@@ -109,13 +110,23 @@ export default function Profile() {
                 {
                     text: 'Logout',
                     style: 'destructive',
-                    onPress: () => {
-                        queryClient.clear();
-                        logoutStore();
-                        navigation.reset({
-                            index: 0,
-                            routes: [{ name: 'Home' }],
-                        });
+                    onPress: async () => {
+                        try {
+                            // Get current FCM token
+                            const fcmToken = await messaging().getToken();
+                            if (fcmToken) {
+                                await unregisterToken({ token: fcmToken });
+                            }
+                        } catch (error) {
+                            console.error('Error unregistering token:', error);
+                        } finally {
+                            queryClient.clear();
+                            logoutStore();
+                            navigation.reset({
+                                index: 0,
+                                routes: [{ name: 'Home' }],
+                            });
+                        }
                     }
                 }
             ]

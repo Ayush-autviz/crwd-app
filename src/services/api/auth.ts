@@ -79,3 +79,15 @@ export const deactivateAccount = async () => {
     const response = await axiosClient.post('/auth/me/deactivate/');
     return response.data;
 };
+
+export const unregisterToken = async (data: any) => {
+    console.log('Unregistering token with data:', JSON.stringify(data));
+    try {
+        const response = await axiosClient.delete('/notifications/unregister-token/', { data });
+        console.log('Unregister token response:', response.data);
+        return response.data;
+    } catch (error: any) {
+        console.error('Unregister token error:', error.response?.data || error.message);
+        throw error;
+    }
+};

@@ -124,7 +124,7 @@ export default function Profile() {
                             logoutStore();
                             navigation.reset({
                                 index: 0,
-                                routes: [{ name: 'Home' }],
+                                routes: [{ name: 'OnBoard' as never }],
                             });
                         }
                     }

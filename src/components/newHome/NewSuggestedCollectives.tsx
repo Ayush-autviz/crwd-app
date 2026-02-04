@@ -197,7 +197,7 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
     paddingHorizontal: 16,
-    // marginTop: 24,
+    marginTop: 12,
   },
   header: {
     flexDirection: 'row',

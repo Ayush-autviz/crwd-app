@@ -137,7 +137,8 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
     paddingHorizontal: 16,
-    marginVertical: 24,
+    marginVertical: 12,
+    marginTop: 12
   },
   heading: {
     marginBottom: 16,

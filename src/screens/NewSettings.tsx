@@ -17,11 +17,13 @@ import { useMutation } from '@tanstack/react-query'
 import { useToast } from '../contexts/ToastContext'
 import messaging from '@react-native-firebase/messaging';
 import { unregisterToken } from '../services/api/auth';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function NewSettings() {
   const navigation = useNavigation()
   const { user: currentUser, setUser, setToken, logout } = useAuthStore()
   const { showToast } = useToast()
+  const queryClient = useQueryClient()
 
   // Bottom sheet refs
   const passwordBottomSheetRef = useRef<BottomSheet>(null)
@@ -86,9 +88,10 @@ export default function NewSettings() {
             }
             logout()
             showToast('Logged out successfully', 3000)
+            queryClient.clear()
             navigation.reset({
               index: 0,
-              routes: [{ name: 'SplashScreen' as never }],
+              routes: [{ name: 'OnBoard' as never }],
             })
           },
         },

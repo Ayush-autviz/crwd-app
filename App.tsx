@@ -64,7 +64,7 @@ import OnBoard from './src/components/onboarding/OnBoard'
 import NewOnboard from './src/components/onboarding/NewOnboard'
 import OneTimeDonationScreen from './src/screens/OneTimeDonationScreen'
 import NewSaved from './src/screens/NewSaved'
-import {FontAwesome6} from '@react-native-vector-icons/fontawesome6'
+import { FontAwesome6 } from '@react-native-vector-icons/fontawesome6'
 import { Image, Platform, View } from 'react-native'
 import { PermissionsAndroid } from 'react-native'
 import Circles from './src/screens/Circles'
@@ -79,6 +79,7 @@ import messaging from '@react-native-firebase/messaging'
 import notifee, { AndroidImportance } from '@notifee/react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+import { useAuthStore } from './src/store/store';
 
 export default function App() {
 
@@ -88,46 +89,46 @@ export default function App() {
 
 
   // Create QueryClient once
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      refetchOnWindowFocus: false,
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: 1,
+        staleTime: 5 * 60 * 1000, // 5 minutes
+        refetchOnWindowFocus: false,
+      },
     },
-  },
-});
+  });
 
 
-async function requestPermission() {
-  if (Platform.OS === 'android') {
-    const granted = await PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
-    );
-    if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-      console.log('Notification permission granted');
-    } else {
-      console.log('Notification permission denied');
+  async function requestPermission() {
+    if (Platform.OS === 'android') {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+      );
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        console.log('Notification permission granted');
+      } else {
+        console.log('Notification permission denied');
+      }
+    }
+    else if (Platform.OS === 'ios') {
+      // Add iOS notification permission request
+      const authStatus = await messaging().requestPermission();
+      const enabled =
+        authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+        authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+
+      if (enabled) {
+        console.log('iOS notification permission granted');
+      } else {
+        console.log('iOS notification permission denied');
+      }
     }
   }
-  else if (Platform.OS === 'ios') {
-    // Add iOS notification permission request
-    const authStatus = await messaging().requestPermission();
-    const enabled =
-      authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-      authStatus === messaging.AuthorizationStatus.PROVISIONAL;
 
-    if (enabled) {
-      console.log('iOS notification permission granted');
-    } else {
-      console.log('iOS notification permission denied');
-    }
-  }
-}
-
-useEffect(() => {
-  requestPermission();
-}, []);
+  useEffect(() => {
+    requestPermission();
+  }, []);
 
   // Handle foreground messages
   useEffect(() => {
@@ -176,11 +177,11 @@ useEffect(() => {
     });
 
     return unsubscribe;
-  }, [queryClient]);  
+  }, [queryClient]);
 
   function BottomTabs() {
     return (
-      <Tab.Navigator screenOptions={({route}) => ({
+      <Tab.Navigator screenOptions={({ route }) => ({
         headerShown: false,
         tabBarActiveTintColor: PrimaryBlue,
         tabBarInactiveTintColor: PrimaryGrey,
@@ -207,11 +208,11 @@ useEffect(() => {
         tabBarActiveLabelStyle: {
           fontWeight: '600',
         },
-        tabBarIcon: ({focused, color}) => {
+        tabBarIcon: ({ focused, color }) => {
           if (route.name === 'Home') {
-            return <Image source={require('./src/assets/icons/home.png')} style={{width: 22, height: 22, tintColor: color}} />
+            return <Image source={require('./src/assets/icons/home.png')} style={{ width: 22, height: 22, tintColor: color }} />
           } else if (route.name === 'Search') {
-            return <Image source={require('./src/assets/icons/search.png')} style={{width: 22, height: 22, tintColor: color}} />
+            return <Image source={require('./src/assets/icons/search.png')} style={{ width: 22, height: 22, tintColor: color }} />
           } else if (route.name === 'Donate') {
             return (
               <View style={{
@@ -235,7 +236,7 @@ useEffect(() => {
           } else if (route.name === 'Collectives') {
             return <Users color={color} size={22} />
           } else if (route.name === 'Profile') {
-            return <Image source={require('./src/assets/icons/user.png')} style={{width: 22, height: 22, tintColor: color}} />
+            return <Image source={require('./src/assets/icons/user.png')} style={{ width: 22, height: 22, tintColor: color }} />
           }
         }
       })}>
@@ -279,9 +280,12 @@ useEffect(() => {
 
   function StackNavigator() {
     return (
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="DrawerNav" component={DrawerNavigator} />
+      <Stack.Navigator
+        screenOptions={{ headerShown: false }}
+        initialRouteName="SplashScreen"
+      >
         <Stack.Screen name="SplashScreen" component={SplashScreen} />
+        <Stack.Screen name="DrawerNav" component={DrawerNavigator} />
         <Stack.Screen name="OnBoard" component={OnBoard} />
         <Stack.Screen name="ClaimProfile" component={ClaimProfile} />
         <Stack.Screen name="AddPhoto" component={AddPhoto} />
@@ -325,7 +329,7 @@ useEffect(() => {
         <Stack.Screen name="FundraiserDetail" component={FundraiserDetail} />
         <Stack.Screen name="CreateFundraiser" component={CreateFundraiser} />
         <Stack.Screen name="EditFundraiser" component={EditFundraiser} />
-       
+
         <Stack.Screen name="Articles" component={Articles} />
         <Stack.Screen name="ArticleDetail" component={ArticleDetail} />
       </Stack.Navigator>

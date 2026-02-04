@@ -8,11 +8,11 @@ import {
   TextInput,
   Image,
   Alert,
-  KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
   Modal,
 } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -470,10 +470,7 @@ export default function EditFundraiser() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardView}
-      >
+      <View style={{ flex: 1 }}>
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity
@@ -487,10 +484,12 @@ export default function EditFundraiser() {
           <View style={styles.headerSpacer} />
         </View>
 
-        <ScrollView
+        <KeyboardAwareScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
+          enableOnAndroid={true}
+          extraScrollHeight={Platform.OS === 'ios' ? 20 : 0}
           scrollEnabled={!showDatePicker}
         >
           {/* Campaign Summary */}
@@ -835,7 +834,7 @@ export default function EditFundraiser() {
 
           {/* Spacer for fixed footer */}
           <View style={styles.footerSpacer} />
-        </ScrollView>
+        </KeyboardAwareScrollView>
 
         {/* Footer */}
         <View style={styles.footer}>
@@ -912,7 +911,7 @@ export default function EditFundraiser() {
             </View>
           </View>
         </Modal>
-      </KeyboardAvoidingView>
+      </View>
     </SafeAreaView>
   );
 }

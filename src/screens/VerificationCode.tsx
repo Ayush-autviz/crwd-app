@@ -10,6 +10,7 @@ import {
   Platform,
   ActivityIndicator,
 } from 'react-native'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import LinearGradient from 'react-native-linear-gradient'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { ArrowLeft, Mail, RefreshCw, Eye, EyeOff } from 'lucide-react-native'
@@ -165,176 +166,178 @@ export default function VerificationCode() {
         end={{ x: 1, y: 1 }}
         style={styles.gradient}
       >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        <KeyboardAwareScrollView
           style={styles.keyboardView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          enableOnAndroid={true}
+          extraScrollHeight={Platform.OS === 'ios' ? 20 : 0}
+          keyboardShouldPersistTaps="handled"
         >
-          <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-            <View style={styles.card}>
-              {/* Back Button */}
-              <TouchableOpacity
-                style={styles.backButton}
-                onPress={() => navigation.navigate('ForgotPassword' as never)}
-              >
-                <ArrowLeft size={16} color="#6b7280" />
-                <Text style={styles.backButtonText}>Back</Text>
-              </TouchableOpacity>
+          <View style={styles.card}>
+            {/* Back Button */}
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => navigation.navigate('ForgotPassword' as never)}
+            >
+              <ArrowLeft size={16} color="#6b7280" />
+              <Text style={styles.backButtonText}>Back</Text>
+            </TouchableOpacity>
 
-              {/* Title and Subtitle */}
-              <View style={styles.header}>
-                <Text style={styles.title}>Check your email</Text>
-                <View style={styles.subtitleContainer}>
-                  <Text style={styles.subtitle}>
-                    We sent a verification code to
-                  </Text>
-                  <View style={styles.emailContainer}>
-                    <Mail size={16} color="#9ca3af" />
-                    <Text style={styles.emailText}>{email}</Text>
-                  </View>
-                </View>
-              </View>
-
-              {/* Verification Code Form */}
-              <View style={styles.form}>
-                <View style={styles.inputGroup}>
-                  <Text style={styles.codeLabel}>Enter verification code</Text>
-                  <View style={styles.codeInputsContainer}>
-                    {code.map((digit, index) => (
-                      <TextInput
-                        key={index}
-                        ref={(ref) => {
-                          inputRefs.current[index] = ref
-                        }}
-                        style={[
-                          styles.codeInput,
-                          digit ? styles.codeInputFilled : null
-                        ]}
-                        value={digit}
-                        onChangeText={(value) => handleCodeChange(index, value)}
-                        onKeyPress={(e) => handleKeyDown(index, e)}
-                        keyboardType="numeric"
-                        maxLength={1}
-                        textAlign="center"
-                        autoFocus={index === 0}
-                      />
-                    ))}
-                  </View>
-                </View>
-
-                {/* New Password Fields */}
-                <View style={styles.passwordSection}>
-                  <View style={styles.inputGroup}>
-                    <Text style={styles.label}>
-                      New Password <Text style={styles.required}>*</Text>
-                    </Text>
-                    <View style={styles.passwordContainer}>
-                      <TextInput
-                        style={styles.passwordInput}
-                        placeholder="Enter new password"
-                        placeholderTextColor={PrimaryGrey}
-                        value={newPassword}
-                        onChangeText={setNewPassword}
-                        secureTextEntry={!showNewPassword}
-                      />
-                      <TouchableOpacity
-                        style={styles.eyeButton}
-                        onPress={() => setShowNewPassword(!showNewPassword)}
-                      >
-                        {showNewPassword ? (
-                          <EyeOff size={20} color={PrimaryGrey} />
-                        ) : (
-                          <Eye size={20} color={PrimaryGrey} />
-                        )}
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-
-                  <View style={styles.inputGroup}>
-                    <Text style={styles.label}>
-                      Confirm New Password <Text style={styles.required}>*</Text>
-                    </Text>
-                    <View style={styles.passwordContainer}>
-                      <TextInput
-                        style={styles.passwordInput}
-                        placeholder="Confirm new password"
-                        placeholderTextColor={PrimaryGrey}
-                        value={confirmPassword}
-                        onChangeText={setConfirmPassword}
-                        secureTextEntry={!showConfirmPassword}
-                      />
-                      <TouchableOpacity
-                        style={styles.eyeButton}
-                        onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                      >
-                        {showConfirmPassword ? (
-                          <EyeOff size={20} color={PrimaryGrey} />
-                        ) : (
-                          <Eye size={20} color={PrimaryGrey} />
-                        )}
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                </View>
-
-                <TouchableOpacity
-                  style={[
-                    styles.submitButton,
-                    (resetPasswordMutation.isPending || !isFormComplete) && styles.submitButtonDisabled
-                  ]}
-                  onPress={handleSubmit}
-                  disabled={resetPasswordMutation.isPending || !isFormComplete}
-                >
-                  {resetPasswordMutation.isPending ? (
-                    <View style={styles.loadingContainer}>
-                      <ActivityIndicator size="small" color="white" />
-                      <Text style={styles.loadingText}>Resetting password...</Text>
-                    </View>
-                  ) : (
-                    <Text style={styles.submitButtonText}>Reset password</Text>
-                  )}
-                </TouchableOpacity>
-              </View>
-
-              {/* Resend Code */}
-              <View style={styles.resendContainer}>
-                <Text style={styles.resendText}>
-                  {timeLeft > 0 ? (
-                    `Resend code in ${formatTime(timeLeft)}`
-                  ) : (
-                    "Didn't receive the code?"
-                  )}
+            {/* Title and Subtitle */}
+            <View style={styles.header}>
+              <Text style={styles.title}>Check your email</Text>
+              <View style={styles.subtitleContainer}>
+                <Text style={styles.subtitle}>
+                  We sent a verification code to
                 </Text>
-
-                {timeLeft === 0 && (
-                  <TouchableOpacity
-                    style={styles.resendButton}
-                    onPress={handleResendCode}
-                    disabled={resendCodeMutation.isPending}
-                  >
-                    {resendCodeMutation.isPending ? (
-                      <View style={styles.resendButtonContent}>
-                        <RefreshCw size={16} color="#111827" />
-                        <Text style={styles.resendButtonText}>Sending...</Text>
-                      </View>
-                    ) : (
-                      <View style={styles.resendButtonContent}>
-                        <RefreshCw size={16} color="#111827" />
-                        <Text style={styles.resendButtonText}>Resend code</Text>
-                      </View>
-                    )}
-                  </TouchableOpacity>
-                )}
-              </View>
-
-              {/* Footer */}
-              <View style={styles.footer}>
-                <Text style={styles.footerText}>
-                  Check your spam folder if you don't see the email
-                </Text>
+                <View style={styles.emailContainer}>
+                  <Mail size={16} color="#9ca3af" />
+                  <Text style={styles.emailText}>{email}</Text>
+                </View>
               </View>
             </View>
-          </ScrollView>
-        </KeyboardAvoidingView>
+
+            {/* Verification Code Form */}
+            <View style={styles.form}>
+              <View style={styles.inputGroup}>
+                <Text style={styles.codeLabel}>Enter verification code</Text>
+                <View style={styles.codeInputsContainer}>
+                  {code.map((digit, index) => (
+                    <TextInput
+                      key={index}
+                      ref={(ref) => {
+                        inputRefs.current[index] = ref
+                      }}
+                      style={[
+                        styles.codeInput,
+                        digit ? styles.codeInputFilled : null
+                      ]}
+                      value={digit}
+                      onChangeText={(value) => handleCodeChange(index, value)}
+                      onKeyPress={(e) => handleKeyDown(index, e)}
+                      keyboardType="numeric"
+                      maxLength={1}
+                      textAlign="center"
+                      autoFocus={index === 0}
+                    />
+                  ))}
+                </View>
+              </View>
+
+              {/* New Password Fields */}
+              <View style={styles.passwordSection}>
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>
+                    New Password <Text style={styles.required}>*</Text>
+                  </Text>
+                  <View style={styles.passwordContainer}>
+                    <TextInput
+                      style={styles.passwordInput}
+                      placeholder="Enter new password"
+                      placeholderTextColor={PrimaryGrey}
+                      value={newPassword}
+                      onChangeText={setNewPassword}
+                      secureTextEntry={!showNewPassword}
+                    />
+                    <TouchableOpacity
+                      style={styles.eyeButton}
+                      onPress={() => setShowNewPassword(!showNewPassword)}
+                    >
+                      {showNewPassword ? (
+                        <EyeOff size={20} color={PrimaryGrey} />
+                      ) : (
+                        <Eye size={20} color={PrimaryGrey} />
+                      )}
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>
+                    Confirm New Password <Text style={styles.required}>*</Text>
+                  </Text>
+                  <View style={styles.passwordContainer}>
+                    <TextInput
+                      style={styles.passwordInput}
+                      placeholder="Confirm new password"
+                      placeholderTextColor={PrimaryGrey}
+                      value={confirmPassword}
+                      onChangeText={setConfirmPassword}
+                      secureTextEntry={!showConfirmPassword}
+                    />
+                    <TouchableOpacity
+                      style={styles.eyeButton}
+                      onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff size={20} color={PrimaryGrey} />
+                      ) : (
+                        <Eye size={20} color={PrimaryGrey} />
+                      )}
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+
+              <TouchableOpacity
+                style={[
+                  styles.submitButton,
+                  (resetPasswordMutation.isPending || !isFormComplete) && styles.submitButtonDisabled
+                ]}
+                onPress={handleSubmit}
+                disabled={resetPasswordMutation.isPending || !isFormComplete}
+              >
+                {resetPasswordMutation.isPending ? (
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="small" color="white" />
+                    <Text style={styles.loadingText}>Resetting password...</Text>
+                  </View>
+                ) : (
+                  <Text style={styles.submitButtonText}>Reset password</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+
+            {/* Resend Code */}
+            <View style={styles.resendContainer}>
+              <Text style={styles.resendText}>
+                {timeLeft > 0 ? (
+                  `Resend code in ${formatTime(timeLeft)}`
+                ) : (
+                  "Didn't receive the code?"
+                )}
+              </Text>
+
+              {timeLeft === 0 && (
+                <TouchableOpacity
+                  style={styles.resendButton}
+                  onPress={handleResendCode}
+                  disabled={resendCodeMutation.isPending}
+                >
+                  {resendCodeMutation.isPending ? (
+                    <View style={styles.resendButtonContent}>
+                      <RefreshCw size={16} color="#111827" />
+                      <Text style={styles.resendButtonText}>Sending...</Text>
+                    </View>
+                  ) : (
+                    <View style={styles.resendButtonContent}>
+                      <RefreshCw size={16} color="#111827" />
+                      <Text style={styles.resendButtonText}>Resend code</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              )}
+            </View>
+
+            {/* Footer */}
+            <View style={styles.footer}>
+              <Text style={styles.footerText}>
+                Check your spam folder if you don't see the email
+              </Text>
+            </View>
+          </View>
+        </KeyboardAwareScrollView>
       </LinearGradient>
     </View>
   )

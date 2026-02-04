@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { HandHeart, Users } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -286,11 +286,17 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
             <Text style={styles.actionText}>
               {isJoinNotification && update.data?.new_member_id && cleanActionText.includes(' joined ') ? (
                 <>
-                  <Text onPress={() => handleUserNavigation(update.data?.new_member_id)}>
+                  <Text
+                    style={styles.boldText}
+                    onPress={() => handleUserNavigation(update.data?.new_member_id)}
+                  >
                     {cleanActionText.split(' joined ')[0]}
                   </Text>
                   {' joined '}
-                  <Text onPress={() => handleCollectiveNavigation(update.data?.collective_id || update.collective?.id, update.collective?.name)}>
+                  <Text
+                    style={styles.boldText}
+                    onPress={() => handleCollectiveNavigation(update.data?.collective_id || update.collective?.id, update.collective?.name)}
+                  >
                     {cleanActionText.split(' joined ').slice(1).join(' joined ')}
                   </Text>
                 </>
@@ -333,9 +339,9 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
           <View style={styles.userDetails}>
             <View style={styles.nameRow}>
               <TouchableOpacity
-                  onPress={() => handleUserNavigation(update.user.id)}
-                  activeOpacity={0.7}
-                >
+                onPress={() => handleUserNavigation(update.user.id)}
+                activeOpacity={0.7}
+              >
                 <Text style={styles.userName}>{update.user.name}</Text>
               </TouchableOpacity>
               {/* <Text style={styles.username}>@{update.user.username}</Text> */}
@@ -379,7 +385,38 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
         </View>
         {/* Action Text */}
         <Text style={styles.actionTextDonation}>
-          {actionText}
+          {(() => {
+            // Try to match with amount: "donated $50 to Nonprofit"
+            const amountMatch = actionText.match(/(.*?donated\s+)(.+?)(\s+to\s+)(.*)/i);
+            if (isDonationNotification && amountMatch) {
+              return (
+                <>
+                  {amountMatch[1]}
+                  <Text style={styles.boldText}>
+                    {amountMatch[2]}
+                  </Text>
+                  {amountMatch[3]}
+                  <Text style={styles.boldText}>
+                    {amountMatch[4]}
+                  </Text>
+                </>
+              );
+            }
+
+            // Fallback for "donated to" without amount structure
+            const simpleMatch = actionText.match(/(.*donated.*?to\s+)(.*)/i);
+            if (isDonationNotification && simpleMatch) {
+              return (
+                <>
+                  {simpleMatch[1]}
+                  <Text style={styles.boldText}>
+                    {simpleMatch[2]}
+                  </Text>
+                </>
+              );
+            }
+            return actionText;
+          })()}
         </Text>
       </View>
     </View>
@@ -556,17 +593,17 @@ const styles = StyleSheet.create({
   },
   actionText: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: '400',
     color: '#4B5563',
     flex: 1,
-    fontFamily: 'Outfit-SemiBold',
+    fontFamily: 'Outfit-Regular',
   },
   actionTextDonation: {
     fontSize: 15,
-    fontWeight: '600',
-    color: '#111827',
+    fontWeight: '400',
+    color: '#4B5563',
     flex: 1,
-    fontFamily: 'Outfit-SemiBold',
+    fontFamily: 'Outfit-Regular',
   },
   nonprofitCountText: {
     fontSize: 14,
@@ -618,5 +655,10 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#FFFFFF',
     fontFamily: 'Outfit-SemiBold',
+  },
+  boldText: {
+    fontWeight: '700',
+    color: '#111827',
+    fontFamily: 'Outfit-Bold',
   },
 });

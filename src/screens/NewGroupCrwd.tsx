@@ -540,7 +540,7 @@ export default function NewGroupCrwdPage() {
       const inactiveCauses = crwdData?.inactive_causes || [];
 
       return (
-        <View>
+        <View style={{ paddingBottom: 16 }}>
           {/* Currently Active Section */}
           <Text style={styles.statsSectionTitle}>Currently Active</Text>
           {nonprofits.length > 0 ? (
@@ -1159,7 +1159,7 @@ export default function NewGroupCrwdPage() {
         onChange={(index) => setShowStatisticsModal(index >= 0)}
         enableDynamicSizing={false}
       >
-        <BottomSheetView style={styles.bottomSheetContent}>
+        <View style={styles.bottomSheetContent}>
           {/* Header */}
           <View style={styles.bottomSheetHeader}>
             <View style={styles.bottomSheetHeaderTop}>
@@ -1195,7 +1195,7 @@ export default function NewGroupCrwdPage() {
           <BottomSheetScrollView style={styles.bottomSheetScrollView} showsVerticalScrollIndicator={false}>
             {renderStatisticsContent()}
           </BottomSheetScrollView>
-        </BottomSheetView>
+        </View>
       </BottomSheet>
     </SafeAreaView>
   );

@@ -12,6 +12,7 @@ import {
   ActivityIndicator,
   Alert
 } from 'react-native'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react-native'
 import { useNavigation, useRoute } from '@react-navigation/native'
@@ -102,133 +103,135 @@ export default function ResetPassword() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      <KeyboardAwareScrollView
         style={styles.keyboardView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        enableOnAndroid={true}
+        extraScrollHeight={Platform.OS === 'ios' ? 20 : 0}
+        keyboardShouldPersistTaps="handled"
       >
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          {/* Logo and Header */}
-          <View style={styles.header}>
-            {/* <Image 
+        {/* Logo and Header */}
+        <View style={styles.header}>
+          {/* <Image 
               source={require('../assets/logo/logo3.webp')} 
               style={styles.logo}
               resizeMode="contain"
             /> */}
-            <Image source={require('../assets/logo/main.png')} style={{ resizeMode: 'contain', width: 100, height: 80 }} />
-            <Text style={styles.title}>Create new password</Text>
-            <Text style={styles.subtitle}>
-              Choose a strong password for your account{'\n'}
-              <Text style={styles.emailText}>{email}</Text>
-            </Text>
-          </View>
+          <Image source={require('../assets/logo/main.png')} style={{ resizeMode: 'contain', width: 100, height: 80 }} />
+          <Text style={styles.title}>Create new password</Text>
+          <Text style={styles.subtitle}>
+            Choose a strong password for your account{'\n'}
+            <Text style={styles.emailText}>{email}</Text>
+          </Text>
+        </View>
 
-          {/* Form */}
-          <View style={styles.form}>
-            {/* New Password */}
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>New Password</Text>
-              <View style={styles.passwordContainer}>
-                <TextInput
-                  style={styles.passwordInput}
-                  placeholder="••••••••"
-                  placeholderTextColor={PrimaryGrey}
-                  value={formData.newPassword}
-                  onChangeText={(value) => handleInputChange('newPassword', value)}
-                  secureTextEntry={!showPassword}
-                  autoFocus
-                />
-                <TouchableOpacity
-                  style={styles.eyeButton}
-                  onPress={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? (
-                    <EyeOff size={18} color={PrimaryGrey} />
-                  ) : (
-                    <Eye size={18} color={PrimaryGrey} />
-                  )}
-                </TouchableOpacity>
-              </View>
-
-              {/* Password Strength */}
-              {formData.newPassword && (
-                <View style={styles.passwordStrength}>
-                  <View style={styles.strengthBars}>
-                    {[1, 2, 3].map((level) => (
-                      <View
-                        key={level}
-                        style={[
-                          styles.strengthBar,
-                          {
-                            backgroundColor: passwordStrength >= level
-                              ? getPasswordStrengthColor()
-                              : '#e5e7eb'
-                          }
-                        ]}
-                      />
-                    ))}
-                  </View>
-                  <Text style={styles.strengthText}>
-                    {getPasswordStrengthText()}
-                  </Text>
-                </View>
-              )}
+        {/* Form */}
+        <View style={styles.form}>
+          {/* New Password */}
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>New Password</Text>
+            <View style={styles.passwordContainer}>
+              <TextInput
+                style={styles.passwordInput}
+                placeholder="••••••••"
+                placeholderTextColor={PrimaryGrey}
+                value={formData.newPassword}
+                onChangeText={(value) => handleInputChange('newPassword', value)}
+                secureTextEntry={!showPassword}
+                autoFocus
+              />
+              <TouchableOpacity
+                style={styles.eyeButton}
+                onPress={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? (
+                  <EyeOff size={18} color={PrimaryGrey} />
+                ) : (
+                  <Eye size={18} color={PrimaryGrey} />
+                )}
+              </TouchableOpacity>
             </View>
 
-            {/* Confirm Password */}
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Confirm Password</Text>
-              <View style={styles.passwordContainer}>
-                <TextInput
-                  style={styles.passwordInput}
-                  placeholder="••••••••"
-                  placeholderTextColor={PrimaryGrey}
-                  value={formData.confirmPassword}
-                  onChangeText={(value) => handleInputChange('confirmPassword', value)}
-                  secureTextEntry={!showConfirmPassword}
-                />
-                <TouchableOpacity
-                  style={styles.eyeButton}
-                  onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff size={18} color={PrimaryGrey} />
-                  ) : (
-                    <Eye size={18} color={PrimaryGrey} />
-                  )}
-                </TouchableOpacity>
-              </View>
-              {formData.confirmPassword && formData.newPassword !== formData.confirmPassword && (
-                <Text style={styles.errorText}>Passwords do not match</Text>
-              )}
-            </View>
-
-            {/* Submit Button */}
-            <TouchableOpacity
-              style={styles.submitButton}
-              onPress={handleSubmit}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <View style={styles.loadingContainer}>
-                  <ActivityIndicator size="small" color="white" />
-                  <Text style={styles.loadingText}>Resetting password...</Text>
+            {/* Password Strength */}
+            {formData.newPassword && (
+              <View style={styles.passwordStrength}>
+                <View style={styles.strengthBars}>
+                  {[1, 2, 3].map((level) => (
+                    <View
+                      key={level}
+                      style={[
+                        styles.strengthBar,
+                        {
+                          backgroundColor: passwordStrength >= level
+                            ? getPasswordStrengthColor()
+                            : '#e5e7eb'
+                        }
+                      ]}
+                    />
+                  ))}
                 </View>
-              ) : (
-                <Text style={styles.submitButtonText}>Reset password</Text>
-              )}
-            </TouchableOpacity>
+                <Text style={styles.strengthText}>
+                  {getPasswordStrengthText()}
+                </Text>
+              </View>
+            )}
           </View>
 
-          {/* Back to Verification */}
+          {/* Confirm Password */}
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Confirm Password</Text>
+            <View style={styles.passwordContainer}>
+              <TextInput
+                style={styles.passwordInput}
+                placeholder="••••••••"
+                placeholderTextColor={PrimaryGrey}
+                value={formData.confirmPassword}
+                onChangeText={(value) => handleInputChange('confirmPassword', value)}
+                secureTextEntry={!showConfirmPassword}
+              />
+              <TouchableOpacity
+                style={styles.eyeButton}
+                onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+              >
+                {showConfirmPassword ? (
+                  <EyeOff size={18} color={PrimaryGrey} />
+                ) : (
+                  <Eye size={18} color={PrimaryGrey} />
+                )}
+              </TouchableOpacity>
+            </View>
+            {formData.confirmPassword && formData.newPassword !== formData.confirmPassword && (
+              <Text style={styles.errorText}>Passwords do not match</Text>
+            )}
+          </View>
+
+          {/* Submit Button */}
           <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.navigate('VerificationCode', { email } as never)}
+            style={styles.submitButton}
+            onPress={handleSubmit}
+            disabled={isLoading}
           >
-            <ArrowLeft size={16} color="#374151" />
-            <Text style={styles.backButtonText}>Back to verification</Text>
+            {isLoading ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="small" color="white" />
+                <Text style={styles.loadingText}>Resetting password...</Text>
+              </View>
+            ) : (
+              <Text style={styles.submitButtonText}>Reset password</Text>
+            )}
           </TouchableOpacity>
-        </ScrollView>
-      </KeyboardAvoidingView>
+        </View>
+
+        {/* Back to Verification */}
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.navigate('VerificationCode', { email } as never)}
+        >
+          <ArrowLeft size={16} color="#374151" />
+          <Text style={styles.backButtonText}>Back to verification</Text>
+        </TouchableOpacity>
+      </KeyboardAwareScrollView>
     </SafeAreaView>
   )
 }

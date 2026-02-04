@@ -10,8 +10,9 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
-  Alert
+  Alert,
 } from 'react-native'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Eye, EyeOff, Check, ArrowLeft } from 'lucide-react-native'
 import { useNavigation } from '@react-navigation/native'
@@ -168,238 +169,240 @@ export default function Signup() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      <KeyboardAwareScrollView
         style={styles.keyboardView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        enableOnAndroid={true}
+        extraScrollHeight={Platform.OS === 'ios' ? 20 : 0}
+        keyboardShouldPersistTaps="handled"
       >
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          <View style={styles.card}>
-            {/* Logo and Header */}
-            <View style={styles.header}>
-              <Image
-                source={require('../assets/logo/logo3.webp')}
-                style={styles.logo}
-                resizeMode="contain"
-              />
-              <Text style={styles.title}>Create your account</Text>
-              <Text style={styles.subtitle}>
-                Already have an account?{' '}
-                <Text
-                  style={styles.link}
-                  onPress={() => navigation.navigate('Login' as never)}
-                >
-                  Sign in
-                </Text>
-              </Text>
-            </View>
-
-            {/* Google Signup Button */}
-            <TouchableOpacity
-              style={[styles.googleButton, (isGoogleLoading || googleCallbackMutation.isPending) && styles.googleButtonDisabled]}
-              onPress={handleGoogleSignup}
-              disabled={isGoogleLoading || googleCallbackMutation.isPending}
-            >
-              {(isGoogleLoading || googleCallbackMutation.isPending) ? (
-                <ActivityIndicator size="small" color={PrimaryGrey} />
-              ) : (
-                <View style={styles.googleIconPlaceholder}>
-                  <SvgXml xml={googleXml} width={16} height={16} />
-                </View>
-              )}
-              <Text style={styles.googleButtonText}>
-                {(isGoogleLoading || googleCallbackMutation.isPending) ? 'Creating account...' : 'Continue with Google'}
-              </Text>
-            </TouchableOpacity>
-
-            {/* Divider */}
-            <View style={styles.divider}>
-              <View style={styles.dividerLine} />
-              <Text style={styles.dividerText}>Or continue with email</Text>
-              <View style={styles.dividerLine} />
-            </View>
-
-            {/* Form */}
-            <View style={styles.form}>
-              {/* Name Fields */}
-              <View style={styles.nameRow}>
-                <View style={styles.nameField}>
-                  <Text style={styles.label}>First name</Text>
-                  <TextInput
-                    style={[styles.input, focusedField === 'firstName' && styles.inputFocused]}
-                    placeholder="John"
-                    placeholderTextColor={PrimaryGrey}
-                    value={formData.firstName}
-                    onChangeText={(value) => handleInputChange('firstName', value)}
-                    onFocus={() => setFocusedField('firstName')}
-                    onBlur={() => setFocusedField(null)}
-                  />
-                </View>
-                <View style={styles.nameField}>
-                  <Text style={styles.label}>Last name</Text>
-                  <TextInput
-                    style={[styles.input, focusedField === 'lastName' && styles.inputFocused]}
-                    placeholder="Doe"
-                    placeholderTextColor={PrimaryGrey}
-                    value={formData.lastName}
-                    onChangeText={(value) => handleInputChange('lastName', value)}
-                    onFocus={() => setFocusedField('lastName')}
-                    onBlur={() => setFocusedField(null)}
-                  />
-                </View>
-              </View>
-
-              {/* Email */}
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Email address</Text>
-                <TextInput
-                  style={[styles.input, focusedField === 'email' && styles.inputFocused]}
-                  placeholder="john.doe@example.com"
-                  placeholderTextColor={PrimaryGrey}
-                  value={formData.email}
-                  onChangeText={(value) => handleInputChange('email', value)}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  onFocus={() => setFocusedField('email')}
-                  onBlur={() => setFocusedField(null)}
-                />
-              </View>
-
-              {/* Password */}
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Password</Text>
-                <View style={styles.passwordContainer}>
-                  <TextInput
-                    style={styles.passwordInput}
-                    placeholder="••••••••"
-                    placeholderTextColor={PrimaryGrey}
-                    value={formData.password}
-                    onChangeText={(value) => handleInputChange('password', value)}
-                    secureTextEntry={!showPassword}
-                    onFocus={() => setFocusedField('password')}
-                    onBlur={() => setFocusedField(null)}
-                  />
-                  <TouchableOpacity
-                    style={styles.eyeButton}
-                    onPress={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? (
-                      <EyeOff size={16} color={PrimaryGrey} />
-                    ) : (
-                      <Eye size={16} color={PrimaryGrey} />
-                    )}
-                  </TouchableOpacity>
-                </View>
-
-                {/* Password Strength Indicator */}
-                {formData.password && (
-                  <View style={styles.passwordStrengthContainer}>
-                    <Text style={styles.passwordStrengthTitle}>Password must contain:</Text>
-                    <View style={styles.passwordStrengthList}>
-                      <View style={styles.passwordStrengthItem}>
-                        <Check
-                          size={12}
-                          color={passwordStrength.hasMinLength ? '#10b981' : '#d1d5db'}
-                        />
-                        <Text style={[
-                          styles.passwordStrengthText,
-                          passwordStrength.hasMinLength && styles.passwordStrengthTextMet
-                        ]}>
-                          At least 8 characters
-                        </Text>
-                      </View>
-                      <View style={styles.passwordStrengthItem}>
-                        <Check
-                          size={12}
-                          color={passwordStrength.hasUppercase ? '#10b981' : '#d1d5db'}
-                        />
-                        <Text style={[
-                          styles.passwordStrengthText,
-                          passwordStrength.hasUppercase && styles.passwordStrengthTextMet
-                        ]}>
-                          One uppercase letter
-                        </Text>
-                      </View>
-                      <View style={styles.passwordStrengthItem}>
-                        <Check
-                          size={12}
-                          color={passwordStrength.hasLowercase ? '#10b981' : '#d1d5db'}
-                        />
-                        <Text style={[
-                          styles.passwordStrengthText,
-                          passwordStrength.hasLowercase && styles.passwordStrengthTextMet
-                        ]}>
-                          One lowercase letter
-                        </Text>
-                      </View>
-                      <View style={styles.passwordStrengthItem}>
-                        <Check
-                          size={12}
-                          color={passwordStrength.hasNumber ? '#10b981' : '#d1d5db'}
-                        />
-                        <Text style={[
-                          styles.passwordStrengthText,
-                          passwordStrength.hasNumber && styles.passwordStrengthTextMet
-                        ]}>
-                          One number
-                        </Text>
-                      </View>
-                      <View style={styles.passwordStrengthItem}>
-                        <Check
-                          size={12}
-                          color={passwordStrength.hasSpecialChar ? '#10b981' : '#d1d5db'}
-                        />
-                        <Text style={[
-                          styles.passwordStrengthText,
-                          passwordStrength.hasSpecialChar && styles.passwordStrengthTextMet
-                        ]}>
-                          One special character
-                        </Text>
-                      </View>
-                    </View>
-                  </View>
-                )}
-              </View>
-
-              {/* Submit Button */}
-              <TouchableOpacity
-                style={[
-                  styles.submitButton,
-                  (signupMutation.isPending || !isPasswordStrong) && styles.submitButtonDisabled
-                ]}
-                onPress={handleSubmit}
-                disabled={signupMutation.isPending || !isPasswordStrong}
-              >
-                {signupMutation.isPending ? (
-                  <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="small" color="white" />
-                    <Text style={styles.loadingText}>Creating account...</Text>
-                  </View>
-                ) : (
-                  <Text style={styles.submitButtonText}>Create account</Text>
-                )}
-              </TouchableOpacity>
-            </View>
-
-            {/* Terms */}
-            <Text style={styles.termsText}>
-              By creating an account, you agree to our{' '}
+        <View style={styles.card}>
+          {/* Logo and Header */}
+          <View style={styles.header}>
+            <Image
+              source={require('../assets/logo/logo3.webp')}
+              style={styles.logo}
+              resizeMode="contain"
+            />
+            <Text style={styles.title}>Create your account</Text>
+            <Text style={styles.subtitle}>
+              Already have an account?{' '}
               <Text
-                style={styles.termsLink}
-                onPress={() => navigation.navigate('Settings' as never)}
+                style={styles.link}
+                onPress={() => navigation.navigate('Login' as never)}
               >
-                Terms of Service
-              </Text>
-              {' '}and{' '}
-              <Text
-                style={styles.termsLink}
-                onPress={() => navigation.navigate('Settings' as never)}
-              >
-                Privacy Policy
+                Sign in
               </Text>
             </Text>
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+
+          {/* Google Signup Button */}
+          <TouchableOpacity
+            style={[styles.googleButton, (isGoogleLoading || googleCallbackMutation.isPending) && styles.googleButtonDisabled]}
+            onPress={handleGoogleSignup}
+            disabled={isGoogleLoading || googleCallbackMutation.isPending}
+          >
+            {(isGoogleLoading || googleCallbackMutation.isPending) ? (
+              <ActivityIndicator size="small" color={PrimaryGrey} />
+            ) : (
+              <View style={styles.googleIconPlaceholder}>
+                <SvgXml xml={googleXml} width={16} height={16} />
+              </View>
+            )}
+            <Text style={styles.googleButtonText}>
+              {(isGoogleLoading || googleCallbackMutation.isPending) ? 'Creating account...' : 'Continue with Google'}
+            </Text>
+          </TouchableOpacity>
+
+          {/* Divider */}
+          <View style={styles.divider}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>Or continue with email</Text>
+            <View style={styles.dividerLine} />
+          </View>
+
+          {/* Form */}
+          <View style={styles.form}>
+            {/* Name Fields */}
+            <View style={styles.nameRow}>
+              <View style={styles.nameField}>
+                <Text style={styles.label}>First name</Text>
+                <TextInput
+                  style={[styles.input, focusedField === 'firstName' && styles.inputFocused]}
+                  placeholder="John"
+                  placeholderTextColor={PrimaryGrey}
+                  value={formData.firstName}
+                  onChangeText={(value) => handleInputChange('firstName', value)}
+                  onFocus={() => setFocusedField('firstName')}
+                  onBlur={() => setFocusedField(null)}
+                />
+              </View>
+              <View style={styles.nameField}>
+                <Text style={styles.label}>Last name</Text>
+                <TextInput
+                  style={[styles.input, focusedField === 'lastName' && styles.inputFocused]}
+                  placeholder="Doe"
+                  placeholderTextColor={PrimaryGrey}
+                  value={formData.lastName}
+                  onChangeText={(value) => handleInputChange('lastName', value)}
+                  onFocus={() => setFocusedField('lastName')}
+                  onBlur={() => setFocusedField(null)}
+                />
+              </View>
+            </View>
+
+            {/* Email */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Email address</Text>
+              <TextInput
+                style={[styles.input, focusedField === 'email' && styles.inputFocused]}
+                placeholder="john.doe@example.com"
+                placeholderTextColor={PrimaryGrey}
+                value={formData.email}
+                onChangeText={(value) => handleInputChange('email', value)}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                onFocus={() => setFocusedField('email')}
+                onBlur={() => setFocusedField(null)}
+              />
+            </View>
+
+            {/* Password */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Password</Text>
+              <View style={styles.passwordContainer}>
+                <TextInput
+                  style={styles.passwordInput}
+                  placeholder="••••••••"
+                  placeholderTextColor={PrimaryGrey}
+                  value={formData.password}
+                  onChangeText={(value) => handleInputChange('password', value)}
+                  secureTextEntry={!showPassword}
+                  onFocus={() => setFocusedField('password')}
+                  onBlur={() => setFocusedField(null)}
+                />
+                <TouchableOpacity
+                  style={styles.eyeButton}
+                  onPress={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff size={16} color={PrimaryGrey} />
+                  ) : (
+                    <Eye size={16} color={PrimaryGrey} />
+                  )}
+                </TouchableOpacity>
+              </View>
+
+              {/* Password Strength Indicator */}
+              {formData.password && (
+                <View style={styles.passwordStrengthContainer}>
+                  <Text style={styles.passwordStrengthTitle}>Password must contain:</Text>
+                  <View style={styles.passwordStrengthList}>
+                    <View style={styles.passwordStrengthItem}>
+                      <Check
+                        size={12}
+                        color={passwordStrength.hasMinLength ? '#10b981' : '#d1d5db'}
+                      />
+                      <Text style={[
+                        styles.passwordStrengthText,
+                        passwordStrength.hasMinLength && styles.passwordStrengthTextMet
+                      ]}>
+                        At least 8 characters
+                      </Text>
+                    </View>
+                    <View style={styles.passwordStrengthItem}>
+                      <Check
+                        size={12}
+                        color={passwordStrength.hasUppercase ? '#10b981' : '#d1d5db'}
+                      />
+                      <Text style={[
+                        styles.passwordStrengthText,
+                        passwordStrength.hasUppercase && styles.passwordStrengthTextMet
+                      ]}>
+                        One uppercase letter
+                      </Text>
+                    </View>
+                    <View style={styles.passwordStrengthItem}>
+                      <Check
+                        size={12}
+                        color={passwordStrength.hasLowercase ? '#10b981' : '#d1d5db'}
+                      />
+                      <Text style={[
+                        styles.passwordStrengthText,
+                        passwordStrength.hasLowercase && styles.passwordStrengthTextMet
+                      ]}>
+                        One lowercase letter
+                      </Text>
+                    </View>
+                    <View style={styles.passwordStrengthItem}>
+                      <Check
+                        size={12}
+                        color={passwordStrength.hasNumber ? '#10b981' : '#d1d5db'}
+                      />
+                      <Text style={[
+                        styles.passwordStrengthText,
+                        passwordStrength.hasNumber && styles.passwordStrengthTextMet
+                      ]}>
+                        One number
+                      </Text>
+                    </View>
+                    <View style={styles.passwordStrengthItem}>
+                      <Check
+                        size={12}
+                        color={passwordStrength.hasSpecialChar ? '#10b981' : '#d1d5db'}
+                      />
+                      <Text style={[
+                        styles.passwordStrengthText,
+                        passwordStrength.hasSpecialChar && styles.passwordStrengthTextMet
+                      ]}>
+                        One special character
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              )}
+            </View>
+
+            {/* Submit Button */}
+            <TouchableOpacity
+              style={[
+                styles.submitButton,
+                (signupMutation.isPending || !isPasswordStrong) && styles.submitButtonDisabled
+              ]}
+              onPress={handleSubmit}
+              disabled={signupMutation.isPending || !isPasswordStrong}
+            >
+              {signupMutation.isPending ? (
+                <View style={styles.loadingContainer}>
+                  <ActivityIndicator size="small" color="white" />
+                  <Text style={styles.loadingText}>Creating account...</Text>
+                </View>
+              ) : (
+                <Text style={styles.submitButtonText}>Create account</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+
+          {/* Terms */}
+          <Text style={styles.termsText}>
+            By creating an account, you agree to our{' '}
+            <Text
+              style={styles.termsLink}
+              onPress={() => navigation.navigate('Settings' as never)}
+            >
+              Terms of Service
+            </Text>
+            {' '}and{' '}
+            <Text
+              style={styles.termsLink}
+              onPress={() => navigation.navigate('Settings' as never)}
+            >
+              Privacy Policy
+            </Text>
+          </Text>
+        </View>
+      </KeyboardAwareScrollView>
     </SafeAreaView>
   )
 }

@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import * as React from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -6,15 +7,13 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
-  KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { X, ArrowRight } from 'lucide-react-native';
 import {
   BottomSheetModal,
   BottomSheetBackdrop,
-  BottomSheetScrollView,
-  BottomSheetTextInput,
 } from '@gorhom/bottom-sheet';
 import { requestCause } from '../../services/api/crwd';
 import { useToast } from '../../contexts/ToastContext';
@@ -119,11 +118,13 @@ export default function RequestNonprofitModal({
         </View>
 
         {/* Content */}
-        <BottomSheetScrollView
+        <KeyboardAwareScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
+          enableOnAndroid={true}
+          extraScrollHeight={Platform.OS === 'ios' ? 20 : 0}
         >
           <Text style={styles.introText}>
             Can't find the nonprofit you're looking for? Let us know and if everything checks
@@ -169,7 +170,7 @@ export default function RequestNonprofitModal({
               placeholderTextColor="#9CA3AF"
             />
           </View>
-        </BottomSheetScrollView>
+        </KeyboardAwareScrollView>
 
         {/* Action Buttons */}
         <View style={styles.actions}>

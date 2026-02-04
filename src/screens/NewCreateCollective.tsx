@@ -11,9 +11,9 @@ import {
   Share,
   Image,
   Modal,
-  KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, CommonActions, useRoute, useFocusEffect } from '@react-navigation/native';
 import {
@@ -1076,430 +1076,287 @@ export default function NewCreateCollective() {
         <Text style={styles.headerTitle}>Create a Collective</Text>
       </View>
 
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardView}
-        keyboardVerticalOffset={100}
+      <KeyboardAwareScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        enableOnAndroid={true}
+        extraScrollHeight={100}
       >
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Collective Name */}
-          <View style={styles.formSection}>
-            <View style={styles.labelRow}>
-              <Text style={styles.label}>
-                Name Your Collective <Text style={styles.required}>*</Text>
-              </Text>
-              <TouchableOpacity
-                onPress={() => Alert.alert(
-                  'Name Your Collective',
-                  'Keep it short & memorable (<40 characters)',
-                  [{ text: 'OK' }]
-                )}
-              >
-                <Flag size={16} color="#9CA3AF" />
-              </TouchableOpacity>
-            </View>
-            <TextInput
-              value={name}
-              onChangeText={setName}
-              placeholder='"Atlanta Climate Action"'
-              placeholderTextColor="#9CA3AF"
-              style={[styles.input, name.length === 0 && styles.inputItalic]}
-            />
+        {/* Collective Name */}
+        <View style={styles.formSection}>
+          <View style={styles.labelRow}>
+            <Text style={styles.label}>
+              Name Your Collective <Text style={styles.required}>*</Text>
+            </Text>
+            <TouchableOpacity
+              onPress={() => Alert.alert(
+                'Name Your Collective',
+                'Keep it short & memorable (<40 characters)',
+                [{ text: 'OK' }]
+              )}
+            >
+              <Flag size={16} color="#9CA3AF" />
+            </TouchableOpacity>
           </View>
+          <TextInput
+            value={name}
+            onChangeText={setName}
+            placeholder='"Atlanta Climate Action"'
+            placeholderTextColor="#9CA3AF"
+            style={[styles.input, name.length === 0 && styles.inputItalic]}
+          />
+        </View>
 
-          {/* Description */}
-          <View style={styles.formSection}>
-            <View style={styles.labelRow}>
-              <Text style={styles.label}>
-                What Brings This Group Together? <Text style={styles.required}>*</Text>
-              </Text>
-              <TouchableOpacity
-                onPress={() => Alert.alert(
-                  'Description',
-                  'A quick one-liner works best (<160 characters)',
-                  [{ text: 'OK' }]
-                )}
-              >
-                <Flag size={16} color="#9CA3AF" />
-              </TouchableOpacity>
-            </View>
-            <TextInput
-              value={description}
-              onChangeText={setDescription}
-              placeholder={`"We're classmates giving back to Atlanta."\n"Our office team supporting local families."\n"A community of friends passionate about clean water."`}
-              placeholderTextColor="#9CA3AF"
-              multiline
-              numberOfLines={4}
-              style={[styles.textarea, description.length === 0 && styles.inputItalic]}
-            />
+        {/* Description */}
+        <View style={styles.formSection}>
+          <View style={styles.labelRow}>
+            <Text style={styles.label}>
+              What Brings This Group Together? <Text style={styles.required}>*</Text>
+            </Text>
+            <TouchableOpacity
+              onPress={() => Alert.alert(
+                'Description',
+                'A quick one-liner works best (<160 characters)',
+                [{ text: 'OK' }]
+              )}
+            >
+              <Flag size={16} color="#9CA3AF" />
+            </TouchableOpacity>
           </View>
+          <TextInput
+            value={description}
+            onChangeText={setDescription}
+            placeholder={`"We're classmates giving back to Atlanta."\n"Our office team supporting local families."\n"A community of friends passionate about clean water."`}
+            placeholderTextColor="#9CA3AF"
+            multiline
+            numberOfLines={4}
+            style={[styles.textarea, description.length === 0 && styles.inputItalic]}
+          />
+        </View>
 
-          {/* Collective Logo */}
-          <View style={styles.formSection}>
-            <View style={styles.logoSection}>
-              <Avatar size={64} style={styles.logoAvatar}>
-                {logoType === 'upload' ? (
-                  uploadedLogoPreview ? (
-                    <AvatarImage src={uploadedLogoPreview} alt={name} />
-                  ) : (
-                    <AvatarFallback
-                      style={{ backgroundColor: '#f3f4f6' }}
-                      textStyle={styles.logoAvatarFallback}
-                    >
-                      <Camera size={32} color="#9CA3AF" />
-                    </AvatarFallback>
-                  )
+        {/* Collective Logo */}
+        <View style={styles.formSection}>
+          <View style={styles.logoSection}>
+            <Avatar size={64} style={styles.logoAvatar}>
+              {logoType === 'upload' ? (
+                uploadedLogoPreview ? (
+                  <AvatarImage src={uploadedLogoPreview} alt={name} />
                 ) : (
-                  <View style={[styles.logoLetterContainer, { backgroundColor: letterLogoColor }]}>
-                    <Text style={styles.logoLetter}>{logoLetter}</Text>
-                  </View>
-                )}
-              </Avatar>
-              <View style={styles.logoInfo}>
-                <Text style={styles.logoLabel}>Collective Logo</Text>
-                <Text style={styles.logoSubtext}>
-                  {logoType === 'letter' ? 'Letter logo' : 'Custom image'}
-                </Text>
-              </View>
-              <TouchableOpacity
-                onPress={() => setShowLogoCustomization(!showLogoCustomization)}
-                style={styles.customizeButton}
-              >
-                <Edit2 size={16} color="#111827" />
-                <Text style={styles.customizeButtonText}>
-                  {showLogoCustomization ? 'Done' : 'Customize'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-            {/* Customization Options - Shown when Customize is clicked */}
-            {showLogoCustomization && (
-              <View style={styles.customizationSection}>
-                {/* Logo Type Selection */}
-                <View style={styles.logoTypeButtons}>
-                  <TouchableOpacity
-                    onPress={() => setLogoType('letter')}
-                    style={[
-                      styles.logoTypeButton,
-                      logoType === 'letter' && styles.logoTypeButtonActive
-                    ]}
+                  <AvatarFallback
+                    style={{ backgroundColor: '#f3f4f6' }}
+                    textStyle={styles.logoAvatarFallback}
                   >
-                    <Edit2 size={16} color={logoType === 'letter' ? 'white' : '#111827'} />
-                    <Text style={[
-                      styles.logoTypeButtonText,
-                      logoType === 'letter' && styles.logoTypeButtonTextActive
-                    ]}>
-                      Letter
-                    </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => {
-                      setLogoType('upload');
-                      handleFileChange();
-                    }}
-                    style={[
-                      styles.logoTypeButton,
-                      logoType === 'upload' && styles.logoTypeButtonActive
-                    ]}
-                  >
-                    <Camera size={16} color={logoType === 'upload' ? 'white' : '#111827'} />
-                    <Text style={[
-                      styles.logoTypeButtonText,
-                      logoType === 'upload' && styles.logoTypeButtonTextActive
-                    ]}>
-                      Upload
-                    </Text>
-                  </TouchableOpacity>
+                    <Camera size={32} color="#9CA3AF" />
+                  </AvatarFallback>
+                )
+              ) : (
+                <View style={[styles.logoLetterContainer, { backgroundColor: letterLogoColor }]}>
+                  <Text style={styles.logoLetter}>{logoLetter}</Text>
                 </View>
-
-                {/* Letter Logo Options */}
-                {logoType === 'letter' && (
-                  <View style={styles.colorSection}>
-                    <Text style={styles.colorSectionTitle}>Background Color</Text>
-                    <View style={styles.colorSwatchesContainer}>
-                      {colorSwatches.map((color) => (
-                        <TouchableOpacity
-                          key={color}
-                          onPress={() => handleColorSelect(color)}
-                          style={[
-                            styles.colorSwatch,
-                            { backgroundColor: color },
-                            letterLogoColor === color && styles.colorSwatchSelected
-                          ]}
-                        />
-                      ))}
-                    </View>
-                  </View>
-                )}
-
-              </View>
-            )}
+              )}
+            </Avatar>
+            <View style={styles.logoInfo}>
+              <Text style={styles.logoLabel}>Collective Logo</Text>
+              <Text style={styles.logoSubtext}>
+                {logoType === 'letter' ? 'Letter logo' : 'Custom image'}
+              </Text>
+            </View>
+            <TouchableOpacity
+              onPress={() => setShowLogoCustomization(!showLogoCustomization)}
+              style={styles.customizeButton}
+            >
+              <Edit2 size={16} color="#111827" />
+              <Text style={styles.customizeButtonText}>
+                {showLogoCustomization ? 'Done' : 'Customize'}
+              </Text>
+            </TouchableOpacity>
           </View>
 
-          {/* Causes Management Section */}
-          <View style={styles.causesSection}>
-            {/* Selected Causes - Only show if there are selected causes */}
-            {selectedCauses.length > 0 && (
-              <View style={styles.selectedCausesCard}>
-                <View style={styles.selectedCausesHeader}>
-                  <Text style={styles.selectedCausesTitle}>
-                    Selected Causes ({selectedCauses.length})
+          {/* Customization Options - Shown when Customize is clicked */}
+          {showLogoCustomization && (
+            <View style={styles.customizationSection}>
+              {/* Logo Type Selection */}
+              <View style={styles.logoTypeButtons}>
+                <TouchableOpacity
+                  onPress={() => setLogoType('letter')}
+                  style={[
+                    styles.logoTypeButton,
+                    logoType === 'letter' && styles.logoTypeButtonActive
+                  ]}
+                >
+                  <Edit2 size={16} color={logoType === 'letter' ? 'white' : '#111827'} />
+                  <Text style={[
+                    styles.logoTypeButtonText,
+                    logoType === 'letter' && styles.logoTypeButtonTextActive
+                  ]}>
+                    Letter
                   </Text>
-                  <View style={styles.readyBadge}>
-                    <Check size={16} color="white" />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => {
+                    setLogoType('upload');
+                    handleFileChange();
+                  }}
+                  style={[
+                    styles.logoTypeButton,
+                    logoType === 'upload' && styles.logoTypeButtonActive
+                  ]}
+                >
+                  <Camera size={16} color={logoType === 'upload' ? 'white' : '#111827'} />
+                  <Text style={[
+                    styles.logoTypeButtonText,
+                    logoType === 'upload' && styles.logoTypeButtonTextActive
+                  ]}>
+                    Upload
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Letter Logo Options */}
+              {logoType === 'letter' && (
+                <View style={styles.colorSection}>
+                  <Text style={styles.colorSectionTitle}>Background Color</Text>
+                  <View style={styles.colorSwatchesContainer}>
+                    {colorSwatches.map((color) => (
+                      <TouchableOpacity
+                        key={color}
+                        onPress={() => handleColorSelect(color)}
+                        style={[
+                          styles.colorSwatch,
+                          { backgroundColor: color },
+                          letterLogoColor === color && styles.colorSwatchSelected
+                        ]}
+                      />
+                    ))}
                   </View>
-                </View>
-                <View style={styles.selectedCausesList}>
-                  {selectedCauses.map((cause) => {
-                    const causeData = cause.cause || cause;
-                    const categoryId = causeData.category || causeData.cause_category;
-                    const categoryNames = getCategoryNames(categoryId);
-                    const categoryIds = getCategoryIds(categoryId);
-                    const avatarBgColor = getConsistentColor(causeData.id, avatarColors);
-                    const initials = getInitials(causeData.name || 'N');
-
-                    return (
-                      <View key={cause.id} style={styles.selectedCauseCard}>
-                        <View style={styles.selectedCauseContent}>
-                          <Avatar size={48} style={styles.selectedCauseAvatar}>
-                            <AvatarImage src={causeData.image} alt={causeData.name} />
-                            <AvatarFallback
-                              style={{ backgroundColor: avatarBgColor }}
-                              textStyle={styles.selectedCauseAvatarFallback}
-                            >
-                              {initials}
-                            </AvatarFallback>
-                          </Avatar>
-                          <View style={styles.selectedCauseInfo}>
-                            <View style={styles.selectedCauseHeader}>
-                              <Text style={styles.selectedCauseName}>{causeData.name}</Text>
-                              <View style={styles.selectedCauseCategoriesContainer}>
-                                {categoryNames.map((name, index) => {
-                                  const singleCategoryId = categoryIds[index];
-                                  const bgColor = getCategoryColor(singleCategoryId);
-                                  const textColor = getCategoryTextColor(singleCategoryId);
-                                  return (
-                                    <View
-                                      key={index}
-                                      style={[styles.selectedCauseCategory, { backgroundColor: bgColor }]}
-                                    >
-                                      <Text style={[styles.selectedCauseCategoryText, { color: textColor }]}>
-                                        {name}
-                                      </Text>
-                                    </View>
-                                  );
-                                })}
-                              </View>
-                            </View>
-                            <Text style={styles.selectedCauseDescription} >
-                              {truncateAtFirstPeriod(causeData.mission || causeData.description)}
-                            </Text>
-                          </View>
-                          <TouchableOpacity
-                            onPress={() => handleRemoveCause(cause.id)}
-                            style={styles.removeCauseButton}
-                          >
-                            <X size={20} color="#6B7280" />
-                          </TouchableOpacity>
-                        </View>
-                      </View>
-                    );
-                  })}
-                </View>
-              </View>
-            )}
-
-            {/* Add or Remove Causes */}
-            <View style={styles.addCausesCard}>
-              <Text style={styles.addCausesTitle}>
-                Add or Remove Causes <Text style={styles.required}>*</Text>
-              </Text>
-
-              {/* Search Bar */}
-              <View style={styles.searchContainer}>
-                <Search size={20} color="#9CA3AF" style={styles.searchIcon} />
-                <TextInput
-                  placeholder="Search causes or nonprofits"
-                  placeholderTextColor="#9CA3AF"
-                  value={searchQuery}
-                  onChangeText={setSearchQuery}
-                  onSubmitEditing={handleSearchKeyPress}
-                  style={styles.searchInput}
-                />
-              </View>
-
-              {/* Your Causes - Only show if there are favorite causes */}
-              {favoriteCauses.length > 0 && (
-                <View style={styles.yourCausesSection}>
-                  <TouchableOpacity
-                    onPress={() => setIsYourCausesOpen(!isYourCausesOpen)}
-                    style={styles.causesDropdownHeader}
-                  >
-                    <View style={styles.causesDropdownHeaderLeft}>
-                      <View style={styles.causesDropdownDot} />
-                      <Text style={styles.causesDropdownTitle}>
-                        Your Causes ({favoriteCauses.length})
-                      </Text>
-                    </View>
-                    {isYourCausesOpen ? (
-                      <Minus size={20} color="#2563EB" />
-                    ) : (
-                      <Plus size={20} color="#2563EB" />
-                    )}
-                  </TouchableOpacity>
-                  {isYourCausesOpen && (
-                    <View style={styles.causesList}>
-                      {isLoadingFavoriteCauses ? (
-                        <View style={styles.loadingContainer}>
-                          <ActivityIndicator size="small" color="#1600ff" />
-                        </View>
-                      ) : (
-                        favoriteCauses.map((item: any) => {
-                          const cause = item.cause || item;
-                          const categoryId = cause.category || cause.cause_category;
-                          const categoryNames = getCategoryNames(categoryId);
-                          const categoryIds = getCategoryIds(categoryId);
-                          const isSelected = isCauseSelected(cause.id);
-                          const avatarBgColor = getConsistentColor(cause.id, avatarColors);
-                          const initials = getInitials(cause.name || 'N');
-
-                          return (
-                            <TouchableOpacity
-                              key={cause.id}
-                              onPress={() => handleToggleCause(cause)}
-                              style={[
-                                styles.causeCard,
-                                isSelected && styles.causeCardSelected
-                              ]}
-                            >
-                              <Avatar size={48} style={styles.causeAvatar}>
-                                <AvatarImage src={cause.image} alt={cause.name} />
-                                <AvatarFallback
-                                  style={{ backgroundColor: avatarBgColor }}
-                                  textStyle={styles.causeAvatarFallback}
-                                >
-                                  {initials}
-                                </AvatarFallback>
-                              </Avatar>
-                              <View style={styles.causeInfo}>
-                                <View style={styles.causeHeader}>
-                                  <Text style={styles.causeName}>{cause.name}</Text>
-                                  <View style={styles.causeCategoriesContainer}>
-                                    {categoryNames.map((name, index) => {
-                                      const singleCategoryId = categoryIds[index];
-                                      const bgColor = getCategoryColor(singleCategoryId);
-                                      const textColor = getCategoryTextColor(singleCategoryId);
-                                      return (
-                                        <View
-                                          key={index}
-                                          style={[styles.causeCategory, { backgroundColor: bgColor }]}
-                                        >
-                                          <Text style={[styles.causeCategoryText, { color: textColor }]}>
-                                            {name}
-                                          </Text>
-                                        </View>
-                                      );
-                                    })}
-                                  </View>
-                                </View>
-                                <Text style={styles.causeDescription}>
-                                  {truncateAtFirstPeriod(cause.mission || cause.description)}
-                                </Text>
-                              </View>
-                              <View style={[styles.radioButton, isSelected && styles.radioButtonSelected]}>
-                                {isSelected && <View style={styles.radioButtonInner} />}
-                              </View>
-                            </TouchableOpacity>
-                          );
-                        })
-                      )}
-                    </View>
-                  )}
                 </View>
               )}
 
-              {/* Suggested Causes List */}
-              {(() => {
-                const causes = searchTrigger > 0 && searchQuery.trim()
-                  ? (causesData?.results || [])
-                  : (defaultCausesData?.results || []);
+            </View>
+          )}
+        </View>
 
-                // Get favorite cause IDs to exclude from search results
-                const favoriteCauseIds = new Set(
-                  favoriteCauses.map((item: any) => {
-                    const cause = item.cause || item;
-                    return cause.id;
-                  })
-                );
+        {/* Causes Management Section */}
+        <View style={styles.causesSection}>
+          {/* Selected Causes - Only show if there are selected causes */}
+          {selectedCauses.length > 0 && (
+            <View style={styles.selectedCausesCard}>
+              <View style={styles.selectedCausesHeader}>
+                <Text style={styles.selectedCausesTitle}>
+                  Selected Causes ({selectedCauses.length})
+                </Text>
+                <View style={styles.readyBadge}>
+                  <Check size={16} color="white" />
+                </View>
+              </View>
+              <View style={styles.selectedCausesList}>
+                {selectedCauses.map((cause) => {
+                  const causeData = cause.cause || cause;
+                  const categoryId = causeData.category || causeData.cause_category;
+                  const categoryNames = getCategoryNames(categoryId);
+                  const categoryIds = getCategoryIds(categoryId);
+                  const avatarBgColor = getConsistentColor(causeData.id, avatarColors);
+                  const initials = getInitials(causeData.name || 'N');
 
-                // Filter out favorite causes and already selected causes
-                const filteredCauses = causes.filter((cause: any) => {
-                  const causeId = cause.id;
-                  return causeId && !favoriteCauseIds.has(causeId) && !selectedCauses.some(selected => selected.id === causeId);
-                });
-
-                if (filteredCauses.length === 0 && !(searchTrigger > 0 && searchQuery.trim()) && defaultCausesData?.results?.length === 0) {
-                  return null;
-                }
-
-                return (
-                  <TouchableOpacity
-                    onPress={() => setIsSuggestedCausesOpen(!isSuggestedCausesOpen)}
-                    style={styles.causesDropdownHeader}
-                  >
-                    <View style={styles.causesDropdownHeaderLeft}>
-                      <View style={[styles.causesDropdownDot, { backgroundColor: '#A855F7' }]} />
-                      <Text style={[styles.causesDropdownTitle, { color: '#9333EA' }]}>
-                        Suggested Causes ({filteredCauses.length})
-                      </Text>
+                  return (
+                    <View key={cause.id} style={styles.selectedCauseCard}>
+                      <View style={styles.selectedCauseContent}>
+                        <Avatar size={48} style={styles.selectedCauseAvatar}>
+                          <AvatarImage src={causeData.image} alt={causeData.name} />
+                          <AvatarFallback
+                            style={{ backgroundColor: avatarBgColor }}
+                            textStyle={styles.selectedCauseAvatarFallback}
+                          >
+                            {initials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <View style={styles.selectedCauseInfo}>
+                          <View style={styles.selectedCauseHeader}>
+                            <Text style={styles.selectedCauseName}>{causeData.name}</Text>
+                            <View style={styles.selectedCauseCategoriesContainer}>
+                              {categoryNames.map((name, index) => {
+                                const singleCategoryId = categoryIds[index];
+                                const bgColor = getCategoryColor(singleCategoryId);
+                                const textColor = getCategoryTextColor(singleCategoryId);
+                                return (
+                                  <View
+                                    key={index}
+                                    style={[styles.selectedCauseCategory, { backgroundColor: bgColor }]}
+                                  >
+                                    <Text style={[styles.selectedCauseCategoryText, { color: textColor }]}>
+                                      {name}
+                                    </Text>
+                                  </View>
+                                );
+                              })}
+                            </View>
+                          </View>
+                          <Text style={styles.selectedCauseDescription} >
+                            {truncateAtFirstPeriod(causeData.mission || causeData.description)}
+                          </Text>
+                        </View>
+                        <TouchableOpacity
+                          onPress={() => handleRemoveCause(cause.id)}
+                          style={styles.removeCauseButton}
+                        >
+                          <X size={20} color="#6B7280" />
+                        </TouchableOpacity>
+                      </View>
                     </View>
-                    {isSuggestedCausesOpen ? (
-                      <Minus size={20} color="#9333EA" />
-                    ) : (
-                      <Plus size={20} color="#9333EA" />
-                    )}
-                  </TouchableOpacity>
-                );
-              })()}
+                  );
+                })}
+              </View>
+            </View>
+          )}
 
-              {/* Causes List */}
-              {isSuggestedCausesOpen && (
-                <ScrollView style={styles.causesListScroll} nestedScrollEnabled>
-                  {(isCausesLoading || defaultCausesLoading) ? (
-                    <View style={styles.loadingContainer}>
-                      <ActivityIndicator size="small" color="#1600ff" />
-                    </View>
+          {/* Add or Remove Causes */}
+          <View style={styles.addCausesCard}>
+            <Text style={styles.addCausesTitle}>
+              Add or Remove Causes <Text style={styles.required}>*</Text>
+            </Text>
+
+            {/* Search Bar */}
+            <View style={styles.searchContainer}>
+              <Search size={20} color="#9CA3AF" style={styles.searchIcon} />
+              <TextInput
+                placeholder="Search causes or nonprofits"
+                placeholderTextColor="#9CA3AF"
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                onSubmitEditing={handleSearchKeyPress}
+                style={styles.searchInput}
+              />
+            </View>
+
+            {/* Your Causes - Only show if there are favorite causes */}
+            {favoriteCauses.length > 0 && (
+              <View style={styles.yourCausesSection}>
+                <TouchableOpacity
+                  onPress={() => setIsYourCausesOpen(!isYourCausesOpen)}
+                  style={styles.causesDropdownHeader}
+                >
+                  <View style={styles.causesDropdownHeaderLeft}>
+                    <View style={styles.causesDropdownDot} />
+                    <Text style={styles.causesDropdownTitle}>
+                      Your Causes ({favoriteCauses.length})
+                    </Text>
+                  </View>
+                  {isYourCausesOpen ? (
+                    <Minus size={20} color="#2563EB" />
                   ) : (
-                    (() => {
-                      const causes = searchTrigger > 0 && searchQuery.trim()
-                        ? (causesData?.results || [])
-                        : (defaultCausesData?.results || []);
-
-                      // Get favorite cause IDs to exclude from search results
-                      const favoriteCauseIds = new Set(
-                        favoriteCauses.map((item: any) => {
-                          const cause = item.cause || item;
-                          return cause.id;
-                        })
-                      );
-
-                      // Filter out favorite causes and already selected causes
-                      const availableCauses = causes.filter((cause: any) => {
-                        const causeId = cause.id;
-                        return causeId && !favoriteCauseIds.has(causeId) && !selectedCauses.some(selected => selected.id === causeId);
-                      });
-
-                      if (availableCauses.length === 0) {
-                        return (
-                          <Text style={styles.noCausesText}>No causes found</Text>
-                        );
-                      }
-
-                      return availableCauses.map((cause: any) => {
+                    <Plus size={20} color="#2563EB" />
+                  )}
+                </TouchableOpacity>
+                {isYourCausesOpen && (
+                  <View style={styles.causesList}>
+                    {isLoadingFavoriteCauses ? (
+                      <View style={styles.loadingContainer}>
+                        <ActivityIndicator size="small" color="#1600ff" />
+                      </View>
+                    ) : (
+                      favoriteCauses.map((item: any) => {
+                        const cause = item.cause || item;
                         const categoryId = cause.category || cause.cause_category;
                         const categoryNames = getCategoryNames(categoryId);
                         const categoryIds = getCategoryIds(categoryId);
@@ -1555,15 +1412,154 @@ export default function NewCreateCollective() {
                             </View>
                           </TouchableOpacity>
                         );
-                      });
-                    })()
+                      })
+                    )}
+                  </View>
+                )}
+              </View>
+            )}
+
+            {/* Suggested Causes List */}
+            {(() => {
+              const causes = searchTrigger > 0 && searchQuery.trim()
+                ? (causesData?.results || [])
+                : (defaultCausesData?.results || []);
+
+              // Get favorite cause IDs to exclude from search results
+              const favoriteCauseIds = new Set(
+                favoriteCauses.map((item: any) => {
+                  const cause = item.cause || item;
+                  return cause.id;
+                })
+              );
+
+              // Filter out favorite causes and already selected causes
+              const filteredCauses = causes.filter((cause: any) => {
+                const causeId = cause.id;
+                return causeId && !favoriteCauseIds.has(causeId) && !selectedCauses.some(selected => selected.id === causeId);
+              });
+
+              if (filteredCauses.length === 0 && !(searchTrigger > 0 && searchQuery.trim()) && defaultCausesData?.results?.length === 0) {
+                return null;
+              }
+
+              return (
+                <TouchableOpacity
+                  onPress={() => setIsSuggestedCausesOpen(!isSuggestedCausesOpen)}
+                  style={styles.causesDropdownHeader}
+                >
+                  <View style={styles.causesDropdownHeaderLeft}>
+                    <View style={[styles.causesDropdownDot, { backgroundColor: '#A855F7' }]} />
+                    <Text style={[styles.causesDropdownTitle, { color: '#9333EA' }]}>
+                      Suggested Causes ({filteredCauses.length})
+                    </Text>
+                  </View>
+                  {isSuggestedCausesOpen ? (
+                    <Minus size={20} color="#9333EA" />
+                  ) : (
+                    <Plus size={20} color="#9333EA" />
                   )}
-                </ScrollView>
-              )}
-            </View>
+                </TouchableOpacity>
+              );
+            })()}
+
+            {/* Causes List */}
+            {isSuggestedCausesOpen && (
+              <ScrollView style={styles.causesListScroll} nestedScrollEnabled>
+                {(isCausesLoading || defaultCausesLoading) ? (
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="small" color="#1600ff" />
+                  </View>
+                ) : (
+                  (() => {
+                    const causes = searchTrigger > 0 && searchQuery.trim()
+                      ? (causesData?.results || [])
+                      : (defaultCausesData?.results || []);
+
+                    // Get favorite cause IDs to exclude from search results
+                    const favoriteCauseIds = new Set(
+                      favoriteCauses.map((item: any) => {
+                        const cause = item.cause || item;
+                        return cause.id;
+                      })
+                    );
+
+                    // Filter out favorite causes and already selected causes
+                    const availableCauses = causes.filter((cause: any) => {
+                      const causeId = cause.id;
+                      return causeId && !favoriteCauseIds.has(causeId) && !selectedCauses.some(selected => selected.id === causeId);
+                    });
+
+                    if (availableCauses.length === 0) {
+                      return (
+                        <Text style={styles.noCausesText}>No causes found</Text>
+                      );
+                    }
+
+                    return availableCauses.map((cause: any) => {
+                      const categoryId = cause.category || cause.cause_category;
+                      const categoryNames = getCategoryNames(categoryId);
+                      const categoryIds = getCategoryIds(categoryId);
+                      const isSelected = isCauseSelected(cause.id);
+                      const avatarBgColor = getConsistentColor(cause.id, avatarColors);
+                      const initials = getInitials(cause.name || 'N');
+
+                      return (
+                        <TouchableOpacity
+                          key={cause.id}
+                          onPress={() => handleToggleCause(cause)}
+                          style={[
+                            styles.causeCard,
+                            isSelected && styles.causeCardSelected
+                          ]}
+                        >
+                          <Avatar size={48} style={styles.causeAvatar}>
+                            <AvatarImage src={cause.image} alt={cause.name} />
+                            <AvatarFallback
+                              style={{ backgroundColor: avatarBgColor }}
+                              textStyle={styles.causeAvatarFallback}
+                            >
+                              {initials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <View style={styles.causeInfo}>
+                            <View style={styles.causeHeader}>
+                              <Text style={styles.causeName}>{cause.name}</Text>
+                              <View style={styles.causeCategoriesContainer}>
+                                {categoryNames.map((name, index) => {
+                                  const singleCategoryId = categoryIds[index];
+                                  const bgColor = getCategoryColor(singleCategoryId);
+                                  const textColor = getCategoryTextColor(singleCategoryId);
+                                  return (
+                                    <View
+                                      key={index}
+                                      style={[styles.causeCategory, { backgroundColor: bgColor }]}
+                                    >
+                                      <Text style={[styles.causeCategoryText, { color: textColor }]}>
+                                        {name}
+                                      </Text>
+                                    </View>
+                                  );
+                                })}
+                              </View>
+                            </View>
+                            <Text style={styles.causeDescription}>
+                              {truncateAtFirstPeriod(cause.mission || cause.description)}
+                            </Text>
+                          </View>
+                          <View style={[styles.radioButton, isSelected && styles.radioButtonSelected]}>
+                            {isSelected && <View style={styles.radioButtonInner} />}
+                          </View>
+                        </TouchableOpacity>
+                      );
+                    });
+                  })()
+                )}
+              </ScrollView>
+            )}
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+        </View>
+      </KeyboardAwareScrollView>
 
       {/* Footer Buttons */}
       <View style={styles.footer}>
@@ -1591,7 +1587,7 @@ export default function NewCreateCollective() {
           );
         })()}
       </View>
-    </SafeAreaView>
+    </SafeAreaView >
   );
 }
 

@@ -8,9 +8,9 @@ import {
   TextInput,
   ActivityIndicator,
   Alert,
-  KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import {
@@ -345,333 +345,329 @@ export default function NewEditCollective() {
         <Text style={styles.headerTitle}>Edit Collective</Text>
       </View>
 
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardView}
-        keyboardVerticalOffset={100}
+      <KeyboardAwareScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        enableOnAndroid={true}
+        extraScrollHeight={100}
       >
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Banner */}
-          <View style={styles.banner}>
-            <View style={styles.bannerIcon}>
-              <Edit2 size={24} color="white" />
-            </View>
-            <View style={styles.bannerContent}>
-              <Text style={styles.bannerTitle}>Update Your Collective</Text>
-              <Text style={styles.bannerDescription}>
-                Make changes to your collective name, mission, or the causes you support.
-              </Text>
-            </View>
+        {/* Banner */}
+        <View style={styles.banner}>
+          <View style={styles.bannerIcon}>
+            <Edit2 size={24} color="white" />
           </View>
-
-          {/* Collective Name */}
-          <View style={styles.formSection}>
-            <View style={styles.labelRow}>
-              <Text style={styles.label}>
-                Collective Name <Text style={styles.required}>*</Text>
-              </Text>
-              <TouchableOpacity
-                onPress={() => Alert.alert('Collective Name', 'Enter the name of your collective')}
-              >
-                <HelpCircle size={16} color="#9CA3AF" />
-              </TouchableOpacity>
-            </View>
-            <TextInput
-              value={name}
-              onChangeText={setName}
-              placeholder="Enter collective name"
-              placeholderTextColor="#9CA3AF"
-              style={styles.input}
-            />
+          <View style={styles.bannerContent}>
+            <Text style={styles.bannerTitle}>Update Your Collective</Text>
+            <Text style={styles.bannerDescription}>
+              Make changes to your collective name, mission, or the causes you support.
+            </Text>
           </View>
+        </View>
 
-          {/* Description */}
-          <View style={styles.formSection}>
-            <View style={styles.labelRow}>
-              <Text style={styles.label}>
-                What Brings This Group Together? <Text style={styles.required}>*</Text>
-              </Text>
-              <TouchableOpacity
-                onPress={() => Alert.alert('Description', 'Describe what brings this group together')}
-              >
-                <HelpCircle size={16} color="#9CA3AF" />
-              </TouchableOpacity>
-            </View>
-            <TextInput
-              value={description}
-              onChangeText={setDescription}
-              placeholder="Describe what brings this group together"
-              placeholderTextColor="#9CA3AF"
-              multiline
-              numberOfLines={4}
-              style={styles.textarea}
-            />
+        {/* Collective Name */}
+        <View style={styles.formSection}>
+          <View style={styles.labelRow}>
+            <Text style={styles.label}>
+              Collective Name <Text style={styles.required}>*</Text>
+            </Text>
+            <TouchableOpacity
+              onPress={() => Alert.alert('Collective Name', 'Enter the name of your collective')}
+            >
+              <HelpCircle size={16} color="#9CA3AF" />
+            </TouchableOpacity>
           </View>
+          <TextInput
+            value={name}
+            onChangeText={setName}
+            placeholder="Enter collective name"
+            placeholderTextColor="#9CA3AF"
+            style={styles.input}
+          />
+        </View>
 
-          {/* Collective Logo */}
-          <View style={styles.formSection}>
-            <View style={styles.logoSection}>
-              <Avatar size={64} style={styles.logoAvatar}>
-                {logoType === 'upload' ? (
-                  uploadedLogoPreview ? (
-                    <AvatarImage src={uploadedLogoPreview} alt={name} />
-                  ) : (
-                    <AvatarFallback
-                      style={{ backgroundColor: '#f3f4f6' }}
-                      textStyle={styles.logoAvatarFallback}
-                    >
-                      <Camera size={32} color="#9CA3AF" />
-                    </AvatarFallback>
-                  )
+        {/* Description */}
+        <View style={styles.formSection}>
+          <View style={styles.labelRow}>
+            <Text style={styles.label}>
+              What Brings This Group Together? <Text style={styles.required}>*</Text>
+            </Text>
+            <TouchableOpacity
+              onPress={() => Alert.alert('Description', 'Describe what brings this group together')}
+            >
+              <HelpCircle size={16} color="#9CA3AF" />
+            </TouchableOpacity>
+          </View>
+          <TextInput
+            value={description}
+            onChangeText={setDescription}
+            placeholder="Describe what brings this group together"
+            placeholderTextColor="#9CA3AF"
+            multiline
+            numberOfLines={4}
+            style={styles.textarea}
+          />
+        </View>
+
+        {/* Collective Logo */}
+        <View style={styles.formSection}>
+          <View style={styles.logoSection}>
+            <Avatar size={64} style={styles.logoAvatar}>
+              {logoType === 'upload' ? (
+                uploadedLogoPreview ? (
+                  <AvatarImage src={uploadedLogoPreview} alt={name} />
                 ) : (
-                  <View style={[styles.logoLetterContainer, { backgroundColor: letterLogoColor }]}>
-                    <Text style={styles.logoLetter}>{logoLetter}</Text>
-                  </View>
-                )}
-              </Avatar>
-              <View style={styles.logoInfo}>
-                <Text style={styles.logoLabel}>Collective Logo</Text>
-                <Text style={styles.logoSubtext}>
-                  {logoType === 'letter' ? 'Letter logo' : 'Custom image'}
-                </Text>
-              </View>
-              <TouchableOpacity
-                onPress={() => setShowLogoCustomization(!showLogoCustomization)}
-                style={styles.customizeButton}
-              >
-                <Edit2 size={16} color="#111827" />
-                <Text style={styles.customizeButtonText}>
-                  {showLogoCustomization ? 'Done' : 'Customize'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-            {/* Customization Options */}
-            {showLogoCustomization && (
-              <View style={styles.customizationSection}>
-                <View style={styles.logoTypeButtons}>
-                  <TouchableOpacity
-                    onPress={() => setLogoType('letter')}
-                    style={[
-                      styles.logoTypeButton,
-                      logoType === 'letter' && styles.logoTypeButtonActive
-                    ]}
+                  <AvatarFallback
+                    style={{ backgroundColor: '#f3f4f6' }}
+                    textStyle={styles.logoAvatarFallback}
                   >
-                    <Palette size={16} color={logoType === 'letter' ? 'white' : '#111827'} />
-                    <Text style={[
-                      styles.logoTypeButtonText,
-                      logoType === 'letter' && styles.logoTypeButtonTextActive
-                    ]}>
-                      Letter
-                    </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => setLogoType('upload')}
-                    style={[
-                      styles.logoTypeButton,
-                      logoType === 'upload' && styles.logoTypeButtonActive
-                    ]}
-                  >
-                    <Camera size={16} color={logoType === 'upload' ? 'white' : '#111827'} />
-                    <Text style={[
-                      styles.logoTypeButtonText,
-                      logoType === 'upload' && styles.logoTypeButtonTextActive
-                    ]}>
-                      Upload
-                    </Text>
-                  </TouchableOpacity>
+                    <Camera size={32} color="#9CA3AF" />
+                  </AvatarFallback>
+                )
+              ) : (
+                <View style={[styles.logoLetterContainer, { backgroundColor: letterLogoColor }]}>
+                  <Text style={styles.logoLetter}>{logoLetter}</Text>
                 </View>
-
-                {logoType === 'letter' && (
-                  <View style={styles.colorSection}>
-                    <Text style={styles.colorSectionTitle}>Background Color</Text>
-                    <View style={styles.colorSwatchesContainer}>
-                      {colorSwatches.map((color) => (
-                        <TouchableOpacity
-                          key={color}
-                          onPress={() => handleColorSelect(color)}
-                          style={[
-                            styles.colorSwatch,
-                            { backgroundColor: color },
-                            letterLogoColor === color && styles.colorSwatchSelected
-                          ]}
-                        />
-                      ))}
-                    </View>
-                  </View>
-                )}
-
-                {logoType === 'upload' && (
-                  <TouchableOpacity
-                    onPress={handleFileChange}
-                    style={styles.uploadButton}
-                  >
-                    <Camera size={16} color="#111827" />
-                    <Text style={styles.uploadButtonText}>Choose from Gallery</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-            )}
+              )}
+            </Avatar>
+            <View style={styles.logoInfo}>
+              <Text style={styles.logoLabel}>Collective Logo</Text>
+              <Text style={styles.logoSubtext}>
+                {logoType === 'letter' ? 'Letter logo' : 'Custom image'}
+              </Text>
+            </View>
+            <TouchableOpacity
+              onPress={() => setShowLogoCustomization(!showLogoCustomization)}
+              style={styles.customizeButton}
+            >
+              <Edit2 size={16} color="#111827" />
+              <Text style={styles.customizeButtonText}>
+                {showLogoCustomization ? 'Done' : 'Customize'}
+              </Text>
+            </TouchableOpacity>
           </View>
 
-          {/* Causes Management Section */}
-          <View style={styles.causesSection}>
-            {/* Selected Causes */}
-            <View style={styles.selectedCausesCard}>
-              <Text style={styles.selectedCausesTitle}>
-                Selected Causes ({selectedCauses.length}/10)
-              </Text>
-              {selectedCauses.length > 0 ? (
-                <View style={styles.selectedCausesList}>
-                  {selectedCauses.map((cause) => {
-                    const causeData = cause.cause || cause;
-                    const categoryId = causeData.category || causeData.cause_category;
-                    const category = getCategoryById(categoryId);
-                    const categoryName = category?.name || 'Uncategorized';
-                    const categoryColor = category?.text || '#10B981';
-                    const avatarBgColor = getConsistentColor(causeData.id, avatarColors);
-                    const initials = getInitials(causeData.name || 'N');
+          {/* Customization Options */}
+          {showLogoCustomization && (
+            <View style={styles.customizationSection}>
+              <View style={styles.logoTypeButtons}>
+                <TouchableOpacity
+                  onPress={() => setLogoType('letter')}
+                  style={[
+                    styles.logoTypeButton,
+                    logoType === 'letter' && styles.logoTypeButtonActive
+                  ]}
+                >
+                  <Palette size={16} color={logoType === 'letter' ? 'white' : '#111827'} />
+                  <Text style={[
+                    styles.logoTypeButtonText,
+                    logoType === 'letter' && styles.logoTypeButtonTextActive
+                  ]}>
+                    Letter
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => setLogoType('upload')}
+                  style={[
+                    styles.logoTypeButton,
+                    logoType === 'upload' && styles.logoTypeButtonActive
+                  ]}
+                >
+                  <Camera size={16} color={logoType === 'upload' ? 'white' : '#111827'} />
+                  <Text style={[
+                    styles.logoTypeButtonText,
+                    logoType === 'upload' && styles.logoTypeButtonTextActive
+                  ]}>
+                    Upload
+                  </Text>
+                </TouchableOpacity>
+              </View>
 
-                    return (
-                      <View key={cause.id} style={styles.selectedCauseCard}>
-                        <View style={styles.selectedCauseContent}>
-                          <Avatar size={48} style={styles.selectedCauseAvatar}>
-                            <AvatarImage src={causeData.image} alt={causeData.name} />
-                            <AvatarFallback
-                              style={{ backgroundColor: avatarBgColor }}
-                              textStyle={styles.selectedCauseAvatarFallback}
-                            >
-                              {initials}
-                            </AvatarFallback>
-                          </Avatar>
-                          <View style={styles.selectedCauseInfo}>
-                            <View style={styles.selectedCauseHeader}>
-                              <Text style={styles.selectedCauseName}>{causeData.name}</Text>
-                              {/* <View style={[styles.selectedCauseCategory, { backgroundColor: `${categoryColor}20` }]}>
+              {logoType === 'letter' && (
+                <View style={styles.colorSection}>
+                  <Text style={styles.colorSectionTitle}>Background Color</Text>
+                  <View style={styles.colorSwatchesContainer}>
+                    {colorSwatches.map((color) => (
+                      <TouchableOpacity
+                        key={color}
+                        onPress={() => handleColorSelect(color)}
+                        style={[
+                          styles.colorSwatch,
+                          { backgroundColor: color },
+                          letterLogoColor === color && styles.colorSwatchSelected
+                        ]}
+                      />
+                    ))}
+                  </View>
+                </View>
+              )}
+
+              {logoType === 'upload' && (
+                <TouchableOpacity
+                  onPress={handleFileChange}
+                  style={styles.uploadButton}
+                >
+                  <Camera size={16} color="#111827" />
+                  <Text style={styles.uploadButtonText}>Choose from Gallery</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
+        </View>
+
+        {/* Causes Management Section */}
+        <View style={styles.causesSection}>
+          {/* Selected Causes */}
+          <View style={styles.selectedCausesCard}>
+            <Text style={styles.selectedCausesTitle}>
+              Selected Causes ({selectedCauses.length}/10)
+            </Text>
+            {selectedCauses.length > 0 ? (
+              <View style={styles.selectedCausesList}>
+                {selectedCauses.map((cause) => {
+                  const causeData = cause.cause || cause;
+                  const categoryId = causeData.category || causeData.cause_category;
+                  const category = getCategoryById(categoryId);
+                  const categoryName = category?.name || 'Uncategorized';
+                  const categoryColor = category?.text || '#10B981';
+                  const avatarBgColor = getConsistentColor(causeData.id, avatarColors);
+                  const initials = getInitials(causeData.name || 'N');
+
+                  return (
+                    <View key={cause.id} style={styles.selectedCauseCard}>
+                      <View style={styles.selectedCauseContent}>
+                        <Avatar size={48} style={styles.selectedCauseAvatar}>
+                          <AvatarImage src={causeData.image} alt={causeData.name} />
+                          <AvatarFallback
+                            style={{ backgroundColor: avatarBgColor }}
+                            textStyle={styles.selectedCauseAvatarFallback}
+                          >
+                            {initials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <View style={styles.selectedCauseInfo}>
+                          <View style={styles.selectedCauseHeader}>
+                            <Text style={styles.selectedCauseName}>{causeData.name}</Text>
+                            {/* <View style={[styles.selectedCauseCategory, { backgroundColor: `${categoryColor}20` }]}>
                                 <Text style={[styles.selectedCauseCategoryText, { color: categoryColor }]}>
                                   {categoryName}
                                 </Text>
                               </View> */}
-                            </View>
-                            <Text style={styles.selectedCauseDescription}>
-                              {truncateAtFirstPeriod(causeData.mission || causeData.description)}
-                            </Text>
                           </View>
-                          <TouchableOpacity
-                            onPress={() => handleRemoveCause(cause.id)}
-                            style={styles.removeCauseButton}
-                          >
-                            <X size={20} color="#6B7280" />
-                          </TouchableOpacity>
+                          <Text style={styles.selectedCauseDescription}>
+                            {truncateAtFirstPeriod(causeData.mission || causeData.description)}
+                          </Text>
                         </View>
+                        <TouchableOpacity
+                          onPress={() => handleRemoveCause(cause.id)}
+                          style={styles.removeCauseButton}
+                        >
+                          <X size={20} color="#6B7280" />
+                        </TouchableOpacity>
                       </View>
-                    );
-                  })}
-                </View>
-              ) : (
-                <Text style={styles.noCausesText}>No causes selected</Text>
-              )}
+                    </View>
+                  );
+                })}
+              </View>
+            ) : (
+              <Text style={styles.noCausesText}>No causes selected</Text>
+            )}
+          </View>
+
+          {/* Add or Remove Causes */}
+          <View style={styles.addCausesCard}>
+            <Text style={styles.addCausesTitle}>
+              Add or Remove Causes <Text style={styles.required}>*</Text>
+            </Text>
+
+            {/* Search Bar */}
+            <View style={styles.searchContainer}>
+              <Search size={20} color="#9CA3AF" style={styles.searchIcon} />
+              <TextInput
+                placeholder="Search nonprofits..."
+                placeholderTextColor="#9CA3AF"
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                onSubmitEditing={handleSearchKeyPress}
+                style={styles.searchInput}
+              />
             </View>
 
-            {/* Add or Remove Causes */}
-            <View style={styles.addCausesCard}>
-              <Text style={styles.addCausesTitle}>
-                Add or Remove Causes <Text style={styles.required}>*</Text>
-              </Text>
+            {/* Causes List */}
+            <ScrollView style={styles.causesListScroll} nestedScrollEnabled>
+              {(isCausesLoading) ? (
+                <View style={styles.loadingContainer}>
+                  <ActivityIndicator size="small" color="#1600ff" />
+                </View>
+              ) : (
+                (() => {
+                  const causes = searchTrigger > 0 && searchQuery.trim()
+                    ? (causesData?.results || [])
+                    : (defaultCausesData?.results || []);
 
-              {/* Search Bar */}
-              <View style={styles.searchContainer}>
-                <Search size={20} color="#9CA3AF" style={styles.searchIcon} />
-                <TextInput
-                  placeholder="Search nonprofits..."
-                  placeholderTextColor="#9CA3AF"
-                  value={searchQuery}
-                  onChangeText={setSearchQuery}
-                  onSubmitEditing={handleSearchKeyPress}
-                  style={styles.searchInput}
-                />
-              </View>
+                  // Filter out already selected causes
+                  const availableCauses = causes.filter((cause: any) =>
+                    !selectedCauses.some(selected => selected.id === cause.id)
+                  );
 
-              {/* Causes List */}
-              <ScrollView style={styles.causesListScroll} nestedScrollEnabled>
-                {(isCausesLoading) ? (
-                  <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="small" color="#1600ff" />
-                  </View>
-                ) : (
-                  (() => {
-                    const causes = searchTrigger > 0 && searchQuery.trim()
-                      ? (causesData?.results || [])
-                      : (defaultCausesData?.results || []);
-
-                    // Filter out already selected causes
-                    const availableCauses = causes.filter((cause: any) =>
-                      !selectedCauses.some(selected => selected.id === cause.id)
+                  if (availableCauses.length === 0) {
+                    return (
+                      <Text style={styles.noCausesText}>No causes found</Text>
                     );
+                  }
 
-                    if (availableCauses.length === 0) {
-                      return (
-                        <Text style={styles.noCausesText}>No causes found</Text>
-                      );
-                    }
+                  return availableCauses.map((cause: any) => {
+                    const categoryId = cause.category || cause.cause_category;
+                    const category = getCategoryById(categoryId);
+                    const categoryName = category?.name || 'Uncategorized';
+                    const categoryColor = category?.text || '#10B981';
+                    const isSelected = isCauseSelected(cause.id);
+                    const avatarBgColor = getConsistentColor(cause.id, avatarColors);
+                    const initials = getInitials(cause.name || 'N');
 
-                    return availableCauses.map((cause: any) => {
-                      const categoryId = cause.category || cause.cause_category;
-                      const category = getCategoryById(categoryId);
-                      const categoryName = category?.name || 'Uncategorized';
-                      const categoryColor = category?.text || '#10B981';
-                      const isSelected = isCauseSelected(cause.id);
-                      const avatarBgColor = getConsistentColor(cause.id, avatarColors);
-                      const initials = getInitials(cause.name || 'N');
-
-                      return (
-                        <TouchableOpacity
-                          key={cause.id}
-                          onPress={() => handleToggleCause(cause)}
-                          style={[
-                            styles.causeCard,
-                            isSelected && styles.causeCardSelected
-                          ]}
-                        >
-                          <Avatar size={48} style={styles.causeAvatar}>
-                            <AvatarImage src={cause.image} alt={cause.name} />
-                            <AvatarFallback
-                              style={{ backgroundColor: avatarBgColor }}
-                              textStyle={styles.causeAvatarFallback}
-                            >
-                              {initials}
-                            </AvatarFallback>
-                          </Avatar>
-                          <View style={styles.causeInfo}>
-                            <View style={styles.causeHeader}>
-                              <Text style={styles.causeName}>{cause.name}</Text>
-                              {/* <View style={[styles.causeCategory, { backgroundColor: `${categoryColor}20` }]}>
+                    return (
+                      <TouchableOpacity
+                        key={cause.id}
+                        onPress={() => handleToggleCause(cause)}
+                        style={[
+                          styles.causeCard,
+                          isSelected && styles.causeCardSelected
+                        ]}
+                      >
+                        <Avatar size={48} style={styles.causeAvatar}>
+                          <AvatarImage src={cause.image} alt={cause.name} />
+                          <AvatarFallback
+                            style={{ backgroundColor: avatarBgColor }}
+                            textStyle={styles.causeAvatarFallback}
+                          >
+                            {initials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <View style={styles.causeInfo}>
+                          <View style={styles.causeHeader}>
+                            <Text style={styles.causeName}>{cause.name}</Text>
+                            {/* <View style={[styles.causeCategory, { backgroundColor: `${categoryColor}20` }]}>
                                 <Text style={[styles.causeCategoryText, { color: categoryColor }]}>
                                   {categoryName}
                                 </Text>
                               </View> */}
-                            </View>
-                            <Text style={styles.causeDescription}>
-                              {truncateAtFirstPeriod(cause.mission || cause.description)}
-                            </Text>
                           </View>
-                          <View style={[styles.radioButton, isSelected && styles.radioButtonSelected]}>
-                            {isSelected && <View style={styles.radioButtonInner} />}
-                          </View>
-                        </TouchableOpacity>
-                      );
-                    });
-                  })()
-                )}
-              </ScrollView>
-            </View>
+                          <Text style={styles.causeDescription}>
+                            {truncateAtFirstPeriod(cause.mission || cause.description)}
+                          </Text>
+                        </View>
+                        <View style={[styles.radioButton, isSelected && styles.radioButtonSelected]}>
+                          {isSelected && <View style={styles.radioButtonInner} />}
+                        </View>
+                      </TouchableOpacity>
+                    );
+                  });
+                })()
+              )}
+            </ScrollView>
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+        </View>
+      </KeyboardAwareScrollView>
 
       {/* Footer Buttons */}
       <View style={styles.footer}>
@@ -699,7 +695,7 @@ export default function NewEditCollective() {
           )}
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </SafeAreaView >
   );
 }
 

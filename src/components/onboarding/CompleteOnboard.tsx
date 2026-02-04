@@ -1128,15 +1128,15 @@ import {
   StyleSheet,
   TouchableOpacity,
   SafeAreaView,
-  ScrollView,
   ActivityIndicator,
   TextInput,
   Dimensions,
-  KeyboardAvoidingView,
   Platform,
   FlatList,
+  ScrollView,
 } from 'react-native';
-import { Heart, Search, Check, Loader2, ArrowRight, Zap } from 'lucide-react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { Heart, Search, Check, Loader2, ArrowRight } from 'lucide-react-native';
 import { useNavigation, useRoute, CommonActions } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -1428,9 +1428,12 @@ export default function CompleteOnboard() {
           end={{ x: 1, y: 1 }}
           style={{ flex: 1 }}
         >
-          <ScrollView
+          <KeyboardAwareScrollView
             contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}
+            enableOnAndroid={true}
+            extraScrollHeight={Platform.OS === 'ios' ? 20 : 0}
+            keyboardShouldPersistTaps="handled"
           >
             <View style={styles.card}>
               {/* Progress Indicator - Step 4 */}
@@ -1488,7 +1491,7 @@ export default function CompleteOnboard() {
                   <View style={styles.optionIconContainer}>
                     <View style={styles.surpriseIconCircle}>
                       {/* <Text style={{ fontSize: 24, color: 'white' }}>✨</Text> */}
-                      <Zap size={32} color="white" />
+                      <Heart size={32} color="white" />
                     </View>
                   </View>
                   <Text style={styles.optionTitle}>Surprise Me</Text>
@@ -1536,7 +1539,7 @@ export default function CompleteOnboard() {
                 </View>
               )}
             </View>
-          </ScrollView>
+          </KeyboardAwareScrollView>
         </LinearGradient>
       </View>
     );
@@ -1552,9 +1555,12 @@ export default function CompleteOnboard() {
           end={{ x: 1, y: 1 }}
           style={{ flex: 1 }}
         >
-          <ScrollView
+          <KeyboardAwareScrollView
             contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}
+            enableOnAndroid={true}
+            extraScrollHeight={Platform.OS === 'ios' ? 20 : 0}
+            keyboardShouldPersistTaps="handled"
           >
             <View style={styles.card}>
               {/* Progress Indicator - Step 4 */}
@@ -1639,7 +1645,7 @@ export default function CompleteOnboard() {
                                       key={index}
                                       style={[
                                         styles.causeCategoryBadge,
-                                        { backgroundColor: cat.background }
+                                        { backgroundColor: (cat as any).background }
                                       ]}
                                     >
                                       <Text style={styles.causeCategoryText}>
@@ -1693,7 +1699,7 @@ export default function CompleteOnboard() {
                 </TouchableOpacity>
               </View>
             </View>
-          </ScrollView>
+          </KeyboardAwareScrollView>
         </LinearGradient>
       </View>
     );
@@ -1708,164 +1714,162 @@ export default function CompleteOnboard() {
         end={{ x: 1, y: 1 }}
         style={{ flex: 1 }}
       >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={{ flex: 1 }}
+        <KeyboardAwareScrollView
+          contentContainerStyle={styles.scrollContentBrowse}
+          showsVerticalScrollIndicator={false}
+          enableOnAndroid={true}
+          extraScrollHeight={Platform.OS === 'ios' ? 20 : 0}
+          keyboardShouldPersistTaps="handled"
         >
-          <ScrollView
-            contentContainerStyle={styles.scrollContentBrowse}
-            showsVerticalScrollIndicator={false}
-          >
-            <View style={styles.card}>
-              {/* Progress Indicator - Step 4 */}
-              <View style={styles.stepIndicator}>
-                <View style={styles.stepBar}>
-                  <View style={[styles.stepDot, styles.stepDotInactive]} />
-                  <View style={[styles.stepDot, styles.stepDotInactive]} />
-                  <View style={[styles.stepDot, styles.stepDotInactive]} />
-                  <View style={[styles.stepDot, styles.stepDotActive]} />
-                </View>
-              </View>
-
-              {/* Header */}
-              <View style={styles.iconContainer}>
-                <View style={styles.gradientIconCircle}>
-                  <Heart size={40} color="white" />
-                </View>
-              </View>
-
-              <Text style={styles.title}>
-                Set Up Your Donation Box
-              </Text>
-              <Text style={styles.description}>
-                Choose nonprofits to support. Your donation gets split evenly among them. You can change these anytime!
-              </Text>
-
-              {/* Browse Nonprofits Section */}
-              <View style={styles.section}>
-                <View style={styles.sectionHeader}>
-                  <Text style={styles.sectionTitle}>Browse Nonprofits</Text>
-                  <TouchableOpacity
-                    onPress={handleChangeMethod}
-                    style={styles.changeMethodButton}
-                  >
-                    <Text style={styles.changeMethodText}>Change Method</Text>
-                  </TouchableOpacity>
-                </View>
-
-                {/* Search Bar */}
-                <View style={styles.searchContainer}>
-                  <Search size={20} color="#9ca3af" style={styles.searchIcon} />
-                  <TextInput
-                    style={styles.searchInput}
-                    placeholder="Search for nonprofits..."
-                    placeholderTextColor="#9ca3af"
-                    value={searchQuery}
-                    onChangeText={setSearchQuery}
-                    onSubmitEditing={handleSearch}
-                  />
-                </View>
-
-                {/* Select Nonprofits Count */}
-                <View style={styles.countContainer}>
-                  <Text style={styles.countText}>
-                    Select Nonprofits ({selectedCauses.length})
-                  </Text>
-                </View>
-
-                {/* Causes List */}
-                {isLoadingBrowse ? (
-                  <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="large" color="#9ca3af" />
-                  </View>
-                ) : browseCauses.length > 0 ? (
-                  <View style={styles.causesListContainer}>
-                    {browseCauses.map((cause: any) => {
-                      const isSelected = selectedCauses.includes(cause.id);
-                      const avatarBgColor = getConsistentColor(cause.id, avatarColors);
-                      const initials = getInitials(cause.name);
-                      const categoryInfo = getCategoryInfo(cause.category);
-
-                      return (
-                        <View key={cause.id} style={{ marginBottom: 12 }}>
-                          <TouchableOpacity
-                            onPress={() => handleCauseToggle(cause.id)}
-                            style={[
-                              styles.causeCard,
-                              isSelected && styles.causeCardSelected
-                            ]}
-                            activeOpacity={0.8}
-                          >
-                            <View style={styles.causeCardContent}>
-                              <Avatar size={48} style={{ ...styles.causeAvatar, borderRadius: 8, overflow: 'hidden' }}>
-                                <AvatarImage src={cause.image} style={{ width: '100%', height: '100%', borderRadius: 8 }} />
-                                <AvatarFallback
-                                  style={{ backgroundColor: avatarBgColor, borderRadius: 8 }}
-                                  textStyle={{ color: '#FFFFFF', fontSize: 14, fontFamily: 'Outfit-Bold' }}
-                                >
-                                  {initials}
-                                </AvatarFallback>
-                              </Avatar>
-                              <View style={styles.causeInfo}>
-                                <Text style={styles.causeName}>
-                                  {cause.name}
-                                </Text>
-                                <View style={styles.causeCategoriesContainer}>
-                                  {categoryInfo.map((cat: any, index: number) => (
-                                    <View
-                                      key={index}
-                                      style={[
-                                        styles.causeCategoryBadge,
-                                        { backgroundColor: cat.background }
-                                      ]}
-                                    >
-                                      <Text style={styles.causeCategoryText}>
-                                        {cat.name}
-                                      </Text>
-                                    </View>
-                                  ))}
-                                </View>
-                              </View>
-                              {isSelected && (
-                                <Check size={24} color="#3b82f6" />
-                              )}
-                            </View>
-                          </TouchableOpacity>
-                        </View>
-                      );
-                    })}
-                  </View>
-                ) : (
-                  <View style={styles.emptyContainer}>
-                    <Text style={styles.emptyText}>No nonprofits found</Text>
-                  </View>
-                )}
-              </View>
-
-              {/* Footer Navigation */}
-              <View style={styles.footerButtons}>
-                <TouchableOpacity
-                  onPress={handleChangeMethod}
-                  style={styles.backButton}
-                >
-                  <Text style={styles.backButtonText}>Back</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={handleStartWithNonprofits}
-                  disabled={selectedCauses.length === 0 || createBoxMutation.isPending}
-                  style={[
-                    styles.startButton,
-                    (selectedCauses.length === 0 || createBoxMutation.isPending) && styles.startButtonDisabled
-                  ]}
-                >
-                  <Text style={styles.startButtonText}>
-                    {createBoxMutation.isPending ? 'Creating...' : `Start with ${selectedCauses.length} Nonprofit${selectedCauses.length < 2 ? '' : 's'}`}
-                  </Text>
-                </TouchableOpacity>
+          <View style={styles.card}>
+            {/* Progress Indicator - Step 4 */}
+            <View style={styles.stepIndicator}>
+              <View style={styles.stepBar}>
+                <View style={[styles.stepDot, styles.stepDotInactive]} />
+                <View style={[styles.stepDot, styles.stepDotInactive]} />
+                <View style={[styles.stepDot, styles.stepDotInactive]} />
+                <View style={[styles.stepDot, styles.stepDotActive]} />
               </View>
             </View>
-          </ScrollView>
-        </KeyboardAvoidingView>
+
+            {/* Header */}
+            <View style={styles.iconContainer}>
+              <View style={styles.gradientIconCircle}>
+                <Heart size={40} color="white" />
+              </View>
+            </View>
+
+            <Text style={styles.title}>
+              Set Up Your Donation Box
+            </Text>
+            <Text style={styles.description}>
+              Choose nonprofits to support. Your donation gets split evenly among them. You can change these anytime!
+            </Text>
+
+            {/* Browse Nonprofits Section */}
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>Browse Nonprofits</Text>
+                <TouchableOpacity
+                  onPress={handleChangeMethod}
+                  style={styles.changeMethodButton}
+                >
+                  <Text style={styles.changeMethodText}>Change Method</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Search Bar */}
+              <View style={styles.searchContainer}>
+                <Search size={20} color="#9ca3af" style={styles.searchIcon} />
+                <TextInput
+                  style={styles.searchInput}
+                  placeholder="Search for nonprofits..."
+                  placeholderTextColor="#9ca3af"
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  onSubmitEditing={handleSearch}
+                />
+              </View>
+
+              {/* Select Nonprofits Count */}
+              <View style={styles.countContainer}>
+                <Text style={styles.countText}>
+                  Select Nonprofits ({selectedCauses.length})
+                </Text>
+              </View>
+
+              {/* Causes List */}
+              {isLoadingBrowse ? (
+                <View style={styles.loadingContainer}>
+                  <ActivityIndicator size="large" color="#9ca3af" />
+                </View>
+              ) : browseCauses.length > 0 ? (
+                <View style={styles.causesListContainer}>
+                  {browseCauses.map((cause: any) => {
+                    const isSelected = selectedCauses.includes(cause.id);
+                    const avatarBgColor = getConsistentColor(cause.id, avatarColors);
+                    const initials = getInitials(cause.name);
+                    const categoryInfo = getCategoryInfo(cause.category);
+
+                    return (
+                      <View key={cause.id} style={{ marginBottom: 12 }}>
+                        <TouchableOpacity
+                          onPress={() => handleCauseToggle(cause.id)}
+                          style={[
+                            styles.causeCard,
+                            isSelected && styles.causeCardSelected
+                          ]}
+                          activeOpacity={0.8}
+                        >
+                          <View style={styles.causeCardContent}>
+                            <Avatar size={48} style={{ ...styles.causeAvatar, borderRadius: 8, overflow: 'hidden' }}>
+                              <AvatarImage src={cause.image} style={{ width: '100%', height: '100%', borderRadius: 8 }} />
+                              <AvatarFallback
+                                style={{ backgroundColor: avatarBgColor, borderRadius: 8 }}
+                                textStyle={{ color: '#FFFFFF', fontSize: 14, fontFamily: 'Outfit-Bold' }}
+                              >
+                                {initials}
+                              </AvatarFallback>
+                            </Avatar>
+                            <View style={styles.causeInfo}>
+                              <Text style={styles.causeName}>
+                                {cause.name}
+                              </Text>
+                              <View style={styles.causeCategoriesContainer}>
+                                {categoryInfo.map((cat: any, index: number) => (
+                                  <View
+                                    key={index}
+                                    style={[
+                                      styles.causeCategoryBadge,
+                                      { backgroundColor: cat.background }
+                                    ]}
+                                  >
+                                    <Text style={styles.causeCategoryText}>
+                                      {cat.name}
+                                    </Text>
+                                  </View>
+                                ))}
+                              </View>
+                            </View>
+                            {isSelected && (
+                              <Check size={24} color="#3b82f6" />
+                            )}
+                          </View>
+                        </TouchableOpacity>
+                      </View>
+                    );
+                  })}
+                </View>
+              ) : (
+                <View style={styles.emptyContainer}>
+                  <Text style={styles.emptyText}>No nonprofits found</Text>
+                </View>
+              )}
+            </View>
+
+            {/* Footer Navigation */}
+            <View style={styles.footerButtons}>
+              <TouchableOpacity
+                onPress={handleChangeMethod}
+                style={styles.backButton}
+              >
+                <Text style={styles.backButtonText}>Back</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleStartWithNonprofits}
+                disabled={selectedCauses.length === 0 || createBoxMutation.isPending}
+                style={[
+                  styles.startButton,
+                  (selectedCauses.length === 0 || createBoxMutation.isPending) && styles.startButtonDisabled
+                ]}
+              >
+                <Text style={styles.startButtonText}>
+                  {createBoxMutation.isPending ? 'Creating...' : `Start with ${selectedCauses.length} Nonprofit${selectedCauses.length < 2 ? '' : 's'}`}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </KeyboardAwareScrollView>
       </LinearGradient>
     </View>
   );

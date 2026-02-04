@@ -10,6 +10,7 @@ import {
   Platform,
   ActivityIndicator,
 } from 'react-native'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import LinearGradient from 'react-native-linear-gradient'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { ArrowLeft } from 'lucide-react-native'
@@ -57,80 +58,82 @@ export default function ForgotPassword() {
         end={{ x: 1, y: 1 }}
         style={styles.gradient}
       >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        <KeyboardAwareScrollView
           style={styles.keyboardView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          enableOnAndroid={true}
+          extraScrollHeight={Platform.OS === 'ios' ? 20 : 0}
+          keyboardShouldPersistTaps="handled"
         >
-          <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-            <View style={styles.card}>
-              {/* Back Button */}
-              <TouchableOpacity
-                style={styles.backButton}
-                onPress={() => navigation.navigate('Login' as never)}
-              >
-                <ArrowLeft size={16} color="#6b7280" />
-                <Text style={styles.backButtonText}>Back to login</Text>
-              </TouchableOpacity>
+          <View style={styles.card}>
+            {/* Back Button */}
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => navigation.navigate('Login' as never)}
+            >
+              <ArrowLeft size={16} color="#6b7280" />
+              <Text style={styles.backButtonText}>Back to login</Text>
+            </TouchableOpacity>
 
-              {/* Title and Subtitle */}
-              <View style={styles.header}>
-                <Text style={styles.title}>Forgot your password?</Text>
-                <Text style={styles.subtitle}>
-                  No worries! Enter your email address and we'll send you a verification code to reset your password.
-                </Text>
-              </View>
-
-              {/* Form */}
-              <View style={styles.form}>
-                <View style={styles.inputGroup}>
-                  <Text style={styles.label}>
-                    Email <Text style={styles.required}>*</Text>
-                  </Text>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="janedoe@example.com"
-                    placeholderTextColor={PrimaryGrey}
-                    value={email}
-                    onChangeText={setEmail}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                  />
-                </View>
-
-                <TouchableOpacity
-                  style={[
-                    styles.submitButton,
-                    (forgotPasswordMutation.isPending || !email.trim()) && styles.submitButtonDisabled
-                  ]}
-                  onPress={handleSubmit}
-                  disabled={forgotPasswordMutation.isPending || !email.trim()}
-                >
-                  {forgotPasswordMutation.isPending ? (
-                    <View style={styles.loadingContainer}>
-                      <ActivityIndicator size="small" color="white" />
-                      <Text style={styles.loadingText}>Sending code...</Text>
-                    </View>
-                  ) : (
-                    <Text style={styles.submitButtonText}>Send verification code</Text>
-                  )}
-                </TouchableOpacity>
-              </View>
-
-              {/* Footer */}
-              <View style={styles.footer}>
-                <Text style={styles.footerText}>
-                  Remember your password?{' '}
-                  <Text
-                    style={styles.footerLink}
-                    onPress={() => navigation.navigate('Login' as never)}
-                  >
-                    Sign in
-                  </Text>
-                </Text>
-              </View>
+            {/* Title and Subtitle */}
+            <View style={styles.header}>
+              <Text style={styles.title}>Forgot your password?</Text>
+              <Text style={styles.subtitle}>
+                No worries! Enter your email address and we'll send you a verification code to reset your password.
+              </Text>
             </View>
-          </ScrollView>
-        </KeyboardAvoidingView>
+
+            {/* Form */}
+            <View style={styles.form}>
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>
+                  Email <Text style={styles.required}>*</Text>
+                </Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="janedoe@example.com"
+                  placeholderTextColor={PrimaryGrey}
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                />
+              </View>
+
+              <TouchableOpacity
+                style={[
+                  styles.submitButton,
+                  (forgotPasswordMutation.isPending || !email.trim()) && styles.submitButtonDisabled
+                ]}
+                onPress={handleSubmit}
+                disabled={forgotPasswordMutation.isPending || !email.trim()}
+              >
+                {forgotPasswordMutation.isPending ? (
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="small" color="white" />
+                    <Text style={styles.loadingText}>Sending code...</Text>
+                  </View>
+                ) : (
+                  <Text style={styles.submitButtonText}>Send verification code</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+
+            {/* Footer */}
+            <View style={styles.footer}>
+              <Text style={styles.footerText}>
+                Remember your password?{' '}
+                <Text
+                  style={styles.footerLink}
+                  onPress={() => navigation.navigate('Login' as never)}
+                >
+                  Sign in
+                </Text>
+              </Text>
+            </View>
+          </View>
+        </KeyboardAwareScrollView>
       </LinearGradient>
     </View>
   )

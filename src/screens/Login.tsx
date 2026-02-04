@@ -11,6 +11,7 @@ import {
   Platform,
   ActivityIndicator,
 } from 'react-native'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import LinearGradient from 'react-native-linear-gradient'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useNavigation, useRoute } from '@react-navigation/native'
@@ -350,151 +351,153 @@ export default function Login() {
         end={{ x: 1, y: 1 }}
         style={styles.gradient}
       >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        <KeyboardAwareScrollView
           style={styles.keyboardView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          enableOnAndroid={true}
+          extraScrollHeight={Platform.OS === 'ios' ? 20 : 0}
+          keyboardShouldPersistTaps="handled"
         >
-          <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-            <View style={styles.card}>
-              {/* Title and Subtitle */}
-              <View style={styles.header}>
-                <Text style={styles.title}>Welcome back</Text>
-                <Text style={styles.subtitle}>
-                  Don't have an account?{' '}
-                  <Text
-                    style={styles.link}
-                    onPress={() => navigation.navigate('ClaimProfile' as never, { redirectTo, redirectParams } as never)}
-                  >
-                    Sign up
-                  </Text>
+          <View style={styles.card}>
+            {/* Title and Subtitle */}
+            <View style={styles.header}>
+              <Text style={styles.title}>Welcome back</Text>
+              <Text style={styles.subtitle}>
+                Don't have an account?{' '}
+                <Text
+                  style={styles.link}
+                  onPress={() => navigation.navigate('ClaimProfile' as never, { redirectTo, redirectParams } as never)}
+                >
+                  Sign up
                 </Text>
-              </View>
-
-
-
-              {/* Apple Login Button */}
-              <TouchableOpacity
-                style={[styles.appleButton, (isAppleLoading || appleCallbackMutation.isPending) && styles.appleButtonDisabled]}
-                onPress={handleAppleLogin}
-                disabled={isAppleLoading || appleCallbackMutation.isPending}
-              >
-                {(isAppleLoading || appleCallbackMutation.isPending) ? (
-                  <ActivityIndicator size="small" color={PrimaryGrey} />
-                ) : (
-                  <View style={styles.appleIconPlaceholder}>
-                    <SvgXml xml={appleXml} width={20} height={20} />
-                  </View>
-                )}
-                <Text style={styles.appleButtonText}>
-                  {(isAppleLoading || appleCallbackMutation.isPending) ? 'Signing in...' : 'Continue with Apple'}
-                </Text>
-              </TouchableOpacity>
-
-              {/* Google Login Button */}
-              <TouchableOpacity
-                style={[styles.googleButton, (isGoogleLoading || googleCallbackMutation.isPending) && styles.googleButtonDisabled]}
-                onPress={handleGoogleLogin}
-                disabled={isGoogleLoading || googleCallbackMutation.isPending}
-              >
-                {(isGoogleLoading || googleCallbackMutation.isPending) ? (
-                  <ActivityIndicator size="small" color={PrimaryGrey} />
-                ) : (
-                  <View style={styles.googleIconPlaceholder}>
-                    <SvgXml xml={googleXml} width={16} height={16} />
-                  </View>
-                )}
-                <Text style={styles.googleButtonText}>
-                  {(isGoogleLoading || googleCallbackMutation.isPending) ? 'Signing in...' : 'Continue with Google'}
-                </Text>
-              </TouchableOpacity>
-
-              {/* Divider */}
-              <View style={styles.divider}>
-                <View style={styles.dividerLine} />
-                <Text style={styles.dividerText}>Or continue with email</Text>
-                <View style={styles.dividerLine} />
-              </View>
-
-              {/* Form Fields */}
-              <View style={styles.form}>
-                {/* Email */}
-                <View style={styles.inputGroup}>
-                  <Text style={styles.label}>
-                    Email <Text style={styles.required}>*</Text>
-                  </Text>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="janedoe@example.com"
-                    placeholderTextColor={PrimaryGrey}
-                    value={formData.email}
-                    onChangeText={(value) => handleInputChange('email', value)}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                  />
-                </View>
-
-                {/* Password */}
-                <View style={styles.inputGroup}>
-                  <Text style={styles.label}>
-                    Password <Text style={styles.required}>*</Text>
-                  </Text>
-                  <View style={styles.passwordContainer}>
-                    <TextInput
-                      style={styles.passwordInput}
-                      placeholder="Enter your password"
-                      placeholderTextColor={PrimaryGrey}
-                      value={formData.password}
-                      onChangeText={(value) => handleInputChange('password', value)}
-                      secureTextEntry={!showPassword}
-                    />
-                    <TouchableOpacity
-                      style={styles.eyeButton}
-                      onPress={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? (
-                        <EyeOff size={20} color={PrimaryGrey} />
-                      ) : (
-                        <Eye size={20} color={PrimaryGrey} />
-                      )}
-                    </TouchableOpacity>
-                  </View>
-                </View>
-
-                {/* Remember Me & Forgot Password */}
-                <View style={styles.optionsRow}>
-                  <TouchableOpacity
-                    style={styles.rememberMe}
-                    onPress={() => setRememberMe(!rememberMe)}
-                  >
-                    <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
-                      {rememberMe && <Text style={styles.checkmark}>✓</Text>}
-                    </View>
-                    <Text style={styles.rememberText}>Remember me</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword' as never)}>
-                    <Text style={styles.forgotPassword}>Forgot password?</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              {/* Submit Button */}
-              <TouchableOpacity
-                style={[styles.submitButton, loginMutation.isPending && styles.submitButtonDisabled]}
-                onPress={handleSubmit}
-                disabled={loginMutation.isPending}
-              >
-                {loginMutation.isPending ? (
-                  <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="small" color="white" />
-                    <Text style={styles.loadingText}>Signing in...</Text>
-                  </View>
-                ) : (
-                  <Text style={styles.submitButtonText}>Sign in</Text>
-                )}
-              </TouchableOpacity>
+              </Text>
             </View>
-          </ScrollView>
-        </KeyboardAvoidingView>
+
+
+
+            {/* Apple Login Button */}
+            <TouchableOpacity
+              style={[styles.appleButton, (isAppleLoading || appleCallbackMutation.isPending) && styles.appleButtonDisabled]}
+              onPress={handleAppleLogin}
+              disabled={isAppleLoading || appleCallbackMutation.isPending}
+            >
+              {(isAppleLoading || appleCallbackMutation.isPending) ? (
+                <ActivityIndicator size="small" color={PrimaryGrey} />
+              ) : (
+                <View style={styles.appleIconPlaceholder}>
+                  <SvgXml xml={appleXml} width={20} height={20} />
+                </View>
+              )}
+              <Text style={styles.appleButtonText}>
+                {(isAppleLoading || appleCallbackMutation.isPending) ? 'Signing in...' : 'Continue with Apple'}
+              </Text>
+            </TouchableOpacity>
+
+            {/* Google Login Button */}
+            <TouchableOpacity
+              style={[styles.googleButton, (isGoogleLoading || googleCallbackMutation.isPending) && styles.googleButtonDisabled]}
+              onPress={handleGoogleLogin}
+              disabled={isGoogleLoading || googleCallbackMutation.isPending}
+            >
+              {(isGoogleLoading || googleCallbackMutation.isPending) ? (
+                <ActivityIndicator size="small" color={PrimaryGrey} />
+              ) : (
+                <View style={styles.googleIconPlaceholder}>
+                  <SvgXml xml={googleXml} width={16} height={16} />
+                </View>
+              )}
+              <Text style={styles.googleButtonText}>
+                {(isGoogleLoading || googleCallbackMutation.isPending) ? 'Signing in...' : 'Continue with Google'}
+              </Text>
+            </TouchableOpacity>
+
+            {/* Divider */}
+            <View style={styles.divider}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>Or continue with email</Text>
+              <View style={styles.dividerLine} />
+            </View>
+
+            {/* Form Fields */}
+            <View style={styles.form}>
+              {/* Email */}
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>
+                  Email <Text style={styles.required}>*</Text>
+                </Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="janedoe@example.com"
+                  placeholderTextColor={PrimaryGrey}
+                  value={formData.email}
+                  onChangeText={(value) => handleInputChange('email', value)}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                />
+              </View>
+
+              {/* Password */}
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>
+                  Password <Text style={styles.required}>*</Text>
+                </Text>
+                <View style={styles.passwordContainer}>
+                  <TextInput
+                    style={styles.passwordInput}
+                    placeholder="Enter your password"
+                    placeholderTextColor={PrimaryGrey}
+                    value={formData.password}
+                    onChangeText={(value) => handleInputChange('password', value)}
+                    secureTextEntry={!showPassword}
+                  />
+                  <TouchableOpacity
+                    style={styles.eyeButton}
+                    onPress={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeOff size={20} color={PrimaryGrey} />
+                    ) : (
+                      <Eye size={20} color={PrimaryGrey} />
+                    )}
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Remember Me & Forgot Password */}
+              <View style={styles.optionsRow}>
+                <TouchableOpacity
+                  style={styles.rememberMe}
+                  onPress={() => setRememberMe(!rememberMe)}
+                >
+                  <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
+                    {rememberMe && <Text style={styles.checkmark}>✓</Text>}
+                  </View>
+                  <Text style={styles.rememberText}>Remember me</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword' as never)}>
+                  <Text style={styles.forgotPassword}>Forgot password?</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* Submit Button */}
+            <TouchableOpacity
+              style={[styles.submitButton, loginMutation.isPending && styles.submitButtonDisabled]}
+              onPress={handleSubmit}
+              disabled={loginMutation.isPending}
+            >
+              {loginMutation.isPending ? (
+                <View style={styles.loadingContainer}>
+                  <ActivityIndicator size="small" color="white" />
+                  <Text style={styles.loadingText}>Signing in...</Text>
+                </View>
+              ) : (
+                <Text style={styles.submitButtonText}>Sign in</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </KeyboardAwareScrollView>
       </LinearGradient>
     </View>
   )

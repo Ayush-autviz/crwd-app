@@ -172,7 +172,7 @@ export default function CommentsBottomSheet({
       queryClient.invalidateQueries({ queryKey: ['postComments', post.id] });
       queryClient.invalidateQueries({ queryKey: ['posts'] });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error('Error creating comment:', error);
     },
   });
@@ -181,7 +181,7 @@ export default function CommentsBottomSheet({
   const createReplyMutation = useMutation({
     mutationFn: ({ commentId, data }: { commentId: number; data: { content: string } }) =>
       createPostComment(post.id.toString(), { content: data.content, parent_comment_id: commentId }),
-    onSuccess: (_, variables) => {
+    onSuccess: (_: any, variables: any) => {
       setCommentText('');
       setReplyingTo(null);
       queryClient.invalidateQueries({ queryKey: ['postComments', post.id] });
@@ -199,7 +199,7 @@ export default function CommentsBottomSheet({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['postComments', post.id] });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error('Error liking comment:', error);
     },
   });
@@ -209,7 +209,7 @@ export default function CommentsBottomSheet({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['postComments', post.id] });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error('Error unliking comment:', error);
     },
   });
@@ -345,9 +345,7 @@ export default function CommentsBottomSheet({
     ? `${post.firstName} ${post.lastName}`
     : post.username;
 
-  const postUserInitials = post.firstName && post.lastName
-    ? `${post.firstName.charAt(0)}${post.lastName.charAt(0)}`.toUpperCase()
-    : post.username.charAt(0).toUpperCase();
+  const postUserInitials = (post.firstName || post.username).charAt(0).toUpperCase();
 
   const avatarColors = [
     '#3B82F6', '#EC4899', '#8B5CF6', '#10B981', '#F59E0B',

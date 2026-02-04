@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect, useState } from 'react';
+import React, { useMemo, useEffect, useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,8 @@ import {
   TouchableOpacity,
   Platform,
   PermissionsAndroid,
+  Animated,
+  Easing,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
@@ -40,6 +42,25 @@ export default function NewHome() {
   const navigation = useNavigation();
   const [showCommentsSheet, setShowCommentsSheet] = useState(false);
   const [selectedPost, setSelectedPost] = useState<any>(null);
+  const scrollRef = useRef<ScrollView>(null);
+  const scrollYRef = useRef(0);
+  const animateScrollToTop = (duration = 1200) => {
+    const startY = scrollYRef.current || 0;
+    if (!scrollRef.current) return;
+    if (startY <= 0) return;
+    const anim = new Animated.Value(startY);
+    const listenerId = anim.addListener(({ value }: { value: number }) => {
+      scrollRef.current?.scrollTo({ y: value, animated: false });
+    });
+    Animated.timing(anim, {
+      toValue: 0,
+      duration,
+      easing: Easing.out(Easing.quad),
+      useNativeDriver: false,
+    }).start(() => {
+      anim.removeListener(listenerId);
+    });
+  };
 
   // FCM token send to backend
   const sendFcmTokenToBackend = useMutation({
@@ -518,6 +539,9 @@ export default function NewHome() {
             data: {
               profile_picture: notification.data?.user_profile_picture,
               color: notification.data?.user_color,
+              new_member_id: notification.data?.new_member_id,
+              collective_id: collectiveId,
+              type: notification.data?.type,
             }
           };
         });
@@ -536,15 +560,24 @@ export default function NewHome() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
-      <HomeHeader />
+      <HomeHeader
+        onLogoPress={() => {
+          animateScrollToTop(1200);
+        }}
+      />
 
       {isLoading ? (
         <NewHomeSkeleton />
       ) : (
         <ScrollView
+          ref={scrollRef}
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
+          onScroll={(e) => {
+            scrollYRef.current = e.nativeEvent.contentOffset.y;
+          }}
+          scrollEventThrottle={16}
         >
           {/* Main Content */}
           <View style={styles.mainContent}>
@@ -767,4 +800,3 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 });
-

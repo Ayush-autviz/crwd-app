@@ -80,12 +80,22 @@ export default function CauseProfile({ causeData }: CauseProfileProps) {
 
         <View style={styles.info}>
           <Text style={styles.name}>{causeData?.name}</Text>
-          {/* <Text style={styles.stats}>
-            in {causeData?.collective_count || 0} Collectives •{' '}
-            {causeData?.donation_count || 0} donations
-          </Text> */}
-        </View>
-      </View>
+          {(causeData?.collective_count > 0 || causeData?.donation_count > 0) && (
+            <Text style={styles.stats}> in{' '}
+            {causeData?.collective_count > 0 && (
+              <>{causeData.collective_count} Collectives</>
+              )}
+              {causeData?.collective_count > 0 && 
+              causeData?.donation_count > 0 && (
+              <> • </>
+              )}
+              {causeData?.donation_count > 0 && (
+                <>{causeData.donation_count} donations</>
+                )}
+                </Text>
+              )}
+              </View>
+          </View>
 
       {/* Mission Statement */}
       <View style={styles.missionSection}>

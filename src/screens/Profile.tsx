@@ -1142,28 +1142,37 @@ export default function Profile() {
                                     }}
                                     onPress={() => setShowImageModal(false)}
                                 >
-                                    <View style={{
-                                        width: 40,
-                                        height: 40,
-                                        borderRadius: 20,
-                                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                                        justifyContent: 'center',
-                                        alignItems: 'center'
-                                    }}>
-                                        <Text style={{ color: 'white', fontSize: 20, fontFamily: 'Outfit-Bold' }}>✕</Text>
-                                    </View>
                                 </TouchableOpacity>
 
                                 <TouchableOpacity onPress={() => setShowImageModal(false)}>
-                                    <Image
-                                        source={{ uri: profileData?.profile_picture || 'https://randomuser.me/api/portraits/women/44.jpg' }}
-                                        style={{
+                                    {profileData?.profile_picture ? (
+                                        <Image
+                                            source={{ uri: profileData.profile_picture }}
+                                            style={{
+                                                width: 300,
+                                                height: 300,
+                                                borderRadius: 150,
+                                                resizeMode: 'cover'
+                                            }}
+                                        />
+                                    ) : (
+                                        <View style={{
                                             width: 300,
                                             height: 300,
                                             borderRadius: 150,
-                                            resizeMode: 'cover'
-                                        }}
-                                    />
+                                            backgroundColor: profileData?.color || getConsistentColor(profileData?.id || profileData?.username || 'U', avatarColors),
+                                            justifyContent: 'center',
+                                            alignItems: 'center'
+                                        }}>
+                                            <Text style={{
+                                                color: '#FFFFFF',
+                                                fontFamily: 'Outfit-SemiBold',
+                                                fontSize: 100
+                                            }}>
+                                                {getInitials(profileData?.first_name, profileData?.last_name, profileData?.username, profileData?.username)}
+                                            </Text>
+                                        </View>
+                                    )}
                                 </TouchableOpacity>
                             </View>
                         </TouchableWithoutFeedback>

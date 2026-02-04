@@ -18,7 +18,7 @@ type RootStackParamList = {
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
-export default function HomeHeader({ show = false, menu = true, post = true }) {
+export default function HomeHeader({ show = false, menu = true, post = true, onLogoPress }: { show?: boolean; menu?: boolean; post?: boolean; onLogoPress?: () => void }) {
     const navigation = useNavigation<NavigationProp>();
     const screenWidth = Dimensions.get('window').width;
     const imageWidth = screenWidth * 0.25;
@@ -41,7 +41,9 @@ export default function HomeHeader({ show = false, menu = true, post = true }) {
 
     return (
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 5, alignItems: 'center', paddingHorizontal: 16, height: 60, borderBottomWidth: 2, borderBottomColor: LightGrey, backgroundColor: 'white' }}>
-            <Image source={require('../assets/newLogo/FullLogo.png')} style={{ resizeMode: 'contain', width: 100, height: 50 }} />
+            <TouchableOpacity activeOpacity={0.8} onPress={() => onLogoPress && onLogoPress()}>
+                <Image source={require('../assets/newLogo/FullLogo.png')} style={{ resizeMode: 'contain', width: 100, height: 50 }} />
+            </TouchableOpacity>
             {/* <TouchableOpacity onPress={() => navigation.navigate('Search')} style={{ flexDirection: 'row', alignItems: 'center', flex: 1, justifyContent: 'space-between', backgroundColor: LightGrey, paddingHorizontal: 10, paddingVertical:5, borderRadius: 16 }}>
                 <TextInput
                     placeholder='Find nonprofits'

@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#111827',
     flex: 1,
-    textAlign: 'center',
+    textAlign: 'left',
   },
   rightSection: {
     flexDirection: 'row',
@@ -307,4 +307,3 @@ const styles = StyleSheet.create({
     marginVertical: 4,
   },
 });
-

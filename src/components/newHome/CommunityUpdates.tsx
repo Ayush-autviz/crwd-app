@@ -34,6 +34,11 @@ interface CommunityUpdate {
   data?: {
     profile_picture?: string;
     color?: string;
+    new_member_id?: string | number;
+    collective_id?: string | number;
+    type?: string;
+    user_color?: string;
+    user_profile_picture?: string | null;
   };
 }
 
@@ -161,6 +166,26 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
     },
   });
 
+  const handleUserNavigation = (userId?: string | number) => {
+    if (!userId) return;
+    if (currentUser?.id && userId.toString() === currentUser.id.toString()) {
+      (navigation as any).navigate('Profile');
+    } else {
+      (navigation as any).navigate('UserProfile', { userId });
+    }
+  };
+
+  const handleCollectiveNavigation = (collectiveId?: string | number, collectiveName?: string) => {
+    if (collectiveId) {
+      (navigation as any).navigate('GroupCRWD', { id: collectiveId });
+    } else if (collectiveName) {
+      (navigation as any).navigate('Search', {
+        searchQuery: collectiveName,
+        searchType: 'collective'
+      });
+    }
+  };
+
   const handleJoinClick = () => {
     if (update.collective?.id) {
       (navigation as any).navigate('GroupCRWD', { id: update.collective.id });
@@ -228,9 +253,7 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
             <View style={styles.userDetails}>
               <View style={styles.nameRow}>
                 <TouchableOpacity
-                  onPress={() =>
-                    (navigation as any).navigate('UserProfile', { userId: update.user.id })
-                  }
+                  onPress={() => handleUserNavigation(update.user.id)}
                   activeOpacity={0.7}
                 >
                   <Text style={styles.userName}>{update.user.name}</Text>
@@ -261,7 +284,19 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
           <View style={styles.actionTextContainer}>
             {/* Action Text */}
             <Text style={styles.actionText}>
-              {cleanActionText}
+              {isJoinNotification && update.data?.new_member_id && cleanActionText.includes(' joined ') ? (
+                <>
+                  <Text onPress={() => handleUserNavigation(update.data?.new_member_id)}>
+                    {cleanActionText.split(' joined ')[0]}
+                  </Text>
+                  {' joined '}
+                  <Text onPress={() => handleCollectiveNavigation(update.data?.collective_id || update.collective?.id, update.collective?.name)}>
+                    {cleanActionText.split(' joined ').slice(1).join(' joined ')}
+                  </Text>
+                </>
+              ) : (
+                cleanActionText
+              )}
             </Text>
             {/* Supporting X nonprofits - Only on second line if it exists */}
             {nonprofitCount > 0 && (
@@ -298,11 +333,9 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
           <View style={styles.userDetails}>
             <View style={styles.nameRow}>
               <TouchableOpacity
-                onPress={() =>
-                  (navigation as any).navigate('UserProfile', { userId: update.user.id })
-                }
-                activeOpacity={0.7}
-              >
+                  onPress={() => handleUserNavigation(update.user.id)}
+                  activeOpacity={0.7}
+                >
                 <Text style={styles.userName}>{update.user.name}</Text>
               </TouchableOpacity>
               {/* <Text style={styles.username}>@{update.user.username}</Text> */}

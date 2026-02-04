@@ -246,7 +246,7 @@ export default function SurpriseMePage() {
           activeOpacity={0.7}
         >
           <Text style={styles.sparkleEmoji}>✨</Text>
-          <Text style={styles.surpriseAgainText}>Surprise Again</Text>
+          <Text style={styles.surpriseAgainText}>Surprise Me Again</Text>
         </TouchableOpacity>
       </View>
 

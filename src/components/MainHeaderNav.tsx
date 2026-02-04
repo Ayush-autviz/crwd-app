@@ -60,9 +60,10 @@ export default function MainHeaderNav({ show = false, menu = true, postButton = 
                 }
 
                 {menu &&
-                    <TouchableOpacity onPress={handleMenuPress} disabled={!menu}>
-                        <AlignJustify color={menu ? '#000' : '#fff'} />
-                    </TouchableOpacity>
+                <></>
+                    // <TouchableOpacity onPress={handleMenuPress} disabled={!menu}>
+                    //     <AlignJustify color={menu ? '#000' : '#fff'} />
+                    // </TouchableOpacity>
 
                 }
 

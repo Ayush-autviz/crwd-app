@@ -237,7 +237,7 @@ export default function Account() {
             {isEditMode && (
               <TouchableOpacity onPress={handleImageChange}>
                 <Text style={styles.uploadHint}>
-                  Click to upload profile image (max 5MB)
+                  Click to upload profile image
                 </Text>
               </TouchableOpacity>
             )}

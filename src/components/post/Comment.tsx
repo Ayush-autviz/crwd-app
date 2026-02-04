@@ -61,13 +61,8 @@ export const Comment: React.FC<CommentProps> = ({
     : firstName || username;
 
   const getInitials = () => {
-    if (firstName && lastName) {
-      return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
-    }
-    if (firstName) {
-      return firstName.charAt(0).toUpperCase();
-    }
-    return username.charAt(0).toUpperCase();
+    const name = firstName || username;
+    return name.charAt(0).toUpperCase();
   };
 
   const initials = getInitials();

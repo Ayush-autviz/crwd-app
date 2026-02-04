@@ -15,7 +15,7 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation, CommonActions, useRoute } from '@react-navigation/native';
+import { useNavigation, CommonActions, useRoute, useFocusEffect } from '@react-navigation/native';
 import {
   ArrowLeft,
   Check,
@@ -193,6 +193,13 @@ export default function NewCreateCollective() {
     '#EF4444', // Red
     '#6366F1', // Indigo
   ];
+
+  useFocusEffect(
+    React.useCallback(() => {
+      setHasStarted(false);
+      setStep(1);
+    }, [])
+  );
 
   // Fetch favorite causes
   const { data: favoriteCausesData, isLoading: isLoadingFavoriteCauses } = useQuery({
@@ -1190,7 +1197,10 @@ export default function NewCreateCollective() {
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    onPress={() => setLogoType('upload')}
+                    onPress={() => {
+                      setLogoType('upload');
+                      handleFileChange();
+                    }}
                     style={[
                       styles.logoTypeButton,
                       logoType === 'upload' && styles.logoTypeButtonActive
@@ -1226,16 +1236,6 @@ export default function NewCreateCollective() {
                   </View>
                 )}
 
-                {/* Upload Logo Options */}
-                {logoType === 'upload' && (
-                  <TouchableOpacity
-                    onPress={handleFileChange}
-                    style={styles.uploadButton}
-                  >
-                    <Camera size={16} color="#111827" />
-                    <Text style={styles.uploadButtonText}>Upload</Text>
-                  </TouchableOpacity>
-                )}
               </View>
             )}
           </View>
@@ -2471,4 +2471,3 @@ const styles = StyleSheet.create({
     pointerEvents: 'none',
   },
 });
-

@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, TouchableOpacity, Share, Alert, StyleSheet, ActivityIndicator, Clipboard, TouchableWithoutFeedback, Dimensions, Image } from 'react-native'
+ import { View, Text, ScrollView, TouchableOpacity, Share, Alert, StyleSheet, ActivityIndicator, Clipboard, TouchableWithoutFeedback, Dimensions, Image, Modal } from 'react-native'
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query'
@@ -55,10 +55,12 @@ export default function UserProfile() {
     const [showCommentsSheet, setShowCommentsSheet] = useState(false);
     const [selectedPost, setSelectedPost] = useState<any>(null);
     const [showFounderSheet, setShowFounderSheet] = useState(false);
+    const [showImageModal, setShowImageModal] = useState(false);
     const menuRef = useRef<View>(null);
     const { showToast } = useToast();
     const { user: currentUser } = useAuthStore();
     const queryClient = useQueryClient();
+    const [modalImageFailed, setModalImageFailed] = useState(false);
 
     // Use userId if available
     const targetUserId = userId || '';
@@ -355,6 +357,12 @@ export default function UserProfile() {
             // Cleanup if needed
         };
     }, [showMenu]);
+
+    useEffect(() => {
+        if (showImageModal) {
+            setModalImageFailed(false);
+        }
+    }, [showImageModal]);
 
     // Bottom sheet ref and snap points
     const bottomSheetRef = useRef<BottomSheetModal>(null);
@@ -675,15 +683,17 @@ export default function UserProfile() {
                 <View style={styles.content}>
                     {/* Profile Header */}
                     <View style={styles.profileHeader}>
-                        <Avatar size={130}>
-                            <AvatarImage src={userProfile.profile_picture} />
-                            <AvatarFallback
-                                style={{ backgroundColor: userProfile.color || getConsistentColor(userProfile.id || userProfile.username || 'U', avatarColors) }}
-                                textStyle={{ color: '#FFFFFF', fontSize: 32, fontFamily: 'Outfit-Bold' }}
-                            >
-                                {getInitials(userProfile.first_name, userProfile.last_name, userProfile.username)}
-                            </AvatarFallback>
-                        </Avatar>
+                <TouchableOpacity onPress={() => setShowImageModal(true)}>
+                    <Avatar size={130}>
+                        <AvatarImage src={userProfile.profile_picture} />
+                        <AvatarFallback
+                            style={{ backgroundColor: userProfile.color || getConsistentColor(userProfile.id || userProfile.username || 'U', avatarColors) }}
+                            textStyle={{ color: '#FFFFFF', fontSize: 32, fontFamily: 'Outfit-Bold' }}
+                        >
+                            {getInitials(userProfile.first_name, userProfile.last_name, userProfile.username)}
+                        </AvatarFallback>
+                    </Avatar>
+                </TouchableOpacity>
                         <View style={{ alignItems: 'center' }}>
                             <View style={{ flexDirection: 'column', alignItems: 'center', gap: 0, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 8 }}>
                                 <Text style={styles.profileName}>
@@ -946,6 +956,28 @@ export default function UserProfile() {
                     </View>
                 </View>
             </ScrollView>
+
+            <Modal
+                visible={showImageModal}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setShowImageModal(false)}
+            >
+                <TouchableWithoutFeedback onPress={() => setShowImageModal(false)}>
+                    <View style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.6)', justifyContent: 'center', alignItems: 'center' }}>
+                        <TouchableWithoutFeedback onPress={() => { }}>
+                            <View>
+                                <TouchableOpacity onPress={() => setShowImageModal(false)}>
+                                    <Image
+                                        source={{ uri: userProfile?.profile_picture || 'https://randomuser.me/api/portraits/women/44.jpg' }}
+                                        style={{ width: 300, height: 300, borderRadius: 150, resizeMode: 'cover' }}
+                                    />
+                                </TouchableOpacity>
+                            </View>
+                        </TouchableWithoutFeedback>
+                    </View>
+                </TouchableWithoutFeedback>
+            </Modal>
 
             {/* Statistics Bottom Sheet */}
             <BottomSheetModal

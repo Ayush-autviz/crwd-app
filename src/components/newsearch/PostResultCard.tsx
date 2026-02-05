@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, Linking, ActivityIndicator, Share, Clipboard } from 'react-native';
 import { useNavigation, CommonActions } from '@react-navigation/native';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
-import { Heart, MessageCircle, Share2 } from 'lucide-react-native';
+import { Heart, MessageCircle, Share2, Users } from 'lucide-react-native';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { likePost, unlikePost, followUserById, unfollowUserById, getUserProfileById } from '../../services/api/social';
 import { useAuthStore } from '../../store/store';
 import { WEB_BASE_URL } from '../../Constants/url';
 import { useToast } from '../../contexts/ToastContext';
-import { LightGrey, PrimaryGrey } from '../../Constants/Colors';
+import { LightGrey, PrimaryBlue, PrimaryGrey } from '../../Constants/Colors';
 
 interface PreviewDetails {
   title?: string | null;
@@ -405,7 +405,9 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
                     }
                   }}
                   activeOpacity={0.7}
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
                 >
+                  <Users size={14} color={PrimaryBlue} />
                   <Text style={styles.collectiveName}>{post.collective.name}</Text>
                 </TouchableOpacity>
               )}

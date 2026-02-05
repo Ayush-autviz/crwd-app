@@ -1,6 +1,6 @@
 import { View, Text, Image, Dimensions, TouchableOpacity, SafeAreaView, TextInput } from 'react-native'
 import React from 'react'
-import { AlignJustify, Bell, ChevronLeft, Plus, Search, User } from 'lucide-react-native'
+import { AlignJustify, Bell, ChevronLeft, Plus, Search, User, Menu } from 'lucide-react-native'
 import { LightGrey, PrimaryGreen, PrimaryGrey } from '../Constants/Colors';
 import { useNavigation, DrawerActions } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -103,7 +103,7 @@ export default function HomeHeader({ show = false, menu = true, post = true, onL
 
 
                         <TouchableOpacity onPress={() => navigation.navigate('NewSettings' as never)} >
-                            <Settings size={24} color="#111827" />
+                            <Menu size={24} color="#111827" />
                         </TouchableOpacity>
 
                     </>

@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, TextInput, ActivityIndicator, KeyboardAvoidingView, Platform, Dimensions } from 'react-native';
-import { BottomSheetModal, BottomSheetView, BottomSheetBackdrop, BottomSheetScrollView, BottomSheetTextInput } from '@gorhom/bottom-sheet';
-import { X, MessageCircle, ArrowRight, Loader2 } from 'lucide-react-native';
+import React, { useState, useEffect, useRef, useMemo, useCallback, memo } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, Platform, Dimensions, TextInput } from 'react-native';
+import { BottomSheetModal, BottomSheetBackdrop, BottomSheetScrollView, BottomSheetTextInput, BottomSheetFooter } from '@gorhom/bottom-sheet';
+import { X, MessageCircle } from 'lucide-react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getPostComments, createPostComment, getCommentReplies, likeComment, unlikeComment, deleteComment } from '../../services/api/social';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
@@ -25,6 +25,92 @@ interface CommentsBottomSheetProps {
 
 const { height: screenHeight } = Dimensions.get('window');
 
+// --- ISOLATED FOOTER COMPONENT WITH INTERNAL STATE ---
+// This prevents the parent (and thus the renderFooter callback) from updating on every keystroke
+interface CommentInputFooterHandle {
+  focus: () => void;
+  clear: () => void;
+  setText: (text: string) => void;
+}
+
+interface CommentInputFooterProps {
+  footerProps: any;
+  replyingTo: CommentData | null;
+  onCancelReply: () => void;
+  onSubmit: (text: string) => void;
+  isPending: boolean;
+}
+
+const CommentInputFooter = memo(React.forwardRef<CommentInputFooterHandle, CommentInputFooterProps>(({
+  footerProps,
+  replyingTo,
+  onCancelReply,
+  onSubmit,
+  isPending
+}, ref) => {
+  const [text, setText] = useState('');
+  const inputRef = useRef<TextInput>(null);
+
+  // Expose methods to parent
+  React.useImperativeHandle(ref, () => ({
+    focus: () => {
+      // Small delay to ensure component is ready/visible
+      setTimeout(() => inputRef.current?.focus(), 100);
+    },
+    clear: () => setText(''),
+    setText: (newText: string) => setText(newText)
+  }));
+
+  const handleSend = () => {
+    if (text.trim()) {
+      onSubmit(text.trim());
+    }
+  };
+
+  return (
+    <BottomSheetFooter {...footerProps} bottomInset={0}>
+      <View style={styles.inputBarContainer}>
+        {replyingTo && (
+          <View style={styles.replyingToContainer}>
+            <View style={styles.replyingToContent}>
+              <Text style={styles.replyingToLabel}>Replying to @{replyingTo.username}</Text>
+              <Text numberOfLines={1} style={styles.replyingToText}>{replyingTo.content}</Text>
+            </View>
+            <TouchableOpacity onPress={onCancelReply} style={styles.replyingToClose}>
+              <X size={16} color={PrimaryGrey} />
+            </TouchableOpacity>
+          </View>
+        )}
+        <View style={styles.inputWrapper}>
+          <View style={styles.blueAccentBar} />
+          <BottomSheetTextInput
+            ref={inputRef as any}
+            placeholder={replyingTo ? `Reply to @${replyingTo.username}...` : "Share your thoughts..."}
+            placeholderTextColor={PrimaryGrey}
+            value={text}
+            onChangeText={setText}
+            multiline
+            style={styles.commentInput}
+          />
+        </View>
+        <View style={styles.footerRow}>
+          <TouchableOpacity
+            onPress={handleSend}
+            disabled={!text.trim() || isPending}
+            style={[styles.replyPillButton, (!text.trim() || isPending) && styles.replyButtonDisabled]}
+          >
+            {isPending ? (
+              <ActivityIndicator size="small" color="white" />
+            ) : (
+              <Text style={[styles.replyButtonText, (!text.trim() || isPending) && styles.replyButtonTextDisabled]}>Reply</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+      </View>
+    </BottomSheetFooter>
+  );
+}));
+
 export default function CommentsBottomSheet({
   isOpen,
   onClose,
@@ -32,8 +118,7 @@ export default function CommentsBottomSheet({
 }: CommentsBottomSheetProps) {
   console.log('CommentsBottomSheet rendered with props:', { isOpen, post });
   const bottomSheetRef = useRef<BottomSheetModal>(null);
-  const inputRef = useRef<TextInput>(null);
-  const [commentText, setCommentText] = useState('');
+  const footerRef = useRef<CommentInputFooterHandle>(null);
   const [comments, setComments] = useState<CommentData[]>([]);
   const [expandedComments, setExpandedComments] = useState<Set<number>>(new Set());
   const [loadingReplies, setLoadingReplies] = useState<Set<number>>(new Set());
@@ -68,7 +153,7 @@ export default function CommentsBottomSheet({
   const handleClose = useCallback(() => {
     bottomSheetRef.current?.dismiss();
     onClose();
-    setCommentText('');
+    footerRef.current?.clear(); // Optional: clear text on close
     setReplyingTo(null);
     setExpandedComments(new Set());
   }, [onClose]);
@@ -143,20 +228,11 @@ export default function CommentsBottomSheet({
     }
   }, [apiComments, commentsData]);
 
-  // Adjust bottom sheet height when comments are loaded
-  useEffect(() => {
-    if (isOpen && bottomSheetRef.current && comments.length > 0) {
-      // If comments exist and we're at the lower snap point, move to higher one
-      // Since we only have one snap point (90%), we don't need to snap to index 1
-      // as index 0 is already 90%
-    }
-  }, [isOpen, comments.length]);
-
   // Create comment mutation
   const createCommentMutation = useMutation({
     mutationFn: (data: { content: string }) => createPostComment(post.id.toString(), { content: data.content }),
     onSuccess: () => {
-      setCommentText('');
+      footerRef.current?.clear();
       setReplyingTo(null);
       queryClient.invalidateQueries({ queryKey: ['postComments', post.id] });
       queryClient.invalidateQueries({ queryKey: ['posts'] });
@@ -171,7 +247,7 @@ export default function CommentsBottomSheet({
     mutationFn: ({ commentId, data }: { commentId: number; data: { content: string } }) =>
       createPostComment(post.id.toString(), { content: data.content, parent_comment_id: commentId }),
     onSuccess: (_: any, variables: any) => {
-      setCommentText('');
+      footerRef.current?.clear();
       setReplyingTo(null);
       queryClient.invalidateQueries({ queryKey: ['postComments', post.id] });
       // Fetch replies to show the new one and expand
@@ -221,11 +297,9 @@ export default function CommentsBottomSheet({
     if (targetComment) {
       // Set replyingTo to show the "Replying to" banner, but don't prefill the input
       setReplyingTo(targetComment);
-      setCommentText(''); // Clear any existing text
+      footerRef.current?.setText(''); // Clear any existing text
       // Focus the input after a short delay to ensure the bottom sheet is ready
-      setTimeout(() => {
-        inputRef.current?.focus();
-      }, 100);
+      footerRef.current?.focus();
     }
   };
 
@@ -320,15 +394,15 @@ export default function CommentsBottomSheet({
     queryClient.invalidateQueries({ queryKey: ['postComments', post.id] });
   };
 
-  const handleSubmit = () => {
-    if (commentText.trim()) {
-      if (replyingTo) {
-        createReplyMutation.mutate({ commentId: replyingTo.id, data: { content: commentText.trim() } });
-      } else if (!createCommentMutation.isPending) {
-        createCommentMutation.mutate({ content: commentText.trim() });
-      }
+  const handleSubmit = useCallback((text: string) => {
+    if (!text.trim()) return;
+
+    if (replyingTo) {
+      createReplyMutation.mutate({ commentId: replyingTo.id, data: { content: text.trim() } });
+    } else if (!createCommentMutation.isPending) {
+      createCommentMutation.mutate({ content: text.trim() });
     }
-  };
+  }, [replyingTo, createCommentMutation.isPending, createReplyMutation.isPending]);
 
   const postDisplayName = post.firstName && post.lastName
     ? `${post.firstName} ${post.lastName}`
@@ -353,6 +427,21 @@ export default function CommentsBottomSheet({
 
   console.log('BottomSheetModal render - isOpen:', isOpen);
 
+  // Memoize footer rendering to prevent re-creation
+  const renderFooter = useCallback(
+    (footerProps: any) => (
+      <CommentInputFooter
+        ref={footerRef}
+        footerProps={footerProps}
+        replyingTo={replyingTo}
+        onCancelReply={() => setReplyingTo(null)}
+        onSubmit={handleSubmit}
+        isPending={createCommentMutation.isPending || createReplyMutation.isPending}
+      />
+    ),
+    [replyingTo, createCommentMutation.isPending, createReplyMutation.isPending, handleSubmit]
+  );
+
   return (
     <BottomSheetModal
       ref={bottomSheetRef}
@@ -364,126 +453,72 @@ export default function CommentsBottomSheet({
       backgroundStyle={styles.bottomSheetBackground}
       handleIndicatorStyle={styles.handleIndicator}
       onDismiss={handleClose}
-      keyboardBehavior="interactive"
+      keyboardBehavior="extend"
+      footerComponent={currentUser ? renderFooter : undefined}
       keyboardBlurBehavior="restore"
       android_keyboardInputMode="adjustResize"
     >
-      <KeyboardAvoidingView
-        style={styles.keyboardAvoidingView}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
-      >
-        <View style={styles.container}>
-          {/* Header */}
-          <View style={styles.header}>
-            <View style={styles.headerTextContainer}>
-              <Text style={styles.headerSubtitle} numberOfLines={1}>
-                Commenting on <Text style={styles.headerTitle}>{postDisplayName}</Text>'s post
-              </Text>
-            </View>
-            <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
-              <X size={20} color="#6B7280" />
-            </TouchableOpacity>
+      <View style={styles.container}>
+        {/* Header */}
+        <View style={styles.header}>
+          <View style={styles.headerTextContainer}>
+            <Text style={styles.headerSubtitle} numberOfLines={1}>
+              Commenting on <Text style={styles.headerTitle}>{postDisplayName}</Text>'s post
+            </Text>
           </View>
-
-          {/* Original Post */}
-          <View style={styles.originalPostContainer}>
-            <Avatar size={40} style={styles.originalPostAvatar}>
-              <AvatarImage src={post.avatarUrl} alt={postDisplayName} />
-              <AvatarFallback style={{ backgroundColor: postAvatarColor }} textStyle={styles.originalPostAvatarFallbackText}>
-                {postUserInitials}
-              </AvatarFallback>
-            </Avatar>
-            <View style={styles.originalPostContent}>
-              <Text style={styles.originalPostDisplayName}>{postDisplayName}</Text>
-              <Text style={styles.originalPostText} numberOfLines={2}>{post.text}</Text>
-            </View>
-          </View>
-
-          {/* Comments List */}
-          <BottomSheetScrollView contentContainerStyle={styles.commentsListContainer}>
-            {isLoadingComments ? (
-              <View style={styles.loadingContainer}>
-                <ActivityIndicator size="small" color="#1600ff" />
-                <Text style={styles.loadingText}>Loading comments...</Text>
-              </View>
-            ) : topLevelComments.length === 0 ? (
-              <View style={styles.emptyStateContainer}>
-                <MessageCircle size={40} color="#D1D5DB" />
-                <Text style={styles.emptyStateText}>No comments yet. Be the first to comment!</Text>
-              </View>
-            ) : (
-              <>
-                <Text style={styles.commentsCountText}>
-                  {topLevelComments.length} comment{topLevelComments.length !== 1 ? "s" : ""}
-                </Text>
-                {topLevelComments.map((comment) => (
-                  <Comment
-                    key={comment.id}
-                    {...comment}
-                    onReply={handleReply}
-                    onLike={handleLike}
-                    onToggleReplies={toggleReplies}
-                    isExpanded={expandedComments.has(comment.id)}
-                    isLoadingReplies={loadingReplies.has(comment.id)}
-                    showReplyButton={true}
-                    onDelete={handleDeleteComment}
-                  />
-                ))}
-              </>
-            )}
-          </BottomSheetScrollView>
-
-          {/* Input Bar */}
-          {currentUser && (
-            <View style={styles.inputBarContainer}>
-              {replyingTo && (
-                <View style={styles.replyingToContainer}>
-                  <View style={styles.replyingToContent}>
-                    <Text style={styles.replyingToLabel}>Replying to @{replyingTo.username}</Text>
-                    <Text numberOfLines={1} style={styles.replyingToText}>{replyingTo.content}</Text>
-                  </View>
-                  <TouchableOpacity onPress={() => setReplyingTo(null)} style={styles.replyingToClose}>
-                    <X size={16} color={PrimaryGrey} />
-                  </TouchableOpacity>
-                </View>
-              )}
-              <View style={styles.inputWrapper}>
-                <View style={styles.blueAccentBar} />
-                <TextInput
-                  ref={inputRef}
-                  placeholder={replyingTo ? `Reply to @${replyingTo.username}...` : "Share your thoughts..."}
-                  placeholderTextColor={PrimaryGrey}
-                  value={commentText}
-                  onChangeText={setCommentText}
-                  multiline
-                  style={styles.commentInput}
-                  editable={!createCommentMutation.isPending && !createReplyMutation.isPending}
-                />
-              </View>
-              <View style={styles.footerRow}>
-                <TouchableOpacity
-                  onPress={handleSubmit}
-                  disabled={!commentText.trim() || createCommentMutation.isPending || createReplyMutation.isPending}
-                  style={[
-                    styles.replyPillButton,
-                    (!commentText.trim() || createCommentMutation.isPending || createReplyMutation.isPending) && styles.replyButtonDisabled
-                  ]}
-                >
-                  {(createCommentMutation.isPending || createReplyMutation.isPending) ? (
-                    <ActivityIndicator size="small" color="white" />
-                  ) : (
-                    <Text style={[
-                      styles.replyButtonText,
-                      (!commentText.trim() || createCommentMutation.isPending || createReplyMutation.isPending) && styles.replyButtonTextDisabled
-                    ]}>Reply</Text>
-                  )}
-                </TouchableOpacity>
-              </View>
-            </View>
-          )}
+          <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
+            <X size={20} color="#6B7280" />
+          </TouchableOpacity>
         </View>
-      </KeyboardAvoidingView>
+
+        {/* Original Post */}
+        <View style={styles.originalPostContainer}>
+          <Avatar size={40} style={styles.originalPostAvatar}>
+            <AvatarImage src={post.avatarUrl} alt={postDisplayName} />
+            <AvatarFallback style={{ backgroundColor: postAvatarColor }} textStyle={styles.originalPostAvatarFallbackText}>
+              {postUserInitials}
+            </AvatarFallback>
+          </Avatar>
+          <View style={styles.originalPostContent}>
+            <Text style={styles.originalPostDisplayName}>{postDisplayName}</Text>
+            <Text style={styles.originalPostText} numberOfLines={2}>{post.text}</Text>
+          </View>
+        </View>
+
+        {/* Comments List */}
+        <BottomSheetScrollView contentContainerStyle={styles.commentsListContainer}>
+          {isLoadingComments ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="small" color="#1600ff" />
+              <Text style={styles.loadingText}>Loading comments...</Text>
+            </View>
+          ) : topLevelComments.length === 0 ? (
+            <View style={styles.emptyStateContainer}>
+              <MessageCircle size={40} color="#D1D5DB" />
+              <Text style={styles.emptyStateText}>No comments yet. Be the first to comment!</Text>
+            </View>
+          ) : (
+            <>
+              <Text style={styles.commentsCountText}>
+                {topLevelComments.length} comment{topLevelComments.length !== 1 ? "s" : ""}
+              </Text>
+              {topLevelComments.map((comment) => (
+                <Comment
+                  key={comment.id}
+                  {...comment}
+                  onReply={handleReply}
+                  onLike={handleLike}
+                  onToggleReplies={toggleReplies}
+                  isExpanded={expandedComments.has(comment.id)}
+                  isLoadingReplies={loadingReplies.has(comment.id)}
+                  showReplyButton={true}
+                  onDelete={handleDeleteComment}
+                />
+              ))}
+            </>
+          )}
+        </BottomSheetScrollView>
+      </View>
     </BottomSheetModal>
   );
 }
@@ -680,4 +715,3 @@ const styles = StyleSheet.create({
     color: '#9CA3AF',
   },
 });
-

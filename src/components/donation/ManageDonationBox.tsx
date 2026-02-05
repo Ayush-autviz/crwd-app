@@ -11,6 +11,7 @@ import {
   TouchableWithoutFeedback,
   ActivityIndicator,
 } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { Plus, Minus, Trash2, Search, X, ChevronLeft, ChevronDown, FileText, Pencil } from 'lucide-react-native';
 import EditDonationSplitBottomSheet from './EditDonationSplitBottomSheet';
 import { useNavigation } from '@react-navigation/native';
@@ -705,7 +706,14 @@ export default function ManageDonationBoxScreen() {
       </View>
 
       <View style={styles.container}>
-        <ScrollView style={styles.content} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 0 }}>
+        <KeyboardAwareScrollView
+          style={styles.content}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 0 }}
+          enableOnAndroid={true}
+          extraScrollHeight={20}
+        >
+
           {/* Donation Box Summary Card */}
           <View style={styles.summaryCardContainer}>
             <View style={styles.summaryCard}>
@@ -1309,7 +1317,7 @@ export default function ManageDonationBoxScreen() {
         <Text style={styles.allocationNote}>
           Allocations will automatically adjust for 100% distribution
         </Text> */}
-        </ScrollView>
+        </KeyboardAwareScrollView>
 
         {/* Update Donation Button Footer - Always visible at bottom */}
         <SafeAreaView edges={['bottom']} style={{ backgroundColor: '#ffffff' }}>
@@ -1468,7 +1476,7 @@ export default function ManageDonationBoxScreen() {
           return null;
         })()}
       </View>
-    </RNSafeAreaView>
+    </RNSafeAreaView >
   );
 }
 

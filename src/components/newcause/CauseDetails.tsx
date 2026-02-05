@@ -71,7 +71,7 @@ export default function CauseDetails({ causeData }: CauseDetailsProps) {
         </View>
       )}
 
-      {/* Related Causes */}
+      {/* Related Causes
       {relatedCategories.length > 0 && (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>RELATED CAUSES</Text>
@@ -86,7 +86,7 @@ export default function CauseDetails({ causeData }: CauseDetailsProps) {
             ))}
           </View>
         </View>
-      )}
+      )} */}
 
       {/* Main Focus */}
       {categoryInfo.length > 0 && (

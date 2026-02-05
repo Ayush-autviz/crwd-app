@@ -147,19 +147,8 @@ export default function CommentsBottomSheet({
   useEffect(() => {
     if (isOpen && bottomSheetRef.current && comments.length > 0) {
       // If comments exist and we're at the lower snap point, move to higher one
-      setTimeout(() => {
-        bottomSheetRef.current?.snapToIndex(1); // Move to 90%
-      }, 200);
-    }
-  }, [isOpen, comments.length]);
-
-  // Adjust bottom sheet height when comments are loaded
-  useEffect(() => {
-    if (isOpen && bottomSheetRef.current && comments.length > 0) {
-      // If comments exist and we're at the lower snap point, move to higher one
-      setTimeout(() => {
-        bottomSheetRef.current?.snapToIndex(1); // Move to 90%
-      }, 200);
+      // Since we only have one snap point (90%), we don't need to snap to index 1
+      // as index 0 is already 90%
     }
   }, [isOpen, comments.length]);
 

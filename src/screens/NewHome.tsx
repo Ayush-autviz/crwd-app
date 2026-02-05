@@ -686,6 +686,7 @@ export default function NewHome() {
                     avatarUrl: post.user?.avatar || post.user?.profile_picture || post.avatarUrl || '',
                     firstName: post.user?.first_name || post.user?.firstName || post.firstName,
                     lastName: post.user?.last_name || post.user?.lastName || post.lastName,
+                    color: post.user?.color || post.color || '',
                   });
                   setShowCommentsSheet(true);
                 }}
@@ -719,6 +720,7 @@ export default function NewHome() {
                     avatarUrl: post.user?.avatar || post.user?.profile_picture || post.avatarUrl || '',
                     firstName: post.user?.first_name || post.user?.firstName || post.firstName,
                     lastName: post.user?.last_name || post.user?.lastName || post.lastName,
+                    color: post.user?.color || post.color || '',
                   });
                   setShowCommentsSheet(true);
                 }}

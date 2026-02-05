@@ -14,13 +14,13 @@ export default function VerifiedNonprofitInfo({ causeData }: VerifiedNonprofitIn
         <Text style={styles.verifiedText}>Verified U.S. Nonprofit Organization</Text>
       </View>
       <Text style={styles.taxId}>Tax ID: {causeData?.tax_id_number || 'N/A'}</Text>
-      {causeData?.street && (
+      {/* {causeData?.street && (
         <Text style={styles.address}>
           {causeData.street}
           {causeData.city && `, ${causeData.city}`}
           {causeData.state && `, ${causeData.state}`}
         </Text>
-      )}
+      )} */}
     </View>
   );
 }

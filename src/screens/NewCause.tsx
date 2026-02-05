@@ -14,7 +14,6 @@ import { Loader2 } from 'lucide-react-native';
 import { getCauseById } from '../services/api/crwd';
 import { addCausesToBox } from '../services/api/donation';
 import { getDonationBox } from '../services/api/donation';
-import { getCausesBySearch } from '../services/api/crwd';
 import { useAuthStore } from '../store/store';
 import { useToast } from '../contexts/ToastContext';
 import CauseHeader from '../components/newcause/CauseHeader';
@@ -53,17 +52,8 @@ export default function NewCausePage() {
     staleTime: 0,
   });
 
-  // Fetch similar causes (same category, excluding current cause)
-  const { data: similarCausesData, isLoading: isLoadingSimilar } = useQuery({
-    queryKey: ['similar-causes', causeData?.category, causeId],
-    queryFn: () => getCausesBySearch('', causeData?.category, 1),
-    enabled: !!causeData?.category && !!causeId,
-  });
-
-  // Filter out current cause and limit to 2 similar causes
-  const similarCauses = similarCausesData?.results
-    ?.filter((cause: any) => cause.id.toString() !== causeId)
-    .slice(0, 2) || [];
+  // Get similar causes from cause data
+  const similarCauses = causeData?.similar_causes?.slice(0, 2) || [];
 
   // Fetch donation box to check if cause is already added
   const { data: donationBoxData, refetch: refetchDonationBox } = useQuery({
@@ -394,7 +384,7 @@ export default function NewCausePage() {
 
           <SimilarNonprofits
             similarCauses={similarCauses}
-            isLoading={isLoadingSimilar}
+            isLoading={false}
             categoryName={causeData?.category ? categories.find(c => c.id === causeData.category)?.name : undefined}
             categoryId={causeData?.category}
           />

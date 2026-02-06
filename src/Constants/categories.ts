@@ -31,31 +31,33 @@
 
 // New categories with bright colors and white text
 export const categories = [
-    { id: "", name: "All", text: "#FFFFFF", background: "#6B7280" },
-    { id: "D", name: "Animals", text: "#FFFFFF", background: "#F97316" }, // Bright Orange
-    { id: "A", name: "Arts", text: "#FFFFFF", background: "#EC4899" }, // Bright Pink
-    { id: "S", name: "Community", text: "#FFFFFF", background: "#10B981" }, // Bright Green
-    { id: "B", name: "Education", text: "#FFFFFF", background: "#F59E0B" }, // Bright Amber
-    { id: "C", name: "Environment", text: "#FFFFFF", background: "#22C55E" }, // Bright Emerald
-    { id: "K", name: "Food", text: "#FFFFFF", background: "#F97316" }, // Bright Orange
-    { id: "Z", name: "General", text: "#FFFFFF", background: "#6B7280" }, // Gray
-    { id: "Q", name: "Global", text: "#FFFFFF", background: "#06B6D4" }, // Bright Cyan
-    { id: "E", name: "Health", text: "#FFFFFF", background: "#EF4444" }, // Bright Red
-    { id: "L", name: "Housing", text: "#FFFFFF", background: "#8B5CF6" }, // Bright Purple
-    { id: "J", name: "Jobs", text: "#FFFFFF", background: "#6366F1" }, // Bright Indigo
-    { id: "I", name: "Legal", text: "#FFFFFF", background: "#EAB308" }, // Bright Yellow
-    { id: "Y", name: "Membership", text: "#FFFFFF", background: "#64748B" }, // Slate
-    { id: "F", name: "Mental", text: "#FFFFFF", background: "#A855F7" }, // Bright Violet
-    { id: "T", name: "Philanthropy", text: "#FFFFFF", background: "#F43F5E" }, // Bright Rose
-    { id: "W", name: "Public", text: "#FFFFFF", background: "#14B8A6" }, // Bright Teal
-    { id: "M", name: "Relief", text: "#FFFFFF", background: "#DC2626" }, // Bright Red
-    { id: "X", name: "Religion", text: "#FFFFFF", background: "#F59E0B" }, // Bright Amber
-    { id: "H", name: "Research", text: "#FFFFFF", background: "#3B82F6" }, // Bright Blue
-    { id: "R", name: "Rights", text: "#FFFFFF", background: "#DC2626" }, // Bright Red
-    { id: "U", name: "Science", text: "#FFFFFF", background: "#10B981" }, // Bright Green
-    { id: "P", name: "Services", text: "#FFFFFF", background: "#6366F1" }, // Bright Indigo
-    { id: "V", name: "Society", text: "#FFFFFF", background: "#475569" }, // Slate
-    { id: "N", name: "Sports", text: "#FFFFFF", background: "#22C55E" }, // Bright Emerald
-    { id: "G", name: "Wellness", text: "#FFFFFF", background: "#EC4899" }, // Bright Pink (like the image)
-    { id: "O", name: "Youth", text: "#FFFFFF", background: "#06B6D4" }, // Bright Cyan
-  ];
+  { id: "", name: "All", text: "#FFFFFF", background: "#6B7280" },
+  { id: "D", name: "Animals", text: "#FFFFFF", background: "#F97316" }, // Bright Orange
+  { id: "A", name: "Arts", text: "#FFFFFF", background: "#EC4899" }, // Bright Pink
+  { id: "S", name: "Community", text: "#FFFFFF", background: "#10B981" }, // Bright Green
+  { id: "B", name: "Education", text: "#FFFFFF", background: "#F59E0B" }, // Bright Amber
+  { id: "C", name: "Climate", text: "#FFFFFF", background: "#22C55E" }, // Bright Emerald
+  { id: "K", name: "Hunger", text: "#FFFFFF", background: "#F97316" }, // Bright Orange
+  { id: "Z", name: "General", text: "#FFFFFF", background: "#6B7280" }, // Gray
+  { id: "Q", name: "Global", text: "#FFFFFF", background: "#06B6D4" }, // Bright Cyan
+  { id: "E", name: "Health", text: "#FFFFFF", background: "#EF4444" }, // Bright Red
+  { id: "L", name: "Housing", text: "#FFFFFF", background: "#8B5CF6" }, // Bright Purple
+  { id: "J", name: "Jobs", text: "#FFFFFF", background: "#6366F1" }, // Bright Indigo
+  { id: "I", name: "Legal", text: "#FFFFFF", background: "#EAB308" }, // Bright Yellow
+  { id: "Y", name: "Membership", text: "#FFFFFF", background: "#64748B" }, // Slate
+  { id: "F", name: "Mental Health", text: "#FFFFFF", background: "#A855F7" }, // Bright Violet
+  { id: "T", name: "Philanthropy", text: "#FFFFFF", background: "#F43F5E" }, // Bright Rose
+  { id: "W", name: "Public", text: "#FFFFFF", background: "#14B8A6" }, // Bright Teal
+  { id: "M", name: "Disaster", text: "#FFFFFF", background: "#DC2626" }, // Bright Red
+  { id: "X", name: "Faith", text: "#FFFFFF", background: "#F59E0B" }, // Bright Amber
+  { id: "H", name: "Research", text: "#FFFFFF", background: "#3B82F6" }, // Bright Blue
+  { id: "R", name: "Justice", text: "#FFFFFF", background: "#DC2626" }, // Bright Red
+  { id: "U", name: "Science", text: "#FFFFFF", background: "#10B981" }, // Bright Green
+  { id: "P", name: "Services", text: "#FFFFFF", background: "#6366F1" }, // Bright Indigo
+  { id: "V", name: "Society", text: "#FFFFFF", background: "#475569" }, // Slate
+  { id: "N", name: "Sports", text: "#FFFFFF", background: "#22C55E" }, // Bright Emerald
+  { id: "G", name: "Wellness", text: "#FFFFFF", background: "#EC4899" }, // Bright Pink (like the image)
+  { id: "O", name: "Kids", text: "#FFFFFF", background: "#06B6D4" }, // Bright Cyan
+  { id: "1", name: "Veterans", text: "#FFFFFF", background: "#10B981" }, // Bright Cyan
+  { id: "2", name: "Homelessness", text: "#FFFFFF", background: "#06B6D4" }, // Bright Cyan
+];

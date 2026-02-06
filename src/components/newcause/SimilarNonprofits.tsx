@@ -48,10 +48,11 @@ export default function SimilarNonprofits({ similarCauses, isLoading, categoryNa
           {categoryName && categoryId && (
             <TouchableOpacity
               onPress={() => {
-                (navigation as any).navigate('Search', {
+                (navigation as any).navigate('SearchResults', {
                   categoryId,
                   categoryName,
                   searchQuery: categoryName,
+                  tab: 'Causes'
                 });
               }}
               activeOpacity={0.7}
@@ -78,10 +79,11 @@ export default function SimilarNonprofits({ similarCauses, isLoading, categoryNa
         {categoryName && categoryId && (
           <TouchableOpacity
             onPress={() => {
-              (navigation as any).navigate('Search', {
+              (navigation as any).navigate('SearchResults', {
                 categoryId,
                 categoryName,
                 searchQuery: categoryName,
+                tab: 'Causes'
               });
             }}
             activeOpacity={0.7}

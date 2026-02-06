@@ -1,12 +1,13 @@
 import React from 'react';
 import { View, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
-import { X, Search as SearchIcon } from 'lucide-react-native';
+import { X, Search as SearchIcon, ArrowLeft } from 'lucide-react-native';
 
 interface SearchResultsHeaderProps {
   searchQuery: string;
   onClearSearch: () => void;
   onSearchChange: (value: string) => void;
   onSearch: () => void;
+  onBack?: () => void;
 }
 
 export default function SearchResultsHeader({
@@ -14,28 +15,36 @@ export default function SearchResultsHeader({
   onClearSearch,
   onSearchChange,
   onSearch,
+  onBack,
 }: SearchResultsHeaderProps) {
   return (
     <View style={styles.container}>
-      <View style={styles.inputContainer}>
-        <SearchIcon size={20} color="#9CA3AF" style={styles.searchIcon} />
-        <TextInput
-          style={styles.input}
-          placeholder="Search..."
-          value={searchQuery}
-          onChangeText={onSearchChange}
-          onSubmitEditing={onSearch}
-          returnKeyType="search"
-        />
-        {searchQuery ? (
-          <TouchableOpacity
-            onPress={onClearSearch}
-            style={styles.clearButton}
-            activeOpacity={0.7}
-          >
-            <X size={16} color="#6B7280" />
+      <View style={styles.row}>
+        {/* {onBack && (
+          <TouchableOpacity onPress={onBack} style={styles.backButton}>
+            <ArrowLeft size={24} color="#1F2937" />
           </TouchableOpacity>
-        ) : null}
+        )} */}
+        <View style={styles.inputContainer}>
+          <SearchIcon size={20} color="#9CA3AF" style={styles.searchIcon} />
+          <TextInput
+            style={styles.input}
+            placeholder="Search..."
+            value={searchQuery}
+            onChangeText={onSearchChange}
+            onSubmitEditing={onSearch}
+            returnKeyType="search"
+          />
+          {searchQuery ? (
+            <TouchableOpacity
+              onPress={onBack}
+              style={styles.clearButton}
+              activeOpacity={0.7}
+            >
+              <X size={16} color="#6B7280" />
+            </TouchableOpacity>
+          ) : null}
+        </View>
       </View>
     </View>
   );
@@ -49,7 +58,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 12,
   },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  backButton: {
+    padding: 4,
+  },
   inputContainer: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     position: 'relative',

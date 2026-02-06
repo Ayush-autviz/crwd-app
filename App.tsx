@@ -29,6 +29,7 @@ import NewGroupCrwd from './src/screens/NewGroupCrwd'
 import CauseScreen from './src/screens/CauseScreen'
 import NewCause from './src/screens/NewCause'
 import NewSearch from './src/screens/NewSearch'
+import SearchResults from './src/screens/SearchResults'
 import SurpriseMe from './src/screens/SurpriseMe'
 import Articles from './src/screens/Articles'
 import ArticleDetail from './src/screens/ArticleDetail'
@@ -301,6 +302,7 @@ export default function App() {
         <Stack.Screen name="GroupCRWD" component={NewGroupCrwd} />
         <Stack.Screen name="CauseScreen" component={NewCause} />
         <Stack.Screen name="NewSearch" component={NewSearch} />
+        <Stack.Screen name="SearchResults" component={SearchResults} />
         <Stack.Screen name="SurpriseMe" component={SurpriseMe} />
         <Stack.Screen name="Search2" component={Search2} />
         <Stack.Screen name="Email" component={Email} />

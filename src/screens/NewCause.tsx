@@ -385,7 +385,7 @@ export default function NewCausePage() {
           <SimilarNonprofits
             similarCauses={similarCauses}
             isLoading={false}
-            categoryName={causeData?.category ? categories.find(c => c.id === causeData.category)?.name : undefined}
+            categoryName={categories.find(c => causeData?.category?.includes(c.id) && c.id !== '')?.name || causeData?.category}
             categoryId={causeData?.category}
           />
         </View>

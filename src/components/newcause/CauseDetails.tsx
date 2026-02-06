@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { MapPin } from 'lucide-react-native';
 import { categories } from '../../Constants/categories';
 
@@ -28,6 +29,7 @@ const getCategoryInfo = (categoryId: string) => {
 };
 
 export default function CauseDetails({ causeData }: CauseDetailsProps) {
+  const navigation = useNavigation();
   const categoryInfo = getCategoryInfo(causeData?.category || '');
   const category = categoryInfo[0]; // Use first category for related categories logic
 
@@ -94,15 +96,24 @@ export default function CauseDetails({ causeData }: CauseDetailsProps) {
           <Text style={styles.sectionTitle}>MAIN FOCUS</Text>
           <View style={styles.mainFocusContainer}>
             {categoryInfo.map((cat: any, index: number) => (
-              <View
+              <TouchableOpacity
                 key={index}
-                style={[
-                  styles.mainFocusBadge,
-                  //   { backgroundColor: cat.background },
-                ]}
+                onPress={() => {
+                  (navigation as any).navigate('SearchResults', {
+                    categoryId: cat.id,
+                    categoryName: cat.name,
+                    searchQuery: cat.name,
+                    tab: 'Causes'
+                  });
+                }}
+                style={styles.mainFocusBadge}
+                activeOpacity={0.7}
               >
-                <Text style={styles.mainFocusText}>{cat.name}</Text>
-              </View>
+                <Text style={styles.mainFocusText}>
+                  {cat.name}
+                  {index < categoryInfo.length - 1 && <Text style={styles.commaText}>,</Text>}
+                </Text>
+              </TouchableOpacity>
             ))}
           </View>
         </View>

@@ -68,13 +68,23 @@ const formatTimeAgo = (dateString: string): string => {
   }
 };
 
+// Helper to extract name from body text
+const extractNameFromBody = (body: string): string | null => {
+  if (!body) return null;
+  // Common activity patterns
+  const actions = [' donated', ' joined', ' created', ' posted', ' commented', ' started', ' updated'];
+  for (const action of actions) {
+    const index = body.indexOf(action);
+    if (index > 0) {
+      return body.substring(0, index);
+    }
+  }
+  return null;
+};
+
 // Get user initials
 const getInitials = (name: string): string => {
   if (!name) return 'U';
-  const parts = name.trim().split(' ');
-  if (parts.length >= 2) {
-    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-  }
   return name.charAt(0).toUpperCase();
 };
 
@@ -95,16 +105,17 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
     null;
 
   // Get user name from activity body or data
+  const nameFromBody = extractNameFromBody(activity.body);
   const userName = activity.data?.first_name && activity.data?.last_name
     ? `${activity.data.first_name} ${activity.data.last_name}`
-    : activity.data?.username || username || 'Unknown User';
+    : activity.data?.username || username || nameFromBody || 'Unknown User';
 
   // Get profile picture
   const profilePicture = activity.data?.profile_picture || '';
 
   // Get avatar background color
   const avatarId = userId || username || userName;
-  const avatarBgColor = getConsistentColor(avatarId, avatarColors);
+  const avatarBgColor = activity.data?.user_color || getConsistentColor(avatarId, avatarColors);
   const initials = getInitials(userName);
 
   // Format timestamp - use created_at for proper date parsing (timestamp is already formatted like "2d")
@@ -136,7 +147,7 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
               <AvatarImage src={profilePicture} />
               <AvatarFallback
                 style={{ backgroundColor: avatarBgColor }}
-                textStyle={{ color: '#FFFFFF', fontSize: 12, fontFamily: 'Outfit-Bold' }}
+                textStyle={{ color: '#FFFFFF', fontSize: 16, fontFamily: 'Outfit-Bold' }}
               >
                 {initials}
               </AvatarFallback>
@@ -147,7 +158,7 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
             <AvatarImage src={profilePicture} />
             <AvatarFallback
               style={{ backgroundColor: avatarBgColor }}
-              textStyle={{ color: '#FFFFFF', fontSize: 12, fontFamily: 'Outfit-Bold' }}
+              textStyle={{ color: '#FFFFFF', fontSize: 16, fontFamily: 'Outfit-Bold' }}
             >
               {initials}
             </AvatarFallback>
@@ -199,8 +210,8 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   nameRow: {
-    // flexDirection: 'row',
-    // alignItems: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
     flexWrap: 'wrap',
     gap: 4,
     marginBottom: 8,
@@ -223,7 +234,7 @@ const styles = StyleSheet.create({
   },
   descriptionText: {
     fontSize: 14,
-    fontFamily: 'Outfit-Medium',
+    fontFamily: 'Outfit-SemiBold',
     color: '#111827',
     lineHeight: 22,
   },

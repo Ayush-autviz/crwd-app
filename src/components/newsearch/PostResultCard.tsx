@@ -407,7 +407,7 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
                   activeOpacity={0.7}
                   style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
                 >
-                  <Users size={14} color={PrimaryBlue} />
+                  <Users size={14} color={PrimaryGrey} />
                   <Text style={styles.collectiveName}>{post.collective.name}</Text>
                 </TouchableOpacity>
               )}

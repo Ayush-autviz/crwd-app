@@ -33,21 +33,18 @@ export default function NonProfitInterests() {
   // Only show specific categories from the vite version
   const allowedCategoryNames = [
     "Animals",
-    "Arts",
     "Community",
     "Education",
-    "Environment",
-    "Food",
+    "Climate",
+    "Hunger",
     "Health",
     "Housing",
-    "Jobs",
-    "Legal",
-    "Mental",
-    "Public",
-    "Research",
-    "Science",
-    "Society",
-    "Sports"
+    "Mental Health",
+    "Disaster",
+    "Justice",
+    "Faith",
+    "Veterans",
+    "Kids",
   ];
 
   const mainCategories = categories.filter((cat) =>

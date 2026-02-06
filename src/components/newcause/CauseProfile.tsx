@@ -82,20 +82,20 @@ export default function CauseProfile({ causeData }: CauseProfileProps) {
           <Text style={styles.name}>{causeData?.name}</Text>
           {(causeData?.collective_count > 0 || causeData?.donation_count > 0) && (
             <Text style={styles.stats}> in{' '}
-            {causeData?.collective_count > 0 && (
-              <>{causeData.collective_count} Collectives</>
+              {causeData?.collective_count > 0 && (
+                <>{causeData.collective_count} Collectives</>
               )}
-              {causeData?.collective_count > 0 && 
-              causeData?.donation_count > 0 && (
-              <> • </>
-              )}
+              {causeData?.collective_count > 0 &&
+                causeData?.donation_count > 0 && (
+                  <> • </>
+                )}
               {causeData?.donation_count > 0 && (
                 <>{causeData.donation_count} donations</>
-                )}
-                </Text>
               )}
-              </View>
-          </View>
+            </Text>
+          )}
+        </View>
+      </View>
 
       {/* Mission Statement */}
       <View style={styles.missionSection}>
@@ -110,10 +110,11 @@ export default function CauseProfile({ causeData }: CauseProfileProps) {
               <TouchableOpacity
                 key={index}
                 onPress={() => {
-                  (navigation as any).navigate('Search', {
+                  (navigation as any).navigate('SearchResults', {
                     categoryId: cat.id,
                     categoryName: cat.name,
                     searchQuery: cat.name,
+                    tab: 'Causes'
                   });
                 }}
                 style={[

@@ -9,6 +9,7 @@ import { useQuery } from '@tanstack/react-query'
 import { getCollectives, getJoinCollective } from '../services/api/crwd'
 import { useAuthStore } from '../store/store'
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/Avatar'
+import { truncateAtFirstPeriod } from '../utils/truncateFirstPeriod'
 
 type TabKey = 'my-crwds' | 'discover'
 
@@ -121,8 +122,8 @@ const Circles = () => {
         <Text style={styles.cardTitle} numberOfLines={1}>
           {circle.name}
         </Text>
-        <Text style={styles.cardDescription} numberOfLines={2}>
-          {circle.description}
+        <Text style={styles.cardDescription}>
+          {truncateAtFirstPeriod(circle.description)}
         </Text>
 
         {/* Founder Info */}
@@ -200,8 +201,8 @@ const Circles = () => {
         <Text style={styles.cardTitle} numberOfLines={1}>
           {item.name}
         </Text>
-        <Text style={styles.cardDescription} numberOfLines={2}>
-          {item.description}
+        <Text style={styles.cardDescription}>
+          {truncateAtFirstPeriod(item.description)}
         </Text>
 
         {/* Founder Info */}

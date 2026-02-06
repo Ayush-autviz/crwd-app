@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Dimensions,
 } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { ChevronLeft, Plus, Trash2, User, X, ChevronDown, Search, Pencil, Minus } from 'lucide-react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import Slider from '@react-native-community/slider';
@@ -750,7 +751,13 @@ export default function DonationScreen() {
             />
           ) : (
             <View style={styles.setupContentWrapper}>
-              <ScrollView style={styles.content} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 0 }}>
+              <KeyboardAwareScrollView
+                style={styles.content}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: 0 }}
+                enableOnAndroid={true}
+                extraScrollHeight={100}
+              >
                 <>
                   {step === 1 ? (
                     <View style={styles.stepContent}>
@@ -1038,7 +1045,7 @@ export default function DonationScreen() {
                                       }}
                                       style={styles.addCauseButton}
                                     >
-                                      <Plus size={16} color="#ec4899" />
+                                      <Plus size={16} color="#ec4899" {...({ strokeWidth: 3 } as any)} />
                                     </TouchableOpacity>
                                   </View>
                                 );
@@ -1165,7 +1172,7 @@ export default function DonationScreen() {
                                     editableAmount <= 5 && !isEditingAmount && styles.amountButtonDisabled
                                   ]}
                                 >
-                                  <Minus size={18} color={donationAmount > 5 ? "#ffffff" : "#9ca3af"} strokeWidth={3} />
+                                  <Minus size={18} color={donationAmount > 5 ? "#ffffff" : "#9ca3af"} {...({ strokeWidth: 3 } as any)} />
                                 </TouchableOpacity>
 
                                 <View style={styles.amountDisplay}>
@@ -1342,7 +1349,7 @@ export default function DonationScreen() {
                                         {addingCauseId === cause.id ? (
                                           <ActivityIndicator size="small" color="#db2777" />
                                         ) : (
-                                          <Plus size={16} color="#db2777" strokeWidth={3} />
+                                          <Plus size={16} color="#db2777" {...({ strokeWidth: 3 } as any)} />
                                         )}
                                       </TouchableOpacity>
                                     </View>
@@ -1357,7 +1364,7 @@ export default function DonationScreen() {
                     </View>
                   ) : null}
                 </>
-              </ScrollView>
+              </KeyboardAwareScrollView>
 
               {/* Footer Button - Always visible at bottom */}
               {activeTab === 'setup' && !checkout && step === 1 && (

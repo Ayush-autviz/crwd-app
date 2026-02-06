@@ -14,6 +14,7 @@ import {
   TouchableWithoutFeedback,
   Dimensions,
 } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { Minus, Plus, Trash2, Search, X } from 'lucide-react-native';
@@ -548,7 +549,13 @@ export default function OneTimeDonation({
 
   return (
     <View style={styles.containerWrapper}>
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
+      <KeyboardAwareScrollView
+        style={styles.content}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 100 }}
+        enableOnAndroid={true}
+        extraScrollHeight={100}
+      >
         {/* Header Section */}
         <View style={styles.headerSection}>
           <Text style={styles.headerTitle}>
@@ -572,7 +579,7 @@ export default function OneTimeDonation({
                 disabled={donationAmount <= 5}
                 style={[styles.amountButton, donationAmount <= 5 && styles.amountButtonDisabled]}
               >
-                <Minus size={18} color={donationAmount > 5 ? "#ffffff" : "#9ca3af"} strokeWidth={3} />
+                <Minus size={18} color={donationAmount > 5 ? "#ffffff" : "#9ca3af"} {...({ strokeWidth: 3 } as any)} />
               </TouchableOpacity>
               <View style={styles.amountDisplay}>
                 <Text style={styles.amountValue}>${donationAmount}</Text>
@@ -582,7 +589,7 @@ export default function OneTimeDonation({
                 onPress={incrementDonation}
                 style={styles.amountButton}
               >
-                <Plus size={18} color="#ffffff" strokeWidth={3} />
+                <Plus size={18} color="#ffffff" {...({ strokeWidth: 3 } as any)} />
               </TouchableOpacity>
             </View>
           </View>
@@ -794,7 +801,7 @@ export default function OneTimeDonation({
             </View>
           </View>
         )}
-      </ScrollView>
+      </KeyboardAwareScrollView>
 
       {/* Checkout Button Footer - Always visible at bottom */}
       <View style={styles.footer}>

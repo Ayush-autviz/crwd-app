@@ -45,6 +45,7 @@ interface CommunityUpdate {
 interface CommunityUpdatesProps {
   updates?: CommunityUpdate[];
   showHeading?: boolean;
+  isFeedItem?: boolean;
 }
 
 // Component to display full post when postId exists
@@ -386,34 +387,39 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
         {/* Action Text */}
         <Text style={styles.actionTextDonation}>
           {(() => {
-            // Try to match with amount: "donated $50 to Nonprofit"
-            const amountMatch = actionText.match(/(.*?donated\s+)(.+?)(\s+to\s+)(.*)/i);
-            if (isDonationNotification && amountMatch) {
-              return (
-                <>
-                  {amountMatch[1]}
-                  <Text style={styles.boldText}>
-                    {amountMatch[2]}
-                  </Text>
-                  {amountMatch[3]}
-                  <Text style={styles.boldText}>
-                    {amountMatch[4]}
-                  </Text>
-                </>
-              );
-            }
+            if (isDonationNotification) {
+              const match = actionText.match(/^(.*?) (donated) (\$[\d,.]+) (to) (.*)$/i);
+              if (match) {
+                return (
+                  <>
+                    <Text
+                      style={styles.boldText}
+                      onPress={() => handleUserNavigation(update.user.id)}
+                    >
+                      {match[1]}
+                    </Text>
+                    <Text> {match[2]} </Text>
+                    <Text style={styles.boldText}>{match[3]}</Text>
+                    <Text> {match[4]} {match[5]}</Text>
+                  </>
+                );
+              }
 
-            // Fallback for "donated to" without amount structure
-            const simpleMatch = actionText.match(/(.*donated.*?to\s+)(.*)/i);
-            if (isDonationNotification && simpleMatch) {
-              return (
-                <>
-                  {simpleMatch[1]}
-                  <Text style={styles.boldText}>
-                    {simpleMatch[2]}
-                  </Text>
-                </>
-              );
+              // Fallback for "Name donated to Nonprofit"
+              const simpleMatch = actionText.match(/^(.*?) (donated.*?to) (.*)$/i);
+              if (simpleMatch) {
+                return (
+                  <>
+                    <Text
+                      style={styles.boldText}
+                      onPress={() => handleUserNavigation(update.user.id)}
+                    >
+                      {simpleMatch[1]}
+                    </Text>
+                    <Text> {simpleMatch[2]} {simpleMatch[3]}</Text>
+                  </>
+                );
+              }
             }
             return actionText;
           })()}
@@ -426,9 +432,27 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
 export default function CommunityUpdates({
   updates = [],
   showHeading = true,
+  isFeedItem = false,
 }: CommunityUpdatesProps) {
   if (!updates || updates.length === 0) {
     return null;
+  }
+
+  const content = (
+    <View style={isFeedItem ? styles.feedItemContainer : styles.updatesList}>
+      {updates.map((update) => {
+        // If postId exists, fetch and display the full post
+        const PostContent = update.postId ? PostWithData : NotificationSummary;
+
+        return (
+          <PostContent key={update.id} update={update} />
+        );
+      })}
+    </View>
+  );
+
+  if (isFeedItem) {
+    return content;
   }
 
   return (
@@ -442,16 +466,7 @@ export default function CommunityUpdates({
         </View>
       )}
 
-      <View style={styles.updatesList}>
-        {updates.map((update) => {
-          // If postId exists, fetch and display the full post
-          const PostContent = update.postId ? PostWithData : NotificationSummary;
-
-          return (
-            <PostContent key={update.id} update={update} />
-          );
-        })}
-      </View>
+      {content}
     </View>
   );
 }
@@ -515,10 +530,10 @@ const styles = StyleSheet.create({
   notificationCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
-    padding: 10,
+    paddingVertical: 4,
   },
   header: {
-    marginBottom: 10,
+    marginBottom: 6,
     flexDirection: 'row',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
@@ -614,8 +629,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#1600ff',
-    paddingHorizontal: 16,
-    paddingVertical: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
     borderRadius: 20,
     marginLeft: 8,
     minWidth: 60,
@@ -632,8 +647,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#1600ff',
-    paddingHorizontal: 16,
-    paddingVertical: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
     borderRadius: 20,
     marginLeft: 8,
     minWidth: 70,
@@ -661,4 +676,8 @@ const styles = StyleSheet.create({
     color: '#111827',
     fontFamily: 'Outfit-Bold',
   },
+  feedItemContainer: {
+    width: '100%',
+  },
 });
+

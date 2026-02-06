@@ -636,7 +636,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     // borderWidth: 1,
     // borderColor: '#E5E7EB',
-    marginBottom: 12,
   },
   content: {
     // padding: 12,
@@ -771,7 +770,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 8,
-    marginBottom: 10,
+    marginBottom: 6,
   },
   avatar: {
     borderRadius: 20,

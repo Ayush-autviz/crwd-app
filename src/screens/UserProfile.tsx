@@ -117,7 +117,7 @@ export default function UserProfile() {
             showToast("Followed successfully!");
             queryClient.invalidateQueries({ queryKey: ['userProfile', targetUserId] });
         },
-        onError: (error) => {
+        onError: (error: any) => {
             console.error('Error following user:', error);
             showToast("Failed to follow user");
         },
@@ -131,7 +131,7 @@ export default function UserProfile() {
             showToast("Unfollowed successfully!");
             queryClient.invalidateQueries({ queryKey: ['userProfile', targetUserId] });
         },
-        onError: (error) => {
+        onError: (error: any) => {
             console.error('Error unfollowing user:', error);
             showToast("Failed to unfollow user");
         },
@@ -245,7 +245,7 @@ export default function UserProfile() {
             queryClient.invalidateQueries({ queryKey: ['userProfile', targetUserId] });
             showToast('Followed');
         },
-        onError: (error) => {
+        onError: (error: any) => {
             console.error('Error following user:', error);
             showToast('Error following user');
         },
@@ -259,7 +259,7 @@ export default function UserProfile() {
             queryClient.invalidateQueries({ queryKey: ['userProfile', targetUserId] });
             showToast('Unfollowed');
         },
-        onError: (error) => {
+        onError: (error: any) => {
             console.error('Error unfollowing user:', error);
             showToast('Error unfollowing user');
         },

@@ -253,3 +253,9 @@ export const getLinkPreview = async (url: string) => {
     const response = await axiosClient.get(`/social/link-preview/?url=${url}`);
     return response.data;
 };
+
+// Community Updates Posts API endpoints
+export const getCommunityUpdatesPosts = async () => {
+    const response = await axiosClient.get('/social/community-updates-posts/');
+    return response.data;
+};

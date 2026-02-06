@@ -19,7 +19,7 @@ import { useAuthStore } from '../store/store';
 import { getCollectives, getCauses, getJoinCollective } from '../services/api/crwd';
 import { getDonationBox } from '../services/api/donation';
 import { getNotifications, registerNotificationToken } from '../services/api/notification';
-import { getUserProfileById } from '../services/api/social';
+import { getUserProfileById, getCommunityUpdatesPosts } from '../services/api/social';
 import messaging from '@react-native-firebase/messaging';
 import HomeHeader from '../components/HomeHeader';
 import HelloGreeting from '../components/newHome/HelloGreeting';
@@ -33,6 +33,7 @@ import CommunityUpdates from '../components/newHome/CommunityUpdates';
 import CommunityPosts from '../components/newHome/CommunityPosts';
 import ExploreCards from '../components/newHome/ExploreCards';
 import CommentsBottomSheet from '../components/post/CommentsBottomSheet';
+import PostResultCard from '../components/newsearch/PostResultCard';
 
 import GuestHome from '../components/GuestHome';
 import { NewHomeSkeleton } from '../components/newHome/NewHomeSkeleton';
@@ -157,28 +158,24 @@ export default function NewHome() {
     enabled: !!user?.id && !!token?.access_token,
   });
 
-  // Fetch community updates (notifications)
-  const { data: notificationsData, isLoading: notificationsLoading } = useQuery({
-    queryKey: ['notifications', 'community'],
-    queryFn: getNotifications,
+  // Fetch community updates (posts and notifications mixed)
+  const { data: communityUpdatesPostsData, isLoading: communityUpdatesLoading } = useQuery({
+    queryKey: ['communityUpdatesPosts'],
+    queryFn: getCommunityUpdatesPosts,
     enabled: !!token?.access_token,
   });
 
   const isLoading = collectivesLoading || nonprofitsLoading || donationBoxLoading || joinedCollectivesLoading;
 
-  // Extract unique user IDs from community notifications
+  // Extract unique user IDs from community updates in the feed
   const uniqueUserIds = useMemo(() => {
     try {
-      const communityNotifications =
-        Array.isArray(notificationsData?.results)
-          ? notificationsData.results.filter((n: any) => n?.type === 'community')
-          : [];
+      const results = communityUpdatesPostsData?.results || [];
+      const notifications = results.filter((n: any) => n.item_type === 'notification');
       return Array.from(
         new Set(
-          communityNotifications
-            .slice(0, 5)
+          notifications
             .map((notification: any) => {
-              if (!notification) return null;
               const usernameMatch = notification.body?.match(/@(\w+)/);
               if (usernameMatch) {
                 return (
@@ -197,14 +194,14 @@ export default function NewHome() {
                 null
               );
             })
-            .filter((id: any) => id !== null && id !== undefined)
+            .filter((id: any) => id !== null)
         )
       ) as (string | number)[];
     } catch (error) {
       console.error('Error extracting unique user IDs:', error);
       return [];
     }
-  }, [notificationsData]);
+  }, [communityUpdatesPostsData]);
 
   // Fetch user profiles for all unique user IDs
   const userProfileQueries = useQueries({
@@ -404,155 +401,201 @@ export default function NewHome() {
     return [];
   }, [joinedCollectivesData]);
 
-  // Transform notifications data for community updates
-  // Only show type "community" (not "community_post")
-  // Filter out items with postId (post type items)
-  // Use useMemo to make it reactive to userProfilesMap changes
-  const transformedCommunityUpdates = useMemo(() => {
+  // Transform feed data (posts and notifications mixed)
+  const transformedFeedItems = useMemo(() => {
     try {
-      if (!Array.isArray(notificationsData?.results)) {
-        return [];
-      }
-      return notificationsData.results
-        .filter((notification: any) =>
-          notification &&
-          notification.type === 'community' &&
-          !notification.data?.post_id // Filter out post type items
-        )
-        .map((notification: any) => {
-          // Extract username from body if it contains @username pattern
-          let username = '';
-          const usernameMatch = notification.body?.match(/@(\w+)/);
-          if (usernameMatch) {
-            username = usernameMatch[1];
-          } else {
-            // Fallback to data fields
-            username =
-              notification.data?.follower_username ||
-              notification.data?.donor_id ||
-              notification.data?.creator_id ||
-              notification.data?.new_member_id ||
-              'unknown';
-          }
-
-          let collectiveName = '';
-          if (notification.body) {
-            // Try pattern: "to [collective name]" (for donations)
-            const toMatch = notification.body.match(/to (.+)$/);
-            if (toMatch) {
-              collectiveName = toMatch[1].trim();
+      return communityUpdatesPostsData?.results
+        ?.map((item: any) => {
+          if (item.item_type === 'post') {
+            return {
+              uniqueKey: `post-${item.id}`,
+              type: 'post',
+              data: {
+                id: item.id,
+                content: item.content || '',
+                media: item.media || undefined,
+                preview_details: item.preview_details || null,
+                created_at: item.created_at || item.timestamp || new Date().toISOString(),
+                likes_count: item.likes_count || 0,
+                comments_count: item.comments_count || 0,
+                is_liked: item.is_liked || false,
+                user: item.user ? {
+                  id: item.user.id,
+                  username: item.user.username || '',
+                  first_name: item.user.first_name,
+                  last_name: item.user.last_name,
+                  profile_picture: item.user.profile_picture || '',
+                  color: item.user.color,
+                } : undefined,
+                collective: item.collective ? {
+                  id: item.collective.id,
+                  name: item.collective.name,
+                } : undefined,
+                fundraiser: item.fundraiser ? {
+                  id: item.fundraiser.id,
+                  name: item.fundraiser.name,
+                  description: item.fundraiser.description,
+                  image: item.fundraiser.image,
+                  color: item.fundraiser.color,
+                  target_amount: item.fundraiser.target_amount,
+                  current_amount: item.fundraiser.current_amount,
+                  progress_percentage: item.fundraiser.progress_percentage,
+                  is_active: item.fundraiser.is_active,
+                  total_donors: item.fundraiser.total_donors,
+                  end_date: item.fundraiser.end_date,
+                } : undefined,
+              }
+            };
+          } else if (item.item_type === 'notification') {
+            const notification = item;
+            let username = '';
+            const usernameMatch = notification.body?.match(/@(\w+)/);
+            if (usernameMatch) {
+              username = usernameMatch[1];
             } else {
-              // Try pattern: "in [collective name]"
-              const inMatch = notification.body.match(/in (.+)$/);
-              if (inMatch) {
-                collectiveName = inMatch[1].trim();
-              } else if (notification.body.includes('joined')) {
-                // Try pattern: "joined [collective name]"
-                const joinMatch = notification.body.match(/joined (.+)$/);
-                if (joinMatch) {
-                  collectiveName = joinMatch[1].trim();
+              username = notification.data?.follower_username ||
+                notification.data?.donor_id ||
+                notification.data?.creator_id ||
+                notification.data?.new_member_id ||
+                'unknown';
+            }
+
+            let collectiveName = '';
+            if (notification.body) {
+              const toMatch = notification.body.match(/to (.+)$/);
+              if (toMatch) {
+                collectiveName = toMatch[1].trim();
+              } else {
+                const inMatch = notification.body.match(/in (.+)$/);
+                if (inMatch) {
+                  collectiveName = inMatch[1].trim();
+                } else if (notification.body.includes('joined')) {
+                  const joinMatch = notification.body.match(/joined (.+)$/);
+                  if (joinMatch) {
+                    collectiveName = joinMatch[1].trim();
+                  }
                 }
               }
             }
-          }
 
-          // If not found in body, try extracting from title
-          if (!collectiveName && notification.title) {
-            const titleMatch = notification.title.match(/in (.+)$/);
-            if (titleMatch) {
-              collectiveName = titleMatch[1].trim();
-            }
-          }
-
-          // Extract user ID from notification data
-          const userId =
-            notification.data?.donor_id ||
-            notification.data?.follower_id ||
-            notification.data?.creator_id ||
-            notification.data?.new_member_id ||
-            username;
-
-          // Get user profile from the fetched profiles map
-          const userProfile = userId ? userProfilesMap.get(userId.toString()) : null;
-
-          // Use first_name and last_name from profile, fallback to username
-          // Handle both flat structure and nested "user" structure
-          const profileUser = userProfile?.user || userProfile;
-          let firstName = profileUser?.first_name || '';
-          let lastName = profileUser?.last_name || '';
-          let fullName = '';
-
-          if (firstName && lastName) {
-            fullName = `${firstName} ${lastName}`;
-          } else if (profileUser?.full_name) {
-            fullName = profileUser.full_name;
-          } else {
-            fullName = username || 'Unknown User';
-          }
-
-          // Get avatar from profile if available
-          const avatar = profileUser?.profile_picture || '';
-
-          // Extract cleaner action text (remove @username from body)
-          let actionText = notification.body || notification.message || '';
-          if (actionText && username) {
-            // Remove @username from the beginning
-            actionText = actionText.replace(`@${username} `, '').trim();
-            // Capitalize first letter
-            actionText = actionText.charAt(0).toUpperCase() + actionText.slice(1);
-          }
-
-          // Check if this is a join notification
-          const isJoinNotification =
-            notification.body?.toLowerCase().includes('joined') ||
-            notification.data?.new_member_id !== undefined ||
-            notification.title?.toLowerCase().includes('new member');
-
-          // Extract collective ID from notification data if available
-          const collectiveId = notification.data?.collective_id ||
-            notification.data?.collectiveId ||
-            notification.data?.crwd_id ||
-            null;
-
-          return {
-            id: notification.id,
-            user: {
-              id: userId,
-              name: fullName,
-              firstName: firstName,
-              lastName: lastName,
-              username: username,
-              avatar: avatar,
-            },
-            collective: collectiveName
-              ? {
-                name: collectiveName,
-                id: collectiveId,
+            if (!collectiveName && notification.title) {
+              const titleMatch = notification.title.match(/in (.+)$/);
+              if (titleMatch) {
+                collectiveName = titleMatch[1].trim();
               }
-              : undefined,
-            content: actionText,
-            timestamp: notification.created_at || notification.timestamp,
-            likesCount: 0, // Not available in notification API
-            commentsCount: 0, // Not available in notification API
-            postId: notification.data?.post_id || null, // Extract post_id if available
-            isJoinNotification: isJoinNotification, // Flag for join notifications
-            data: {
-              profile_picture: notification.data?.user_profile_picture,
-              color: notification.data?.user_color,
-              new_member_id: notification.data?.new_member_id,
-              collective_id: collectiveId,
-              type: notification.data?.type,
             }
-          };
-        });
+
+            const userId = notification.data?.donor_id ||
+              notification.data?.follower_id ||
+              notification.data?.creator_id ||
+              notification.data?.new_member_id ||
+              username;
+
+            const userProfile = userId ? userProfilesMap.get(userId.toString()) : null;
+            const profileUser = userProfile?.user || userProfile;
+            let firstName = profileUser?.first_name || '';
+            let lastName = profileUser?.last_name || '';
+            let fullName = '';
+
+            if (firstName && lastName) {
+              fullName = `${firstName} ${lastName}`;
+            } else if (profileUser?.full_name) {
+              fullName = profileUser.full_name;
+            } else {
+              fullName = username || 'Unknown User';
+            }
+
+            const avatar = profileUser?.profile_picture || '';
+            let actionText = notification.body || notification.message || '';
+            if (actionText && username) {
+              actionText = actionText.replace(`@${username} `, '').trim();
+              actionText = actionText.charAt(0).toUpperCase() + actionText.slice(1);
+            }
+
+            const isJoinNotification =
+              notification.body?.toLowerCase().includes('joined') ||
+              notification.data?.new_member_id !== undefined ||
+              notification.title?.toLowerCase().includes('new member');
+
+            const collectiveId = notification.data?.collective_id ||
+              notification.data?.collectiveId ||
+              notification.data?.crwd_id ||
+              null;
+
+            return {
+              uniqueKey: `notification-${notification.id}`,
+              type: 'notification',
+              data: {
+                id: notification.id,
+                user: {
+                  id: userId,
+                  name: fullName,
+                  firstName: firstName,
+                  lastName: lastName,
+                  username: username,
+                  avatar: avatar,
+                },
+                collective: collectiveName
+                  ? {
+                    name: collectiveName,
+                    id: collectiveId,
+                  }
+                  : undefined,
+                content: actionText,
+                timestamp: notification.created_at || notification.timestamp,
+                postId: notification.data?.post_id || null,
+                isJoinNotification: isJoinNotification,
+                data: {
+                  profile_picture: notification.data?.user_profile_picture,
+                  color: notification.data?.user_color,
+                  new_member_id: notification.data?.new_member_id,
+                  collective_id: collectiveId,
+                  type: notification.data?.type,
+                }
+              }
+            };
+          }
+          return null;
+        })
+        .filter(Boolean) || [];
     } catch (error) {
-      console.error('Error transforming community updates:', error);
+      console.error('Error transforming feed items:', error);
       return [];
     }
-  }, [notificationsData, userProfilesMap]);
+  }, [communityUpdatesPostsData, userProfilesMap]);
 
-  // All community updates (no splitting needed - show all below suggested collectives)
-  const allCommunityUpdates = transformedCommunityUpdates;
+  const feedPart1 = transformedFeedItems.slice(0, 2);
+  const feedPart2 = transformedFeedItems.slice(2, 4);
+  const feedPart3 = transformedFeedItems.slice(4);
+
+  const renderFeedItem = (item: any) => {
+    if (item.type === 'post') {
+      return (
+        <PostResultCard
+          key={item.uniqueKey}
+          post={item.data}
+          onCommentPress={(post) => {
+            setSelectedPost({
+              id: typeof post.id === 'string' ? parseInt(post.id) : post.id,
+              username: post.user?.username || 'Unknown User',
+              text: post.content || '',
+              avatarUrl: post.user?.profile_picture || '',
+              firstName: post.user?.first_name,
+              lastName: post.user?.last_name,
+              color: post.user?.color || '',
+            });
+            setShowCommentsSheet(true);
+          }}
+          isHomeFeed={true}
+        />
+      );
+    } else if (item.type === 'notification') {
+      return (
+        <CommunityUpdates key={item.uniqueKey} updates={[item.data]} showHeading={false} isFeedItem={true} />
+      );
+    }
+    return null;
+  };
 
   if (!user?.id) {
     return <GuestHome />;
@@ -671,26 +714,22 @@ export default function NewHome() {
 
 
 
-            {/* 2 Posts - Above Featured Nonprofits */}
-            {token?.access_token && (
-              <CommunityPosts
-                limit={2}
-                startIndex={0}
-                showHeading={true}
-                onCommentPress={(post) => {
-                  // Find the original post data to get firstName and lastName
-                  setSelectedPost({
-                    id: typeof post.id === 'string' ? parseInt(post.id) : post.id,
-                    username: post.user?.username || post.username || 'Unknown User',
-                    text: post.content || post.text || '',
-                    avatarUrl: post.user?.avatar || post.user?.profile_picture || post.avatarUrl || '',
-                    firstName: post.user?.first_name || post.user?.firstName || post.firstName,
-                    lastName: post.user?.last_name || post.user?.lastName || post.lastName,
-                    color: post.user?.color || post.color || '',
-                  });
-                  setShowCommentsSheet(true);
-                }}
-              />
+            {/* Feed Part 1 - 2 Items */}
+            {token?.access_token && feedPart1.length > 0 && (
+              <View style={styles.feedSection}>
+                <View style={styles.feedHeading}>
+                  <Text style={styles.feedTitle}>Community Updates</Text>
+                  <Text style={styles.feedSubtitle}>
+                    Updates and discoveries from your community
+                  </Text>
+                </View>
+                <View style={styles.feedList}>
+                  {communityUpdatesLoading && (
+                    <ActivityIndicator size="small" color="#1600ff" />
+                  )}
+                  {feedPart1.map(renderFeedItem)}
+                </View>
+              </View>
             )}
 
             {/* Featured Nonprofits Section */}
@@ -705,26 +744,13 @@ export default function NewHome() {
               />
             )}
 
-            {/* 1 Post - After Featured Nonprofits */}
-            {token?.access_token && (
-              <CommunityPosts
-                limit={1}
-                startIndex={2}
-                showHeading={false}
-                onCommentPress={(post) => {
-                  // Find the original post data to get firstName and lastName
-                  setSelectedPost({
-                    id: typeof post.id === 'string' ? parseInt(post.id) : post.id,
-                    username: post.user?.username || post.username || 'Unknown User',
-                    text: post.content || post.text || '',
-                    avatarUrl: post.user?.avatar || post.user?.profile_picture || post.avatarUrl || '',
-                    firstName: post.user?.first_name || post.user?.firstName || post.firstName,
-                    lastName: post.user?.last_name || post.user?.lastName || post.lastName,
-                    color: post.user?.color || post.color || '',
-                  });
-                  setShowCommentsSheet(true);
-                }}
-              />
+            {/* Feed Part 2 - 2 Items */}
+            {token?.access_token && feedPart2.length > 0 && (
+              <View style={styles.feedSection}>
+                <View style={styles.feedList}>
+                  {feedPart2.map(renderFeedItem)}
+                </View>
+              </View>
             )}
 
             {/* Suggested Collectives Section */}
@@ -739,13 +765,13 @@ export default function NewHome() {
               />
             )}
 
-            {/* All Community Updates - Below Suggested Collectives */}
-            {token?.access_token && (
-              <>
-                {notificationsLoading ? null : allCommunityUpdates.length > 0 ? (
-                  <CommunityUpdates updates={allCommunityUpdates} showHeading={false} />
-                ) : null}
-              </>
+            {/* Feed Part 3 - Rest of Items */}
+            {token?.access_token && feedPart3.length > 0 && (
+              <View style={styles.feedSection}>
+                <View style={styles.feedList}>
+                  {feedPart3.map(renderFeedItem)}
+                </View>
+              </View>
             )}
 
             {/* Explore Cards */}
@@ -801,4 +827,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  feedSection: {
+    paddingHorizontal: 16,
+    marginVertical: 6,
+  },
+  feedHeading: {
+    marginBottom: 12,
+  },
+  feedTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#111827',
+    marginBottom: 6,
+    fontFamily: 'Outfit-Bold',
+  },
+  feedSubtitle: {
+    fontSize: 14,
+    color: '#4B5563',
+    fontFamily: 'Outfit-Regular',
+  },
+  feedList: {
+    gap: 10,
+  },
 });
+

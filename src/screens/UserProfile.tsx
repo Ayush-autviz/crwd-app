@@ -572,7 +572,18 @@ export default function UserProfile() {
                             const isCurrentlyFollowing = isFollowingTab ? true : (item.is_following ?? userData.is_following ?? false);
 
                             return (
-                                <View key={userData.id || index} style={styles.memberItem}>
+                                <TouchableOpacity
+                                    key={userData.id || index}
+                                    style={styles.memberItem}
+                                    onPress={() => {
+                                        bottomSheetRef.current?.dismiss();
+                                        if (userData.id === currentUser?.id) {
+                                            (navigation as any).navigate('Profile');
+                                        } else {
+                                            (navigation as any).navigate('UserProfile', { userId: userData.id });
+                                        }
+                                    }}
+                                >
                                     <View style={styles.memberInfo}>
                                         <Avatar size={48}>
                                             <AvatarImage src={userData.profile_picture || userData.avatar} />
@@ -603,7 +614,7 @@ export default function UserProfile() {
                                             </Text>
                                         </TouchableOpacity>
                                     )}
-                                </View>
+                                </TouchableOpacity>
                             );
                         })
                     ) : (
@@ -814,7 +825,7 @@ export default function UserProfile() {
                                     return (
                                         <TouchableOpacity
                                             key={cause.id || i}
-                                            onPress={() => navigation.navigate('CauseScreen' as never, { id: cause.id } as never)}
+                                            onPress={() => (navigation as any).navigate('CauseScreen', { id: cause.id })}
                                             style={{
                                                 width: '33.333%',
                                                 paddingHorizontal: 6,

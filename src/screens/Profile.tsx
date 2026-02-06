@@ -476,7 +476,7 @@ export default function Profile() {
                                 style={styles.causeItem}
                                 onPress={() => {
                                     bottomSheetRef.current?.close();
-                                    (navigation as any).navigate('CauseScreen', { causeId: cause.id });
+                                    (navigation as any).navigate('CauseScreen', { id: cause.id });
                                 }}
                             >
                                 <Avatar size={48} style={{ borderRadius: 10 }}>
@@ -569,7 +569,16 @@ export default function Profile() {
                     {members.length > 0 ? members.map((member: any, index: number) => {
                         const isFollowing = isFollowingTab ? true : (member.is_following || false);
                         return (
-                            <View key={member.id || index} style={styles.memberItem}>
+                            <TouchableOpacity
+                                key={member.id || index}
+                                style={styles.memberItem}
+                                onPress={() => {
+                                    bottomSheetRef.current?.close();
+                                    if (member.id !== user?.id) {
+                                        (navigation as any).navigate('UserProfile', { userId: member.id });
+                                    }
+                                }}
+                            >
                                 <View style={styles.memberInfo}>
                                     <Avatar size={48}>
                                         <AvatarImage src={member.avatar} />
@@ -596,7 +605,7 @@ export default function Profile() {
                                         </Text>
                                     </TouchableOpacity>
                                 )}
-                            </View>
+                            </TouchableOpacity>
                         );
                     }) : (
                         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 40 }}>
@@ -961,7 +970,7 @@ export default function Profile() {
                                     return (
                                         <TouchableOpacity
                                             key={cause.id || i}
-                                            onPress={() => navigation.navigate('CauseScreen' as never)}
+                                            onPress={() => (navigation as any).navigate('CauseScreen', { id: cause.id })}
                                             style={{
                                                 width: '33.333%',
                                                 paddingHorizontal: 6,

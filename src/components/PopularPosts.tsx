@@ -697,16 +697,19 @@ export default function PopularPosts({
                                                         {formatPostTime((item as any).created_at || (item as any).timestamp || item.time)}
                                                     </Text>
                                                 ) : (
-                                                    <>
-                                                        <Text style={styles.date}>
-                                                            {formatPostTime((item as any).created_at || (item as any).timestamp || item.time)}
+                                                    <TouchableOpacity
+                                                        onPress={() => {
+                                                            if (item.orgUrl) {
+                                                                (navigation as any).navigate('GroupCRWD', { collectiveId: item.orgUrl.toString() });
+                                                            }
+                                                        }}
+                                                        style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
+                                                    >
+                                                        <Users size={14} color="#6b7280" strokeWidth={2.5} />
+                                                        <Text style={{ fontSize: 13, color: '#6b7280', fontFamily: 'Outfit-Regular' }}>
+                                                            {item.org}
                                                         </Text>
-                                                        {/* {item.org && (
-                                                            <View style={[styles.tag, { backgroundColor: tagBgColor }]}>
-                                                                <Text style={styles.tagText}>{item.org}</Text>
-                                                            </View>
-                                                        )} */}
-                                                    </>
+                                                    </TouchableOpacity>
                                                 )}
                                             </View>
                                         </View>

@@ -676,7 +676,7 @@ export default function NewGroupCrwdPage() {
                   <View style={styles.memberDetails}>
                     <View style={styles.memberNameRow}>
                       <Text style={styles.memberName}>
-                        @{username || name.toLowerCase().replace(/\s+/g, '_')}
+                        {name || username.toLowerCase().replace(/\s+/g, '_')}
                       </Text>
                       {isFounder && (
                         <View style={styles.founderBadge}>
@@ -684,8 +684,8 @@ export default function NewGroupCrwdPage() {
                         </View>
                       )}
                     </View>
-                    {user.bio || user.location && (
-                      <Text style={styles.memberRole}>{user.bio || user.location}</Text>
+                    {(user.bio || user.location) && (
+                      <Text style={styles.memberRole} numberOfLines={1}>{user.bio || user.location}</Text>
                     )}
                   </View>
                 </TouchableOpacity>

@@ -834,20 +834,20 @@ export default function OnBoard() {
         {/* Headings */}
         <View style={styles.headingsContainer}>
           {isFromCreateCollective ? (
-            <>
-              <Text style={[styles.heading1, { color: '#1600ff' }]}>Start Your Movement.</Text>
-              <Text style={[styles.heading2, { color: '#111827' }]}>Create Your Collective & Lead Change</Text>
-            </>
+            <Text style={styles.mainHeading}>
+              <Text style={{ color: '#1600ff' }}>Start Your Movement. </Text>
+              Create Your Collective & Lead Change
+            </Text>
           ) : isFromCollective ? (
-            <>
-              <Text style={[styles.heading1, { color: '#1600ff' }]}>Join a Movement.</Text>
-              <Text style={[styles.heading2, { color: '#111827' }]}>Connect with a Collective</Text>
-            </>
+            <Text style={styles.mainHeading}>
+              <Text style={{ color: '#1600ff' }}>Join a Movement. </Text>
+              Connect with a Collective
+            </Text>
           ) : (
-            <>
-              <Text style={[styles.heading1, { color: '#111827' }]}>Stop Wishing You Made a Difference.</Text>
-              <Text style={[styles.heading2, { color: '#1600ff' }]}>Start Being Someone Who Does.</Text>
-            </>
+            <Text style={styles.mainHeading}>
+              Stop Wishing You Made a Difference.{' '}
+              <Text style={{ color: '#1600ff' }}>Start Being Someone Who Does.</Text>
+            </Text>
           )}
         </View>
 
@@ -963,21 +963,14 @@ const styles = StyleSheet.create({
   headingsContainer: {
     marginBottom: 48,
     alignItems: 'center',
+    // paddingHorizontal: 20,
   },
-  heading1: {
-    fontSize: 32,
+  mainHeading: {
+    fontSize: 35,
     fontFamily: 'Outfit-Black',
     color: '#111827',
     textAlign: 'center',
-    marginBottom: 12,
-    // lineHeight: 40,
-  },
-  heading2: {
-    fontSize: 32,
-    fontFamily: 'Outfit-Black',
-    color: '#1600ff',
-    textAlign: 'center',
-    // lineHeight: 40,
+    lineHeight: 44,
   },
   buttonsContainer: {
     width: '100%',

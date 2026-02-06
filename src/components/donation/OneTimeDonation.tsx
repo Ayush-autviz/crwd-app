@@ -959,11 +959,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: PrimaryBlue,
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#1600ff',
     marginBottom: 8,
     textAlign: 'center',
+    fontFamily: 'Outfit-Bold',
   },
   headerSubtitle: {
     fontSize: 13,

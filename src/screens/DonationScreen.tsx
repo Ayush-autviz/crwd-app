@@ -8,7 +8,7 @@ import {
   StyleSheet,
   Dimensions,
 } from 'react-native';
-import { ChevronLeft, Plus, Trash2, User, X, ChevronDown, Search, Pencil } from 'lucide-react-native';
+import { ChevronLeft, Plus, Trash2, User, X, ChevronDown, Search, Pencil, Minus } from 'lucide-react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import Slider from '@react-native-community/slider';
 import DonationStep2 from '../components/donation/DonationStep2';
@@ -1165,7 +1165,7 @@ export default function DonationScreen() {
                                     editableAmount <= 5 && !isEditingAmount && styles.amountButtonDisabled
                                   ]}
                                 >
-                                  <Text style={[styles.minusIcon, editableAmount > 5 && styles.minusIconWhite]}>−</Text>
+                                  <Minus size={18} color={donationAmount > 5 ? "#ffffff" : "#9ca3af"} strokeWidth={3} />
                                 </TouchableOpacity>
 
                                 <View style={styles.amountDisplay}>
@@ -1689,17 +1689,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderRadius: 12,
     padding: 16,
-    marginBottom: 24,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
     borderWidth: 1,
     borderColor: '#e5e7eb',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
   },
   amountCardTitle: {
     fontSize: 20,
@@ -1719,13 +1716,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 24,
+    gap: 12,
+    paddingBottom: 16
   },
   amountButton: {
     width: 48,
     height: 48,
     borderRadius: 8,
-    backgroundColor: '#1600ff',
+    backgroundColor: PrimaryBlue,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -1737,26 +1735,26 @@ const styles = StyleSheet.create({
   },
   monthlyImpactTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '700',
     color: '#111827',
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: 16,
     fontFamily: 'Outfit-Bold',
   },
   amountDisplay: {
     alignItems: 'center',
-    marginHorizontal: 24,
+    // marginHorizontal: 24,
   },
   amountValue: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    color: '#1600ff',
-    marginBottom: 4,
+    fontSize: 32,
+    fontWeight: '700',
+    color: PrimaryBlue,
     fontFamily: 'Outfit-Bold',
   },
   amountLabel: {
-    fontSize: 18,
-    color: '#6b7280',
+    fontSize: 13,
+    color: '#111827',
+    marginTop: 4,
     fontFamily: 'Outfit-Regular',
   },
   organizationsCard: {

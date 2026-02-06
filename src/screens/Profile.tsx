@@ -387,6 +387,8 @@ export default function Profile() {
             id: userData.id,
             is_following: isFollowing,
             color: userData.color || undefined,
+            bio: userData.bio || '',
+            location: userData.location || '',
         };
     }) || [];
 
@@ -402,6 +404,8 @@ export default function Profile() {
             id: userData.id,
             is_following: isFollowing,
             color: userData.color || undefined,
+            bio: userData.bio || '',
+            location: userData.location || '',
         };
     }) || [];
 
@@ -578,7 +582,7 @@ export default function Profile() {
                                     </Avatar>
                                     <View style={styles.memberDetails}>
                                         <Text style={styles.memberName}>{member.name}</Text>
-                                        <Text style={styles.memberUsername}>@{member.username}</Text>
+                                        <Text style={styles.memberUsername} numberOfLines={1}>{member.bio || member.location}</Text>
                                     </View>
                                 </View>
                                 {member.id !== user?.id && (

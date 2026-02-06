@@ -1,4 +1,4 @@
- import { View, Text, ScrollView, TouchableOpacity, Share, Alert, StyleSheet, ActivityIndicator, Clipboard, TouchableWithoutFeedback, Dimensions, Image, Modal } from 'react-native'
+import { View, Text, ScrollView, TouchableOpacity, Share, Alert, StyleSheet, ActivityIndicator, Clipboard, TouchableWithoutFeedback, Dimensions, Image, Modal } from 'react-native'
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query'
@@ -589,7 +589,7 @@ export default function UserProfile() {
                                                     ? `${userData.first_name} ${userData.last_name}`
                                                     : userData.first_name || userData.name || 'Unknown User'}
                                             </Text>
-                                            <Text style={styles.memberUsername}>@{userData.username || 'unknown'}</Text>
+                                            <Text style={styles.memberUsername} numberOfLines={1}>{userData.bio || userData.location}</Text>
                                         </View>
                                     </View>
                                     {userData.id !== currentUser?.id && (
@@ -683,17 +683,17 @@ export default function UserProfile() {
                 <View style={styles.content}>
                     {/* Profile Header */}
                     <View style={styles.profileHeader}>
-                <TouchableOpacity onPress={() => setShowImageModal(true)}>
-                    <Avatar size={130}>
-                        <AvatarImage src={userProfile.profile_picture} />
-                        <AvatarFallback
-                            style={{ backgroundColor: userProfile.color || getConsistentColor(userProfile.id || userProfile.username || 'U', avatarColors) }}
-                            textStyle={{ color: '#FFFFFF', fontSize: 32, fontFamily: 'Outfit-Bold' }}
-                        >
-                            {getInitials(userProfile.first_name, userProfile.last_name, userProfile.username)}
-                        </AvatarFallback>
-                    </Avatar>
-                </TouchableOpacity>
+                        <TouchableOpacity onPress={() => setShowImageModal(true)}>
+                            <Avatar size={130}>
+                                <AvatarImage src={userProfile.profile_picture} />
+                                <AvatarFallback
+                                    style={{ backgroundColor: userProfile.color || getConsistentColor(userProfile.id || userProfile.username || 'U', avatarColors) }}
+                                    textStyle={{ color: '#FFFFFF', fontSize: 32, fontFamily: 'Outfit-Bold' }}
+                                >
+                                    {getInitials(userProfile.first_name, userProfile.last_name, userProfile.username)}
+                                </AvatarFallback>
+                            </Avatar>
+                        </TouchableOpacity>
                         <View style={{ alignItems: 'center' }}>
                             <View style={{ flexDirection: 'column', alignItems: 'center', gap: 0, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 8 }}>
                                 <Text style={styles.profileName}>

@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react'
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, ScrollView, Image } from 'react-native'
+import React, { useEffect, useState, useMemo } from 'react'
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, ScrollView, Image, RefreshControl } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import { PrimaryGreen, SecondaryGreen, PrimaryGrey } from '../Constants/Colors'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -52,18 +52,47 @@ const Circles = () => {
   };
 
   // Fetch collectives data using React Query
-  const { data: collectiveData, isLoading: isLoadingCollectives } = useQuery({
+  const { 
+    data: collectiveData, 
+    isLoading: isLoadingCollectives,
+    refetch: refetchCollectives,
+    isRefetching: isRefetchingCollectives
+  } = useQuery({
     queryKey: ['circles'],
     queryFn: () => getCollectives(),
     enabled: true,
   });
 
   // Fetch joined collectives for current user
-  const { data: joinCollectiveData, isLoading: isLoadingJoinCollective } = useQuery({
+  const { 
+    data: joinCollectiveData, 
+    isLoading: isLoadingJoinCollective,
+    refetch: refetchJoinCollectives,
+    isRefetching: isRefetchingJoinCollective
+  } = useQuery({
     queryKey: ['join-collective', currentUser?.id],
     queryFn: () => getJoinCollective(currentUser?.id || ''),
     enabled: !!currentUser?.id,
   });
+
+  const onRefresh = React.useCallback(() => {
+    refetchCollectives();
+    if (currentUser?.id) {
+      refetchJoinCollectives();
+    }
+  }, [refetchCollectives, refetchJoinCollectives, currentUser?.id]);
+
+  const refreshing = isRefetchingCollectives || isRefetchingJoinCollective;
+
+  // Filter out joined collectives from discover list
+  const filteredDiscoverList = useMemo(() => {
+    if (!collectiveData?.results) return [];
+    if (!joinCollectiveData?.data) return collectiveData.results;
+
+    const joinedIds = new Set(joinCollectiveData.data.map((item: any) => (item.collective?.id || item.id)));
+    
+    return collectiveData.results.filter((item: any) => !joinedIds.has(item.id));
+  }, [collectiveData, joinCollectiveData]);
 
   // Auto-switch to discover tab if no joined collectives
   useEffect(() => {
@@ -271,7 +300,13 @@ const Circles = () => {
       </View>
 
       {activeTab === 'my-crwds' ? (
-        <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+        <ScrollView 
+          style={styles.scrollContainer} 
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[PrimaryGreen]} />
+          }
+        >
           <View style={styles.contentContainer}>
             {/* Loading State */}
             {isLoadingJoinCollective ? (
@@ -313,12 +348,15 @@ const Circles = () => {
             </View>
           ) : (
             <FlatList
-              data={collectiveData?.results || []}
+              data={filteredDiscoverList}
               keyExtractor={(item) => String(item.id)}
               renderItem={renderDiscoverItem}
               contentContainerStyle={styles.listContent}
               // ItemSeparatorComponent={() => <View style={styles.separator} />}
               showsVerticalScrollIndicator={false}
+              refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[PrimaryGreen]} />
+              }
             />
           )}
         </View>

@@ -354,7 +354,7 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
         </View>
 
         {/* Action Button - Follow for donation notifications */}
-        {isDonationNotification && update.user.id && currentUser?.id !== update.user.id && (
+        {isDonationNotification && update.user.id && currentUser?.id !== update.user.id && !isFollowing && (
           <TouchableOpacity
             onPress={handleFollowClick}
             disabled={followMutation.isPending || unfollowMutation.isPending || isLoadingProfile}

@@ -166,7 +166,7 @@ export default function NewGroupCrwdPage() {
   const { data: postsData, isLoading: isLoadingPosts } = useInfiniteQuery({
     queryKey: ['posts', crwdId],
     queryFn: ({ pageParam = 1 }) => getPosts('', crwdId, pageParam),
-    getNextPageParam: (lastPage) => {
+    getNextPageParam: (lastPage: any) => {
       if (lastPage.next) {
         const url = new URL(lastPage.next);
         const page = url.searchParams.get('page');
@@ -181,7 +181,7 @@ export default function NewGroupCrwdPage() {
   // Flatten posts
   const posts = postsData
     ? {
-      results: postsData.pages.flatMap((page) => page.results || []),
+      results: postsData.pages.flatMap((page: any) => page.results || []),
       next: postsData.pages[postsData.pages.length - 1]?.next || null,
       count: postsData.pages[0]?.count || 0,
     }
@@ -201,7 +201,7 @@ export default function NewGroupCrwdPage() {
   // Join collective mutation
   const joinCollectiveMutation = useMutation({
     mutationFn: joinCollective,
-    onSuccess: async (response) => {
+    onSuccess: async (response: any) => {
       console.log('Join collective successful:', response);
 
       // Invalidate queries to refresh data
@@ -229,7 +229,7 @@ export default function NewGroupCrwdPage() {
   // Leave collective mutation
   const leaveCollectiveMutation = useMutation({
     mutationFn: leaveCollective,
-    onSuccess: async (response) => {
+    onSuccess: async (response: any) => {
       console.log('Leave collective successful:', response);
       setShowConfirmDialog(false);
       queryClient.invalidateQueries({ queryKey: ['crwd', crwdId] });

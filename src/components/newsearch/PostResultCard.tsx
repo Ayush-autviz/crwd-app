@@ -370,7 +370,7 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
               </TouchableOpacity>
 
               {/* Follow Button */}
-              {isHomeFeed && user?.id && user.id.toString() !== currentUser?.id?.toString() && (
+              {isHomeFeed && user?.id && user.id.toString() !== currentUser?.id?.toString() && !isFollowing && (
                 <TouchableOpacity
                   onPress={handleFollowPress}
                   disabled={followMutation.isPending || unfollowMutation.isPending || isLoadingProfile}

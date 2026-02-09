@@ -64,7 +64,7 @@ export default function CauseResultCard({ cause }: CauseResultCardProps) {
         <Avatar size={48} style={styles.avatar}>
           <AvatarImage src={cause.image || undefined} />
           <AvatarFallback
-            style={{ backgroundColor: avatarBgColor }}
+            style={{ backgroundColor: cause.image ? 'transparent' : avatarBgColor }}
             textStyle={{ color: '#FFFFFF', fontSize: 14, fontWeight: '700' }}
           >
             {initials}

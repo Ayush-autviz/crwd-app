@@ -17,6 +17,7 @@ import { useMutation } from '@tanstack/react-query'
 import { useToast } from '../contexts/ToastContext'
 import messaging from '@react-native-firebase/messaging';
 import { unregisterToken } from '../services/api/auth';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { useQueryClient } from '@tanstack/react-query';
 
 export default function NewSettings() {
@@ -115,7 +116,7 @@ export default function NewSettings() {
       <SafeAreaView style={styles.container} edges={['top']}>
         <MainHeaderNav show={true} menu={false} title={'Settings'} />
 
-        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        <KeyboardAwareScrollView style={styles.scrollView} showsVerticalScrollIndicator={false} enableOnAndroid={true} extraScrollHeight={100}>
           {/* Account Component */}
           <Account />
 
@@ -299,7 +300,7 @@ export default function NewSettings() {
           )}
 
           <View style={styles.bottomSpacing} />
-        </ScrollView>
+        </KeyboardAwareScrollView>
 
         {/* Change Password Bottom Sheet */}
         <ChangePasswordSheet bottomSheetRef={passwordBottomSheetRef} />

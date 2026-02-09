@@ -59,7 +59,7 @@ export default function Account() {
   // Update profile mutation
   const updateProfileMutation = useMutation({
     mutationFn: updateProfile,
-    onSuccess: (response) => {
+    onSuccess: (response: any) => {
       if (response?.user?.profile_picture && user) {
         setUser({ ...user, profile_picture: response.user.profile_picture })
       }
@@ -225,7 +225,7 @@ export default function Account() {
               {selectedImageUri || formData.profile_picture_file ? (
                 <Image
                   source={{ uri: selectedImageUri || formData.profile_picture_file }}
-                  style={styles.profilePicture}
+                  style={[styles.profilePicture, { backgroundColor: 'transparent' }]}
                 />
               ) : (
                 <View style={[styles.profilePicture, { backgroundColor: profileData?.color || PrimaryBlue }]}>

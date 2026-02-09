@@ -2,13 +2,14 @@ import { View, Text, TouchableOpacity, TextInput, Image, ScrollView, StyleSheet,
 import React, { useState, useEffect } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { PrimaryGrey, PrimaryBlue, LightGrey } from '../Constants/Colors'
-import { Image as ImageIcon, X, ArrowLeft, Paperclip, Lightbulb } from 'lucide-react-native'
+import { ImageIcon, X, ArrowLeft, Paperclip, Lightbulb } from 'lucide-react-native'
 import ImagePicker from 'react-native-image-crop-picker'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query'
 import { createPost, getLinkPreview } from '../services/api/social'
 import { useAuthStore } from '../store/store'
 import { Toast } from '../components/Toast'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 
 export default function Post() {
   const navigation = useNavigation<any>();
@@ -63,7 +64,7 @@ export default function Post() {
   // Create post mutation
   const createPostMutation = useMutation({
     mutationFn: createPost,
-    onSuccess: (response) => {
+    onSuccess: (response: any) => {
       console.log('Post created successfully:', response);
       setToastMessage("Post created successfully!");
       setShowToast(true);
@@ -293,7 +294,7 @@ export default function Post() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+      <KeyboardAwareScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} enableOnAndroid={true} extraScrollHeight={100}>
         {/* Main Content Input */}
         <View style={styles.contentSection}>
           <View style={styles.textInputContainer}>
@@ -472,7 +473,7 @@ export default function Post() {
             </View>
           </View>
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
 
       {/* Toast notification */}
       <Toast

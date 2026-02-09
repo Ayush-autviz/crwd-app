@@ -144,7 +144,7 @@ export default function CollectiveResultCard({ collective }: CollectiveResultCar
               <Avatar size={20}>
                 <AvatarImage src={founder.profile_picture} />
                 <AvatarFallback
-                  style={{ backgroundColor: founder.color || getConsistentColor(founder.id || founderName, avatarColors) }}
+                  style={{ backgroundColor: founder.profile_picture ? 'transparent' : (founder.color || getConsistentColor(founder.id || founderName, avatarColors)) }}
                   textStyle={{ color: '#FFFFFF', fontSize: 10, fontWeight: '700' }}
                 >
                   {founderInitials}

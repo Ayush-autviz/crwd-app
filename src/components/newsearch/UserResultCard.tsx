@@ -93,7 +93,7 @@ export default function UserResultCard({ user, currentUserId }: UserResultCardPr
       );
     } else {
       // Navigate to UserProfile screen
-      navigation.navigate('UserProfile' as never, { userId: user.id } as never);
+      (navigation as any).navigate('UserProfile', { userId: user.id });
     }
   };
 
@@ -107,7 +107,7 @@ export default function UserResultCard({ user, currentUserId }: UserResultCardPr
         <Avatar size={48} style={styles.avatar}>
           <AvatarImage src={user.profile_picture} />
           <AvatarFallback
-            style={{ backgroundColor: avatarBgColor }}
+            style={{ backgroundColor: user.profile_picture ? 'transparent' : avatarBgColor }}
             textStyle={{ color: '#FFFFFF', fontSize: 14, fontWeight: '700' }}
           >
             {initials}

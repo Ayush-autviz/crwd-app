@@ -241,7 +241,7 @@ export default function Profile() {
             }
             showToast('Followed');
         },
-        onError: (error) => {
+        onError: (error: any) => {
             console.error('Error following user:', error);
             showToast('Error following user');
         },
@@ -258,7 +258,7 @@ export default function Profile() {
             }
             showToast('Unfollowed');
         },
-        onError: (error) => {
+        onError: (error: any) => {
             console.error('Error unfollowing user:', error);
             showToast('Error unfollowing user');
         },
@@ -481,7 +481,7 @@ export default function Profile() {
                             >
                                 <Avatar size={48} style={{ borderRadius: 10 }}>
                                     <AvatarImage src={cause.avatar} />
-                                    <AvatarFallback style={{ backgroundColor: causeBgColor }} textStyle={{ color: '#FFFFFF', fontFamily: 'Outfit-Bold', fontSize: 20 }}>
+                                    <AvatarFallback style={{ backgroundColor: cause.avatar ? 'transparent' : causeBgColor }} textStyle={{ color: '#FFFFFF', fontFamily: 'Outfit-Bold', fontSize: 20 }}>
                                         {cause.name?.charAt(0)?.toUpperCase() || 'N'}
                                     </AvatarFallback>
                                 </Avatar>
@@ -532,7 +532,7 @@ export default function Profile() {
                                     {hasImage ? (
                                         <AvatarImage src={crwd.avatar} />
                                     ) : null}
-                                    <AvatarFallback style={{ backgroundColor: iconColor || '#10B981' }} textStyle={{ color: '#FFFFFF', fontFamily: 'Outfit-Bold', fontSize: 20 }}>
+                                    <AvatarFallback style={{ backgroundColor: hasImage ? 'transparent' : (iconColor || '#10B981') }} textStyle={{ color: '#FFFFFF', fontFamily: 'Outfit-Bold', fontSize: 20 }}>
                                         {iconLetter}
                                     </AvatarFallback>
                                 </Avatar>
@@ -835,7 +835,7 @@ export default function Profile() {
                             <Avatar size={130}>
                                 <AvatarImage src={profileData?.profile_picture} />
                                 <AvatarFallback
-                                    style={{ backgroundColor: profileData?.color || getConsistentColor(profileData?.id || profileData?.username || 'U', avatarColors) }}
+                                    style={{ backgroundColor: profileData?.profile_picture ? 'transparent' : (profileData?.color || getConsistentColor(profileData?.id || profileData?.username || 'U', avatarColors)) }}
                                     textStyle={{ color: '#FFFFFF', fontFamily: 'Outfit-SemiBold', fontSize: 40 }}
                                 >
                                     {getInitials(profileData?.first_name, profileData?.last_name, profileData?.username, profileData?.username)}
@@ -1085,7 +1085,7 @@ export default function Profile() {
                         ) : userPosts.length === 0 ? (
                             <View style={styles.emptyContainer}>
                                 <View style={styles.emptyIconContainer}>
-                                    <Users size={48} color="#1600ff" strokeWidth={1.5} />
+                                    <Users size={48} color="#1600ff" />
                                 </View>
                                 <Text style={styles.emptyTitle}>No posts yet</Text>
                                 <Text style={styles.emptyDescription}>

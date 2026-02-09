@@ -681,7 +681,7 @@ export default function PopularPosts({
                                         <Avatar size={40}>
                                             <AvatarImage src={item.avatarUrl} />
                                             <AvatarFallback
-                                                style={{ backgroundColor: avatarBgColor }}
+                                                style={{ backgroundColor: item.avatarUrl ? 'transparent' : avatarBgColor }}
                                                 textStyle={{ color: 'white', fontFamily: 'Outfit-SemiBold', fontSize: 14 }}
                                             >
                                                 {initials}

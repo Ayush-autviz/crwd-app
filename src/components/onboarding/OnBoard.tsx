@@ -632,7 +632,7 @@ export default function OnBoard() {
 
   const googleLoginQuery = useQuery({
     queryKey: ['googleLogin'],
-    queryFn: googleLogin,
+    queryFn: () => googleLogin('Google'),
     enabled: false,
   });
 
@@ -644,7 +644,7 @@ export default function OnBoard() {
 
   const appleCallbackMutation = useMutation({
     mutationFn: (code: string) => googleCallbackApi(code, 'apple'),
-    onSuccess: (response) => {
+    onSuccess: (response: any) => {
       console.log('Apple callback successful:', response)
 
       if (response.user) {
@@ -675,8 +675,8 @@ export default function OnBoard() {
   })
 
   const googleCallbackMutation = useMutation({
-    mutationFn: googleCallbackApi,
-    onSuccess: (response) => {
+    mutationFn: (code: string) => googleCallbackApi(code, 'google'),
+    onSuccess: (response: any) => {
       console.log('Google callback successful:', response);
       if (response.user) setUser(response.user);
       if (response.access_token) {

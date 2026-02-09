@@ -45,7 +45,7 @@ export default function NewHome() {
   const [selectedPost, setSelectedPost] = useState<any>(null);
   const scrollRef = useRef<ScrollView>(null);
   const scrollYRef = useRef(0);
-  const animateScrollToTop = (duration = 1200) => {
+  const animateScrollToTop = (duration = 200) => {
     const startY = scrollYRef.current || 0;
     if (!scrollRef.current) return;
     if (startY <= 0) return;
@@ -66,7 +66,7 @@ export default function NewHome() {
   // FCM token send to backend
   const sendFcmTokenToBackend = useMutation({
     mutationFn: registerNotificationToken,
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       console.log('FCM token sent to backend successfully:', data);
     },
     onError: (error: any) => {
@@ -227,7 +227,7 @@ export default function NewHome() {
   // Create a map of user ID to user profile (reactive to query results)
   const userProfilesMap = useMemo(() => {
     const map = new Map();
-    userProfileQueries.forEach((query, index) => {
+    userProfileQueries.forEach((query: any, index: number) => {
       if (query.data && uniqueUserIds[index]) {
         map.set(uniqueUserIds[index].toString(), query.data);
       }
@@ -605,7 +605,7 @@ export default function NewHome() {
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <HomeHeader
         onLogoPress={() => {
-          animateScrollToTop(1200);
+          animateScrollToTop(200);
         }}
       />
 

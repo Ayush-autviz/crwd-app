@@ -477,7 +477,7 @@ export default function UserProfile() {
                             >
                                 <Avatar size={48} style={{ borderRadius: 10 }}>
                                     <AvatarImage src={cause.avatar} />
-                                    <AvatarFallback style={{ backgroundColor: causeBgColor }} textStyle={{ color: '#FFFFFF', fontFamily: 'Outfit-Bold', fontSize: 20 }}>
+                                    <AvatarFallback style={{ backgroundColor: cause.avatar ? 'transparent' : causeBgColor }} textStyle={{ color: '#FFFFFF', fontFamily: 'Outfit-Bold', fontSize: 20 }}>
                                         {cause.name?.charAt(0)?.toUpperCase() || 'N'}
                                     </AvatarFallback>
                                 </Avatar>
@@ -528,7 +528,7 @@ export default function UserProfile() {
                                     {hasImage ? (
                                         <AvatarImage src={crwd.avatar} />
                                     ) : null}
-                                    <AvatarFallback style={{ backgroundColor: iconColor || '#10B981' }} textStyle={{ color: '#FFFFFF', fontFamily: 'Outfit-Bold', fontSize: 20 }}>
+                                    <AvatarFallback style={{ backgroundColor: hasImage ? 'transparent' : (iconColor || '#10B981') }} textStyle={{ color: '#FFFFFF', fontFamily: 'Outfit-Bold', fontSize: 20 }}>
                                         {iconLetter}
                                     </AvatarFallback>
                                 </Avatar>
@@ -588,7 +588,7 @@ export default function UserProfile() {
                                         <Avatar size={48}>
                                             <AvatarImage src={userData.profile_picture || userData.avatar} />
                                             <AvatarFallback
-                                                style={{ backgroundColor: userData.color || getConsistentColor(userData.id || userData.username || 'U', avatarColors) }}
+                                            style={{ backgroundColor: (userData.profile_picture || userData.avatar) ? 'transparent' : (userData.color || getConsistentColor(userData.id || userData.username || 'U', avatarColors)) }}
                                                 textStyle={{ color: '#FFFFFF', fontSize: 16, fontFamily: 'Outfit-SemiBold' }}
                                             >
                                                 {getInitials(userData.first_name, userData.last_name, userData.username || userData.name)}
@@ -698,7 +698,7 @@ export default function UserProfile() {
                             <Avatar size={130}>
                                 <AvatarImage src={userProfile.profile_picture} />
                                 <AvatarFallback
-                                    style={{ backgroundColor: userProfile.color || getConsistentColor(userProfile.id || userProfile.username || 'U', avatarColors) }}
+                                    style={{ backgroundColor: userProfile.profile_picture ? 'transparent' : (userProfile.color || getConsistentColor(userProfile.id || userProfile.username || 'U', avatarColors)) }}
                                     textStyle={{ color: '#FFFFFF', fontSize: 32, fontFamily: 'Outfit-Bold' }}
                                 >
                                     {getInitials(userProfile.first_name, userProfile.last_name, userProfile.username)}
@@ -1112,7 +1112,7 @@ export default function UserProfile() {
                                             <Avatar size={48} style={{ borderRadius: 10 }}>
                                                 <AvatarImage src={imageUrl} />
                                                 <AvatarFallback
-                                                    style={avatarBgColor ? { backgroundColor: avatarBgColor } : {}}
+                                                    style={avatarBgColor ? { backgroundColor: imageUrl ? 'transparent' : avatarBgColor } : {}}
                                                     textStyle={{ color: '#FFFFFF', fontSize: 16, fontFamily: 'Outfit-Bold' }}
                                                 >
                                                     {initials}

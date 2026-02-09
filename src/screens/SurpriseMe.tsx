@@ -16,6 +16,7 @@ import { addCausesToBox, getDonationBox } from '../services/api/donation';
 import { useToast } from '../contexts/ToastContext';
 import { useAuthStore } from '../store/store';
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/Avatar';
+import { truncateAtFirstPeriod } from '../utils/truncateFirstPeriod';
 
 // Get consistent color for avatar
 const avatarColors = [
@@ -45,13 +46,6 @@ const getInitials = (name: string) => {
     return (words[0].charAt(0) + words[1].charAt(0)).toUpperCase();
   }
   return name.substring(0, 2).toUpperCase();
-};
-
-// Helper function to truncate description at first period
-const truncateAtFirstPeriod = (text: string): string => {
-  if (!text) return text;
-  const periodIndex = text.indexOf('.');
-  return periodIndex !== -1 ? text.substring(0, periodIndex + 1) : text;
 };
 
 export default function SurpriseMePage() {

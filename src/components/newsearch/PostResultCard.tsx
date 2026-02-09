@@ -315,7 +315,7 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
               <Avatar size={40} style={styles.avatar}>
                 <AvatarImage src={user.profile_picture} />
                 <AvatarFallback
-                  style={{ backgroundColor: avatarBgColor }}
+                  style={{ backgroundColor: user.profile_picture ? 'transparent' : avatarBgColor }}
                   textStyle={{ color: '#FFFFFF', fontSize: 15, fontWeight: '700' }}
                 >
                   {initials}

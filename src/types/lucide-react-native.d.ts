@@ -34,6 +34,8 @@ declare module 'lucide-react-native' {
   export const Mail: FC<IconProps>;
   export const ArrowLeft: FC<IconProps>;
   export const Link: FC<IconProps>;
+  export const Paperclip: FC<IconProps>;
+  export const Lightbulb: FC<IconProps>;
   export const ImageIcon: FC<IconProps>;
   export const Calendar: FC<IconProps>;
   export const X: FC<IconProps>;

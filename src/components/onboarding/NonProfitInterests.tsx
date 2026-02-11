@@ -175,7 +175,7 @@ export default function NonProfitInterests() {
 
             {/* Subtitle */}
             <Text style={styles.subtitle}>
-              Select one or more categories to personalize your experience. We'll show you nonprofits and collectives that match your interests.
+              Select one or more interests to personalize your experience. We'll show you nonprofits and collectives that match. 
             </Text>
 
             {/* Category Tags - Organic Layout */}

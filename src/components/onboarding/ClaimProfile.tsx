@@ -1,18 +1,15 @@
-import { View, Text, TouchableOpacity, TextInput, StyleSheet, Image, Alert, ActivityIndicator, ScrollView, Modal, Platform } from 'react-native'
+import { View, Text, TouchableOpacity, TextInput, StyleSheet, Image, Modal, Platform } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import * as React from 'react';
-import { useState, useEffect, useRef } from 'react';
-import { Check, ArrowRight, Loader2 } from 'lucide-react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { useState, useRef } from 'react';
+import { Check, ArrowRight, Loader2, Camera, EyeOff, Eye } from 'lucide-react-native'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import LinearGradient from 'react-native-linear-gradient'
-import { PrimaryBlue } from '../../Constants/Colors'
 import * as ImagePicker from 'react-native-image-picker'
 import { useMutation } from '@tanstack/react-query'
 import { emailRegistration, emailVerification, resendEmailVerificationCode, login } from '../../services/api/auth'
 import { useToast } from '../../contexts/ToastContext'
 import { useAuthStore } from '../../store/store'
-import { Camera, EyeOff, Eye } from 'lucide-react-native'
 
 export default function ClaimProfile() {
     const navigation = useNavigation<any>()
@@ -155,7 +152,7 @@ export default function ClaimProfile() {
     // React Query mutations
     const loginMutation = useMutation({
         mutationFn: login,
-        onSuccess: (response) => {
+        onSuccess: (response: any) => {
             console.log('Login successful:', response)
 
             // Store user data and token in the store
@@ -217,7 +214,7 @@ export default function ClaimProfile() {
 
     const emailRegistrationMutation = useMutation({
         mutationFn: emailRegistration,
-        onSuccess: (response) => {
+        onSuccess: (response: any) => {
             setShowOTPModal(true)
             if (response.message === "User already exists with this email") {
                 handleResendEmailVerification()
@@ -268,7 +265,7 @@ export default function ClaimProfile() {
 
     const emailVerificationMutation = useMutation({
         mutationFn: emailVerification,
-        onSuccess: async (response) => {
+        onSuccess: async (response: any) => {
             console.log("email verified", response)
             setShowOTPModal(false)
 
@@ -298,7 +295,7 @@ export default function ClaimProfile() {
 
     const resendEmailVerificationMutation = useMutation({
         mutationFn: resendEmailVerificationCode,
-        onSuccess: (response) => {
+        onSuccess: (response: any) => {
             showToast("Verification code sent successfully!")
             console.log("verification code resent", response)
         },
@@ -437,44 +434,46 @@ export default function ClaimProfile() {
 
                         {/* Form Fields */}
                         <View style={styles.formFields}>
-                            {/* First Name */}
-                            <View style={styles.inputGroup}>
-                                <Text style={styles.label}>
-                                    First Name <Text style={styles.required}>*</Text>
-                                </Text>
-                                <TextInput
-                                    placeholder="Enter your first name"
-                                    style={[styles.input, errors.firstName && { borderColor: '#ef4444' }]}
-                                    placeholderTextColor="#9ca3af"
-                                    value={formData.firstName}
-                                    onChangeText={(text) => {
-                                        setFormData(prev => ({ ...prev, firstName: text }))
-                                        clearError('firstName')
-                                    }}
-                                />
-                                {errors.firstName && (
-                                    <Text style={styles.errorText}>{errors.firstName}</Text>
-                                )}
-                            </View>
+                            <View style={styles.nameRow}>
+                                <View style={[styles.inputGroup, styles.nameInputGroup]}>
+                                    <Text style={styles.label}>
+                                        First Name <Text style={styles.required}>*</Text>
+                                    </Text>
+                                    <TextInput
+                                        placeholder="First name"
+                                        style={[styles.input, errors.firstName && { borderColor: '#ef4444' }]}
+                                        placeholderTextColor="#9ca3af"
+                                        value={formData.firstName}
+                                        onChangeText={(text) => {
+                                            setFormData(prev => ({ ...prev, firstName: text }))
+                                            clearError('firstName')
+                                        }}
+                                        autoCapitalize="words"
+                                    />
+                                    {errors.firstName && (
+                                        <Text style={styles.errorText}>{errors.firstName}</Text>
+                                    )}
+                                </View>
 
-                            {/* Last Name */}
-                            <View style={styles.inputGroup}>
-                                <Text style={styles.label}>
-                                    Last Name <Text style={styles.required}>*</Text>
-                                </Text>
-                                <TextInput
-                                    placeholder="Enter your last name"
-                                    style={[styles.input, errors.lastName && { borderColor: '#ef4444' }]}
-                                    placeholderTextColor="#9ca3af"
-                                    value={formData.lastName}
-                                    onChangeText={(text) => {
-                                        setFormData(prev => ({ ...prev, lastName: text }))
-                                        clearError('lastName')
-                                    }}
-                                />
-                                {errors.lastName && (
-                                    <Text style={styles.errorText}>{errors.lastName}</Text>
-                                )}
+                                <View style={[styles.inputGroup, styles.nameInputGroup]}>
+                                    <Text style={styles.label}>
+                                        Last Name <Text style={styles.required}>*</Text>
+                                    </Text>
+                                    <TextInput
+                                        placeholder="Last name"
+                                        style={[styles.input, errors.lastName && { borderColor: '#ef4444' }]}
+                                        placeholderTextColor="#9ca3af"
+                                        value={formData.lastName}
+                                        onChangeText={(text) => {
+                                            setFormData(prev => ({ ...prev, lastName: text }))
+                                            clearError('lastName')
+                                        }}
+                                        autoCapitalize="words"
+                                    />
+                                    {errors.lastName && (
+                                        <Text style={styles.errorText}>{errors.lastName}</Text>
+                                    )}
+                                </View>
                             </View>
 
                             {/* Email */}
@@ -505,7 +504,7 @@ export default function ClaimProfile() {
                                 </Text>
                                 <View style={styles.passwordContainer}>
                                     <TextInput
-                                        placeholder="Enter your password"
+                                        placeholder="Enter password"
                                         style={[styles.passwordInput, errors.password && { borderColor: '#ef4444' }]}
                                         placeholderTextColor="#9ca3af"
                                         value={formData.password}
@@ -525,78 +524,77 @@ export default function ClaimProfile() {
                                 </View>
 
                                 {/* Password Strength Indicator */}
-                                <View
-                                    ref={passwordStrengthRef}
-                                    style={[
-                                        styles.passwordStrengthContainer,
-                                        !formData.password && { opacity: 0.6 }
-                                    ]}
-                                    onLayout={handlePasswordStrengthLayout}
-                                >
-                                    <Text style={styles.passwordStrengthTitle}>Password must contain:</Text>
-                                    <View style={styles.passwordStrengthList}>
-                                        <View style={styles.passwordStrengthItem}>
-                                            <Check
-                                                size={12}
-                                                color={passwordStrength.hasMinLength ? '#16a34a' : '#d1d5db'}
-                                            />
-                                            <Text style={[
-                                                styles.passwordStrengthText,
-                                                { color: passwordStrength.hasMinLength ? '#16a34a' : '#9ca3af' }
-                                            ]}>
-                                                At least 8 characters
-                                            </Text>
-                                        </View>
-                                        <View style={styles.passwordStrengthItem}>
-                                            <Check
-                                                size={12}
-                                                color={passwordStrength.hasUppercase ? '#16a34a' : '#d1d5db'}
-                                            />
-                                            <Text style={[
-                                                styles.passwordStrengthText,
-                                                { color: passwordStrength.hasUppercase ? '#16a34a' : '#9ca3af' }
-                                            ]}>
-                                                One uppercase letter
-                                            </Text>
-                                        </View>
-                                        <View style={styles.passwordStrengthItem}>
-                                            <Check
-                                                size={12}
-                                                color={passwordStrength.hasLowercase ? '#16a34a' : '#d1d5db'}
-                                            />
-                                            <Text style={[
-                                                styles.passwordStrengthText,
-                                                { color: passwordStrength.hasLowercase ? '#16a34a' : '#9ca3af' }
-                                            ]}>
-                                                One lowercase letter
-                                            </Text>
-                                        </View>
-                                        <View style={styles.passwordStrengthItem}>
-                                            <Check
-                                                size={12}
-                                                color={passwordStrength.hasNumber ? '#16a34a' : '#d1d5db'}
-                                            />
-                                            <Text style={[
-                                                styles.passwordStrengthText,
-                                                { color: passwordStrength.hasNumber ? '#16a34a' : '#9ca3af' }
-                                            ]}>
-                                                One number
-                                            </Text>
-                                        </View>
-                                        <View style={styles.passwordStrengthItem}>
-                                            <Check
-                                                size={12}
-                                                color={passwordStrength.hasSpecialChar ? '#16a34a' : '#d1d5db'}
-                                            />
-                                            <Text style={[
-                                                styles.passwordStrengthText,
-                                                { color: passwordStrength.hasSpecialChar ? '#16a34a' : '#9ca3af' }
-                                            ]}>
-                                                One special character
-                                            </Text>
+                                {!!formData.password && (
+                                    <View
+                                        ref={passwordStrengthRef}
+                                        style={styles.passwordStrengthContainer}
+                                        onLayout={handlePasswordStrengthLayout}
+                                    >
+                                        <Text style={styles.passwordStrengthTitle}>Password must contain:</Text>
+                                        <View style={styles.passwordStrengthList}>
+                                            <View style={styles.passwordStrengthItem}>
+                                                <Check
+                                                    size={12}
+                                                    color={passwordStrength.hasMinLength ? '#16a34a' : '#d1d5db'}
+                                                />
+                                                <Text style={[
+                                                    styles.passwordStrengthText,
+                                                    { color: passwordStrength.hasMinLength ? '#16a34a' : '#9ca3af' }
+                                                ]}>
+                                                    At least 8 characters
+                                                </Text>
+                                            </View>
+                                            <View style={styles.passwordStrengthItem}>
+                                                <Check
+                                                    size={12}
+                                                    color={passwordStrength.hasUppercase ? '#16a34a' : '#d1d5db'}
+                                                />
+                                                <Text style={[
+                                                    styles.passwordStrengthText,
+                                                    { color: passwordStrength.hasUppercase ? '#16a34a' : '#9ca3af' }
+                                                ]}>
+                                                    One uppercase letter
+                                                </Text>
+                                            </View>
+                                            <View style={styles.passwordStrengthItem}>
+                                                <Check
+                                                    size={12}
+                                                    color={passwordStrength.hasLowercase ? '#16a34a' : '#d1d5db'}
+                                                />
+                                                <Text style={[
+                                                    styles.passwordStrengthText,
+                                                    { color: passwordStrength.hasLowercase ? '#16a34a' : '#9ca3af' }
+                                                ]}>
+                                                    One lowercase letter
+                                                </Text>
+                                            </View>
+                                            <View style={styles.passwordStrengthItem}>
+                                                <Check
+                                                    size={12}
+                                                    color={passwordStrength.hasNumber ? '#16a34a' : '#d1d5db'}
+                                                />
+                                                <Text style={[
+                                                    styles.passwordStrengthText,
+                                                    { color: passwordStrength.hasNumber ? '#16a34a' : '#9ca3af' }
+                                                ]}>
+                                                    One number
+                                                </Text>
+                                            </View>
+                                            <View style={styles.passwordStrengthItem}>
+                                                <Check
+                                                    size={12}
+                                                    color={passwordStrength.hasSpecialChar ? '#16a34a' : '#d1d5db'}
+                                                />
+                                                <Text style={[
+                                                    styles.passwordStrengthText,
+                                                    { color: passwordStrength.hasSpecialChar ? '#16a34a' : '#9ca3af' }
+                                                ]}>
+                                                    One special character
+                                                </Text>
+                                            </View>
                                         </View>
                                     </View>
-                                </View>
+                                )}
 
                                 {errors.password && (
                                     <Text style={styles.errorText}>{errors.password}</Text>
@@ -647,7 +645,7 @@ export default function ClaimProfile() {
                             ) : (
                                 <View style={styles.continueButtonContent}>
                                     <Text style={styles.continueButtonText}>Continue</Text>
-                                    {/* <ArrowRight size={16} color="white" /> */}
+                                    <ArrowRight size={18} color="white" />
                                 </View>
                             )}
                         </TouchableOpacity>
@@ -774,13 +772,22 @@ const styles = StyleSheet.create({
     inputGroup: {
         marginBottom: 16,
     },
+    nameRow: {
+        flexDirection: 'row',
+        gap: 12,
+        marginBottom: 16,
+    },
+    nameInputGroup: {
+        flex: 1,
+        marginBottom: 0,
+    },
     input: {
         borderWidth: 1,
-        borderColor: '#d1d5db',
+        borderColor: '#e5e7eb',
         borderRadius: 8,
         paddingHorizontal: 16,
         paddingVertical: 12,
-        backgroundColor: '#f9fafb',
+        backgroundColor: 'white',
         fontSize: 14,
         color: '#111827',
         fontFamily: 'Outfit-Regular',
@@ -797,12 +804,12 @@ const styles = StyleSheet.create({
     },
     passwordInput: {
         borderWidth: 1,
-        borderColor: '#d1d5db',
+        borderColor: '#e5e7eb',
         borderRadius: 8,
         paddingHorizontal: 16,
         paddingVertical: 12,
         paddingRight: 48,
-        backgroundColor: '#f9fafb',
+        backgroundColor: 'white',
         fontSize: 14,
         color: '#111827',
     },
@@ -953,8 +960,8 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     checkboxChecked: {
-        backgroundColor: '#111827',
-        borderColor: '#111827',
+        backgroundColor: '#2563eb',
+        borderColor: '#2563eb',
     },
     checkboxError: {
         borderColor: '#ef4444',
@@ -970,7 +977,7 @@ const styles = StyleSheet.create({
         fontFamily: 'Outfit-Medium',
     },
     continueButton: {
-        backgroundColor: '#6366f1',
+        backgroundColor: '#7c83ff',
         height: 48,
         borderRadius: 8,
         alignItems: 'center',

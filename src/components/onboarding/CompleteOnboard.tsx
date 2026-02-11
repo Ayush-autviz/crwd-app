@@ -1127,28 +1127,27 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
   ActivityIndicator,
   TextInput,
-  Dimensions,
-  Platform,
-  FlatList,
   ScrollView,
+  Platform,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { Heart, Search, Check, Loader2, ArrowRight } from 'lucide-react-native';
-import { useNavigation, useRoute, CommonActions } from '@react-navigation/native';
+import { Heart, Search, Users, Check, ArrowRight, ChevronDown } from 'lucide-react-native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getSurpriseMe, getCausesBySearch } from '../../services/api/crwd';
+import { getSurpriseMe, getCausesBySearch, getJoinCollective, joinCollective, leaveCollective } from '../../services/api/crwd';
 import { createDonationBox } from '../../services/api/donation';
+import { getCollectivesByCauseCategory } from '../../services/api/social';
 import { useToast } from '../../contexts/ToastContext';
 import { categories } from '../../Constants/categories';
+import { useAuthStore } from '../../store/store';
 
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
 
 
-type ViewType = 'initial' | 'surprise' | 'browse';
+type ViewType = 'initial' | 'surprise' | 'browse' | 'collectives';
 
 // Get consistent color for avatar
 const avatarColors = [
@@ -1181,10 +1180,15 @@ export default function CompleteOnboard() {
   const redirectParams = (route.params as any)?.redirectParams || {};
   const queryClient = useQueryClient();
   const { showToast } = useToast();
+  const { user, token } = useAuthStore();
   const [view, setView] = useState<ViewType>('initial');
   const [selectedCauses, setSelectedCauses] = useState<number[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchTrigger, setSearchTrigger] = useState(0);
+  const [joiningCollectiveId, setJoiningCollectiveId] = useState<number | null>(null);
+  const [leavingCollectiveId, setLeavingCollectiveId] = useState<number | null>(null);
+  const [expandedCollectiveIds, setExpandedCollectiveIds] = useState<Set<number>>(new Set());
+  const [joinedCollectiveIds, setJoinedCollectiveIds] = useState<Set<number>>(new Set());
 
   // Get selected categories from route params
   const selectedCategoryIds = (route.params as any)?.selectedCategories || [];
@@ -1206,6 +1210,100 @@ export default function CompleteOnboard() {
     enabled: view === 'browse',
     refetchOnMount: true,
   });
+
+  const { data: collectivesData, isLoading: isLoadingCollectives, refetch: refetchCollectives } = useQuery({
+    queryKey: ['collectives-by-cause-category', selectedCategoryIds],
+    queryFn: () => getCollectivesByCauseCategory(selectedCategoryIds),
+    enabled: view === 'collectives',
+    refetchOnMount: true,
+  });
+
+  const { data: joinedCollectivesData, refetch: refetchJoinedCollectives } = useQuery({
+    queryKey: ['joined-collectives', user?.id],
+    queryFn: () => getJoinCollective(user?.id?.toString() || ''),
+    enabled: view === 'collectives' && !!user?.id && !!token?.access_token,
+    refetchOnMount: true,
+  });
+
+  useEffect(() => {
+    if (!joinedCollectivesData || view !== 'collectives') return;
+    const rows = (joinedCollectivesData as any)?.data;
+    if (!Array.isArray(rows)) return;
+    const ids = rows
+      .map((item: any) => item?.collective?.id)
+      .filter((id: any) => typeof id === 'number');
+    setJoinedCollectiveIds(new Set(ids));
+  }, [joinedCollectivesData, view]);
+
+  const joinCollectiveMutation = useMutation({
+    mutationFn: (collectiveId: string) => joinCollective(collectiveId),
+    onSuccess: (_response: any, collectiveId: string) => {
+      showToast('Joined collective!');
+      setJoinedCollectiveIds((prev) => {
+        const next = new Set(prev);
+        const idNum = Number(collectiveId);
+        if (!Number.isNaN(idNum)) next.add(idNum);
+        return next;
+      });
+      refetchCollectives();
+      queryClient.invalidateQueries({ queryKey: ['joined-collectives', user?.id] });
+    },
+    onError: (error: any) => {
+      showToast(error?.response?.data?.message || 'Failed to join collective');
+    },
+    onSettled: () => {
+      setJoiningCollectiveId(null);
+    },
+  });
+
+  const leaveCollectiveMutation = useMutation({
+    mutationFn: (collectiveId: string) => leaveCollective(collectiveId),
+    onSuccess: (_response: any, collectiveId: string) => {
+      showToast('Left collective!');
+      setJoinedCollectiveIds((prev) => {
+        const next = new Set(prev);
+        const idNum = Number(collectiveId);
+        if (!Number.isNaN(idNum)) next.delete(idNum);
+        return next;
+      });
+      refetchCollectives();
+      queryClient.invalidateQueries({ queryKey: ['joined-collectives', user?.id] });
+      refetchJoinedCollectives();
+    },
+    onError: (error: any) => {
+      showToast(error?.response?.data?.message || 'Failed to leave collective');
+    },
+    onSettled: () => {
+      setLeavingCollectiveId(null);
+    },
+  });
+
+  const toggleCollectiveExpanded = (collectiveId: number) => {
+    setExpandedCollectiveIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(collectiveId)) {
+        next.delete(collectiveId);
+      } else {
+        next.add(collectiveId);
+      }
+      return next;
+    });
+  };
+
+  const getCollectiveCauses = (collective: any) => {
+    const raw =
+      collective?.causes ||
+      collective?.supported_causes ||
+      collective?.nonprofits ||
+      collective?.supported_nonprofits ||
+      collective?.causes_list ||
+      [];
+
+    if (!Array.isArray(raw)) return [];
+    return raw
+      .map((item: any) => item?.cause || item)
+      .filter(Boolean);
+  };
 
   // Create donation box mutation
   const createBoxMutation = useMutation({
@@ -1263,6 +1361,10 @@ export default function CompleteOnboard() {
 
   const handleBrowseSearch = () => {
     setView('browse');
+  };
+
+  const handleJoinCollective = () => {
+    setView('collectives');
   };
 
   const handleChangeMethod = () => {
@@ -1455,12 +1557,12 @@ export default function CompleteOnboard() {
 
               {/* Title */}
               <Text style={styles.title}>
-                Set Up Your Donation Box
+                Start Supporting Causes
               </Text>
 
               {/* Description */}
               <Text style={styles.description}>
-                Choose nonprofits to support. Your donation gets split evenly among them. You can change these anytime!
+                Choose how you'd like to select nonprofits
               </Text>
 
               {/* Selected Categories Tags */}
@@ -1480,8 +1582,47 @@ export default function CompleteOnboard() {
                 </View>
               )}
 
-              {/* Two Option Cards */}
-              <View style={styles.optionsContainer}>
+              {/* Option Cards */}
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                nestedScrollEnabled
+                style={styles.optionsScroll}
+                contentContainerStyle={styles.optionsContainer}
+              >
+                {/* Join a Collective Card */}
+                <TouchableOpacity
+                  onPress={handleJoinCollective}
+                  style={styles.optionCard}
+                  activeOpacity={0.8}
+                >
+                  <View style={styles.optionIconContainer}>
+                    <View style={styles.joinIconCircle}>
+                      <Users size={32} color="white" />
+                    </View>
+                  </View>
+                  <Text style={styles.optionTitle}>Join a Collective</Text>
+                  <Text style={styles.optionDescription}>
+                    Join crwd giving communities
+                  </Text>
+                </TouchableOpacity>
+
+                  {/* Choose My Own Card */}
+                <TouchableOpacity
+                  onPress={handleBrowseSearch}
+                  style={styles.optionCard}
+                  activeOpacity={0.8}
+                >
+                  <View style={styles.optionIconContainer}>
+                    <View style={styles.browseIconCircle}>
+                      <Search size={32} color="white" />
+                    </View>
+                  </View>
+                  <Text style={styles.optionTitle}>I'll Choose My Own</Text>
+                  <Text style={styles.optionDescription}>
+                    Select nonprofits to add to your box
+                  </Text>
+                </TouchableOpacity>
+
                 {/* Surprise Me Card */}
                 <TouchableOpacity
                   onPress={handleSurpriseMe}
@@ -1496,48 +1637,256 @@ export default function CompleteOnboard() {
                   </View>
                   <Text style={styles.optionTitle}>Surprise Me</Text>
                   <Text style={styles.optionDescription}>
-                    We'll pick 5 amazing nonprofits for you
+                    We'll pick nonprofits based on your interests
                   </Text>
                 </TouchableOpacity>
 
-                {/* Browse & Search Card */}
+          
+              </ScrollView>
+
+              <View style={styles.bottomButtons}>
                 <TouchableOpacity
-                  onPress={handleBrowseSearch}
-                  style={styles.optionCard}
+                  onPress={handleEditCategories}
+                  style={styles.editButton}
                   activeOpacity={0.8}
                 >
-                  <View style={styles.optionIconContainer}>
-                    <View style={styles.browseIconCircle}>
-                      <Search size={32} color="white" />
-                    </View>
-                  </View>
-                  <Text style={styles.optionTitle}>Browse & Search</Text>
-                  <Text style={styles.optionDescription}>
-                    Explore and find nonprofits
-                  </Text>
+                  <Text style={styles.editButtonText}>Back</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={handleStartWithNonprofits}
+                  style={styles.skipButton}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.skipButtonText}>Continue</Text>
+                  <ArrowRight size={16} color="#fff" />
                 </TouchableOpacity>
               </View>
 
-              {/* Bottom Buttons - Show when nothing is selected */}
-              {selectedCauses.length === 0 && (
-                <View style={styles.bottomButtons}>
-                  <TouchableOpacity
-                    onPress={handleEditCategories}
-                    style={styles.editButton}
-                    activeOpacity={0.8}
-                  >
-                    <Text style={styles.editButtonText}>Edit Categories</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={handleSkip}
-                    style={styles.skipButton}
-                    activeOpacity={0.8}
-                  >
-                    <Text style={styles.skipButtonText}>Skip for Now</Text>
-                    {/* <ArrowRight size={16} color="#fff" /> */}
+              <TouchableOpacity onPress={handleSkip} style={styles.skipLink} activeOpacity={0.8}>
+                <Text style={styles.skipLinkText}>Skip for now</Text>
+              </TouchableOpacity>
+            </View>
+          </KeyboardAwareScrollView>
+        </LinearGradient>
+      </View>
+    );
+  }
+
+  if (view === 'collectives') {
+    const collectives = collectivesData
+      ? (Array.isArray(collectivesData)
+        ? collectivesData
+        : collectivesData.results || collectivesData.data || [])
+      : [];
+    const displayCollectives = collectives.slice(0, 5);
+
+    return (
+      <View style={styles.container}>
+        <LinearGradient
+          colors={['#DBEAFE', '#F3E8FF', '#FCE7F3']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={{ flex: 1 }}
+        >
+          <KeyboardAwareScrollView
+            contentContainerStyle={styles.scrollContentBrowse}
+            showsVerticalScrollIndicator={false}
+            enableOnAndroid={true}
+            extraScrollHeight={Platform.OS === 'ios' ? 20 : 0}
+            keyboardShouldPersistTaps="handled"
+            scrollEnabled={false}
+          >
+            <View style={styles.card}>
+              <View style={styles.stepIndicator}>
+                <View style={styles.stepBar}>
+                  <View style={[styles.stepDot, styles.stepDotInactive]} />
+                  <View style={[styles.stepDot, styles.stepDotInactive]} />
+                  <View style={[styles.stepDot, styles.stepDotInactive]} />
+                  <View style={[styles.stepDot, styles.stepDotActive]} />
+                </View>
+              </View>
+
+              <View style={styles.iconContainer}>
+                <View style={styles.gradientIconCircle}>
+                  <Heart size={40} color="white" />
+                </View>
+              </View>
+
+              <Text style={styles.title}>Start Supporting Causes</Text>
+              <Text style={styles.description}>Join a community supporting causes together</Text>
+
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                style={styles.collectivesSectionScroll}
+                contentContainerStyle={styles.collectivesSectionContent}
+              >
+                <View style={styles.collectiveInfoCard}>
+                  <View style={styles.collectiveInfoIcon}>
+                    <Users size={18} color="#9333ea" />
+                  </View>
+                  <View style={styles.collectiveInfoText}>
+                    <Text style={styles.collectiveInfoTitle}>What's a Collective?</Text>
+                    <Text style={styles.collectiveInfoDescription}>
+                      A giving community around shared causes where you can discover nonprofits, join discussions, and connect with others. Collectives are free to start or join.
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={styles.collectivesHeader}>
+                  <Text style={styles.sectionTitle}>Join a Collective</Text>
+                  <TouchableOpacity onPress={handleChangeMethod} style={styles.changeMethodButton} activeOpacity={0.8}>
+                    <Text style={styles.changeMethodText}>Change Method</Text>
                   </TouchableOpacity>
                 </View>
-              )}
+
+                {isLoadingCollectives ? (
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color="#9ca3af" />
+                  </View>
+                ) : (
+                  <View style={styles.collectivesList}>
+                  {displayCollectives.map((collective: any, index: number) => {
+                    const founderName = collective.created_by
+                      ? `${collective.created_by.first_name || ''} ${collective.created_by.last_name || ''}`.trim() || collective.created_by.username || 'Unknown'
+                      : 'Unknown';
+
+                    const causes = getCollectiveCauses(collective);
+                    const nonprofitCount =
+                      causes.length ||
+                      collective.causes_count ||
+                      collective.supported_causes_count ||
+                      collective.cause_count ||
+                      collective.nonprofit_count ||
+                      0;
+
+                    const circleColor = collective.color || getConsistentColor(collective.id || index, avatarColors);
+                    const initialLetter = (collective.name || 'C').charAt(0).toUpperCase();
+                    const isJoining = joiningCollectiveId === collective.id;
+                    const isLeaving = leavingCollectiveId === collective.id;
+                    const isExpanded = !!collective.id && expandedCollectiveIds.has(collective.id);
+                    const isJoined = !!collective.id && joinedCollectiveIds.has(collective.id);
+                    const isPending = (joinCollectiveMutation.isPending && isJoining) || (leaveCollectiveMutation.isPending && isLeaving);
+
+                    return (
+                      <View key={collective.id || index} style={styles.collectiveCard}>
+                        <View style={styles.collectiveRow}>
+                          <View style={[styles.collectiveAvatar, { backgroundColor: circleColor }]}>
+                            <Text style={styles.collectiveAvatarText}>{initialLetter}</Text>
+                          </View>
+
+                          <View style={styles.collectiveMain}>
+                            <View style={styles.collectiveTopRow}>
+                              <Text style={styles.collectiveName}>{collective.name || 'Unknown Collective'}</Text>
+                              <TouchableOpacity
+                                style={[
+                                  styles.joinButton,
+                                  isJoined && styles.joinedButton,
+                                  isPending && styles.joinButtonDisabled,
+                                ]}
+                                onPress={() => {
+                                  if (collective.id) {
+                                    if (isJoined) {
+                                      setLeavingCollectiveId(collective.id);
+                                      leaveCollectiveMutation.mutate(String(collective.id));
+                                    } else {
+                                      setJoiningCollectiveId(collective.id);
+                                      joinCollectiveMutation.mutate(String(collective.id));
+                                    }
+                                  }
+                                }}
+                                disabled={isPending}
+                                activeOpacity={0.8}
+                              >
+                                {isPending ? (
+                                  <Text style={styles.joinButtonText}>{isJoining ? 'Joining...' : 'Leaving...'}</Text>
+                                ) : isJoined ? (
+                                  <>
+                                    <Check size={14} color="#fff" />
+                                    <Text style={styles.joinedButtonText}>Joined</Text>
+                                  </>
+                                ) : (
+                                  <Text style={styles.joinButtonText}>Join</Text>
+                                )}
+                              </TouchableOpacity>
+                            </View>
+
+                            <Text style={styles.collectiveMeta}>Created by {founderName}</Text>
+                            {!!collective.description && (
+                              <Text style={styles.collectiveDescription} numberOfLines={2}>
+                                {collective.description}
+                              </Text>
+                            )}
+
+                            <TouchableOpacity
+                              style={styles.supportingRow}
+                              activeOpacity={causes.length > 0 ? 0.8 : 1}
+                              onPress={() => {
+                                if (causes.length > 0 && collective.id) {
+                                  toggleCollectiveExpanded(collective.id);
+                                }
+                              }}
+                            >
+                              <Text style={styles.supportingText}>Supporting {nonprofitCount} nonprofits</Text>
+                              {causes.length > 0 && (
+                                <ChevronDown
+                                  size={16}
+                                  color="#1600ff"
+                                  style={[styles.supportingChevron, isExpanded && styles.supportingChevronExpanded]}
+                                />
+                              )}
+                            </TouchableOpacity>
+
+                            {isExpanded && causes.length > 0 && (
+                              <View style={styles.causeList}>
+                                {causes.slice(0, 3).map((cause: any, causeIndex: number) => {
+                                  const causeName = cause?.name || cause?.title || 'Nonprofit';
+                                  const causeInitial = causeName.charAt(0).toUpperCase();
+                                  return (
+                                    <View key={cause?.id || `${collective.id}-cause-${causeIndex}`} style={styles.causeItem}>
+                                      <View style={styles.collectiveCauseAvatar}>
+                                        <Text style={styles.collectiveCauseAvatarText}>{causeInitial}</Text>
+                                      </View>
+                                      <Text style={styles.collectiveCauseName} numberOfLines={1}>
+                                        {causeName}
+                                      </Text>
+                                    </View>
+                                  );
+                                })}
+                                {causes.length > 3 && (
+                                  <Text style={styles.moreCausesText}>+{causes.length - 3} more</Text>
+                                )}
+                              </View>
+                            )}
+                          </View>
+                        </View>
+                      </View>
+                    );
+                  })}
+                  </View>
+                )}
+              </ScrollView>
+
+              <View style={styles.bottomButtons}>
+                <TouchableOpacity
+                  onPress={handleChangeMethod}
+                  style={styles.editButton}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.editButtonText}>Back</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={handleStartWithNonprofits}
+                  style={styles.skipButton}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.skipButtonText}>Continue</Text>
+                  <ArrowRight size={16} color="#fff" />
+                </TouchableOpacity>
+              </View>
+
+              <TouchableOpacity onPress={handleSkip} style={styles.skipLink} activeOpacity={0.8}>
+                <Text style={styles.skipLinkText}>Skip for now</Text>
+              </TouchableOpacity>
             </View>
           </KeyboardAwareScrollView>
         </LinearGradient>
@@ -1581,10 +1930,10 @@ export default function CompleteOnboard() {
               </View>
 
               <Text style={styles.title}>
-                Set Up Your Donation Box
+                Start Supporting Causes
               </Text>
               <Text style={styles.description}>
-                Choose nonprofits to support. Your donation gets split evenly among them. You can change these anytime!
+                Choose how you'd like to select nonprofits
               </Text>
 
               {/* Your Random Selection Section */}
@@ -1740,10 +2089,10 @@ export default function CompleteOnboard() {
             </View>
 
             <Text style={styles.title}>
-              Set Up Your Donation Box
+              Start Supporting Causes
             </Text>
             <Text style={styles.description}>
-              Choose nonprofits to support. Your donation gets split evenly among them. You can change these anytime!
+              Choose how you'd like to select nonprofits
             </Text>
 
             {/* Browse Nonprofits Section */}
@@ -1975,17 +2324,19 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     // flexWrap: 'wrap',
     gap: 16,
-    marginBottom: 32,
   },
   optionCard: {
-    flex: 1,
-    minWidth: 150,
+    width: '100%',
     backgroundColor: 'white',
     borderWidth: 1,
     borderColor: '#e5e7eb',
     borderRadius: 12,
     padding: 24,
     alignItems: 'center',
+  },
+  optionsScroll: {
+    maxHeight: 360,
+    marginBottom: 32,
   },
   optionIconContainer: {
     marginBottom: 16,
@@ -2006,6 +2357,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  joinIconCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#ec4899',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   optionTitle: {
     fontSize: 16,
     fontFamily: 'Outfit-Bold',
@@ -2023,6 +2382,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     // paddingHorizontal: 16,
     gap: 12,
+  },
+  skipLink: {
+    // marginTop: 14,
+    alignItems: 'center',
+  },
+  skipLinkText: {
+    fontSize: 14,
+    fontFamily: 'Outfit-Medium',
+    color: '#1600ff',
+    textDecorationLine: 'underline',
   },
   editButton: {
     paddingHorizontal: 16,
@@ -2048,6 +2417,190 @@ const styles = StyleSheet.create({
   },
   skipButtonText: {
     fontSize: 16,
+    fontFamily: 'Outfit-Bold',
+    color: 'white',
+  },
+  collectiveInfoCard: {
+    backgroundColor: '#f3e8ff',
+    borderRadius: 14,
+    padding: 16,
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 24,
+  },
+  collectiveInfoIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'white',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  collectiveInfoText: {
+    flex: 1,
+  },
+  collectiveInfoTitle: {
+    fontSize: 14,
+    fontFamily: 'Outfit-Bold',
+    color: '#111827',
+    marginBottom: 6,
+  },
+  collectiveInfoDescription: {
+    fontSize: 12,
+    fontFamily: 'Outfit-Regular',
+    color: '#374151',
+    lineHeight: 18,
+  },
+  collectivesHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  collectivesSectionScroll: {
+    maxHeight: 420,
+    marginBottom: 24,
+  },
+  collectivesSectionContent: {
+    paddingBottom: 2,
+  },
+  collectivesList: {
+    gap: 14,
+  },
+  collectiveCard: {
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    borderRadius: 14,
+    padding: 16,
+    backgroundColor: 'white',
+  },
+  collectiveRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  collectiveAvatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  collectiveAvatarText: {
+    fontSize: 16,
+    fontFamily: 'Outfit-Bold',
+    color: 'white',
+  },
+  collectiveMain: {
+    flex: 1,
+  },
+  collectiveTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+    marginBottom: 6,
+  },
+  collectiveName: {
+    flex: 1,
+    fontSize: 16,
+    fontFamily: 'Outfit-Bold',
+    color: '#111827',
+  },
+  collectiveMeta: {
+    fontSize: 12,
+    fontFamily: 'Outfit-Regular',
+    color: '#6b7280',
+    marginBottom: 6,
+  },
+  collectiveDescription: {
+    fontSize: 13,
+    fontFamily: 'Outfit-Regular',
+    color: '#374151',
+    marginBottom: 10,
+  },
+  supportingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  supportingText: {
+    fontSize: 13,
+    fontFamily: 'Outfit-Medium',
+    color: '#1600ff',
+    textDecorationLine: 'underline',
+  },
+  supportingChevron: {
+    transform: [{ rotate: '0deg' }],
+  },
+  supportingChevronExpanded: {
+    transform: [{ rotate: '180deg' }],
+  },
+  causeList: {
+    marginTop: 8,
+    backgroundColor: '#f3f4f6',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    gap: 12,
+  },
+  causeItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 2,
+  },
+  collectiveCauseAvatar: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: '#f9fafb',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  collectiveCauseAvatarText: {
+    fontSize: 12,
+    fontFamily: 'Outfit-Medium',
+    color: '#6b7280',
+  },
+  collectiveCauseName: {
+    flex: 1,
+    fontSize: 13,
+    fontFamily: 'Outfit-Regular',
+    color: '#111827',
+  },
+  moreCausesText: {
+    fontSize: 12,
+    fontFamily: 'Outfit-Medium',
+    color: '#6b7280',
+    marginLeft: 36,
+  },
+  joinButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 999,
+    backgroundColor: '#1600ff',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  joinedButton: {
+    backgroundColor: '#22c55e',
+  },
+  joinButtonDisabled: {
+    opacity: 0.6,
+  },
+  joinButtonText: {
+    fontSize: 13,
+    fontFamily: 'Outfit-Bold',
+    color: 'white',
+  },
+  joinedButtonText: {
+    fontSize: 13,
     fontFamily: 'Outfit-Bold',
     color: 'white',
   },

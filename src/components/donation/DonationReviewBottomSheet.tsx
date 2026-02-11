@@ -18,6 +18,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../../store/store';
 import { BottomSheetModal, BottomSheetBackdrop, BottomSheetScrollView, BottomSheetView } from '@gorhom/bottom-sheet';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
+import PlatformFeeInfoBottomSheet from './PlatformFeeInfoBottomSheet';
 
 interface DonationReviewBottomSheetProps {
   donationAmount: number;
@@ -48,7 +49,7 @@ const DonationReviewBottomSheet = forwardRef<any, DonationReviewBottomSheetProps
   const [internalIsProcessing, setInternalIsProcessing] = useState(false);
 
   const isProcessingPayment = internalIsProcessing || externalIsProcessing;
-  const [showPlatformFeeTooltip, setShowPlatformFeeTooltip] = useState(false);
+  const [showPlatformFeeInfoSheet, setShowPlatformFeeInfoSheet] = useState(false);
 
   const snapPoints = useMemo(() => ['75%'], []);
 
@@ -283,7 +284,6 @@ const DonationReviewBottomSheet = forwardRef<any, DonationReviewBottomSheetProps
             style={styles.scrollView}
             contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}
-            onScrollBeginDrag={() => setShowPlatformFeeTooltip(false)}
           >
             {/* Summary Box */}
             <View style={styles.summaryBox}>
@@ -299,19 +299,11 @@ const DonationReviewBottomSheet = forwardRef<any, DonationReviewBottomSheetProps
                 <View style={styles.summaryLabelRow}>
                   <Text style={styles.summaryLabel}>Platform fee:</Text>
                   <TouchableOpacity
-                    onPress={() => setShowPlatformFeeTooltip(!showPlatformFeeTooltip)}
+                    onPress={() => setShowPlatformFeeInfoSheet(true)}
                     style={styles.infoButton}
                   >
                     <Info size={14} color="#9CA3AF" />
                   </TouchableOpacity>
-                  {showPlatformFeeTooltip && (
-                    <View style={styles.tooltip}>
-                      <Text style={styles.tooltipText}>
-                        The platform fee covers payment processing and keeps CRWD running at no cost to nonprofits.
-                      </Text>
-                      <View style={styles.tooltipArrow} />
-                    </View>
-                  )}
                 </View>
                 <Text style={styles.summaryValue}>${platformFee.toFixed(2)}</Text>
               </View>
@@ -392,6 +384,10 @@ const DonationReviewBottomSheet = forwardRef<any, DonationReviewBottomSheetProps
           </View>
         </View>
       </BottomSheetModal>
+      <PlatformFeeInfoBottomSheet
+        isOpen={showPlatformFeeInfoSheet}
+        onClose={() => setShowPlatformFeeInfoSheet(false)}
+      />
     </>
   );
 });
@@ -628,4 +624,3 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-SemiBold',
   },
 });
-

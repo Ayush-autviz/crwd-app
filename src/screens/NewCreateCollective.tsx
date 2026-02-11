@@ -30,7 +30,8 @@ import {
   Loader2,
   Edit2,
   Camera,
-  Flag
+  Flag,
+  Users
 } from 'lucide-react-native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createCollective, getCausesBySearch } from '../services/api/crwd';
@@ -724,11 +725,11 @@ export default function NewCreateCollective() {
           >
             <ArrowLeft size={20} color="#4B5563" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Create a Collective</Text>
+          <Text style={styles.headerTitle}>Start a Collective</Text>
         </View>
         <View style={styles.promptContainer}>
           <View style={styles.promptIconContainer}>
-            <User size={32} color="#A855F7" />
+            <Users size={32} color="#A855F7" />
           </View>
           <Text style={styles.promptTitle}>Lead a Giving Community</Text>
           <Text style={styles.promptDescription}>
@@ -764,15 +765,15 @@ export default function NewCreateCollective() {
           >
             <ArrowLeft size={20} color="#4B5563" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Create a Collective</Text>
+          <Text style={styles.headerTitle}>Start a Collective</Text>
         </View>
         <View style={styles.promptContainer}>
           <View style={styles.promptIconContainer}>
-            <User size={32} color="#A855F7" />
+            <Users size={32} color="#A855F7" />
           </View>
-          <Text style={styles.promptTitle}>Lead a Giving Community</Text>
+          <Text style={styles.promptTitle}>Bring people together around causes</Text>
           <Text style={styles.promptDescription}>
-            Pick your causes. Name your collective. Invite your people. CRWD handles the donations, you rally the movement.
+            You choose the causes. You invite the people.{'\n\n'}Start conversations and share why you support the nonprofits you care about.{'\n\n'}No money touches your hands.
           </Text>
           <TouchableOpacity
             onPress={() => {
@@ -1073,7 +1074,7 @@ export default function NewCreateCollective() {
         >
           <ArrowLeft size={20} color="#4B5563" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Create a Collective</Text>
+        <Text style={styles.headerTitle}>Start a Collective</Text>
       </View>
 
       <KeyboardAwareScrollView

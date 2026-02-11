@@ -31,6 +31,7 @@ import DonationReviewBottomSheet from '../components/donation/DonationReviewBott
 import RequestNonprofitModal from '../components/newsearch/RequestNonprofitModal';
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/Avatar';
 import EditDonationSplitBottomSheet from '../components/donation/EditDonationSplitBottomSheet';
+import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 
 
 export default function DonationScreen() {
@@ -64,6 +65,9 @@ export default function DonationScreen() {
   const [editableAmount, setEditableAmount] = useState(0);
   const [addingCauseId, setAddingCauseId] = useState<number | null>(null);
   const reviewBottomSheetRef = useRef<any>(null);
+  const amountBottomSheetRef = useRef<BottomSheetModal>(null);
+  const [amountDraft, setAmountDraft] = useState('5');
+  const [amountTarget, setAmountTarget] = useState<'donationAmount' | 'editableAmount'>('donationAmount');
   const { user: currentUser } = useAuthStore();
   const queryClient = useQueryClient();
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
@@ -424,6 +428,60 @@ export default function DonationScreen() {
     const roundedValue = Math.round(value);
     setDonationAmount(roundedValue);
     setInputValue(roundedValue.toString());
+  };
+
+  const openAmountBottomSheet = () => {
+    setAmountTarget('donationAmount');
+    setAmountDraft(String(donationAmount));
+    amountBottomSheetRef.current?.present();
+  };
+
+  const openEditableAmountBottomSheet = () => {
+    setAmountTarget('editableAmount');
+    setAmountDraft(String(editableAmount));
+    amountBottomSheetRef.current?.present();
+  };
+
+  const closeAmountBottomSheet = () => {
+    amountBottomSheetRef.current?.dismiss();
+  };
+
+  const handleAmountDigitPress = (digit: string) => {
+    setAmountDraft(prev => {
+      const next = (prev || '0') === '0' ? digit : `${prev}${digit}`;
+      if (next.length > 6) return prev || '0';
+      return next;
+    });
+  };
+
+  const handleAmountBackspace = () => {
+    setAmountDraft(prev => {
+      if (!prev || prev.length <= 1) return '0';
+      return prev.slice(0, -1);
+    });
+  };
+
+  const handleAmountSet = () => {
+    const parsed = parseInt(amountDraft || '0', 10);
+    const finalValue = Math.max(5, Number.isFinite(parsed) ? parsed : 5);
+    if (amountTarget === 'editableAmount') {
+      const fees = calculateFees(finalValue);
+      const net = fees.net;
+      const maxCapacity = Math.floor(net / 0.20);
+      const currentDonationBoxCauses = (donationBoxQuery.data?.box_causes || donationBox?.box_causes || []).length;
+
+      if (currentDonationBoxCauses > maxCapacity) {
+        Alert.alert('Capacity Limit', `You can only support up to ${maxCapacity} causes with $${finalValue}. Please increase the amount.`);
+        return;
+      }
+
+      setEditableAmount(finalValue);
+      setIsEditingAmount(true);
+    } else {
+      setDonationAmount(finalValue);
+      setInputValue(finalValue.toString());
+    }
+    closeAmountBottomSheet();
   };
 
   // Handle continue to review button
@@ -798,10 +856,14 @@ export default function DonationScreen() {
                               ]}>−</Text>
                             </TouchableOpacity>
 
-                            <View style={styles.amountDisplay}>
+                            <TouchableOpacity
+                              onPress={openAmountBottomSheet}
+                              style={styles.amountDisplay}
+                              activeOpacity={0.7}
+                            >
                               <Text style={styles.amountValue}>${donationAmount}</Text>
                               <Text style={styles.amountLabel}>per month</Text>
-                            </View>
+                            </TouchableOpacity>
 
                             <TouchableOpacity
                               onPress={() => {
@@ -1175,10 +1237,14 @@ export default function DonationScreen() {
                                   <Minus size={18} color={donationAmount > 5 ? "#ffffff" : "#9ca3af"} {...({ strokeWidth: 3 } as any)} />
                                 </TouchableOpacity>
 
-                                <View style={styles.amountDisplay}>
+                                <TouchableOpacity
+                                  onPress={openEditableAmountBottomSheet}
+                                  style={styles.amountDisplay}
+                                  activeOpacity={0.7}
+                                >
                                   <Text style={styles.amountValue}>${editableAmount}</Text>
                                   <Text style={styles.amountLabel}>per month</Text>
-                                </View>
+                                </TouchableOpacity>
 
                                 <TouchableOpacity
                                   onPress={() => {
@@ -1461,6 +1527,83 @@ export default function DonationScreen() {
             setJustCreatedBox(false); // Reset flag when closing
           }}
         />
+
+        <BottomSheetModal
+          ref={amountBottomSheetRef}
+          snapPoints={['75%']}
+          enablePanDownToClose
+          enableDynamicSizing={false}
+          backdropComponent={(props: any) => (
+            <BottomSheetBackdrop
+              {...props}
+              disappearsOnIndex={-1}
+              appearsOnIndex={0}
+              opacity={0.5}
+            />
+          )}
+          backgroundStyle={styles.amountSheetBackground}
+          handleIndicatorStyle={styles.amountSheetHandleIndicator}
+          onDismiss={() => {
+            setAmountDraft(amountTarget === 'editableAmount' ? String(editableAmount) : String(donationAmount));
+          }}
+        >
+          <BottomSheetView style={styles.amountSheetContainer}>
+            <View style={styles.amountSheetHeader}>
+              <View style={styles.amountSheetHeaderSpacer} />
+              <Text style={styles.amountSheetTitle}>Set Amount</Text>
+              <TouchableOpacity onPress={closeAmountBottomSheet} style={styles.amountSheetCloseButton} activeOpacity={0.7}>
+                <X size={20} color="#6B7280" />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.amountSheetAmountContainer}>
+              <Text style={styles.amountSheetAmount}>
+                ${String(parseInt(amountDraft || '0', 10) || 0)}
+              </Text>
+              <Text style={styles.amountSheetSubtitle}>Monthly Donation</Text>
+            </View>
+
+            <View style={styles.amountSheetKeypad}>
+              <View style={styles.amountSheetKeypadRow}>
+                {['1', '2', '3'].map(d => (
+                  <TouchableOpacity key={d} onPress={() => handleAmountDigitPress(d)} style={styles.amountSheetKey} activeOpacity={0.7}>
+                    <Text style={styles.amountSheetKeyText}>{d}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+              <View style={styles.amountSheetKeypadRow}>
+                {['4', '5', '6'].map(d => (
+                  <TouchableOpacity key={d} onPress={() => handleAmountDigitPress(d)} style={styles.amountSheetKey} activeOpacity={0.7}>
+                    <Text style={styles.amountSheetKeyText}>{d}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+              <View style={styles.amountSheetKeypadRow}>
+                {['7', '8', '9'].map(d => (
+                  <TouchableOpacity key={d} onPress={() => handleAmountDigitPress(d)} style={styles.amountSheetKey} activeOpacity={0.7}>
+                    <Text style={styles.amountSheetKeyText}>{d}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+              <View style={styles.amountSheetKeypadRow}>
+                <View style={styles.amountSheetKeyPlaceholder} />
+                <TouchableOpacity onPress={() => handleAmountDigitPress('0')} style={styles.amountSheetKey} activeOpacity={0.7}>
+                  <Text style={styles.amountSheetKeyText}>0</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={handleAmountBackspace} style={styles.amountSheetKey} activeOpacity={0.7}>
+                  <Text style={styles.amountSheetKeyText}>⌫</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <TouchableOpacity onPress={handleAmountSet} style={styles.amountSheetPrimaryButton} activeOpacity={0.8}>
+              <Text style={styles.amountSheetPrimaryButtonText}>Set Amount</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={closeAmountBottomSheet} style={styles.amountSheetCancelButton} activeOpacity={0.7}>
+              <Text style={styles.amountSheetCancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
+          </BottomSheetView>
+        </BottomSheetModal>
 
         {/* Request Nonprofit Modal */}
         <RequestNonprofitModal
@@ -1763,6 +1906,102 @@ const styles = StyleSheet.create({
     color: '#111827',
     marginTop: 4,
     fontFamily: 'Outfit-Regular',
+  },
+  amountSheetBackground: {
+    backgroundColor: '#ffffff',
+  },
+  amountSheetHandleIndicator: {
+    backgroundColor: '#d1d5db',
+    width: 48,
+  },
+  amountSheetContainer: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingTop: 8,
+  },
+  amountSheetHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+  },
+  amountSheetHeaderSpacer: {
+    width: 40,
+  },
+  amountSheetTitle: {
+    fontSize: 18,
+    color: '#111827',
+    fontFamily: 'Outfit-SemiBold',
+  },
+  amountSheetCloseButton: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  amountSheetAmountContainer: {
+    alignItems: 'center',
+    paddingVertical: 14,
+  },
+  amountSheetAmount: {
+    fontSize: 52,
+    color: PrimaryBlue,
+    fontFamily: 'Outfit-Bold',
+  },
+  amountSheetSubtitle: {
+    fontSize: 14,
+    color: '#9CA3AF',
+    fontFamily: 'Outfit-Medium',
+  },
+  amountSheetKeypad: {
+    alignItems: 'center',
+    paddingVertical: 16,
+  },
+  amountSheetKeypadRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    paddingHorizontal: 34,
+    marginVertical: 10,
+  },
+  amountSheetKey: {
+    width: 70,
+    height: 56,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  amountSheetKeyText: {
+    fontSize: 22,
+    color: '#111827',
+    fontFamily: 'Outfit-SemiBold',
+  },
+  amountSheetKeyPlaceholder: {
+    width: 70,
+    height: 56,
+  },
+  amountSheetPrimaryButton: {
+    backgroundColor: PrimaryBlue,
+    borderRadius: 24,
+    paddingVertical: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 8,
+    marginTop: 8,
+  },
+  amountSheetPrimaryButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontFamily: 'Outfit-SemiBold',
+  },
+  amountSheetCancelButton: {
+    paddingVertical: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  amountSheetCancelButtonText: {
+    color: '#6B7280',
+    fontSize: 16,
+    fontFamily: 'Outfit-SemiBold',
   },
   organizationsCard: {
     backgroundColor: '#ffffff',

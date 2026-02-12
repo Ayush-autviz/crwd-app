@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
-import { useQuery, useQueries, useMutation } from '@tanstack/react-query';
+import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigation } from '@react-navigation/native';
 import { useAuthStore } from '../store/store';
 import { getCollectives, getCauses, getJoinCollective } from '../services/api/crwd';
@@ -41,6 +41,7 @@ import { NewHomeSkeleton } from '../components/newHome/NewHomeSkeleton';
 export default function NewHome() {
   const { user, token } = useAuthStore();
   const navigation = useNavigation();
+  const queryClient = useQueryClient();
   const [showCommentsSheet, setShowCommentsSheet] = useState(false);
   const [selectedPost, setSelectedPost] = useState<any>(null);
   const scrollRef = useRef<ScrollView>(null);
@@ -463,8 +464,12 @@ export default function NewHome() {
             let collectiveName = '';
             if (notification.body) {
               const toMatch = notification.body.match(/to (.+)$/);
+              const collectiveReceivedMatch = notification.body.match(/Your collective (.*?) received/i);
+
               if (toMatch) {
                 collectiveName = toMatch[1].trim();
+              } else if (collectiveReceivedMatch) {
+                collectiveName = collectiveReceivedMatch[1].trim();
               } else {
                 const inMatch = notification.body.match(/in (.+)$/);
                 if (inMatch) {
@@ -476,6 +481,12 @@ export default function NewHome() {
                   }
                 }
               }
+            }
+
+            if (!collectiveName && notification.data?.collective_name) {
+              collectiveName = notification.data.collective_name;
+            } else if (!collectiveName && notification.data?.collective?.name) {
+              collectiveName = notification.data.collective.name;
             }
 
             if (!collectiveName && notification.title) {
@@ -551,6 +562,11 @@ export default function NewHome() {
                   new_member_id: notification.data?.new_member_id,
                   collective_id: collectiveId,
                   type: notification.data?.type,
+                  donor_id: notification.data?.donor_id,
+                  amount: notification.data?.amount,
+                  donation_id: notification.data?.donation_id,
+                  nonprofit_id: notification.data?.nonprofit_id,
+                  nonprofit_count: notification.data?.nonprofit_count,
                 }
               }
             };
@@ -606,6 +622,7 @@ export default function NewHome() {
       <HomeHeader
         onLogoPress={() => {
           animateScrollToTop(200);
+          queryClient.invalidateQueries();
         }}
       />
 

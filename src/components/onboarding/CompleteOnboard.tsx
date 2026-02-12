@@ -1133,11 +1133,12 @@ import {
   Platform,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { Heart, Search, Users, Check, ArrowRight, ChevronDown } from 'lucide-react-native';
+import { Heart, Search, Users, Check, ArrowRight, ChevronDown, Sparkles, ArrowLeft } from 'lucide-react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getSurpriseMe, getCausesBySearch, getJoinCollective, joinCollective, leaveCollective } from '../../services/api/crwd';
+import { CommonActions } from '@react-navigation/native';
+import { getSurpriseMe, getCausesBySearch, getJoinCollective, joinCollective, leaveCollective, getCollectiveById } from '../../services/api/crwd';
 import { createDonationBox } from '../../services/api/donation';
 import { getCollectivesByCauseCategory } from '../../services/api/social';
 import { useToast } from '../../contexts/ToastContext';
@@ -1147,7 +1148,7 @@ import { useAuthStore } from '../../store/store';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
 
 
-type ViewType = 'initial' | 'surprise' | 'browse' | 'collectives';
+type ViewType = 'initial' | 'surprise' | 'browse' | 'collectives' | 'success';
 
 // Get consistent color for avatar
 const avatarColors = [
@@ -1182,6 +1183,10 @@ export default function CompleteOnboard() {
   const { showToast } = useToast();
   const { user, token } = useAuthStore();
   const [view, setView] = useState<ViewType>('initial');
+  const [previousView, setPreviousView] = useState<ViewType>('initial');
+  const [addedNonprofitsCount, setAddedNonprofitsCount] = useState(0);
+  const [collectivePreparedCauses, setCollectivePreparedCauses] = useState<any[]>([]);
+  const [isProcessingCollectives, setIsProcessingCollectives] = useState(false);
   const [selectedCauses, setSelectedCauses] = useState<number[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchTrigger, setSearchTrigger] = useState(0);
@@ -1290,6 +1295,55 @@ export default function CompleteOnboard() {
     });
   };
 
+  const handleContinueWithCollective = async () => {
+    if (joinedCollectiveIds.size === 0) return;
+
+    setIsProcessingCollectives(true);
+    try {
+      const allCauses: any[] = [];
+      const selectedIds = Array.from(joinedCollectiveIds);
+
+      // Fetch details for each selected collective to get their causes
+      for (const collectiveId of selectedIds) {
+        try {
+          const collectiveDetails = await getCollectiveById(collectiveId.toString());
+          if (collectiveDetails) {
+            const causes = getCollectiveCauses(collectiveDetails);
+            causes.forEach((cause: any) => {
+              const causeId = cause.id;
+              if (causeId) {
+                // Check if cause is already added to avoid duplicates
+                if (!allCauses.some(existing => existing.cause_id === causeId)) {
+                  allCauses.push({
+                    cause_id: causeId,
+                    attributed_collective: collectiveId
+                  });
+                }
+              }
+            });
+          }
+        } catch (err) {
+          console.error(`Failed to fetch details for collective ${collectiveId}`, err);
+        }
+      }
+
+      if (allCauses.length > 0) {
+        setAddedNonprofitsCount(allCauses.length);
+        setCollectivePreparedCauses(allCauses);
+        setIsProcessingCollectives(false);
+        setPreviousView(view);
+        setView('success');
+      } else {
+        showToast("No nonprofits found in selected collectives.");
+        setIsProcessingCollectives(false);
+      }
+    } catch (error) {
+      console.error("Error processing collectives", error);
+      showToast("Failed to process selected collectives");
+      setIsProcessingCollectives(false);
+    }
+  };
+
   const getCollectiveCauses = (collective: any) => {
     const raw =
       collective?.causes ||
@@ -1305,6 +1359,36 @@ export default function CompleteOnboard() {
       .filter(Boolean);
   };
 
+  const handleRedirect = () => {
+    if (redirectTo === 'CreateCRWD') {
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'DrawerNav' as never }],
+      });
+      setTimeout(() => {
+        (navigation as any).navigate('DrawerNav', {
+          screen: 'CreateCRWD',
+          params: { ...redirectParams, from: 'NewCompleteDonation' }
+        });
+      }, 100);
+    } else if (redirectTo === 'GroupCRWD') {
+      navigation.reset({
+        index: 0,
+        routes: [{ name: redirectTo as never, params: { ...redirectParams, from: 'NewCompleteDonation' } }],
+      });
+    } else if (redirectTo) {
+      navigation.reset({
+        index: 0,
+        routes: [{ name: redirectTo as never, params: redirectParams }],
+      });
+    } else {
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'DrawerNav' as never }],
+      });
+    }
+  };
+
   // Create donation box mutation
   const createBoxMutation = useMutation({
     mutationFn: async (data: any) => {
@@ -1313,29 +1397,16 @@ export default function CompleteOnboard() {
     onSuccess: () => {
       showToast('Donation box created!');
       queryClient.invalidateQueries({ queryKey: ['donationBox'] });
-      // Check if we should redirect to CreateCRWD (matching Vite behavior)
-      if (redirectTo && redirectTo === 'CreateCRWD') {
-        // Navigate directly to CreateCRWD
-        navigation.reset({
-          index: 0,
-          routes: [{ name: 'DrawerNav' as never }],
-        });
-        // Then navigate to CreateCRWD within DrawerNav
-        setTimeout(() => {
-          (navigation as any).navigate('DrawerNav', {
-            screen: 'CreateCRWD',
-            params: { from: 'NewCompleteDonation' }
-          });
-        }, 100);
-      } else {
-        navigation.reset({
-          index: 0,
-          routes: [{ name: 'DrawerNav' as never }],
-        });
-      }
+
+      handleRedirect();
     },
     onError: (error: any) => {
-      showToast(error?.response?.data?.message || 'Failed to create donation box');
+      console.error("Mutation Error:", error);
+      const errorMessage = error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        error?.message ||
+        'Failed to create donation box';
+      showToast(errorMessage);
     },
   });
 
@@ -1396,62 +1467,12 @@ export default function CompleteOnboard() {
   };
 
   const handleStartWithNonprofits = () => {
-    // Check if we should redirect to CreateCRWD (matching Vite behavior)
-    if (redirectTo === 'CreateCRWD') {
-      // Navigate directly to CreateCRWD, even if causes are selected
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'DrawerNav' as never }],
-      });
-      // Then navigate to CreateCRWD within DrawerNav
-      setTimeout(() => {
-        (navigation as any).navigate('DrawerNav', { screen: 'CreateCRWD' });
-      }, 100);
-      return;
-    }
-
-    // Check if we should redirect to GroupCRWD
-    if (redirectTo === 'GroupCRWD') {
-      // Navigate directly to GroupCRWD with params
-      console.log('CompleteOnboard - Navigating to GroupCRWD with params:', redirectParams);
-      navigation.reset({
-        index: 0,
-        routes: [{ name: redirectTo as never, params: { ...redirectParams, from: 'NewCompleteDonation' } }],
-      });
-      return;
-    }
-
     if (selectedCauses.length > 0) {
-      const requestData = {
-        monthly_amount: "10",
-        causes: selectedCauses.map(id => ({ cause_id: id }))
-      };
-      createBoxMutation.mutate(requestData);
+      setAddedNonprofitsCount(selectedCauses.length);
+      setPreviousView(view);
+      setView('success');
     } else {
-      // If no causes selected, check redirectTo
-      if (redirectTo === 'CreateCRWD') {
-        // Navigate directly to CreateCRWD
-        navigation.reset({
-          index: 0,
-          routes: [{ name: 'DrawerNav' as never }],
-        });
-        // Then navigate to CreateCRWD within DrawerNav
-        setTimeout(() => {
-          (navigation as any).navigate('DrawerNav', { screen: 'CreateCRWD' });
-        }, 100);
-      } else if (redirectTo === 'GroupCRWD') {
-        // Navigate directly to GroupCRWD with params
-        navigation.reset({
-          index: 0,
-          routes: [{ name: redirectTo as never, params: { ...redirectParams, from: 'NewCompleteDonation' } }],
-        });
-      } else {
-        // Navigate to home
-        navigation.reset({
-          index: 0,
-          routes: [{ name: 'DrawerNav' as never }],
-        });
-      }
+      handleRedirect();
     }
   };
 
@@ -1460,35 +1481,25 @@ export default function CompleteOnboard() {
   };
 
   const handleSkip = () => {
-    // Navigate to redirectTo if available (matching Vite behavior)
-    if (redirectTo === 'CreateCRWD') {
-      // Navigate directly to CreateCRWD
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'DrawerNav' as never }],
-      });
-      // Then navigate to CreateCRWD within DrawerNav
-      setTimeout(() => {
-        (navigation as any).navigate('DrawerNav', { screen: 'CreateCRWD' });
-      }, 100);
-    } else if (redirectTo === 'GroupCRWD') {
-      // Navigate directly to GroupCRWD with params
-      navigation.reset({
-        index: 0,
-        routes: [{ name: redirectTo as never, params: { ...redirectParams, from: 'NewCompleteDonation' } }],
-      });
-    } else if (redirectTo) {
-      // Navigate to redirectTo using reset
-      navigation.reset({
-        index: 0,
-        routes: [{ name: redirectTo as never, params: redirectParams }],
-      });
-    } else {
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'DrawerNav' as never }],
-      });
+    setAddedNonprofitsCount(0);
+    setPreviousView(view);
+    setView('success');
+  };
+
+  const handleFinalContinue = () => {
+    if (addedNonprofitsCount === 0) {
+      handleRedirect();
+      return;
     }
+
+    const causesBody = previousView === 'collectives'
+      ? collectivePreparedCauses
+      : selectedCauses.map(id => ({ cause_id: id }));
+
+    createBoxMutation.mutate({
+      monthly_amount: "10",
+      causes: causesBody
+    });
   };
 
   const getCategoryInfo = (categoryId: string) => {
@@ -1550,9 +1561,14 @@ export default function CompleteOnboard() {
 
               {/* Heart Icon with Gradient */}
               <View style={styles.iconContainer}>
-                <View style={styles.gradientIconCircle}>
-                  <Heart size={40} color="white" />
-                </View>
+                <LinearGradient
+                  colors={['#A855F7', '#EC4899', '#3B82F6']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.gradientIconCircle}
+                >
+                  <Heart size={32} color="white" />
+                </LinearGradient>
               </View>
 
               {/* Title */}
@@ -1606,7 +1622,7 @@ export default function CompleteOnboard() {
                   </Text>
                 </TouchableOpacity>
 
-                  {/* Choose My Own Card */}
+                {/* Choose My Own Card */}
                 <TouchableOpacity
                   onPress={handleBrowseSearch}
                   style={styles.optionCard}
@@ -1641,30 +1657,34 @@ export default function CompleteOnboard() {
                   </Text>
                 </TouchableOpacity>
 
-          
+
               </ScrollView>
 
-              <View style={styles.bottomButtons}>
-                <TouchableOpacity
-                  onPress={handleEditCategories}
-                  style={styles.editButton}
-                  activeOpacity={0.8}
-                >
-                  <Text style={styles.editButtonText}>Back</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={handleStartWithNonprofits}
-                  style={styles.skipButton}
-                  activeOpacity={0.8}
-                >
-                  <Text style={styles.skipButtonText}>Continue</Text>
-                  <ArrowRight size={16} color="#fff" />
-                </TouchableOpacity>
-              </View>
+              <View style={styles.footerContainer}>
+                <View style={styles.footerMainButtons}>
+                  <TouchableOpacity
+                    onPress={handleEditCategories}
+                    style={styles.outlineButton}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={styles.outlineButtonText}>Back</Text>
+                  </TouchableOpacity>
+                  {/* Skip for now on initial view is usually the skip link, but showing Continue here to keep UI consistent if user wants it */}
+                  {/* Actually Vite initial has Back and Skip inside the flex row if no continue, but let's stick to the pattern */}
+                  {/* <TouchableOpacity
+                    onPress={handleStartWithNonprofits}
+                    style={styles.primaryButton}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={styles.primaryButtonText}>Continue</Text>
+                    <ArrowRight size={18} color="white" />
+                  </TouchableOpacity> */}
+                  <TouchableOpacity onPress={handleSkip} style={{ alignItems: 'center', justifyContent: 'center', flex: 1 }} activeOpacity={0.8}>
+                    <Text style={styles.skipLinkText}>Skip for now</Text>
+                  </TouchableOpacity>
+                </View>
 
-              <TouchableOpacity onPress={handleSkip} style={styles.skipLink} activeOpacity={0.8}>
-                <Text style={styles.skipLinkText}>Skip for now</Text>
-              </TouchableOpacity>
+              </View>
             </View>
           </KeyboardAwareScrollView>
         </LinearGradient>
@@ -1707,9 +1727,14 @@ export default function CompleteOnboard() {
               </View>
 
               <View style={styles.iconContainer}>
-                <View style={styles.gradientIconCircle}>
-                  <Heart size={40} color="white" />
-                </View>
+                <LinearGradient
+                  colors={['#A855F7', '#EC4899', '#3B82F6']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.gradientIconCircle}
+                >
+                  <Heart size={32} color="white" />
+                </LinearGradient>
               </View>
 
               <Text style={styles.title}>Start Supporting Causes</Text>
@@ -1722,7 +1747,7 @@ export default function CompleteOnboard() {
               >
                 <View style={styles.collectiveInfoCard}>
                   <View style={styles.collectiveInfoIcon}>
-                    <Users size={18} color="#9333ea" />
+                    <Users size={18} color="#fff" />
                   </View>
                   <View style={styles.collectiveInfoText}>
                     <Text style={styles.collectiveInfoTitle}>What's a Collective?</Text>
@@ -1745,100 +1770,103 @@ export default function CompleteOnboard() {
                   </View>
                 ) : (
                   <View style={styles.collectivesList}>
-                  {displayCollectives.map((collective: any, index: number) => {
-                    const founderName = collective.created_by
-                      ? `${collective.created_by.first_name || ''} ${collective.created_by.last_name || ''}`.trim() || collective.created_by.username || 'Unknown'
-                      : 'Unknown';
+                    {displayCollectives.length > 0 ? (
+                      displayCollectives.slice(0, 10).map((collective: any, index: number) => {
+                        const founderName = collective.created_by
+                          ? `${collective.created_by.first_name || ''} ${collective.created_by.last_name || ''}`.trim() || collective.created_by.username || 'Unknown'
+                          : 'Unknown';
 
-                    const causes = getCollectiveCauses(collective);
-                    const nonprofitCount =
-                      causes.length ||
-                      collective.causes_count ||
-                      collective.supported_causes_count ||
-                      collective.cause_count ||
-                      collective.nonprofit_count ||
-                      0;
+                        const causes = getCollectiveCauses(collective);
+                        const nonprofitCount =
+                          causes.length ||
+                          collective.causes_count ||
+                          collective.supported_causes_count ||
+                          collective.cause_count ||
+                          collective.nonprofit_count ||
+                          0;
 
-                    const circleColor = collective.color || getConsistentColor(collective.id || index, avatarColors);
-                    const initialLetter = (collective.name || 'C').charAt(0).toUpperCase();
-                    const isJoining = joiningCollectiveId === collective.id;
-                    const isLeaving = leavingCollectiveId === collective.id;
-                    const isExpanded = !!collective.id && expandedCollectiveIds.has(collective.id);
-                    const isJoined = !!collective.id && joinedCollectiveIds.has(collective.id);
-                    const isPending = (joinCollectiveMutation.isPending && isJoining) || (leaveCollectiveMutation.isPending && isLeaving);
+                        const circleColor = collective.color || getConsistentColor(collective.id || index, avatarColors);
+                        const initialLetter = (collective.name || 'C').charAt(0).toUpperCase();
+                        const isJoining = joiningCollectiveId === collective.id;
+                        const isLeaving = leavingCollectiveId === collective.id;
+                        const isExpanded = !!collective.id && expandedCollectiveIds.has(collective.id);
+                        const isJoined = !!collective.id && joinedCollectiveIds.has(collective.id);
+                        const isPending = (joinCollectiveMutation.isPending && isJoining) || (leaveCollectiveMutation.isPending && isLeaving);
 
-                    return (
-                      <View key={collective.id || index} style={styles.collectiveCard}>
-                        <View style={styles.collectiveRow}>
-                          <View style={[styles.collectiveAvatar, { backgroundColor: circleColor }]}>
-                            <Text style={styles.collectiveAvatarText}>{initialLetter}</Text>
-                          </View>
+                        return (
+                          <View key={collective.id || index} style={styles.collectiveCard}>
+                            <View style={styles.collectiveRow}>
+                              <View style={[styles.collectiveAvatar, { backgroundColor: circleColor }]}>
+                                <Text style={styles.collectiveAvatarText}>{initialLetter}</Text>
+                              </View>
 
-                          <View style={styles.collectiveMain}>
-                            <View style={styles.collectiveTopRow}>
-                              <Text style={styles.collectiveName}>{collective.name || 'Unknown Collective'}</Text>
-                              <TouchableOpacity
-                                style={[
-                                  styles.joinButton,
-                                  isJoined && styles.joinedButton,
-                                  isPending && styles.joinButtonDisabled,
-                                ]}
-                                onPress={() => {
-                                  if (collective.id) {
-                                    if (isJoined) {
-                                      setLeavingCollectiveId(collective.id);
-                                      leaveCollectiveMutation.mutate(String(collective.id));
-                                    } else {
-                                      setJoiningCollectiveId(collective.id);
-                                      joinCollectiveMutation.mutate(String(collective.id));
-                                    }
-                                  }
-                                }}
-                                disabled={isPending}
-                                activeOpacity={0.8}
-                              >
-                                {isPending ? (
-                                  <Text style={styles.joinButtonText}>{isJoining ? 'Joining...' : 'Leaving...'}</Text>
-                                ) : isJoined ? (
-                                  <>
-                                    <Check size={14} color="#fff" />
-                                    <Text style={styles.joinedButtonText}>Joined</Text>
-                                  </>
-                                ) : (
-                                  <Text style={styles.joinButtonText}>Join</Text>
+                              <View style={styles.collectiveMain}>
+                                <View style={styles.collectiveTopRow}>
+                                  <Text style={styles.collectiveName}>{collective.name || 'Unknown Collective'}</Text>
+                                  <TouchableOpacity
+                                    style={[
+                                      styles.joinButton,
+                                      isJoined && styles.joinedButton,
+                                      isPending && styles.joinButtonDisabled,
+                                    ]}
+                                    onPress={() => {
+                                      if (collective.id) {
+                                        if (isJoined) {
+                                          setLeavingCollectiveId(collective.id);
+                                          leaveCollectiveMutation.mutate(String(collective.id));
+                                        } else {
+                                          setJoiningCollectiveId(collective.id);
+                                          joinCollectiveMutation.mutate(String(collective.id));
+                                        }
+                                      }
+                                    }}
+                                    disabled={isPending}
+                                    activeOpacity={0.8}
+                                  >
+                                    {isPending ? (
+                                      <Text style={styles.joinButtonText}>{isJoining ? 'Joining...' : 'Leaving...'}</Text>
+                                    ) : isJoined ? (
+                                      <>
+                                        <Check size={14} color="#fff" />
+                                        <Text style={styles.joinedButtonText}>Joined</Text>
+                                      </>
+                                    ) : (
+                                      <Text style={styles.joinButtonText}>Join</Text>
+                                    )}
+                                  </TouchableOpacity>
+                                </View>
+
+                                <Text style={styles.collectiveMeta}>Created by {founderName}</Text>
+                                {!!collective.description && (
+                                  <Text style={styles.collectiveDescription} numberOfLines={2}>
+                                    {collective.description}
+                                  </Text>
                                 )}
-                              </TouchableOpacity>
+
+                                <TouchableOpacity
+                                  style={styles.supportingRow}
+                                  activeOpacity={causes.length > 0 ? 0.8 : 1}
+                                  onPress={() => {
+                                    if (causes.length > 0 && collective.id) {
+                                      toggleCollectiveExpanded(collective.id);
+                                    }
+                                  }}
+                                >
+                                  <Text style={styles.supportingText}>Supporting {nonprofitCount} nonprofits</Text>
+                                  {causes.length > 0 && (
+                                    <ChevronDown
+                                      size={16}
+                                      color="#1600ff"
+                                      style={[styles.supportingChevron, isExpanded && styles.supportingChevronExpanded]}
+                                    />
+                                  )}
+                                </TouchableOpacity>
+
+                              </View>
                             </View>
-
-                            <Text style={styles.collectiveMeta}>Created by {founderName}</Text>
-                            {!!collective.description && (
-                              <Text style={styles.collectiveDescription} numberOfLines={2}>
-                                {collective.description}
-                              </Text>
-                            )}
-
-                            <TouchableOpacity
-                              style={styles.supportingRow}
-                              activeOpacity={causes.length > 0 ? 0.8 : 1}
-                              onPress={() => {
-                                if (causes.length > 0 && collective.id) {
-                                  toggleCollectiveExpanded(collective.id);
-                                }
-                              }}
-                            >
-                              <Text style={styles.supportingText}>Supporting {nonprofitCount} nonprofits</Text>
-                              {causes.length > 0 && (
-                                <ChevronDown
-                                  size={16}
-                                  color="#1600ff"
-                                  style={[styles.supportingChevron, isExpanded && styles.supportingChevronExpanded]}
-                                />
-                              )}
-                            </TouchableOpacity>
-
                             {isExpanded && causes.length > 0 && (
                               <View style={styles.causeList}>
-                                {causes.slice(0, 3).map((cause: any, causeIndex: number) => {
+                                {causes.map((cause: any, causeIndex: number) => {
                                   const causeName = cause?.name || cause?.title || 'Nonprofit';
                                   const causeInitial = causeName.charAt(0).toUpperCase();
                                   return (
@@ -1852,41 +1880,56 @@ export default function CompleteOnboard() {
                                     </View>
                                   );
                                 })}
-                                {causes.length > 3 && (
-                                  <Text style={styles.moreCausesText}>+{causes.length - 3} more</Text>
-                                )}
                               </View>
                             )}
                           </View>
+                        );
+                      })
+                    ) : (
+                      <View style={styles.emptyContainer}>
+                        <View style={styles.emptyIconCircle}>
+                          <Users size={32} color="#1600ff" />
                         </View>
+                        <Text style={styles.emptyTitle}>No collectives found</Text>
+                        <Text style={styles.emptyDescription}>
+                          There are no collectives available for your selected interests right now. Try searching or picking individual nonprofits.
+                        </Text>
                       </View>
-                    );
-                  })}
+                    )}
                   </View>
+
                 )}
               </ScrollView>
 
-              <View style={styles.bottomButtons}>
-                <TouchableOpacity
-                  onPress={handleChangeMethod}
-                  style={styles.editButton}
-                  activeOpacity={0.8}
-                >
-                  <Text style={styles.editButtonText}>Back</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={handleStartWithNonprofits}
-                  style={styles.skipButton}
-                  activeOpacity={0.8}
-                >
-                  <Text style={styles.skipButtonText}>Continue</Text>
-                  <ArrowRight size={16} color="#fff" />
+              <View style={styles.footerContainer}>
+                <View style={styles.footerMainButtons}>
+                  <TouchableOpacity
+                    onPress={handleChangeMethod}
+                    style={styles.outlineButton}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={styles.outlineButtonText}>Back</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={handleContinueWithCollective}
+                    disabled={joinedCollectiveIds.size === 0 || joinCollectiveMutation.isPending}
+                    style={[
+                      styles.primaryButton,
+                      (joinedCollectiveIds.size === 0 || joinCollectiveMutation.isPending) && styles.primaryButtonDisabled
+                    ]}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={styles.primaryButtonText}>
+                      {joinCollectiveMutation.isPending ? 'Saving...' : 'Continue'}
+                    </Text>
+                    {!joinCollectiveMutation.isPending && <ArrowRight size={18} color="white" />}
+                  </TouchableOpacity>
+                </View>
+
+                <TouchableOpacity onPress={handleSkip} style={styles.skipLink} activeOpacity={0.8}>
+                  <Text style={styles.skipLinkText}>Skip for now</Text>
                 </TouchableOpacity>
               </View>
-
-              <TouchableOpacity onPress={handleSkip} style={styles.skipLink} activeOpacity={0.8}>
-                <Text style={styles.skipLinkText}>Skip for now</Text>
-              </TouchableOpacity>
             </View>
           </KeyboardAwareScrollView>
         </LinearGradient>
@@ -1905,11 +1948,12 @@ export default function CompleteOnboard() {
           style={{ flex: 1 }}
         >
           <KeyboardAwareScrollView
-            contentContainerStyle={styles.scrollContent}
+            contentContainerStyle={styles.scrollContentBrowse}
             showsVerticalScrollIndicator={false}
             enableOnAndroid={true}
             extraScrollHeight={Platform.OS === 'ios' ? 20 : 0}
             keyboardShouldPersistTaps="handled"
+            scrollEnabled={false}
           >
             <View style={styles.card}>
               {/* Progress Indicator - Step 4 */}
@@ -1924,9 +1968,14 @@ export default function CompleteOnboard() {
 
               {/* Header */}
               <View style={styles.iconContainer}>
-                <View style={styles.gradientIconCircle}>
-                  <Heart size={40} color="white" />
-                </View>
+                <LinearGradient
+                  colors={['#A855F7', '#EC4899', '#3B82F6']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.gradientIconCircle}
+                >
+                  <Heart size={32} color="white" />
+                </LinearGradient>
               </View>
 
               <Text style={styles.title}>
@@ -1936,120 +1985,202 @@ export default function CompleteOnboard() {
                 Choose how you'd like to select nonprofits
               </Text>
 
-              {/* Your Random Selection Section */}
-              <View style={styles.section}>
-                {/* Fixed Header Layout: Button inside sectionHeader */}
-                {/* <View style={styles.sectionHeader}> */}
-                <Text style={styles.sectionTitle}>Your Random Selection</Text>
-                <TouchableOpacity
-                  onPress={handleChangeMethod}
-                  style={[styles.changeMethodButton, { marginTop: 6, width: 140 }]}
-                >
-                  <Text style={[styles.changeMethodText, { textAlign: 'center' }]}>Change Method</Text>
-                </TouchableOpacity>
-                {/* </View> */}
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                style={styles.collectivesSectionScroll}
+                contentContainerStyle={styles.collectivesSectionContent}
+              >
+                {/* Your Random Selection Section */}
+                <View style={[styles.section, { marginBottom: 0 }]}>
+                  {/* Fixed Header Layout: Button inside sectionHeader */}
+                  {/* <View style={styles.sectionHeader}> */}
+                  <Text style={styles.sectionTitle}>Your Random Selection</Text>
+                  <TouchableOpacity
+                    onPress={handleChangeMethod}
+                    style={[styles.changeMethodButton, { marginTop: 6, width: 140 }]}
+                  >
+                    <Text style={[styles.changeMethodText, { textAlign: 'center' }]}>Change Method</Text>
+                  </TouchableOpacity>
+                  {/* </View> */}
 
-                {/* Removed the awkward standalone button that was here */}
+                  {/* Removed the awkward standalone button that was here */}
 
-                {isLoadingSurprise ? (
-                  <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="large" color="#9ca3af" />
-                  </View>
-                ) : (
-                  <>
-                    <View style={styles.causesGrid}>
-                      {surpriseCauses.slice(0, 6).map((cause: any) => {
-                        const isSelected = selectedCauses.includes(cause.id);
-                        const avatarBgColor = getConsistentColor(cause.id, avatarColors);
-                        const initials = getInitials(cause.name);
-                        const categoryInfo = getCategoryInfo(cause.category);
+                  {isLoadingSurprise ? (
+                    <View style={styles.loadingContainer}>
+                      <ActivityIndicator size="large" color="#9ca3af" />
+                    </View>
+                  ) : (
+                    <>
+                      {surpriseCauses.length > 0 ? (
+                        <>
+                          <View style={styles.causesGrid}>
+                            {surpriseCauses.slice(0, 6).map((cause: any) => {
+                              const isSelected = selectedCauses.includes(cause.id);
+                              const avatarBgColor = getConsistentColor(cause.id, avatarColors);
+                              const initials = getInitials(cause.name);
+                              const categoryInfo = getCategoryInfo(cause.category);
 
-                        return (
-                          <TouchableOpacity
-                            key={cause.id}
-                            onPress={() => handleCauseToggle(cause.id)}
-                            style={[
-                              styles.causeCard,
-                              isSelected && styles.causeCardSelected
-                            ]}
-                            activeOpacity={0.8}
-                          >
-                            <View style={styles.causeCardContent}>
-                              <Avatar size={48} style={{ ...styles.causeAvatar, borderRadius: 8, overflow: 'hidden' }}>
-                                <AvatarImage src={cause.image} style={{ width: '100%', height: '100%', borderRadius: 8 }} />
-                                <AvatarFallback
-                                  style={{ backgroundColor: avatarBgColor, borderRadius: 8 }}
-                                  textStyle={{ color: '#FFFFFF', fontSize: 14, fontFamily: 'Outfit-Bold' }}
+                              return (
+                                <TouchableOpacity
+                                  key={cause.id}
+                                  onPress={() => handleCauseToggle(cause.id)}
+                                  style={[
+                                    styles.causeCard,
+                                    isSelected && styles.causeCardSelected
+                                  ]}
+                                  activeOpacity={0.8}
                                 >
-                                  {initials}
-                                </AvatarFallback>
-                              </Avatar>
-                              <View style={styles.causeInfo}>
-                                <Text style={styles.causeName} numberOfLines={2}>
-                                  {cause.name}
-                                </Text>
-                                <View style={styles.causeCategoriesContainer}>
-                                  {categoryInfo.map((cat: any, index: number) => (
-                                    <View
-                                      key={index}
-                                      style={[
-                                        styles.causeCategoryBadge,
-                                        { backgroundColor: (cat as any).background }
-                                      ]}
-                                    >
-                                      <Text style={styles.causeCategoryText}>
-                                        {cat.name}
+                                  <View style={styles.causeCardContent}>
+                                    <Avatar size={48} style={{ ...styles.causeAvatar, borderRadius: 8, overflow: 'hidden' }}>
+                                      <AvatarImage src={cause.image} style={{ width: '100%', height: '100%', borderRadius: 8 }} />
+                                      <AvatarFallback
+                                        style={{ backgroundColor: avatarBgColor, borderRadius: 8 }}
+                                        textStyle={{ color: '#FFFFFF', fontSize: 14, fontFamily: 'Outfit-Bold' }}
+                                      >
+                                        {initials}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                    <View style={styles.causeInfo}>
+                                      <Text style={styles.causeName} numberOfLines={2}>
+                                        {cause.name}
                                       </Text>
+                                      <View style={styles.causeCategoriesContainer}>
+                                        {categoryInfo.map((cat: any, index: number) => (
+                                          <View
+                                            key={index}
+                                            style={[
+                                              styles.causeCategoryBadge,
+                                              { backgroundColor: (cat as any).background }
+                                            ]}
+                                          >
+                                            <Text style={styles.causeCategoryText}>
+                                              {cat.name}
+                                            </Text>
+                                          </View>
+                                        ))}
+                                      </View>
                                     </View>
-                                  ))}
-                                </View>
-                              </View>
-                              {isSelected && (
-                                <Check size={20} color="#3b82f6" />
-                              )}
-                            </View>
-                          </TouchableOpacity>
-                        );
-                      })}
-                    </View>
+                                    {isSelected && (
+                                      <Check size={20} color="#3b82f6" />
+                                    )}
+                                  </View>
+                                </TouchableOpacity>
+                              );
+                            })}
+                          </View>
 
-                    <View style={styles.pickDifferentContainer}>
-                      <TouchableOpacity
-                        onPress={handlePickDifferent}
-                        style={styles.pickDifferentButton}
-                      >
-                        <Text style={{ fontSize: 16, marginRight: 6 }}>✨</Text>
-                        <Text style={styles.pickDifferentText}>Pick Different Nonprofits</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </>
-                )}
-              </View>
+                          <View style={styles.pickDifferentContainer}>
+                            <TouchableOpacity
+                              onPress={handlePickDifferent}
+                              style={styles.pickDifferentButton}
+                            >
+                              <Text style={{ fontSize: 16, marginRight: 6 }}>✨</Text>
+                              <Text style={styles.pickDifferentText}>Pick Different Nonprofits</Text>
+                            </TouchableOpacity>
+                          </View>
+                        </>
+                      ) : (
+                        <View style={styles.emptyContainer}>
+                          <View style={styles.emptyIconCircle}>
+                            <Sparkles size={32} color="#1600ff" />
+                          </View>
+                          <Text style={styles.emptyTitle}>No suggestions found</Text>
+                          <Text style={styles.emptyDescription}>
+                            We couldn't find any nonprofits for your selected interests. Try changing your interests or browsing manually.
+                          </Text>
+                        </View>
+                      )}
+                    </>
+                  )}
+                </View>
+              </ScrollView>
 
-              {/* Footer Navigation - Fixed to Stack */}
-              <View style={styles.footerButtons}>
-                <TouchableOpacity
-                  onPress={handleChangeMethod}
-                  style={styles.backButton}
-                >
-                  <Text style={styles.backButtonText}>Back</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={handleStartWithNonprofits}
-                  disabled={selectedCauses.length === 0 || createBoxMutation.isPending}
-                  style={[
-                    styles.startButton,
-                    (selectedCauses.length === 0 || createBoxMutation.isPending) && styles.startButtonDisabled
-                  ]}
-                >
-                  <Text style={styles.startButtonText} numberOfLines={1}>
-                    {createBoxMutation.isPending ? 'Creating...' : `Start with ${selectedCauses.length} Nonprofit${selectedCauses.length < 2 ? '' : 's'}`}
-                  </Text>
+              <View style={styles.footerContainer}>
+                <View style={styles.footerMainButtons}>
+                  <TouchableOpacity
+                    onPress={handleChangeMethod}
+                    style={styles.outlineButton}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={styles.outlineButtonText}>Back</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={handleStartWithNonprofits}
+                    disabled={selectedCauses.length === 0 || createBoxMutation.isPending}
+                    style={[
+                      styles.primaryButton,
+                      (selectedCauses.length === 0 || createBoxMutation.isPending) && styles.primaryButtonDisabled
+                    ]}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={styles.primaryButtonText}>
+                      {createBoxMutation.isPending ? 'Saving...' : 'Continue'}
+                    </Text>
+                    {!createBoxMutation.isPending && <ArrowRight size={18} color="white" />}
+                  </TouchableOpacity>
+                </View>
+
+                <TouchableOpacity onPress={handleSkip} style={styles.skipLink} activeOpacity={0.8}>
+                  <Text style={styles.skipLinkText}>Skip for now</Text>
                 </TouchableOpacity>
               </View>
             </View>
           </KeyboardAwareScrollView>
         </LinearGradient>
+      </View>
+    );
+  }
+  // Success view
+  if (view === 'success') {
+    return (
+      <View style={styles.successContainer}>
+        <View style={styles.successContent}>
+          <View style={styles.successIconWrapper}>
+            <View style={styles.successIconOuter} />
+            <View style={styles.successIconCircle}>
+              <Check size={40} color="white" />
+            </View>
+          </View>
+
+          <Text style={styles.successTitle}>
+            {`${addedNonprofitsCount} nonprofits have been added to\nyour donation box.`}
+          </Text>
+
+          <Text style={styles.successDescription}>
+            {addedNonprofitsCount > 0
+              ? "When you're ready, choose an amount. We split it evenly across what you support. Add or remove causes anytime without changing your amount."
+              : "You haven't selected any nonprofits yet. You can always browse and add causes to your donation box later from your profile."}
+          </Text>
+
+          <TouchableOpacity
+            onPress={handleFinalContinue}
+            disabled={createBoxMutation.isPending}
+            style={[
+              styles.finalContinueButton,
+              createBoxMutation.isPending && styles.primaryButtonDisabled
+            ]}
+            activeOpacity={0.8}
+          >
+            {createBoxMutation.isPending ? (
+              <ActivityIndicator size="small" color="white" />
+            ) : null}
+            <Text style={styles.finalContinueButtonText}>
+              {createBoxMutation.isPending ? 'Setting up Box...' : 'Continue to CRWD'}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => setView(previousView)}
+            disabled={createBoxMutation.isPending}
+            style={styles.changeSelectionButton}
+            activeOpacity={0.8}
+          >
+            <ArrowLeft size={20} color="#6b7280" />
+            <Text style={styles.changeSelectionText}>
+              {addedNonprofitsCount > 0 ? "Change My Selection" : "Go Back and Choose"}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
     );
   }
@@ -2069,6 +2200,7 @@ export default function CompleteOnboard() {
           enableOnAndroid={true}
           extraScrollHeight={Platform.OS === 'ios' ? 20 : 0}
           keyboardShouldPersistTaps="handled"
+          scrollEnabled={false}
         >
           <View style={styles.card}>
             {/* Progress Indicator - Step 4 */}
@@ -2083,9 +2215,14 @@ export default function CompleteOnboard() {
 
             {/* Header */}
             <View style={styles.iconContainer}>
-              <View style={styles.gradientIconCircle}>
-                <Heart size={40} color="white" />
-              </View>
+              <LinearGradient
+                colors={['#A855F7', '#EC4899', '#3B82F6']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.gradientIconCircle}
+              >
+                <Heart size={32} color="white" />
+              </LinearGradient>
             </View>
 
             <Text style={styles.title}>
@@ -2095,126 +2232,149 @@ export default function CompleteOnboard() {
               Choose how you'd like to select nonprofits
             </Text>
 
-            {/* Browse Nonprofits Section */}
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>Browse Nonprofits</Text>
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              style={styles.collectivesSectionScroll}
+              contentContainerStyle={styles.collectivesSectionContent}
+            >
+              {/* Browse Nonprofits Section */}
+              <View style={[styles.section, { marginBottom: 0 }]}>
+                <View style={styles.sectionHeader}>
+                  <Text style={styles.sectionTitle}>Browse Nonprofits</Text>
+                  <TouchableOpacity
+                    onPress={handleChangeMethod}
+                    style={styles.changeMethodButton}
+                  >
+                    <Text style={styles.changeMethodText}>Change Method</Text>
+                  </TouchableOpacity>
+                </View>
+
+                {/* Search Bar */}
+                <View style={styles.searchContainer}>
+                  <Search size={20} color="#9ca3af" style={styles.searchIcon} />
+                  <TextInput
+                    style={styles.searchInput}
+                    placeholder="Search for nonprofits..."
+                    placeholderTextColor="#9ca3af"
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                    onSubmitEditing={handleSearch}
+                  />
+                </View>
+
+                {/* Select Nonprofits Count */}
+                <View style={styles.countContainer}>
+                  <Text style={styles.countText}>
+                    Select Nonprofits ({selectedCauses.length})
+                  </Text>
+                </View>
+
+                {/* Causes List */}
+                {isLoadingBrowse ? (
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color="#9ca3af" />
+                  </View>
+                ) : (
+                  <View style={styles.causesListContainer}>
+                    {browseCauses.length > 0 ? (
+                      browseCauses.map((cause: any) => {
+                        const isSelected = selectedCauses.includes(cause.id);
+                        const avatarBgColor = getConsistentColor(cause.id, avatarColors);
+                        const initials = getInitials(cause.name);
+                        const categoryInfo = getCategoryInfo(cause.category);
+
+                        return (
+                          <View key={cause.id} style={{ marginBottom: 12 }}>
+                            <TouchableOpacity
+                              onPress={() => handleCauseToggle(cause.id)}
+                              style={[
+                                styles.causeCard,
+                                isSelected && styles.causeCardSelected
+                              ]}
+                              activeOpacity={0.8}
+                            >
+                              <View style={styles.causeCardContent}>
+                                <Avatar size={48} style={{ ...styles.causeAvatar, borderRadius: 8, overflow: 'hidden' }}>
+                                  <AvatarImage src={cause.image} style={{ width: '100%', height: '100%', borderRadius: 8 }} />
+                                  <AvatarFallback
+                                    style={{ backgroundColor: avatarBgColor, borderRadius: 8 }}
+                                    textStyle={{ color: '#FFFFFF', fontSize: 14, fontFamily: 'Outfit-Bold' }}
+                                  >
+                                    {initials}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <View style={styles.causeInfo}>
+                                  <Text style={styles.causeName}>
+                                    {cause.name}
+                                  </Text>
+                                  <View style={styles.causeCategoriesContainer}>
+                                    {categoryInfo.map((cat: any, index: number) => (
+                                      <View
+                                        key={index}
+                                        style={[
+                                          styles.causeCategoryBadge,
+                                          { backgroundColor: (cat as any).background }
+                                        ]}
+                                      >
+                                        <Text style={styles.causeCategoryText}>
+                                          {cat.name}
+                                        </Text>
+                                      </View>
+                                    ))}
+                                  </View>
+                                </View>
+                                {isSelected && (
+                                  <Check size={20} color="#3b82f6" />
+                                )}
+                              </View>
+                            </TouchableOpacity>
+                          </View>
+                        );
+                      })
+                    ) : (
+                      <View style={styles.emptyContainer}>
+                        <View style={styles.emptyIconCircle}>
+                          <Search size={32} color="#1600ff" />
+                        </View>
+                        <Text style={styles.emptyTitle}>No nonprofits found</Text>
+                        <Text style={styles.emptyDescription}>
+                          We couldn't find any nonprofits {searchQuery ? `matching "${searchQuery}"` : 'for your selected interests'}. Try different keywords or categories.
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                )}
+              </View>
+            </ScrollView>
+
+            {/* Footer Navigation */}
+            <View style={styles.footerContainer}>
+              <View style={styles.footerMainButtons}>
                 <TouchableOpacity
                   onPress={handleChangeMethod}
-                  style={styles.changeMethodButton}
+                  style={styles.outlineButton}
+                  activeOpacity={0.8}
                 >
-                  <Text style={styles.changeMethodText}>Change Method</Text>
+                  <Text style={styles.outlineButtonText}>Back</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={handleStartWithNonprofits}
+                  disabled={selectedCauses.length === 0 || createBoxMutation.isPending}
+                  style={[
+                    styles.primaryButton,
+                    (selectedCauses.length === 0 || createBoxMutation.isPending) && styles.primaryButtonDisabled
+                  ]}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.primaryButtonText}>
+                    {createBoxMutation.isPending ? 'Saving...' : 'Continue'}
+                  </Text>
+                  {!createBoxMutation.isPending && <ArrowRight size={18} color="white" />}
                 </TouchableOpacity>
               </View>
 
-              {/* Search Bar */}
-              <View style={styles.searchContainer}>
-                <Search size={20} color="#9ca3af" style={styles.searchIcon} />
-                <TextInput
-                  style={styles.searchInput}
-                  placeholder="Search for nonprofits..."
-                  placeholderTextColor="#9ca3af"
-                  value={searchQuery}
-                  onChangeText={setSearchQuery}
-                  onSubmitEditing={handleSearch}
-                />
-              </View>
-
-              {/* Select Nonprofits Count */}
-              <View style={styles.countContainer}>
-                <Text style={styles.countText}>
-                  Select Nonprofits ({selectedCauses.length})
-                </Text>
-              </View>
-
-              {/* Causes List */}
-              {isLoadingBrowse ? (
-                <View style={styles.loadingContainer}>
-                  <ActivityIndicator size="large" color="#9ca3af" />
-                </View>
-              ) : browseCauses.length > 0 ? (
-                <View style={styles.causesListContainer}>
-                  {browseCauses.map((cause: any) => {
-                    const isSelected = selectedCauses.includes(cause.id);
-                    const avatarBgColor = getConsistentColor(cause.id, avatarColors);
-                    const initials = getInitials(cause.name);
-                    const categoryInfo = getCategoryInfo(cause.category);
-
-                    return (
-                      <View key={cause.id} style={{ marginBottom: 12 }}>
-                        <TouchableOpacity
-                          onPress={() => handleCauseToggle(cause.id)}
-                          style={[
-                            styles.causeCard,
-                            isSelected && styles.causeCardSelected
-                          ]}
-                          activeOpacity={0.8}
-                        >
-                          <View style={styles.causeCardContent}>
-                            <Avatar size={48} style={{ ...styles.causeAvatar, borderRadius: 8, overflow: 'hidden' }}>
-                              <AvatarImage src={cause.image} style={{ width: '100%', height: '100%', borderRadius: 8 }} />
-                              <AvatarFallback
-                                style={{ backgroundColor: avatarBgColor, borderRadius: 8 }}
-                                textStyle={{ color: '#FFFFFF', fontSize: 14, fontFamily: 'Outfit-Bold' }}
-                              >
-                                {initials}
-                              </AvatarFallback>
-                            </Avatar>
-                            <View style={styles.causeInfo}>
-                              <Text style={styles.causeName}>
-                                {cause.name}
-                              </Text>
-                              <View style={styles.causeCategoriesContainer}>
-                                {categoryInfo.map((cat: any, index: number) => (
-                                  <View
-                                    key={index}
-                                    style={[
-                                      styles.causeCategoryBadge,
-                                      { backgroundColor: cat.background }
-                                    ]}
-                                  >
-                                    <Text style={styles.causeCategoryText}>
-                                      {cat.name}
-                                    </Text>
-                                  </View>
-                                ))}
-                              </View>
-                            </View>
-                            {isSelected && (
-                              <Check size={24} color="#3b82f6" />
-                            )}
-                          </View>
-                        </TouchableOpacity>
-                      </View>
-                    );
-                  })}
-                </View>
-              ) : (
-                <View style={styles.emptyContainer}>
-                  <Text style={styles.emptyText}>No nonprofits found</Text>
-                </View>
-              )}
-            </View>
-
-            {/* Footer Navigation */}
-            <View style={styles.footerButtons}>
-              <TouchableOpacity
-                onPress={handleChangeMethod}
-                style={styles.backButton}
-              >
-                <Text style={styles.backButtonText}>Back</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={handleStartWithNonprofits}
-                disabled={selectedCauses.length === 0 || createBoxMutation.isPending}
-                style={[
-                  styles.startButton,
-                  (selectedCauses.length === 0 || createBoxMutation.isPending) && styles.startButtonDisabled
-                ]}
-              >
-                <Text style={styles.startButtonText}>
-                  {createBoxMutation.isPending ? 'Creating...' : `Start with ${selectedCauses.length} Nonprofit${selectedCauses.length < 2 ? '' : 's'}`}
-                </Text>
+              <TouchableOpacity onPress={handleSkip} style={styles.skipLink} activeOpacity={0.8}>
+                <Text style={styles.skipLinkText}>Skip for now</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -2241,7 +2401,9 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: 'white',
     borderRadius: 12,
-    padding: 24,
+    paddingHorizontal: 18,
+    paddingTop: 18,
+    paddingBottom: 12,
     width: '100%',
     maxWidth: 768,
     alignSelf: 'center',
@@ -2253,7 +2415,7 @@ const styles = StyleSheet.create({
   },
   stepIndicator: {
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: 20,
   },
   stepBar: {
     flexDirection: 'row',
@@ -2276,47 +2438,46 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   gradientIconCircle: {
-    width: 70,
-    height: 70,
-    borderRadius: 40,
-    backgroundColor: '#9333ea',
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
-    elevation: 5,
+    elevation: 4,
   },
   title: {
     fontSize: 24,
     fontFamily: 'Outfit-Bold',
     color: '#111827',
     textAlign: 'center',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   description: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#6b7280',
     textAlign: 'center',
-    marginBottom: 32,
-    lineHeight: 20,
+    marginBottom: 20,
+    // lineHeight: 20,
     fontFamily: 'Outfit-Regular',
   },
   categoriesContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
-    gap: 8,
-    marginBottom: 32,
+    gap: 6,
+    marginBottom: 24,
   },
   categoryTag: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     borderRadius: 999,
   },
   categoryTagText: {
-    fontSize: 14,
+    fontSize: 13,
     fontFamily: 'Outfit-Medium',
     color: 'white',
   },
@@ -2331,7 +2492,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e5e7eb',
     borderRadius: 12,
-    padding: 24,
+    padding: 12,
     alignItems: 'center',
   },
   optionsScroll: {
@@ -2366,10 +2527,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   optionTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontFamily: 'Outfit-Bold',
     color: '#111827',
-    marginBottom: 8,
+    marginBottom: 4,
   },
   optionDescription: {
     fontSize: 14,
@@ -2377,53 +2538,74 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontFamily: 'Outfit-Regular',
   },
-  bottomButtons: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    // paddingHorizontal: 16,
-    gap: 12,
-  },
-  skipLink: {
-    // marginTop: 14,
-    alignItems: 'center',
-  },
-  skipLinkText: {
-    fontSize: 14,
-    fontFamily: 'Outfit-Medium',
-    color: '#1600ff',
-    textDecorationLine: 'underline',
-  },
-  editButton: {
-    paddingHorizontal: 16,
+  footerContainer: {
+    marginTop: 'auto',
     paddingVertical: 12,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: '#d1d5db',
     backgroundColor: 'white',
-  },
-  editButtonText: {
-    fontSize: 16,
-    fontFamily: 'Outfit-Bold',
-    color: '#111827',
-  },
-  skipButton: {
+    borderTopWidth: 1,
+    borderTopColor: '#e5e7eb',
+    marginHorizontal: -16,
     paddingHorizontal: 16,
-    paddingVertical: 12,
+  },
+  footerMainButtons: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 12,
+  },
+  primaryButton: {
+    flex: 1,
+    height: 45,
     borderRadius: 999,
     backgroundColor: '#1600ff',
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: 8,
+    shadowColor: '#1600ff',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
-  skipButtonText: {
+  primaryButtonDisabled: {
+    opacity: 0.5,
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  primaryButtonText: {
     fontSize: 16,
     fontFamily: 'Outfit-Bold',
     color: 'white',
   },
+  outlineButton: {
+    flex: 1,
+    height: 45,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    backgroundColor: 'white',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  outlineButtonText: {
+    fontSize: 16,
+    fontFamily: 'Outfit-Bold',
+    color: '#111827',
+  },
+  skipLink: {
+    alignItems: 'center',
+    // paddingVertical: 4,
+  },
+  skipLinkText: {
+    fontSize: 14,
+    fontFamily: 'Outfit-Bold',
+    color: '#6b7280',
+    // textDecorationLine: 'underline',
+  },
   collectiveInfoCard: {
     backgroundColor: '#f3e8ff',
     borderRadius: 14,
-    padding: 16,
+    padding: 12,
     flexDirection: 'row',
     gap: 12,
     marginBottom: 24,
@@ -2432,7 +2614,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: 'white',
+    backgroundColor: '#da46f0',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -2440,13 +2622,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   collectiveInfoTitle: {
-    fontSize: 14,
+    fontSize: 16,
     fontFamily: 'Outfit-Bold',
     color: '#111827',
     marginBottom: 6,
   },
   collectiveInfoDescription: {
-    fontSize: 12,
+    fontSize: 14,
     fontFamily: 'Outfit-Regular',
     color: '#374151',
     lineHeight: 18,
@@ -2471,7 +2653,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e5e7eb',
     borderRadius: 14,
-    padding: 16,
+    padding: 12,
     backgroundColor: 'white',
   },
   collectiveRow: {
@@ -2481,7 +2663,7 @@ const styles = StyleSheet.create({
   collectiveAvatar: {
     width: 44,
     height: 44,
-    borderRadius: 22,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -2498,7 +2680,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 12,
-    marginBottom: 6,
+    // marginBottom: 6,
   },
   collectiveName: {
     flex: 1,
@@ -2507,13 +2689,13 @@ const styles = StyleSheet.create({
     color: '#111827',
   },
   collectiveMeta: {
-    fontSize: 12,
+    fontSize: 14,
     fontFamily: 'Outfit-Regular',
     color: '#6b7280',
-    marginBottom: 6,
+    marginBottom: 2,
   },
   collectiveDescription: {
-    fontSize: 13,
+    fontSize: 14,
     fontFamily: 'Outfit-Regular',
     color: '#374151',
     marginBottom: 10,
@@ -2524,10 +2706,9 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   supportingText: {
-    fontSize: 13,
+    fontSize: 14,
     fontFamily: 'Outfit-Medium',
     color: '#1600ff',
-    textDecorationLine: 'underline',
   },
   supportingChevron: {
     transform: [{ rotate: '0deg' }],
@@ -2735,41 +2916,10 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Medium',
     color: '#9333ea',
   },
-  footerButtons: {
-    flexDirection: 'column-reverse', // Changed from row to column-reverse to stack buttons
-    gap: 12,
-  },
-  backButton: {
-    width: '100%', // Full width
-    height: 44,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#d1d5db',
-    backgroundColor: 'white',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  backButtonText: {
-    fontSize: 16,
-    fontFamily: 'Outfit-Medium',
-    color: '#111827',
-  },
-  startButton: {
-    width: '100%', // Full width
-    height: 44,
-    borderRadius: 8,
-    backgroundColor: '#1600ff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  startButtonDisabled: {
-    opacity: 0.5,
-  },
-  startButtonText: {
-    fontSize: 16,
-    fontFamily: 'Outfit-Medium',
-    color: 'white',
-    textAlign: 'center',
+  emptyText: {
+    fontSize: 14,
+    color: '#6b7280',
+    fontFamily: 'Outfit-Regular',
   },
   loadingContainer: {
     flexDirection: 'row',
@@ -2783,9 +2933,107 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 40,
   },
-  emptyText: {
+  emptyIconCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#EFF6FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontFamily: 'Outfit-Bold',
+    color: '#111827',
+    marginBottom: 8,
+  },
+  emptyDescription: {
     fontSize: 14,
     color: '#6b7280',
+    textAlign: 'center',
     fontFamily: 'Outfit-Regular',
+    paddingHorizontal: 20,
+    lineHeight: 18,
+  },
+  successContainer: {
+    flex: 1,
+    backgroundColor: 'white',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+  },
+  successContent: {
+    width: '100%',
+    maxWidth: 400,
+    alignItems: 'center',
+  },
+  successIconWrapper: {
+    marginBottom: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  successIconCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#10B981',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 10,
+  },
+  successIconOuter: {
+    position: 'absolute',
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: '#D1FAE5',
+  },
+  successTitle: {
+    fontSize: 22,
+    fontFamily: 'Outfit-Bold',
+    color: '#111827',
+    textAlign: 'center',
+    marginBottom: 24,
+    // lineHeight: 32,
+  },
+  successDescription: {
+    fontSize: 16,
+    fontFamily: 'Outfit-Regular',
+    color: '#4B5563',
+    textAlign: 'center',
+    marginBottom: 40,
+    lineHeight: 24,
+  },
+  finalContinueButton: {
+    width: '100%',
+    height: 56,
+    borderRadius: 12,
+    backgroundColor: '#1600ff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 32,
+    shadowColor: '#1600ff',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  finalContinueButtonText: {
+    fontSize: 18,
+    fontFamily: 'Outfit-Bold',
+    color: 'white',
+  },
+  changeSelectionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  changeSelectionText: {
+    fontSize: 16,
+    fontFamily: 'Outfit-Medium',
+    color: '#6b7280',
   },
 });

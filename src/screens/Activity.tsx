@@ -166,14 +166,27 @@ export default function Activity() {
             const isNewMember = notification.title?.toLowerCase().includes('member') ||
                 notification.body?.toLowerCase().includes('joined') ||
                 notification.data?.new_member_id;
+            const isFollower = notification.title?.toLowerCase().includes('follow') ||
+                notification.body?.toLowerCase().includes('followed') ||
+                notification.body?.toLowerCase().includes('following') ||
+                notification.data?.follower_id;
 
             // Extract collective name from body or title
             let collectiveName = '';
             if (notification.body) {
                 // Pattern 1: "received donation to [collective]"
                 const receivedMatch = notification.body.match(/received.*?donation.*?to (.+)/i);
+                // Pattern 1.1: "[Name] donated $X to [Recipient]"
+                const donatedMatch = notification.body.match(/^(.+?)\s+donated\s+\$[\d.]+?\s+to\s+(.+)$/i);
+                // Pattern 1.2: "Your collective [collective] received"
+                const collectiveReceivedMatch = notification.body.match(/Your collective (.*?) received/i);
+
                 if (receivedMatch) {
                     collectiveName = receivedMatch[1].trim();
+                } else if (donatedMatch) {
+                    collectiveName = donatedMatch[2].trim();
+                } else if (collectiveReceivedMatch) {
+                    collectiveName = collectiveReceivedMatch[1].trim();
                 } else {
                     // Pattern 2: "joined [collective]" or "@username joined [collective]"
                     const joinedMatch = notification.body.match(/joined\s+(.+?)(?:\.|Supporting)/i);
@@ -193,6 +206,13 @@ export default function Activity() {
                         }
                     }
                 }
+            }
+
+            // Check if collective name is available in data or already correctly assigned
+            if (!collectiveName && notification.data?.collective_name) {
+                collectiveName = notification.data.collective_name;
+            } else if (!collectiveName && notification.data?.collective?.name) {
+                collectiveName = notification.data.collective.name;
             }
 
             // Extract user name for new member notifications
@@ -290,8 +310,8 @@ export default function Activity() {
 
             return {
                 id: notification.id,
-                type: isDonation ? 'donation' : isNewMember ? 'new_member' : 'other',
-                title: isDonation ? 'Donation Received' : isNewMember ? 'New Member' : notification.title || 'Notification',
+                type: isDonation ? 'donation' : isNewMember ? 'new_member' : isFollower ? 'follower' : 'other',
+                title: isDonation ? 'Donation Received' : isNewMember ? 'New Member' : isFollower ? 'New Follower' : notification.title || 'Notification',
                 description: notification.body || notification.title || '',
                 collectiveName: collectiveName,
                 memberName: memberName,
@@ -511,16 +531,19 @@ export default function Activity() {
             const description = item.description || '';
             if (!description) return <Text style={{ color: '#374151', fontSize: 12 }}>{description}</Text>;
 
-            // Handle donation type with "donated to" format
-            if (item.type === 'donation' && description.includes('donated to')) {
-                const parts: React.ReactElement[] = [];
-                const donatedSplit = description.split(' donated to ');
-                if (donatedSplit.length === 2) {
-                    const donorPart = donatedSplit[0];
-                    const restPart = donatedSplit[1];
+            // Handle donation type with parsing (matching Vite RegularNotifications)
+            if (item.type === 'donation') {
+                const description = item.description || '';
+                const donatedMatch = description.match(/^(.+?)\s+donated\s+(\$[\d.]+?)\s+to\s+(.+)$/i);
 
-                    // Handle Donor Link
-                    if (donorPart.startsWith('@') && item.userId) {
+                if (donatedMatch) {
+                    const donorPart = donatedMatch[1].trim();
+                    const amount = donatedMatch[2];
+                    const recipientPart = donatedMatch[3].trim();
+                    const parts: React.ReactElement[] = [];
+
+                    // 1. Donor
+                    if (item.userId) {
                         parts.push(
                             <Text
                                 key="donor"
@@ -533,25 +556,32 @@ export default function Activity() {
                             </Text>
                         );
                     } else {
-                        parts.push(
-                            <Text key="donor-text" style={{ color: '#374151', fontSize: 14 }}>
-                                {donorPart}
-                            </Text>
-                        );
+                        parts.push(<Text key="donor-text" style={{ color: '#374151', fontSize: 14 }}>{donorPart}</Text>);
                     }
 
-                    parts.push(
-                        <Text key="donated-to" style={{ color: '#374151', fontSize: 14 }}>
-                            {' '}donated to{' '}
-                        </Text>
-                    );
+                    // 2. " donated "
+                    parts.push(<Text key="donated" style={{ color: '#374151', fontSize: 14 }}> donated </Text>);
 
-                    // Handle Nonprofit Link - check for " and X other"
-                    const otherMatch = restPart.match(/(.*)( and \d+ other.*)/);
-                    const nonprofitName = otherMatch ? otherMatch[1] : restPart;
-                    const suffix = otherMatch ? otherMatch[2] : '';
+                    // 3. Amount
+                    parts.push(<Text key="amount" style={{ fontFamily: 'Outfit-SemiBold', color: '#374151', fontSize: 14 }}>{amount}</Text>);
 
-                    if (item.nonprofitId) {
+                    // 4. " to "
+                    parts.push(<Text key="to" style={{ color: '#374151', fontSize: 14 }}> to </Text>);
+
+                    // 5. Recipient (Collective or Nonprofit)
+                    if (item.collectiveId) {
+                        parts.push(
+                            <Text
+                                key="collective"
+                                style={{ fontFamily: 'Outfit-SemiBold', color: '#374151', fontSize: 14 }}
+                                onPress={() => {
+                                    (navigation as any).navigate('GroupCRWD', { crwdId: item.collectiveId.toString() });
+                                }}
+                            >
+                                {recipientPart}
+                            </Text>
+                        );
+                    } else if (item.nonprofitId) {
                         parts.push(
                             <Text
                                 key="nonprofit"
@@ -560,31 +590,17 @@ export default function Activity() {
                                     (navigation as any).navigate('CauseDetail', { causeId: item.nonprofitId });
                                 }}
                             >
-                                {nonprofitName}
+                                {recipientPart}
                             </Text>
                         );
                     } else {
-                        parts.push(
-                            <Text key="nonprofit-text" style={{ color: '#374151', fontSize: 14 }}>
-                                {nonprofitName}
-                            </Text>
-                        );
-                    }
-
-                    if (suffix) {
-                        parts.push(
-                            <Text key="suffix" style={{ color: '#374151', fontSize: 14 }}>
-                                {suffix}
-                            </Text>
-                        );
+                        parts.push(<Text key="recipient-text" style={{ color: '#374151', fontSize: 14 }}>{recipientPart}</Text>);
                     }
 
                     return <Text style={{ color: '#374151', fontSize: 14 }}>{parts}</Text>;
                 }
-            }
 
-            // Handle donation type with collective format
-            if (item.type === 'donation') {
+                // Fallback for "Your collective received..." format
                 return (
                     <Text style={{ color: '#374151', fontSize: 14 }}>
                         Your collective{' '}
@@ -601,7 +617,7 @@ export default function Activity() {
                             </Text>
                         ) : (
                             <Text style={{ color: '#374151', fontSize: 14 }}>
-                                {item.collectiveName || 'Community Champions'}
+                                {item.collectiveName || 'Collective'}
                             </Text>
                         )}
                         {' '}received a {item.donationAmount || '$50'} donation
@@ -683,6 +699,54 @@ export default function Activity() {
                 ) : (
                     <Text style={{ color: '#374151', fontSize: 14 }}>{description}</Text>
                 );
+            }
+
+            // Handle follower type
+            if (item.type === 'follower') {
+                const parts: React.ReactElement[] = [];
+                const description = item.description || '';
+
+                // Try to find full name or username at the start
+                // follower notifications usually start with the name: "First Last started following you" or "@username started following you"
+
+                let matchedName = '';
+                if (item.firstName && item.lastName && description.toLowerCase().includes(`${item.firstName} ${item.lastName}`.toLowerCase())) {
+                    matchedName = description.substring(0, `${item.firstName} ${item.lastName}`.length);
+                } else if (item.username && description.toLowerCase().includes(item.username.toLowerCase())) {
+                    const index = description.toLowerCase().indexOf(item.username.toLowerCase());
+                    if (index !== -1) {
+                        matchedName = description.substring(index, index + item.username.length);
+                    }
+                } else if (item.firstName && description.toLowerCase().includes(item.firstName.toLowerCase())) {
+                    const index = description.toLowerCase().indexOf(item.firstName.toLowerCase());
+                    if (index !== -1) {
+                        matchedName = description.substring(index, index + item.firstName.length);
+                    }
+                }
+
+                if (matchedName && item.userId) {
+                    const index = description.indexOf(matchedName);
+                    if (index !== -1) {
+                        if (index > 0) {
+                            parts.push(<Text key="text-start" style={{ color: '#374151', fontSize: 14 }}>{description.substring(0, index)}</Text>);
+                        }
+                        parts.push(
+                            <Text
+                                key="follower-name"
+                                style={{ fontFamily: 'Outfit-SemiBold', color: '#374151', fontSize: 14 }}
+                                onPress={() => {
+                                    (navigation as any).navigate('UserProfile', { userId: item.userId.toString() });
+                                }}
+                            >
+                                {matchedName}
+                            </Text>
+                        );
+                        if (index + matchedName.length < description.length) {
+                            parts.push(<Text key="text-end" style={{ color: '#374151', fontSize: 14 }}>{description.substring(index + matchedName.length)}</Text>);
+                        }
+                        return <Text style={{ color: '#374151', fontSize: 14 }}>{parts}</Text>;
+                    }
+                }
             }
 
             // Handle other types - parse full names, @username mentions, and collective names

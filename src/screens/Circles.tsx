@@ -52,8 +52,8 @@ const Circles = () => {
   };
 
   // Fetch collectives data using React Query
-  const { 
-    data: collectiveData, 
+  const {
+    data: collectiveData,
     isLoading: isLoadingCollectives,
     refetch: refetchCollectives,
     isRefetching: isRefetchingCollectives
@@ -64,13 +64,13 @@ const Circles = () => {
   });
 
   // Fetch joined collectives for current user
-  const { 
-    data: joinCollectiveData, 
+  const {
+    data: joinCollectiveData,
     isLoading: isLoadingJoinCollective,
     refetch: refetchJoinCollectives,
     isRefetching: isRefetchingJoinCollective
   } = useQuery({
-    queryKey: ['join-collective', currentUser?.id],
+    queryKey: ['joined-collectives', currentUser?.id],
     queryFn: () => getJoinCollective(currentUser?.id || ''),
     enabled: !!currentUser?.id,
   });
@@ -90,7 +90,7 @@ const Circles = () => {
     if (!joinCollectiveData?.data) return collectiveData.results;
 
     const joinedIds = new Set(joinCollectiveData.data.map((item: any) => (item.collective?.id || item.id)));
-    
+
     return collectiveData.results.filter((item: any) => !joinedIds.has(item.id));
   }, [collectiveData, joinCollectiveData]);
 
@@ -300,8 +300,8 @@ const Circles = () => {
       </View>
 
       {activeTab === 'my-crwds' ? (
-        <ScrollView 
-          style={styles.scrollContainer} 
+        <ScrollView
+          style={styles.scrollContainer}
           showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[PrimaryGreen]} />

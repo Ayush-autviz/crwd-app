@@ -186,7 +186,7 @@ export default function ManageDonationBoxScreen() {
 
   // Fetch joined collectives
   const { data: joinedCollectivesData, isLoading: joinedCollectivesLoading } = useQuery({
-    queryKey: ['joined-collectives-manage'],
+    queryKey: ['joined-collectives', currentUser?.id],
     queryFn: () => getJoinCollective(currentUser?.id || ''),
     enabled: activeTab === 'collectives',
   });

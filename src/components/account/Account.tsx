@@ -23,12 +23,17 @@ import { useAuthStore } from '../../store/store'
 import { useToast } from '../../contexts/ToastContext'
 import * as ImagePicker from 'react-native-image-picker'
 
-export default function Account() {
+interface AccountProps {
+  isEditMode: boolean;
+  setIsEditMode: (value: boolean) => void;
+}
+
+export default function Account({ isEditMode, setIsEditMode }: AccountProps) {
   const navigation = useNavigation()
   const { user, setUser } = useAuthStore()
   const { showToast } = useToast()
   const queryClient = useQueryClient()
-  const [isEditMode, setIsEditMode] = useState(false)
+  // isEditMode is now passed as a prop
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',

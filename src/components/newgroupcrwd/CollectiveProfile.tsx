@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
+import { truncateAtFirstPeriod } from '../../utils/truncateFirstPeriod';
 
 interface CollectiveProfileProps {
   name: string;
@@ -138,7 +139,7 @@ export default function CollectiveProfile({
         </View>
       </View>
       {description && (
-        <Text style={styles.description}>{description}</Text>
+        <Text style={styles.description}>{truncateAtFirstPeriod(description)}</Text>
       )}
     </View>
   );

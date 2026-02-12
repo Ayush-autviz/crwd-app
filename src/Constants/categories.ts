@@ -58,6 +58,27 @@ export const categories = [
   { id: "N", name: "Sports", text: "#FFFFFF", background: "#22C55E" }, // Bright Emerald
   { id: "G", name: "Wellness", text: "#FFFFFF", background: "#EC4899" }, // Bright Pink (like the image)
   { id: "O", name: "Kids", text: "#FFFFFF", background: "#06B6D4" }, // Bright Cyan
-  { id: "1", name: "Veterans", text: "#FFFFFF", background: "#10B981" }, // Bright Cyan
-  { id: "2", name: "Homelessness", text: "#FFFFFF", background: "#06B6D4" }, // Bright Cyan
+  { id: "a", name: "Veterans", text: "#FFFFFF", background: "#10B981" }, // Bright Cyan
+  { id: "b", name: "Homelessness", text: "#FFFFFF", background: "#06B6D4" }, // Bright Cyan
+  { id: "c", name: "Cancer", text: "#FFFFFF", background: "#F97316" }, // Bright Orange
+  { id: "d", name: "Jewish", text: "#FFFFFF", background: "#10B981" }, // Bright Cyan
+  { id: "e", name: "Asian", text: "#FFFFFF", background: "#06B6D4" }, // Bright Cyan
+  { id: "f", name: "Seniors", text: "#FFFFFF", background: "#DC2626" }, // Bright Cyan
+  { id: "g", name: "African American", text: "#FFFFFF", background: "#64748B" }, // Bright Cyan
+  { id: "h", name: "Domestic", text: "#FFFFFF", background: "#EC4899" }, // Bright Cyan
+  { id: "i", name: "Violence", text: "#FFFFFF", background: "#06B6D4" }, // Bright Cyan
+  { id: "j", name: "Crisis", text: "#FFFFFF", background: "#DC2626" }, // Bright Cyan
+  { id: "k", name: "Emergency", text: "#FFFFFF", background: "#A855F7" }, // Bright Cyan
+  { id: "l", name: "Rights", text: "#FFFFFF", background: "#10B981" }, // Bright Cyan
+  { id: "m", name: "Human Rights", text: "#FFFFFF", background: "#EC4899" }, // Bright Cyan
+  { id: "n", name: "Breast Cancer", text: "#FFFFFF", background: "#10B981" }, // Bright Cyan
+  { id: "o", name: "Abuse", text: "#FFFFFF", background: "#06B6D4" }, // Bright Cyan
+  { id: "p", name: "Wilderness", text: "#FFFFFF", background: "#DC2626" }, // Bright Cyan
+  { id: "q", name: "Politics", text: "#FFFFFF", background: "#A855F7" }, // Bright Cyan
+  { id: "r", name: "Relief", text: "#FFFFFF", background: "#10B981" }, // Bright Cyan
+  { id: "s", name: "Environment", text: "#FFFFFF", background: "#06B6D4" }, // Bright Cyan
+  { id: "t", name: "Wildlife", text: "#FFFFFF", background: "#EC4899" }, // Bright Cyan
+  { id: "u", name: "LGBTQ+", text: "#FFFFFF", background: "#DC2626" }, // Bright Cyan
+  { id: "v", name: "Poverty", text: "#FFFFFF", background: "#10B981" }, // Bright Cyan
+  { id: "w", name: "Women's Health", text: "#FFFFFF", background: "#A855F7" }, // Bright Cyan
 ];

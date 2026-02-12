@@ -14,7 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute, useNavigation, CommonActions } from '@react-navigation/native';
 import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Check, Share2, Loader2, X, Heart } from 'lucide-react-native';
-import BottomSheet, { BottomSheetView, BottomSheetBackdrop, BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import BottomSheet, { BottomSheetView, BottomSheetBackdrop, BottomSheetScrollView, BottomSheetModal } from '@gorhom/bottom-sheet';
 import {
   getCollectiveById,
   getCollectiveCauses,
@@ -75,7 +75,7 @@ export default function NewGroupCrwdPage() {
   };
 
   // Bottom sheet ref for statistics
-  const statisticsBottomSheetRef = useRef<BottomSheet>(null);
+  const statisticsBottomSheetRef = useRef<BottomSheetModal>(null);
   const statisticsSnapPoints = useMemo(() => ['75%'], []);
 
   // Bottom sheet backdrop for statistics
@@ -91,12 +91,12 @@ export default function NewGroupCrwdPage() {
     []
   );
 
-  // Update bottom sheet when modal state changes
+  // Handle manual show/hide if needed, but we'll use present() and dismiss() mostly
   useEffect(() => {
     if (showStatisticsModal) {
-      statisticsBottomSheetRef.current?.snapToIndex(0);
+      statisticsBottomSheetRef.current?.present();
     } else {
-      statisticsBottomSheetRef.current?.close();
+      statisticsBottomSheetRef.current?.dismiss();
     }
   }, [showStatisticsModal]);
 
@@ -208,8 +208,6 @@ export default function NewGroupCrwdPage() {
       queryClient.invalidateQueries({ queryKey: ['crwd', crwdId] });
       queryClient.invalidateQueries({ queryKey: ['joined-collectives'] });
       queryClient.invalidateQueries({ queryKey: ['joined-collectives', currentUser?.id] });
-      queryClient.invalidateQueries({ queryKey: ['joined-collectives-manage'] });
-      queryClient.invalidateQueries({ queryKey: ['joinedCollectives'] });
 
       // Refetch donation box to get latest data including capacity
       await refetchDonationBox();
@@ -1150,53 +1148,55 @@ export default function NewGroupCrwdPage() {
       />
 
       {/* Statistics Bottom Sheet */}
-      <BottomSheet
+      <BottomSheetModal
         ref={statisticsBottomSheetRef}
-        index={showStatisticsModal ? 0 : -1}
         snapPoints={statisticsSnapPoints}
         enablePanDownToClose
         backdropComponent={renderStatisticsBackdrop}
-        onChange={(index) => setShowStatisticsModal(index >= 0)}
+        onDismiss={() => setShowStatisticsModal(false)}
         enableDynamicSizing={false}
+        backgroundStyle={{ backgroundColor: 'white' }}
       >
-        <View style={styles.bottomSheetContent}>
-          {/* Header */}
-          <View style={styles.bottomSheetHeader}>
-            <View style={styles.bottomSheetHeaderTop}>
-              <Text style={styles.bottomSheetTitle}>Collective Statistics</Text>
-              <TouchableOpacity
-                onPress={() => setShowStatisticsModal(false)}
-                style={styles.closeButton}
-              >
-                <X size={20} color="#374151" />
-              </TouchableOpacity>
-            </View>
-            <Text style={styles.bottomSheetSubtitle}>
-              View detailed information about nonprofits, members, and donations
-            </Text>
+        {/* Header */}
+        <View style={styles.bottomSheetHeader}>
+          <View style={styles.bottomSheetHeaderTop}>
+            <Text style={styles.bottomSheetTitle}>Collective Statistics</Text>
+            <TouchableOpacity
+              onPress={() => statisticsBottomSheetRef.current?.dismiss()}
+              style={styles.closeButton}
+            >
+              <X size={20} color="#374151" />
+            </TouchableOpacity>
           </View>
-
-          {/* Tabs */}
-          <View style={styles.tabsContainer}>
-            {(['Nonprofits', 'Members', 'Donations'] as const).map((tab) => (
-              <TouchableOpacity
-                key={tab}
-                onPress={() => setStatisticsTab(tab)}
-                style={[styles.tab, statisticsTab === tab && styles.activeTab]}
-              >
-                <Text style={[styles.tabText, statisticsTab === tab && styles.activeTabText]}>
-                  {tab}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          {/* Content */}
-          <BottomSheetScrollView style={styles.bottomSheetScrollView} showsVerticalScrollIndicator={false}>
-            {renderStatisticsContent()}
-          </BottomSheetScrollView>
+          <Text style={styles.bottomSheetSubtitle}>
+            View detailed information about nonprofits, members, and donations
+          </Text>
         </View>
-      </BottomSheet>
+
+        {/* Tabs */}
+        <View style={styles.tabsContainer}>
+          {(['Nonprofits', 'Members', 'Donations'] as const).map((tab) => (
+            <TouchableOpacity
+              key={tab}
+              onPress={() => setStatisticsTab(tab)}
+              style={[styles.tab, statisticsTab === tab && styles.activeTab]}
+            >
+              <Text style={[styles.tabText, statisticsTab === tab && styles.activeTabText]}>
+                {tab}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* Content */}
+        <BottomSheetScrollView
+          style={styles.bottomSheetScrollView}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40 }}
+        >
+          {renderStatisticsContent()}
+        </BottomSheetScrollView>
+      </BottomSheetModal>
     </SafeAreaView>
   );
 }

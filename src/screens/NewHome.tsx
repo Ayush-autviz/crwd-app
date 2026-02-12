@@ -148,7 +148,7 @@ export default function NewHome() {
 
   // Fetch joined collectives
   const { data: joinedCollectivesData, isLoading: joinedCollectivesLoading } = useQuery({
-    queryKey: ['joinedCollectives', user?.id],
+    queryKey: ['joined-collectives', user?.id],
     queryFn: () => {
       if (!user?.id) {
         throw new Error('User ID is required');

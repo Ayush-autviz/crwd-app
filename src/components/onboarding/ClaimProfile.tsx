@@ -223,11 +223,17 @@ export default function ClaimProfile() {
         },
         onError: (error: any) => {
             console.error("Registration error:", error)
-            console.error("Error response:", error.response?.data)
-            console.error("Error status:", error.response?.status)
+            const errorData = error.response?.data
+            console.error("Error response:", errorData)
+
+            // Check for specific error code: UsernameExistsAndConfirmedException
+            if (errorData?.error_code === "UsernameExistsAndConfirmedException") {
+                const displayMsg = `${errorData.message}. ${errorData.suggestion || ''}`.trim()
+                showToast(displayMsg, 5000)
+                return
+            }
 
             // Handle validation errors
-            const errorData = error.response?.data
             if (errorData?.errors) {
                 // Check for profile picture error
                 if (errorData.errors.profile_picture_file) {
@@ -618,9 +624,19 @@ export default function ClaimProfile() {
                             </TouchableOpacity>
                             <Text style={styles.termsText}>
                                 By checking this box, you acknowledge and agree to CRWD's{' '}
-                                <Text style={styles.termsLink}>Terms of Use</Text>
+                                <Text
+                                    style={styles.termsLink}
+                                    onPress={() => navigation.navigate('TermsOfUse')}
+                                >
+                                    Terms of Use
+                                </Text>
                                 {' '}and{' '}
-                                <Text style={styles.termsLink}>Privacy Policy</Text>
+                                <Text
+                                    style={styles.termsLink}
+                                    onPress={() => navigation.navigate('PrivacyPolicy')}
+                                >
+                                    Privacy Policy
+                                </Text>
                                 . <Text style={styles.required}>*</Text>
                             </Text>
                         </View>
@@ -755,7 +771,7 @@ const styles = StyleSheet.create({
     card: {
         backgroundColor: 'white',
         borderRadius: 12,
-        padding: 24,
+        padding: 18,
         width: '100%',
         maxWidth: 400,
         alignSelf: 'center',
@@ -941,7 +957,7 @@ const styles = StyleSheet.create({
         fontFamily: 'Outfit-Regular',
     },
     formFields: {
-        marginBottom: 24,
+        marginBottom: 4,
     },
     termsContainer: {
         flexDirection: 'row',
@@ -975,6 +991,7 @@ const styles = StyleSheet.create({
     termsLink: {
         color: '#1600ff',
         fontFamily: 'Outfit-Medium',
+        textDecorationLine: 'underline',
     },
     continueButton: {
         backgroundColor: '#7c83ff',

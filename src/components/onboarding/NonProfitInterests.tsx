@@ -17,6 +17,7 @@ import { categories } from '../../Constants/categories';
 import { useMutation } from '@tanstack/react-query';
 import { postCauseInterests } from '../../services/api/social';
 import { useToast } from '../../contexts/ToastContext';
+import { PrimaryGrey } from '../../Constants/Colors';
 
 const { width } = Dimensions.get('window');
 
@@ -45,13 +46,20 @@ export default function NonProfitInterests() {
     "Faith",
     "Veterans",
     "Kids",
+    "Environment",
+    "Wildlife",
+    "LGBTQ+",
+    "Poverty",
+    "Women's Health",
   ];
 
-  const mainCategories = categories.filter((cat) =>
-    cat.id !== "" &&
-    cat.name !== "All" &&
-    allowedCategoryNames.includes(cat.name)
-  );
+  const mainCategories = categories
+    .filter((cat) =>
+      cat.id !== "" &&
+      cat.name !== "All" &&
+      allowedCategoryNames.includes(cat.name)
+    )
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   const handleCategoryToggle = (categoryId: string) => {
     setSelectedCategories((prev) => {
@@ -175,7 +183,7 @@ export default function NonProfitInterests() {
 
             {/* Subtitle */}
             <Text style={styles.subtitle}>
-              Select one or more interests to personalize your experience. We'll show you nonprofits and collectives that match. 
+              Select one or more interests to personalize your experience. We'll show you nonprofits and collectives that match.
             </Text>
 
             {/* Category Tags - Organic Layout */}
@@ -190,7 +198,7 @@ export default function NonProfitInterests() {
                       styles.categoryButton,
                       {
                         backgroundColor: category.background,
-                        opacity: isSelected ? 1 : 0.6,
+                        opacity: isSelected ? 1 : 0.4,
                       }
                     ]}
                     activeOpacity={0.8}
@@ -210,7 +218,7 @@ export default function NonProfitInterests() {
             {selectedCategories.length > 0 && (
               <View style={styles.selectedCountContainer}>
                 <Text style={styles.selectedCountText}>
-                  {selectedCategories.length} {selectedCategories.length === 1 ? "category" : "categories"} selected
+                  {selectedCategories.length} {selectedCategories.length === 1 ? "interest" : "interests"} selected
                 </Text>
               </View>
             )}
@@ -267,7 +275,7 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: 'white',
     borderRadius: 12,
-    padding: 24,
+    padding: 16,
     width: '100%',
     maxWidth: 672,
     alignSelf: 'center',
@@ -299,7 +307,7 @@ const styles = StyleSheet.create({
   },
   iconContainer: {
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 18,
   },
   iconCircle: {
     width: 64,
@@ -314,13 +322,13 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Bold',
     color: '#111827',
     textAlign: 'center',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   subtitle: {
     fontSize: 14,
     color: '#6b7280',
     textAlign: 'center',
-    marginBottom: 32,
+    marginBottom: 28,
     lineHeight: 20,
     paddingHorizontal: 8,
     fontFamily: 'Outfit-Regular',
@@ -330,7 +338,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'center',
     gap: 8,
-    marginBottom: 24,
+    marginBottom: 16,
   },
   categoryButton: {
     paddingHorizontal: 16,
@@ -344,11 +352,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   selectedCountContainer: {
-    marginBottom: 24,
+    marginBottom: 18,
   },
   selectedCountText: {
-    fontSize: 14,
-    color: '#6366f1',
+    fontSize: 15,
+    color: PrimaryGrey,
     fontFamily: 'Outfit-Medium',
     textAlign: 'center',
   },
@@ -382,12 +390,11 @@ const styles = StyleSheet.create({
   },
   skipButton: {
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 6,
   },
   skipText: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#6b7280',
-    textDecorationLine: 'underline',
-    fontFamily: 'Outfit-Regular',
+    fontFamily: 'Outfit-Medium',
   },
 });

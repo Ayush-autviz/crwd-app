@@ -1,5 +1,5 @@
-import React, { useRef, useState } from 'react'
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, TextInput, Alert } from 'react-native'
+import React, { useRef, useState, useEffect } from 'react'
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, TextInput, Alert, Modal } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import BottomSheet from '@gorhom/bottom-sheet'
@@ -34,6 +34,36 @@ export default function NewSettings() {
   const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null)
   const [showRequestModal, setShowRequestModal] = useState(false)
   const [showPaymentMethodsSheet, setShowPaymentMethodsSheet] = useState(false)
+  const [isEditMode, setIsEditMode] = useState(false)
+  const [showExitConfirmation, setShowExitConfirmation] = useState(false)
+  const [pendingAction, setPendingAction] = useState<any>(null)
+
+  // Navigation guard
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('beforeRemove', (e: any) => {
+      if (!isEditMode) {
+        // If not in edit mode, let navigation proceed
+        return;
+      }
+
+      // Prevent default behavior of leaving the screen
+      e.preventDefault();
+
+      // Store the action that triggered the navigation so we can resume it if user discards changes
+      setPendingAction(e.data.action);
+      setShowExitConfirmation(true);
+    });
+
+    return unsubscribe;
+  }, [navigation, isEditMode]);
+
+  const confirmExit = () => {
+    setIsEditMode(false);
+    setShowExitConfirmation(false);
+    if (pendingAction) {
+      navigation.dispatch(pendingAction);
+    }
+  };
 
   const toggleFAQ = (index: number) => {
     setExpandedFAQ(expandedFAQ === index ? null : index)
@@ -118,7 +148,7 @@ export default function NewSettings() {
 
         <KeyboardAwareScrollView style={styles.scrollView} showsVerticalScrollIndicator={false} enableOnAndroid={true} extraScrollHeight={100}>
           {/* Account Component */}
-          <Account />
+          <Account isEditMode={isEditMode} setIsEditMode={setIsEditMode} />
 
           {/* Security Section */}
           {currentUser?.id && currentUser?.auth_method === 'email' && (
@@ -319,6 +349,41 @@ export default function NewSettings() {
           isOpen={showPaymentMethodsSheet}
           onClose={() => setShowPaymentMethodsSheet(false)}
         />
+
+        {/* Exit Confirmation Modal */}
+        <Modal
+          visible={showExitConfirmation}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowExitConfirmation(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.dialog}>
+              <View style={styles.dialogHeader}>
+                <Text style={styles.dialogTitle}>Unsaved Changes</Text>
+                <Text style={styles.dialogDescription}>
+                  You are currently in edit mode. If you leave now, any changes you've made will be lost. Are you sure you want to go back?
+                </Text>
+              </View>
+              <View style={styles.dialogButtonsVertical}>
+                <TouchableOpacity
+                  onPress={() => setShowExitConfirmation(false)}
+                  style={[styles.confirmDialogButton, styles.stayButton]}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.stayButtonText}>Stay and Edit</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={confirmExit}
+                  style={[styles.confirmDialogButton, styles.discardButton]}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.discardButtonText}>Discard Changes</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
       </SafeAreaView>
     </GestureHandlerRootView >
   )
@@ -502,5 +567,73 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#111827',
     fontFamily: 'Outfit-SemiBold',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  dialog: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    padding: 32,
+    width: '100%',
+    maxWidth: 400,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.25,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  dialogHeader: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  dialogTitle: {
+    fontSize: 24,
+    fontFamily: 'Outfit-Bold',
+    fontWeight: '700',
+    color: '#111827',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  dialogDescription: {
+    fontSize: 15,
+    color: '#6B7280',
+    textAlign: 'center',
+    // lineHeight: 22,
+    fontFamily: 'Outfit-Regular',
+  },
+  dialogButtonsVertical: {
+    gap: 12,
+  },
+  confirmDialogButton: {
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+  },
+  stayButton: {
+    borderWidth: 1.5,
+    borderColor: '#E5E7EB',
+    backgroundColor: '#FFFFFF',
+  },
+  discardButton: {
+    backgroundColor: '#EF4444',
+  },
+  stayButtonText: {
+    fontSize: 16,
+    fontFamily: 'Outfit-Bold',
+    fontWeight: '700',
+    color: '#111827',
+  },
+  discardButtonText: {
+    fontSize: 16,
+    fontFamily: 'Outfit-Bold',
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
 })

@@ -740,7 +740,7 @@ export default function PopularPosts({
                                     {item.fundraiser?.is_active ? (
                                         <>
                                             {/* Fundraiser Cover Image/Color - rounded-t-lg only */}
-                                            <View style={{ width: '100%', aspectRatio: 3, borderTopLeftRadius: 12, borderTopRightRadius: 12, overflow: 'hidden' }}>
+                                            <View style={{ width: '100%', aspectRatio: 2, borderTopLeftRadius: 12, borderTopRightRadius: 12, overflow: 'hidden' }}>
                                                 {item.fundraiser.color ? (
                                                     <View style={{
                                                         width: '100%',
@@ -829,7 +829,7 @@ export default function PopularPosts({
                                     ) : item.fundraiser ? (
                                         <>
                                             {/* Legacy Fundraiser UI for inactive fundraisers */}
-                                            <View style={{ width: '100%', aspectRatio: 3, borderTopLeftRadius: 12, borderTopRightRadius: 12, overflow: 'hidden' }}>
+                                            <View style={{ width: '100%', aspectRatio: 2, borderTopLeftRadius: 12, borderTopRightRadius: 12, overflow: 'hidden' }}>
                                                 {item.fundraiser.color ? (
                                                     <View style={{
                                                         width: '100%',
@@ -925,7 +925,7 @@ export default function PopularPosts({
                                             {item.previewDetails.image && (
                                                 <Image
                                                     source={{ uri: item.previewDetails.image }}
-                                                    style={{ width: '100%', aspectRatio: 3 }}
+                                                    style={{ width: '100%', aspectRatio: 2 }}
                                                     resizeMode="cover"
                                                 />
                                             )}
@@ -1263,12 +1263,12 @@ const styles = StyleSheet.create({
     },
     postImage: {
         width: '100%',
-        aspectRatio: 3,
+        aspectRatio: 2,
         borderRadius: 12,
     },
     mediaPlaceholder: {
         width: '100%',
-        height: 200,
+        height: 300,
         backgroundColor: '#f3f4f6',
         justifyContent: 'center',
         alignItems: 'center',

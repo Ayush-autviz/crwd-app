@@ -1219,7 +1219,7 @@ const styles = StyleSheet.create({
     borderColor: '#111827',
   },
   previewBox: {
-    height: 200,
+    height: 300,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#E5E7EB',
@@ -1235,7 +1235,7 @@ const styles = StyleSheet.create({
   },
   imagePreviewContainer: {
     position: 'relative',
-    height: 200,
+    height: 300,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#E5E7EB',
@@ -1262,7 +1262,7 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   uploadArea: {
-    height: 200,
+    height: 300,
     borderRadius: 8,
     borderWidth: 2,
     borderColor: '#D1D5DB',

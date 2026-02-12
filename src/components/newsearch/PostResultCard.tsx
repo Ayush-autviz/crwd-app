@@ -450,7 +450,7 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
           style={styles.fundraiserCard}
         >
           {/* Fundraiser Cover Image/Color - rounded-t-lg only */}
-          <View style={{ width: '100%', aspectRatio: 3, borderTopLeftRadius: 12, borderTopRightRadius: 12, overflow: 'hidden' }}>
+          <View style={{ width: '100%', aspectRatio: 2, borderTopLeftRadius: 12, borderTopRightRadius: 12, overflow: 'hidden' }}>
             {post.fundraiser.color ? (
               <View style={{
                 width: '100%',
@@ -553,7 +553,7 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
             {post.preview_details.image && (
               <Image
                 source={{ uri: post.preview_details.image }}
-                style={{ width: '100%', aspectRatio: 3 }}
+                style={{ width: '100%', aspectRatio: 2 }}
                 resizeMode="cover"
               />
             )}
@@ -666,7 +666,7 @@ const styles = StyleSheet.create({
     borderWidth: 0,
   },
   fundraiserImageContainer: {
-    height: 180,
+    height: 300,
     width: '100%',
   },
   fundraiserPlaceholder: {
@@ -836,7 +836,7 @@ const styles = StyleSheet.create({
   },
   media: {
     width: '100%',
-    aspectRatio: 3,
+    aspectRatio: 2,
     borderRadius: 8,
     marginBottom: 10,
   },
@@ -851,7 +851,7 @@ const styles = StyleSheet.create({
   },
   fundraiserImagePostStyle: {
     width: '100%',
-    height: 200,
+    height: 300,
     backgroundColor: '#F9FAFB',
   },
   previewCardVertical: {

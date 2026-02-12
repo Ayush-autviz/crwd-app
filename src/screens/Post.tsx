@@ -116,7 +116,7 @@ export default function Post() {
       mediaType: 'photo',
       cropping: true,
       width: 1200,
-      height: 400,
+      height: 600,
       freeStyleCropEnabled: false,
       includeBase64: false,
       cropperToolbarTitle: 'Edit Image',
@@ -701,7 +701,7 @@ const styles = StyleSheet.create({
   },
   imagePreview: {
     width: '100%',
-    aspectRatio: 3,
+    aspectRatio: 2,
   },
   removeImageButton: {
     position: 'absolute',

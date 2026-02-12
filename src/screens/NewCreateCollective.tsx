@@ -799,10 +799,23 @@ export default function NewCreateCollective() {
     );
   }
 
+  const isAnimating = createCollectiveMutation.isPending || (!!createdCollective && !showAnimationComplete);
+
   // Review/Confirmation Step
-  if (step === 2 && !createdCollective) {
+  if (step === 2) {
     return (
       <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+        {/* Animation Overlay */}
+        <Modal
+          visible={isAnimating}
+          transparent
+          animationType="fade"
+        >
+          <View style={styles.logoAnimationContainer}>
+            <CrwdAnimation size="lg" />
+          </View>
+        </Modal>
+
         <View style={styles.header}>
           <TouchableOpacity
             onPress={() => setStep(1)}
@@ -927,25 +940,6 @@ export default function NewCreateCollective() {
             )}
           </TouchableOpacity>
         </View>
-      </SafeAreaView>
-    );
-  }
-
-  // Loading Animation Step (during API call or while animation completes)
-  if (createCollectiveMutation.isPending || (createdCollective && !showAnimationComplete)) {
-    return (
-      <SafeAreaView style={styles.animationContainer} edges={['top', 'left', 'right', 'bottom']}>
-        <LinearGradient
-          colors={['#EFF6FF', '#FDF2F8', '#F3E8FF']} // from-blue-50 via-pink-50 to-purple-50
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.animationGradient}
-        >
-          <View style={styles.animationContent}>
-            <CrwdAnimation size="lg" />
-            {/* Text commented out to match vite version */}
-          </View>
-        </LinearGradient>
       </SafeAreaView>
     );
   }
@@ -2334,24 +2328,11 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-SemiBold',
   },
   // Animation styles
-  animationContainer: {
+  logoAnimationContainer: {
     flex: 1,
-  },
-  animationGradient: {
-    flex: 1,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
     justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-  },
-  animationContent: {
-    alignItems: 'center',
-    gap: 32, // gap-6 md:gap-8 (24px to 32px)
-  },
-  animationText: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#1600ff',
-    fontFamily: 'Outfit-Medium',
   },
   // Success styles
   successContainer: {

@@ -2146,7 +2146,7 @@ export default function CompleteOnboard() {
           </View>
 
           <Text style={styles.successTitle}>
-            {`${addedNonprofitsCount} nonprofit${addedNonprofitsCount > 1 ? 's' : ''} have been added to\nyour donation box.`}
+            {`${addedNonprofitsCount} nonprofit${addedNonprofitsCount > 2 ? 's' : ''} have been added to\nyour donation box.`}
           </Text>
 
           <Text style={styles.successDescription}>

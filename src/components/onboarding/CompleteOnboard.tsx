@@ -1613,7 +1613,7 @@ export default function CompleteOnboard() {
                 >
                   <View style={styles.optionIconContainer}>
                     <View style={styles.joinIconCircle}>
-                      <Users size={32} color="white" />
+                      <Users size={20} color="white" />
                     </View>
                   </View>
                   <Text style={styles.optionTitle}>Join a Collective</Text>
@@ -1630,7 +1630,7 @@ export default function CompleteOnboard() {
                 >
                   <View style={styles.optionIconContainer}>
                     <View style={styles.browseIconCircle}>
-                      <Search size={32} color="white" />
+                      <Search size={20} color="white" />
                     </View>
                   </View>
                   <Text style={styles.optionTitle}>I'll Choose My Own</Text>
@@ -1648,7 +1648,7 @@ export default function CompleteOnboard() {
                   <View style={styles.optionIconContainer}>
                     <View style={styles.surpriseIconCircle}>
                       {/* <Text style={{ fontSize: 24, color: 'white' }}>✨</Text> */}
-                      <Heart size={32} color="white" />
+                      <Sparkles size={20} color="white" />
                     </View>
                   </View>
                   <Text style={styles.optionTitle}>Surprise Me</Text>
@@ -1661,7 +1661,7 @@ export default function CompleteOnboard() {
               </ScrollView>
 
               <View style={styles.footerContainer}>
-                <View style={styles.footerMainButtons}>
+                <View style={[styles.footerMainButtons, { marginBottom: 0 }]}>
                   <TouchableOpacity
                     onPress={handleEditCategories}
                     style={styles.outlineButton}
@@ -1871,9 +1871,12 @@ export default function CompleteOnboard() {
                                   const causeInitial = causeName.charAt(0).toUpperCase();
                                   return (
                                     <View key={cause?.id || `${collective.id}-cause-${causeIndex}`} style={styles.causeItem}>
-                                      <View style={styles.collectiveCauseAvatar}>
-                                        <Text style={styles.collectiveCauseAvatarText}>{causeInitial}</Text>
-                                      </View>
+                                      <Avatar style={styles.collectiveCauseAvatar}>
+                                        <AvatarImage src={cause?.image || cause?.logo} />
+                                        <AvatarFallback textStyle={styles.collectiveCauseAvatarText}>
+                                          {causeInitial}
+                                        </AvatarFallback>
+                                      </Avatar>
                                       <Text style={styles.collectiveCauseName} numberOfLines={1}>
                                         {causeName}
                                       </Text>
@@ -2143,7 +2146,7 @@ export default function CompleteOnboard() {
           </View>
 
           <Text style={styles.successTitle}>
-            {`${addedNonprofitsCount} nonprofits have been added to\nyour donation box.`}
+            {`${addedNonprofitsCount} nonprofit${addedNonprofitsCount > 1 ? 's' : ''} have been added to\nyour donation box.`}
           </Text>
 
           <Text style={styles.successDescription}>
@@ -2399,11 +2402,11 @@ const styles = StyleSheet.create({
     paddingVertical: 60,
   },
   card: {
+    flex: 1,
     backgroundColor: 'white',
     borderRadius: 12,
     paddingHorizontal: 18,
-    paddingTop: 18,
-    paddingBottom: 12,
+    paddingVertical: 12,
     width: '100%',
     maxWidth: 768,
     alignSelf: 'center',
@@ -2415,7 +2418,7 @@ const styles = StyleSheet.create({
   },
   stepIndicator: {
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 10,
   },
   stepBar: {
     flexDirection: 'row',
@@ -2435,7 +2438,7 @@ const styles = StyleSheet.create({
   },
   iconContainer: {
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 5,
   },
   gradientIconCircle: {
     width: 64,
@@ -2454,13 +2457,13 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Bold',
     color: '#111827',
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: 4,
   },
   description: {
     fontSize: 15,
     color: '#6b7280',
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: 8,
     // lineHeight: 20,
     fontFamily: 'Outfit-Regular',
   },
@@ -2469,7 +2472,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'center',
     gap: 6,
-    marginBottom: 24,
+    marginBottom: 12,
   },
   categoryTag: {
     paddingHorizontal: 12,
@@ -2482,45 +2485,47 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   optionsContainer: {
-    flexDirection: 'column',
+    // flexDirection: 'column',
     // flexWrap: 'wrap',
-    gap: 16,
+    gap: 12,
+    flex: 1,
+    justifyContent: 'center',
   },
   optionCard: {
-    width: '100%',
     backgroundColor: 'white',
+    // ... same other styles
     borderWidth: 1,
     borderColor: '#e5e7eb',
     borderRadius: 12,
-    padding: 12,
+    padding: 6,
     alignItems: 'center',
+    marginBottom: 0,
   },
   optionsScroll: {
-    maxHeight: 360,
-    marginBottom: 32,
+    paddingVertical: 4,
   },
   optionIconContainer: {
-    marginBottom: 16,
+    marginBottom: 10,
   },
   surpriseIconCircle: {
-    width: 64,
-    height: 64,
+    width: 44,
+    height: 44,
     borderRadius: 32,
     backgroundColor: '#ec4899',
     alignItems: 'center',
     justifyContent: 'center',
   },
   browseIconCircle: {
-    width: 64,
-    height: 64,
+    width: 44,
+    height: 44,
     borderRadius: 32,
     backgroundColor: '#9333ea',
     alignItems: 'center',
     justifyContent: 'center',
   },
   joinIconCircle: {
-    width: 64,
-    height: 64,
+    width: 44,
+    height: 44,
     borderRadius: 32,
     backgroundColor: '#ec4899',
     alignItems: 'center',
@@ -2544,8 +2549,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderTopWidth: 1,
     borderTopColor: '#e5e7eb',
-    marginHorizontal: -16,
-    paddingHorizontal: 16,
+    marginHorizontal: -18,
+    paddingHorizontal: 18,
   },
   footerMainButtons: {
     flexDirection: 'row',

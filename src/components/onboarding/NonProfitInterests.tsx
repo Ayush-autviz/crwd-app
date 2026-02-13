@@ -275,7 +275,7 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: 'white',
     borderRadius: 12,
-    padding: 16,
+    padding: 12,
     width: '100%',
     maxWidth: 672,
     alignSelf: 'center',
@@ -287,7 +287,7 @@ const styles = StyleSheet.create({
   },
   stepIndicator: {
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: 20,
   },
   stepBar: {
     flexDirection: 'row',
@@ -307,7 +307,7 @@ const styles = StyleSheet.create({
   },
   iconContainer: {
     alignItems: 'center',
-    marginBottom: 18,
+    marginBottom: 10,
   },
   iconCircle: {
     width: 64,
@@ -328,7 +328,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6b7280',
     textAlign: 'center',
-    marginBottom: 28,
+    marginBottom: 20,
     lineHeight: 20,
     paddingHorizontal: 8,
     fontFamily: 'Outfit-Regular',
@@ -341,8 +341,8 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   categoryButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     borderRadius: 999,
     minHeight: 40,
   },

@@ -388,6 +388,15 @@ export default function ClaimProfile() {
         passwordStrengthY.current = y
     }
 
+    const isFormValid =
+        formData.firstName.trim().length > 0 &&
+        formData.lastName.trim().length > 0 &&
+        formData.email.trim().length > 0 &&
+        // /\S+@\S+\.\S+/.test(formData.email) && // Optional: strict regex check for UI feedback
+        formData.password.length > 0 &&
+        isPasswordStrong &&
+        formData.termsAccepted;
+
     return (
         <View style={{ flex: 1 }}>
             <LinearGradient
@@ -648,10 +657,10 @@ export default function ClaimProfile() {
                         <TouchableOpacity
                             style={[
                                 styles.continueButton,
-                                emailRegistrationMutation.isPending && styles.continueButtonDisabled
+                                (emailRegistrationMutation.isPending || !isFormValid) && styles.continueButtonDisabled
                             ]}
                             onPress={handleContinue}
-                            disabled={emailRegistrationMutation.isPending}
+                            disabled={emailRegistrationMutation.isPending || !isFormValid}
                         >
                             {emailRegistrationMutation.isPending ? (
                                 <View style={styles.loadingContainer}>
@@ -994,7 +1003,7 @@ const styles = StyleSheet.create({
         textDecorationLine: 'underline',
     },
     continueButton: {
-        backgroundColor: '#7c83ff',
+        backgroundColor: '#525ae2ff',
         height: 48,
         borderRadius: 8,
         alignItems: 'center',

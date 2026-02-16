@@ -12,6 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Search as SearchIcon, Heart, Plus } from 'lucide-react-native';
 import MainHeaderNav from '../components/MainHeaderNav';
+import { normalizeSearchText } from '../utils/textNormalization';
 
 export default function NewSearchPage() {
   const navigation = useNavigation();
@@ -37,9 +38,10 @@ export default function NewSearchPage() {
   }, [params, navigation]);
 
   const handleSearch = () => {
-    if (searchQuery.trim()) {
+    const normalizedQuery = normalizeSearchText(searchQuery);
+    if (normalizedQuery) {
       Keyboard.dismiss();
-      navigation.navigate('SearchResults' as never, { searchQuery: searchQuery.trim() } as never);
+      navigation.navigate('SearchResults' as never, { searchQuery: normalizedQuery } as never);
       setSearchQuery(''); // Optional: clear input after search or keep it
     }
   };

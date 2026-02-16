@@ -238,7 +238,10 @@ export const deleteRecentSearch = async (searchId: string) => {
 // search API endpoints
 export const newSearch = async (tab: 'cause' | 'collective' | 'user' | 'post', query: string, page?: number) => {
     const pageParam = page ? `&page=${page}` : '';
-    const response = await axiosClient.get(`/social/search/?tab=${tab}&q=${query}${pageParam}`);
+    // Normalizing curly apostrophes from mobile keyboards
+    const normalizedQuery = query ? query.replace(/[’‘]/g, "'").trim() : '';
+    const encodedQuery = encodeURIComponent(normalizedQuery);
+    const response = await axiosClient.get(`/social/search/?tab=${tab}&q=${encodedQuery}${pageParam}`);
     return response.data;
 };
 
@@ -250,7 +253,8 @@ export const postCauseInterests = async (data: any) => {
 
 // link preview API endpoints
 export const getLinkPreview = async (url: string) => {
-    const response = await axiosClient.get(`/social/link-preview/?url=${url}`);
+    const encodedUrl = encodeURIComponent(url);
+    const response = await axiosClient.get(`/social/link-preview/?url=${encodedUrl}`);
     return response.data;
 };
 
@@ -261,9 +265,11 @@ export const getCommunityUpdatesPosts = async () => {
 };
 
 export const getCollectivesByCauseCategory = async (categories?: string | string[]) => {
-    const categoryParam = categories
-        ? `?category=${Array.isArray(categories) ? categories.join(',') : categories}`
+    const categoryStr = categories
+        ? (Array.isArray(categories) ? categories.join(',') : categories)
         : '';
+    const encodedCategory = categoryStr ? encodeURIComponent(categoryStr) : '';
+    const categoryParam = encodedCategory ? `?category=${encodedCategory}` : '';
     const response = await axiosClient.get(`/social/collectives/by-cause-category/${categoryParam}`);
     return response.data;
 }

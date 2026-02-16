@@ -7,8 +7,12 @@ export const getCauses = async () => {
 };
 
 // Causes API endpoints
-export const getCausesBySearch = async (search?: string, category?: string,page?: number) => {
-    const response = await axiosClient.get(`/crwd/causes/?search=${search}&category=${category}&page=${page}`);
+export const getCausesBySearch = async (search?: string, category?: string, page?: number) => {
+    // Normalizing curly apostrophes from mobile keyboards
+    const normalizedSearch = search ? search.replace(/[’‘]/g, "'").trim() : '';
+    const encodedSearch = encodeURIComponent(normalizedSearch);
+    const encodedCategory = category ? encodeURIComponent(category) : '';
+    const response = await axiosClient.get(`/crwd/causes/?search=${encodedSearch}&category=${encodedCategory}&page=${page}`);
     return response.data;
 };
 
@@ -180,8 +184,9 @@ export const getSurpriseMe = async (categories?: string[] | string) => {
             categoriesParam = categories;
         }
     }
-    const url = categoriesParam 
-        ? `/crwd/causes/surprise-me/?categories=${categoriesParam}`
+    const encodedCategories = categoriesParam ? encodeURIComponent(categoriesParam) : '';
+    const url = encodedCategories
+        ? `/crwd/causes/surprise-me/?categories=${encodedCategories}`
         : '/crwd/causes/surprise-me/';
     const response = await axiosClient.get(url);
     return response.data;

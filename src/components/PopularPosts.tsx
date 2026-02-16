@@ -693,9 +693,10 @@ export default function PopularPosts({
                                             <Text style={styles.username}>{item.username || 'Unknown User'}</Text>
                                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                                                 {showSimplifiedHeader ? (
-                                                    <Text style={styles.date}>
-                                                        {formatPostTime((item as any).created_at || (item as any).timestamp || item.time)}
-                                                    </Text>
+                                                    <></>
+                                                    // <Text style={styles.date}>
+                                                    //     {formatPostTime((item as any).created_at || (item as any).timestamp || item.time)}
+                                                    // </Text>
                                                 ) : (
                                                     <TouchableOpacity
                                                         onPress={() => {

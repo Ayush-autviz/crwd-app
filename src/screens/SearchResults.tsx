@@ -15,6 +15,7 @@ import RequestNonprofitModal from '../components/newsearch/RequestNonprofitModal
 import { Search as SearchIcon } from 'lucide-react-native';
 
 import { useAuthStore } from '../store/store';
+import { normalizeSearchText } from '../utils/textNormalization';
 
 export default function SearchResults() {
     const navigation = useNavigation();
@@ -101,9 +102,10 @@ export default function SearchResults() {
     const resultsCount = data?.pages?.[0]?.count || results.length;
 
     const handleSearch = () => {
-        // Refetch is handled by query key change, but we can force it if needed
-        // refetch();
-        // Actually, setting query param updates the key, so it should auto-fetch
+        const normalized = normalizeSearchText(searchQuery);
+        if (normalized !== searchQuery) {
+            setSearchQuery(normalized);
+        }
     };
 
     const renderItem = ({ item }: { item: any }) => {

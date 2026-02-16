@@ -12,6 +12,7 @@ import {
   Image,
   Modal,
   Platform,
+  BackHandler,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -48,6 +49,8 @@ import CrwdAnimation from '../components/ui/CrwdAnimation';
 import { WEB_BASE_URL } from '../Constants/url';
 import LinearGradient from 'react-native-linear-gradient';
 import { truncateAtFirstPeriod } from '../utils/truncateFirstPeriod';
+import DiscardBottomSheet from '../components/ui/DiscardBottomSheet';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
 
 const getCategoryById = (categoryId: string | undefined) => {
   return categories.find(cat => cat.id === categoryId) || null;
@@ -132,29 +135,10 @@ export default function NewCreateCollective() {
   const queryClient = useQueryClient();
   const { user: currentUser, token } = useAuthStore();
   const { showToast } = useToast();
+  const discardSheetRef = React.useRef<BottomSheetModal>(null);
+  const [isConfirmedDiscard, setIsConfirmedDiscard] = useState(false);
   const confettiRef = React.useRef<ConfettiCannon>(null);
   const route = useRoute();
-
-  const handleBack = () => {
-    const params = route.params as any;
-    const fromScreen = params?.from || params?.fromScreen;
-    // Check if we came from specific flows (NewNonprofitInterests, NewCompleteDonation)
-    // Note: In React Native navigation, we might need to check how these screens are named in the stack.
-    // Assuming the params are passed explicitly as 'from'.
-    const specialFlows = ['NewNonprofitInterests', 'NewCompleteDonation', 'Login'];
-
-    if (fromScreen && specialFlows.includes(fromScreen)) {
-      // Reset to Home/Root
-      navigation.dispatch(
-        CommonActions.reset({
-          index: 0,
-          routes: [{ name: 'DrawerNav', state: { routes: [{ name: 'MainTabs', state: { routes: [{ name: 'Home' }] } }] } }],
-        })
-      );
-    } else {
-      navigation.goBack();
-    }
-  };
 
   // Form state
   const [name, setName] = useState('');
@@ -168,6 +152,31 @@ export default function NewCreateCollective() {
   const [hasStarted, setHasStarted] = useState(false);
   const [showAddToBoxModal, setShowAddToBoxModal] = useState(false);
 
+  const hasUnsavedChanges = useMemo(() => {
+    return name.trim() !== '' || description.trim() !== '' || selectedCauses.length > 0;
+  }, [name, description, selectedCauses]);
+
+  const handleBack = () => {
+    navigation.goBack();
+  };
+
+  const performBackNavigation = () => {
+    const params = route.params as any;
+    const fromScreen = params?.from || params?.fromScreen;
+    const specialFlows = ['NewNonprofitInterests', 'NewCompleteDonation', 'Login'];
+
+    if (fromScreen && specialFlows.includes(fromScreen)) {
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: 'DrawerNav', state: { routes: [{ name: 'MainTabs', state: { routes: [{ name: 'Home' }] } }] } }],
+        })
+      );
+    } else {
+      navigation.goBack();
+    }
+  };
+
   // Logo customization state
   const [logoType, setLogoType] = useState<'letter' | 'upload'>('letter');
   const [letterLogoColor, setLetterLogoColor] = useState('#1600ff');
@@ -178,6 +187,11 @@ export default function NewCreateCollective() {
   // Dropdown state for sections
   const [isYourCausesOpen, setIsYourCausesOpen] = useState(true);
   const [isSuggestedCausesOpen, setIsSuggestedCausesOpen] = useState(true);
+
+  // Placeholder visibility states
+  const [isNameFocused, setIsNameFocused] = useState(false);
+  const [isDescriptionFocused, setIsDescriptionFocused] = useState(false);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
 
   // Loading dots state
   const [dotCount, setDotCount] = useState(0);
@@ -195,10 +209,33 @@ export default function NewCreateCollective() {
     '#6366F1', // Indigo
   ];
 
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('beforeRemove', (e) => {
+      if (!hasUnsavedChanges || step === 3 || isConfirmedDiscard) {
+        // If we don't have unsaved changes, then we don't need to do anything
+        return;
+      }
+
+      // Prevent default behavior of leaving the screen
+      e.preventDefault();
+
+      // Prompt the user before leaving the screen
+      discardSheetRef.current?.present();
+
+      // Store the action so we can resume it if user confirms
+      setPendingAction(e.data.action);
+    });
+
+    return unsubscribe;
+  }, [navigation, hasUnsavedChanges, step, isConfirmedDiscard]);
+
+  const [pendingAction, setPendingAction] = useState<any>(null);
+
   useFocusEffect(
     React.useCallback(() => {
       setHasStarted(false);
       setStep(1);
+      setIsConfirmedDiscard(false);
     }, [])
   );
 
@@ -1063,7 +1100,7 @@ export default function NewCreateCollective() {
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
         <TouchableOpacity
-          onPress={() => navigation.goBack()}
+          onPress={handleBack}
           style={styles.backButton}
         >
           <ArrowLeft size={20} color="#4B5563" />
@@ -1097,7 +1134,9 @@ export default function NewCreateCollective() {
           <TextInput
             value={name}
             onChangeText={setName}
-            placeholder='"Atlanta Climate Action"'
+            onFocus={() => setIsNameFocused(true)}
+            onBlur={() => setIsNameFocused(false)}
+            placeholder={isNameFocused ? "" : '"Atlanta Climate Action"'}
             placeholderTextColor="#9CA3AF"
             style={[styles.input, name.length === 0 && styles.inputItalic]}
           />
@@ -1122,7 +1161,9 @@ export default function NewCreateCollective() {
           <TextInput
             value={description}
             onChangeText={setDescription}
-            placeholder={`"We're classmates giving back to Atlanta."\n"Our office team supporting local families."\n"A community of friends passionate about clean water."`}
+            onFocus={() => setIsDescriptionFocused(true)}
+            onBlur={() => setIsDescriptionFocused(false)}
+            placeholder={isDescriptionFocused ? "" : `"We're classmates giving back to Atlanta."\n"Our office team supporting local families."\n"A community of friends passionate about clean water."`}
             placeholderTextColor="#9CA3AF"
             multiline
             numberOfLines={4}
@@ -1315,10 +1356,12 @@ export default function NewCreateCollective() {
             <View style={styles.searchContainer}>
               <Search size={20} color="#9CA3AF" style={styles.searchIcon} />
               <TextInput
-                placeholder="Search causes or nonprofits"
+                placeholder={isSearchFocused ? "" : "Search causes or nonprofits"}
                 placeholderTextColor="#9CA3AF"
                 value={searchQuery}
                 onChangeText={setSearchQuery}
+                onFocus={() => setIsSearchFocused(true)}
+                onBlur={() => setIsSearchFocused(false)}
                 onSubmitEditing={handleSearchKeyPress}
                 style={styles.searchInput}
               />
@@ -1582,6 +1625,21 @@ export default function NewCreateCollective() {
           );
         })()}
       </View>
+      <DiscardBottomSheet
+        ref={discardSheetRef}
+        onDiscard={() => {
+          setIsConfirmedDiscard(true);
+          discardSheetRef.current?.dismiss();
+          setTimeout(() => {
+            if (pendingAction) {
+              navigation.dispatch(pendingAction);
+            } else {
+              performBackNavigation();
+            }
+          }, 300);
+        }}
+        onCancel={() => discardSheetRef.current?.dismiss()}
+      />
     </SafeAreaView >
   );
 }

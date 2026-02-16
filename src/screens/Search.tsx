@@ -18,7 +18,8 @@ import { categories } from '../Constants/categories'
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/Avatar'
 import { getNonprofitColor } from '../utils/getNonprofitColor'
 import { Clock } from 'lucide-react-native'
-import { TrendingUp } from 'lucide-react-native'
+// import { TrendingUp } from 'lucide-react-native'
+import { normalizeSearchText } from '../utils/textNormalization';
 
 
 export default function SearchScreen() {
@@ -37,16 +38,16 @@ export default function SearchScreen() {
     const [hasExitedDiscover, setHasExitedDiscover] = useState(false) // Track if user has manually exited discover mode
     const navigation = useNavigation()
     const route = useRoute()
-    
+
     // Check discover mode and route parameters when screen comes into focus
     useFocusEffect(useCallback(() => {
         console.log('Search screen focus effect triggered');
-        
+
         // If user has manually exited discover mode, don't reset it
         if (hasExitedDiscover) {
             return;
         }
-        
+
         // Get route parameters
         const params = route.params as any;
         if (params) {
@@ -63,7 +64,7 @@ export default function SearchScreen() {
                 setSearchTrigger(prev => prev + 1);
             }
         }
-        
+
         // Check if discover mode should be shown from global variable
         if (getDiscoverMode()) {
             console.log('Setting discover to true from global variable');
@@ -73,7 +74,7 @@ export default function SearchScreen() {
         } else if (!params?.discover) {
             console.log('Setting discover to false - no discover mode set');
             setDiscover(false)
-            
+
             // Don't auto-trigger search - only on Enter key press
         }
     }, [route.params, selectedCategory, hasExitedDiscover]))
@@ -154,9 +155,9 @@ export default function SearchScreen() {
 
     // Show search results when typing, show default content when empty
     const showSearchResults = search.trim().length > 0 || searchQuery.trim().length > 0
-    
+
     const [recentSearches, setRecentSearches] = useState<Array<{ id: number; search_query: string }>>([])
-    
+
     const [popularSearches, setPopularSearches] = useState<any[]>([])
 
     // Fetch nonprofits for popular searches
@@ -199,8 +200,10 @@ export default function SearchScreen() {
 
     // Handle search input with Enter key
     const handleSearchSubmit = () => {
-        if (search.trim()) {
-            setSearchQuery(search.trim());
+        const normalized = normalizeSearchText(search);
+        if (normalized) {
+            setSearch(normalized);
+            setSearchQuery(normalized);
             setSearchTrigger(prev => prev + 1);
             // Switch from discover mode to search mode when user searches
             if (discover) {
@@ -219,18 +222,18 @@ export default function SearchScreen() {
                     <View style={{ paddingHorizontal: 16, paddingVertical: 24 }}>
                         {/* Title and Description */}
                         <View style={{ alignItems: 'center', marginBottom: 32 }}>
-                            <Text style={{ 
-                                fontSize: 30, 
-                                fontWeight: '700', 
-                                color: '#111827', 
+                            <Text style={{
+                                fontSize: 30,
+                                fontWeight: '700',
+                                color: '#111827',
                                 marginBottom: 16,
                                 textAlign: 'center'
                             }}>
                                 Discover Your Impact
                             </Text>
-                            <Text style={{ 
-                                fontSize: 18, 
-                                color: '#6b7280', 
+                            <Text style={{
+                                fontSize: 18,
+                                color: '#6b7280',
                                 textAlign: 'center',
                                 lineHeight: 24,
                                 maxWidth: 350
@@ -241,34 +244,34 @@ export default function SearchScreen() {
 
                         {/* Search Input for discover mode */}
                         <View style={{ marginBottom: 32, alignItems: 'center' }}>
-                            <View style={{ 
-                                    width: '100%',
-                                    maxWidth: 500,
-                                    backgroundColor: 'white', 
-                                    borderRadius: 25, 
-                                    flexDirection: 'row', 
-                                    alignItems: 'center',
-                                    paddingHorizontal: 16,
-                                    paddingVertical: 16,
-                                    borderWidth: 2,
-                                    borderColor: '#e5e7eb',
-                                    shadowColor: '#000',
-                                    shadowOffset: { width: 0, height: 1 },
-                                    shadowOpacity: 0.05,
-                                    shadowRadius: 2,
-                                    elevation: 1,
+                            <View style={{
+                                width: '100%',
+                                maxWidth: 500,
+                                backgroundColor: 'white',
+                                borderRadius: 25,
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                paddingHorizontal: 16,
+                                paddingVertical: 16,
+                                borderWidth: 2,
+                                borderColor: '#e5e7eb',
+                                shadowColor: '#000',
+                                shadowOffset: { width: 0, height: 1 },
+                                shadowOpacity: 0.05,
+                                shadowRadius: 2,
+                                elevation: 1,
                             }}>
                                 <Search size={20} color={PrimaryGrey} style={{ marginRight: 12 }} />
-                                <TextInput 
+                                <TextInput
                                     placeholder="Search for nonprofits or causes..."
                                     placeholderTextColor="#9ca3af"
                                     value={search}
                                     onChangeText={setSearch}
                                     onSubmitEditing={handleSearchSubmit}
                                     returnKeyLabel='search'
-                                    style={{ 
-                                    flex: 1, 
-                                    fontSize: 16, 
+                                    style={{
+                                        flex: 1,
+                                        fontSize: 16,
                                         color: '#111827'
                                     }}
                                     returnKeyType="search"
@@ -278,23 +281,23 @@ export default function SearchScreen() {
 
                         {/* Category Filters - Centered and non-scrollable */}
                         <View style={{ marginBottom: 32, alignItems: 'center' }}>
-                            <View style={{ 
-                                flexDirection: 'row', 
-                                flexWrap: 'wrap', 
+                            <View style={{
+                                flexDirection: 'row',
+                                flexWrap: 'wrap',
                                 justifyContent: 'center',
                                 gap: 8,
                                 width: '100%',
                                 maxWidth: 400
                             }}>
                                 {/* All Categories Button */}
-  
+
 
                                 {categories.map((category) => (
                                     <TouchableOpacity
                                         key={category.id}
                                         style={{
-                                            backgroundColor: selectedCategory === category.id 
-                                                ? category.text 
+                                            backgroundColor: selectedCategory === category.id
+                                                ? category.text
                                                 : category.background,
                                             paddingHorizontal: 16,
                                             paddingVertical: 8,
@@ -314,12 +317,12 @@ export default function SearchScreen() {
                                             }
                                         }}
                                     >
-                                        <Text style={{ 
-                                            fontSize: 14, 
-                                            color: selectedCategory === category.id 
-                                                ? "white" 
+                                        <Text style={{
+                                            fontSize: 14,
+                                            color: selectedCategory === category.id
+                                                ? "white"
                                                 : category.text,
-                                            fontWeight: '500' 
+                                            fontWeight: '500'
                                         }}>
                                             {category.name}
                                         </Text>
@@ -328,7 +331,7 @@ export default function SearchScreen() {
                             </View>
                         </View>
 
-                     
+
                     </View>
                 </ScrollView>
             </SafeAreaView>
@@ -336,23 +339,23 @@ export default function SearchScreen() {
     }
 
     return (
-        <SafeAreaView style={{backgroundColor: 'white', flex: 1}} edges={['top', 'left', 'right']}>
+        <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }} edges={['top', 'left', 'right']}>
             <MainHeaderNav title={'Search'} show menu={false} />
             <ScrollView style={{ paddingHorizontal: 20 }}>
-                <View style={{ 
-                    marginVertical: 10, 
-                    padding: 10, 
-                    backgroundColor: LightGrey, 
+                <View style={{
+                    marginVertical: 10,
+                    padding: 10,
+                    backgroundColor: LightGrey,
                     borderRadius: 8,
                     flexDirection: 'row',
                     alignItems: 'center'
                 }}>
                     <Search size={20} color={PrimaryGrey} style={{ marginRight: 8 }} />
-                    <TextInput 
-                        placeholder='Search for non-profits CRWDs, or posts' 
+                    <TextInput
+                        placeholder='Search for non-profits CRWDs, or posts'
                         placeholderTextColor={PrimaryGrey}
                         value={search}
-                    onChangeText={setSearch}
+                        onChangeText={setSearch}
                         onSubmitEditing={handleSearchSubmit}
                         clearButtonMode="while-editing"
                         style={{ flex: 1 }}
@@ -362,7 +365,7 @@ export default function SearchScreen() {
 
                 {/* Category Filter Buttons */}
                 <View style={{ marginVertical: 10 }}>
-                    <ScrollView 
+                    <ScrollView
                         horizontal={true}
                         showsHorizontalScrollIndicator={false}
                         contentContainerStyle={{ paddingRight: 16 }}
@@ -395,7 +398,7 @@ export default function SearchScreen() {
 
                             {/* Category Buttons */}
                             {categories.map((category, index) => (
-                                <TouchableOpacity 
+                                <TouchableOpacity
                                     key={index}
                                     style={{
                                         backgroundColor: selectedCategory === category.id ? category.text : category.background,
@@ -416,10 +419,10 @@ export default function SearchScreen() {
                                         }
                                     }}
                                 >
-                                    <Text style={{ 
-                                        fontSize: 14, 
+                                    <Text style={{
+                                        fontSize: 14,
                                         color: selectedCategory === category.id ? "#ffffff" : category.text,
-                                        fontWeight: '500' 
+                                        fontWeight: '500'
                                     }}>
                                         {category.name}
                                     </Text>
@@ -428,17 +431,17 @@ export default function SearchScreen() {
                         </View>
                     </ScrollView>
                 </View>
-                
+
                 {/* Search Results - Show when data exists or loading */}
                 {(causesData?.results?.length > 0 || isCausesLoading || allCauses.length > 0) && (
                     <>
                         {/* Results Header */}
                         <View style={{ marginBottom: 16 }}>
                             <Text style={{ fontSize: 18, fontWeight: '600', color: '#111827' }}>
-                                {searchQuery ? `Search results for "${searchQuery}"` : 
-                                 (selectedCategory !== "All" && selectedCategory !== "") ? 
-                                 "Causes" : "Causes"}
-                                 
+                                {searchQuery ? `Search results for "${searchQuery}"` :
+                                    (selectedCategory !== "All" && selectedCategory !== "") ?
+                                        "Causes" : "Causes"}
+
                             </Text>
                         </View>
 
@@ -457,7 +460,7 @@ export default function SearchScreen() {
                         ) : allCauses.length > 0 ? (
                             <View>
                                 {allCauses.map((cause: any, index: number) => (
-                                    <TouchableOpacity 
+                                    <TouchableOpacity
                                         key={cause.id || index}
                                         onPress={() => (navigation as any).navigate('CauseScreen', { causeId: cause.id })}
                                         style={{
@@ -503,7 +506,7 @@ export default function SearchScreen() {
                                             </View>
                                         </View>
                                         <View style={{ alignItems: 'center', gap: 8 }}>
-                                            <TouchableOpacity 
+                                            <TouchableOpacity
                                                 style={{ backgroundColor: PrimaryBlue, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 6 }}
                                             >
                                                 <Text style={{ color: 'white', fontSize: 12, fontWeight: '500' }}>
@@ -518,11 +521,11 @@ export default function SearchScreen() {
                                         </View>
                                     </TouchableOpacity>
                                 ))}
-                                
+
                                 {/* Load More Button */}
                                 {causesData?.next && (
                                     <View style={{ alignItems: 'flex-end', marginTop: 10, marginBottom: 32 }}>
-                                        <TouchableOpacity 
+                                        <TouchableOpacity
                                             onPress={() => setCurrentPage(prev => prev + 1)}
                                             style={{ flexDirection: 'row', alignItems: 'center' }}
                                         >
@@ -537,9 +540,9 @@ export default function SearchScreen() {
                         ) : (
                             <View style={{ padding: 20, alignItems: 'center' }}>
                                 <Text style={{ color: PrimaryGrey, textAlign: 'center' }}>
-                                    {searchQuery ? `No causes found for "${searchQuery}"` : 
-                                     (selectedCategory !== "All" && selectedCategory !== "") ? 
-                                     "No causes found" : "No causes available"}
+                                    {searchQuery ? `No causes found for "${searchQuery}"` :
+                                        (selectedCategory !== "All" && selectedCategory !== "") ?
+                                            "No causes found" : "No causes available"}
                                 </Text>
                             </View>
                         )}
@@ -550,130 +553,128 @@ export default function SearchScreen() {
                 {(!causesData || causesData?.results?.length === 0) && !isCausesLoading && allCauses.length === 0 && (
                     <>
 
-                    <View style={{ padding: 20, alignItems: 'center' }}>
-                        <Text style={{ fontSize: 16, fontWeight: '500', color: PrimaryGrey }}>No results found</Text>
-                        <Text style={{ fontSize: 14, fontWeight: '400', color: PrimaryGrey }}>Try searching for a different term or category</Text>
-                      
-                    </View>
+                        <View style={{ padding: 20, alignItems: 'center' }}>
+                            <Text style={{ fontSize: 16, fontWeight: '500', color: PrimaryGrey }}>No results found</Text>
+                            <Text style={{ fontSize: 14, fontWeight: '400', color: PrimaryGrey }}>Try searching for a different term or category</Text>
 
-                {/* Recent Searches - Only show if user is logged in */}
-                {currentUser?.id && recentSearches.length > 0 && allCauses.length === 0 && (
-                    <View style={{ marginTop: 10 }}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }}>
-                            {/* <Text style={{ fontSize: 16, marginRight: 8 }}>🕒</Text> s*/}
-                            <Clock size={20} color={PrimaryGrey} style={{ marginRight: 8 }} />
-                            <Text style={{ fontSize: 16, fontWeight: '600', color: PrimaryGrey }}>Recent Searches</Text>
                         </View>
-                        <View style={{ 
-                            backgroundColor: 'white',
-                            borderRadius: 12,
-                        }}>
-                            {recentSearches.map((item, index) => (
-                                <TouchableOpacity
-                                    key={item.id || index}
-                                    style={{
-                                        flexDirection: 'row',
-                                        alignItems: 'center',
-                                        justifyContent: 'space-between',
-                                        paddingVertical: 15,
-                                        paddingHorizontal: 15,
-                                        borderBottomWidth: index < recentSearches.length - 1 ? 1 : 0,
-                                        borderBottomColor: LightGrey,
-                                    }}
-                                    onPress={() => handleRecentSearchClick(item.search_query)}
-                                >
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-                                        <View style={{ 
-                                            padding: 4, 
-                                        }}>
-                                            {/* <Text style={{ fontSize: 16, marginRight: 8 }}>🕒</Text> */}
-                                            <Clock size={20} color={PrimaryGrey} style={{ marginRight: 8 }} />
-                                        </View>
-                                        <Text style={{ fontSize: 14, fontWeight: '500', flex: 1 }}>{item.search_query}</Text>
-                                    </View>
-                                    <TouchableOpacity
-                                        onPress={(e) => {
-                                            e.stopPropagation()
-                                            removeRecentSearch(item.id)
-                                        }}
-                                        style={{ padding: 4 }}
-                                    >
-                                        <Text style={{ fontSize: 16, color: PrimaryGrey }}>✕</Text>
-                                    </TouchableOpacity>
-                                </TouchableOpacity>
-                            ))}
-                        </View>
-                    </View>
-                )}
 
-                {/* Popular Searches */}
-                {popularSearches.length > 0 && (
-                    <View style={{ marginTop: 20 }}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }}>
-                            <View style={{ 
-                                width: 20, 
-                                height: 20, 
-                                justifyContent: 'center', 
-                                alignItems: 'center',
-                                marginRight: 8 
-                            }}>
-                                {/* <Text style={{ fontSize: 18, color: PrimaryGrey }}>⚡</Text> */}
-                                <TrendingUp size={20} color={PrimaryGrey} style={{ marginRight: 8 }} />
+                        {/* Recent Searches - Only show if user is logged in */}
+                        {currentUser?.id && recentSearches.length > 0 && allCauses.length === 0 && (
+                            <View style={{ marginTop: 10 }}>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }}>
+                                    {/* <Text style={{ fontSize: 16, marginRight: 8 }}>🕒</Text> s*/}
+                                    <Clock size={20} color={PrimaryGrey} style={{ marginRight: 8 }} />
+                                    <Text style={{ fontSize: 16, fontWeight: '600', color: PrimaryGrey }}>Recent Searches</Text>
+                                </View>
+                                <View style={{
+                                    backgroundColor: 'white',
+                                    borderRadius: 12,
+                                }}>
+                                    {recentSearches.map((item, index) => (
+                                        <TouchableOpacity
+                                            key={item.id || index}
+                                            style={{
+                                                flexDirection: 'row',
+                                                alignItems: 'center',
+                                                justifyContent: 'space-between',
+                                                paddingVertical: 15,
+                                                paddingHorizontal: 15,
+                                                borderBottomWidth: index < recentSearches.length - 1 ? 1 : 0,
+                                                borderBottomColor: LightGrey,
+                                            }}
+                                            onPress={() => handleRecentSearchClick(item.search_query)}
+                                        >
+                                            <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+                                                <View style={{
+                                                    padding: 4,
+                                                }}>
+                                                    {/* <Text style={{ fontSize: 16, marginRight: 8 }}>🕒</Text> */}
+                                                    <Clock size={20} color={PrimaryGrey} style={{ marginRight: 8 }} />
+                                                </View>
+                                                <Text style={{ fontSize: 14, fontWeight: '500', flex: 1 }}>{item.search_query}</Text>
+                                            </View>
+                                            <TouchableOpacity
+                                                onPress={(e) => {
+                                                    e.stopPropagation()
+                                                    removeRecentSearch(item.id)
+                                                }}
+                                                style={{ padding: 4 }}
+                                            >
+                                                <Text style={{ fontSize: 16, color: PrimaryGrey }}>✕</Text>
+                                            </TouchableOpacity>
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
                             </View>
-                            <Text style={{ fontSize: 16, fontWeight: '600', color: PrimaryGrey }}>Popular Searches</Text>
-                        </View>
-                        <View style={{ 
-                            backgroundColor: 'white',
-                            borderRadius: 12,
-                           // shadowColor: '#000',
-                           // shadowOffset: { width: 0, height: 1 },
-                           // shadowOpacity: 0.1,
-                           // shadowRadius: 3,
-                           // elevation: 2,
-                        }}>
-                            {popularSearches.map((item, index) => (
-                                <TouchableOpacity
-                                    key={item.id || index}
-                                    style={{
-                                        flexDirection: 'row',
+                        )}
+
+                        {/* Popular Searches */}
+                        {popularSearches.length > 0 && (
+                            <View style={{ marginTop: 20 }}>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }}>
+                                    <View style={{
+                                        width: 20,
+                                        height: 20,
+                                        justifyContent: 'center',
                                         alignItems: 'center',
-                                        justifyContent: 'space-between',
-                                        paddingVertical: 15,
-                                        paddingHorizontal: 15,
-                                        borderBottomWidth: index < popularSearches.length - 1 ? 1 : 0,
-                                        borderBottomColor: LightGrey,
-                                    }}
-                                    onPress={() => {
-                                        if (item.id) {
-                                            (navigation as any).navigate('CauseScreen', { causeId: item.id });
-                                        } else {
-                                            navigation.navigate('Search2' as never);
-                                        }
-                                    }}
-                                >
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-                                        <View style={{ 
-                                            padding: 8,
-                                            backgroundColor: '#f3f4f6',
-                                            borderRadius: 20,
-                                            marginRight: 12,
-                                            width: 32,
-                                            height: 32,
-                                            justifyContent: 'center',
-                                            alignItems: 'center',
-                                        }}>
-                                            {/* <Text style={{ fontSize: 14, color: '#4b5563' }}>📈</Text> */}
-                                            <TrendingUp size={20} color={PrimaryGrey} />
-                                        </View>
-                                        <Text style={{ fontSize: 14, fontWeight: '500', flex: 1 }}>
-                                            {item.name || item}
-                                        </Text>
+                                        marginRight: 8
+                                    }}>
+                                        <Text style={{ fontSize: 18, color: PrimaryGrey }}>⚡</Text>
                                     </View>
-                                </TouchableOpacity>
-                            ))}
-                        </View>
-                    </View>
-                )}
+                                    <Text style={{ fontSize: 16, fontWeight: '600', color: PrimaryGrey }}>Popular Searches</Text>
+                                </View>
+                                <View style={{
+                                    backgroundColor: 'white',
+                                    borderRadius: 12,
+                                    // shadowColor: '#000',
+                                    // shadowOffset: { width: 0, height: 1 },
+                                    // shadowOpacity: 0.1,
+                                    // shadowRadius: 3,
+                                    // elevation: 2,
+                                }}>
+                                    {popularSearches.map((item, index) => (
+                                        <TouchableOpacity
+                                            key={item.id || index}
+                                            style={{
+                                                flexDirection: 'row',
+                                                alignItems: 'center',
+                                                justifyContent: 'space-between',
+                                                paddingVertical: 15,
+                                                paddingHorizontal: 15,
+                                                borderBottomWidth: index < popularSearches.length - 1 ? 1 : 0,
+                                                borderBottomColor: LightGrey,
+                                            }}
+                                            onPress={() => {
+                                                if (item.id) {
+                                                    (navigation as any).navigate('CauseScreen', { causeId: item.id });
+                                                } else {
+                                                    navigation.navigate('Search2' as never);
+                                                }
+                                            }}
+                                        >
+                                            <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+                                                <View style={{
+                                                    padding: 8,
+                                                    backgroundColor: '#f3f4f6',
+                                                    borderRadius: 20,
+                                                    marginRight: 12,
+                                                    width: 32,
+                                                    height: 32,
+                                                    justifyContent: 'center',
+                                                    alignItems: 'center',
+                                                }}>
+                                                    <Text style={{ fontSize: 14, color: '#4b5563' }}>📈</Text>
+                                                </View>
+                                                <Text style={{ fontSize: 14, fontWeight: '500', flex: 1 }}>
+                                                    {item.name || item}
+                                                </Text>
+                                            </View>
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
+                            </View>
+                        )}
                     </>
                 )}
 
@@ -685,28 +686,28 @@ export default function SearchScreen() {
                         visible={showCategorySelector}
                         onRequestClose={() => setShowCategorySelector(false)}
                     >
-                        <View style={{ 
-                            flex: 1, 
-                            backgroundColor: 'rgba(0, 0, 0, 0.5)', 
-                            justifyContent: 'flex-end' 
+                        <View style={{
+                            flex: 1,
+                            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                            justifyContent: 'flex-end'
                         }}>
-                            <View style={{ 
-                                backgroundColor: 'white', 
-                                borderTopLeftRadius: 20, 
+                            <View style={{
+                                backgroundColor: 'white',
+                                borderTopLeftRadius: 20,
                                 borderTopRightRadius: 20,
                                 maxHeight: '80%'
                             }}>
                                 {/* Header */}
-                                <View style={{ 
-                                    flexDirection: 'row', 
-                                    justifyContent: 'space-between', 
-                                    alignItems: 'center', 
-                                    padding: 16, 
-                                    borderBottomWidth: 1, 
-                                    borderBottomColor: '#e5e7eb' 
+                                <View style={{
+                                    flexDirection: 'row',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    padding: 16,
+                                    borderBottomWidth: 1,
+                                    borderBottomColor: '#e5e7eb'
                                 }}>
                                     <Text style={{ fontSize: 18, fontWeight: '600' }}>Select Category</Text>
-                                    <TouchableOpacity 
+                                    <TouchableOpacity
                                         onPress={() => setShowCategorySelector(false)}
                                         style={{ padding: 8 }}
                                     >
@@ -770,10 +771,10 @@ export default function SearchScreen() {
                                                 }
                                             }}
                                         >
-                                            <Text style={{ 
-                                                fontSize: 16, 
-                                                fontWeight: '500', 
-                                                color: category.text 
+                                            <Text style={{
+                                                fontSize: 16,
+                                                fontWeight: '500',
+                                                color: category.text
                                             }}>
                                                 {category.name}
                                             </Text>
@@ -786,6 +787,6 @@ export default function SearchScreen() {
                     </Modal>
                 )}
             </ScrollView>
-        </SafeAreaView>
+        </SafeAreaView >
     )
 }

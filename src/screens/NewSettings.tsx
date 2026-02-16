@@ -1,8 +1,8 @@
-import React, { useRef, useState, useEffect } from 'react'
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, TextInput, Alert, Modal } from 'react-native'
+import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react'
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, TextInput, Alert, Modal, BackHandler } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import BottomSheet from '@gorhom/bottom-sheet'
+import BottomSheet, { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
 import MainHeaderNav from '../components/MainHeaderNav'
 import Account from '../components/account/Account'
 import ChangePasswordSheet from '../components/newsettings/ChangePasswordSheet'
@@ -11,7 +11,7 @@ import RequestNonprofitModal from '../components/newsearch/RequestNonprofitModal
 import PaymentMethodsBottomSheet from '../components/donation/PaymentMethodsBottomSheet'
 import { CircleHelp, CreditCard, FileText, Info, Lock, Mail, MessageSquare, Shield, Eye, Bookmark, Heart, ChevronDown, UserPlus, DoorOpenIcon } from 'lucide-react-native'
 import { LightGrey, PrimaryBlue, PrimaryGrey, SecondaryGrey } from '../Constants/Colors'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation, usePreventRemove } from '@react-navigation/native'
 import { useAuthStore } from '../store/store'
 import { useMutation } from '@tanstack/react-query'
 import { useToast } from '../contexts/ToastContext'
@@ -29,37 +29,46 @@ export default function NewSettings() {
   // Bottom sheet refs
   const passwordBottomSheetRef = useRef<BottomSheet>(null)
   const emailBottomSheetRef = useRef<BottomSheet>(null)
+  const discardBottomSheetRef = useRef<BottomSheetModal>(null)
+
+  const discardSnapPoints = useMemo(() => ['40%'], [])
 
   // State
   const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null)
   const [showRequestModal, setShowRequestModal] = useState(false)
   const [showPaymentMethodsSheet, setShowPaymentMethodsSheet] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false)
-  const [showExitConfirmation, setShowExitConfirmation] = useState(false)
   const [pendingAction, setPendingAction] = useState<any>(null)
 
   // Navigation guard
+  usePreventRemove(isEditMode, (e: any) => {
+    // Store the action that triggered the navigation so we can resume it if user discards changes
+    setPendingAction(e.data.action);
+    discardBottomSheetRef.current?.present();
+  });
+
+  // Handle hardware back button
   useEffect(() => {
-    const unsubscribe = navigation.addListener('beforeRemove', (e: any) => {
-      if (!isEditMode) {
-        // If not in edit mode, let navigation proceed
-        return;
+    const backAction = () => {
+      if (isEditMode) {
+        // Trigger navigation back which will be caught by beforeRemove
+        navigation.goBack();
+        return true;
       }
+      return false;
+    };
 
-      // Prevent default behavior of leaving the screen
-      e.preventDefault();
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      backAction
+    );
 
-      // Store the action that triggered the navigation so we can resume it if user discards changes
-      setPendingAction(e.data.action);
-      setShowExitConfirmation(true);
-    });
-
-    return unsubscribe;
-  }, [navigation, isEditMode]);
+    return () => backHandler.remove();
+  }, [isEditMode, navigation]);
 
   const confirmExit = () => {
     setIsEditMode(false);
-    setShowExitConfirmation(false);
+    discardBottomSheetRef.current?.dismiss();
     if (pendingAction) {
       navigation.dispatch(pendingAction);
     }
@@ -141,10 +150,22 @@ export default function NewSettings() {
     emailBottomSheetRef.current?.expand()
   }
 
+  const renderBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop
+        {...props}
+        disappearsOnIndex={-1}
+        appearsOnIndex={0}
+        opacity={0.5}
+      />
+    ),
+    []
+  )
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaView style={styles.container} edges={['top']}>
-        <MainHeaderNav show={true} menu={false} title={'Settings'} />
+        <MainHeaderNav show={true} menu={false} title={isEditMode ? 'Edit Profile' : 'Settings'} />
 
         <KeyboardAwareScrollView style={styles.scrollView} showsVerticalScrollIndicator={false} enableOnAndroid={true} extraScrollHeight={100}>
           {/* Account Component */}
@@ -350,40 +371,39 @@ export default function NewSettings() {
           onClose={() => setShowPaymentMethodsSheet(false)}
         />
 
-        {/* Exit Confirmation Modal */}
-        <Modal
-          visible={showExitConfirmation}
-          transparent
-          animationType="fade"
-          onRequestClose={() => setShowExitConfirmation(false)}
+        {/* Exit Confirmation Bottom Sheet */}
+        <BottomSheetModal
+          ref={discardBottomSheetRef}
+          snapPoints={discardSnapPoints}
+          enablePanDownToClose
+          backdropComponent={renderBackdrop}
+          backgroundStyle={{ backgroundColor: 'white' }}
         >
-          <View style={styles.modalOverlay}>
-            <View style={styles.dialog}>
-              <View style={styles.dialogHeader}>
-                <Text style={styles.dialogTitle}>Unsaved Changes</Text>
-                <Text style={styles.dialogDescription}>
-                  You are currently in edit mode. If you leave now, any changes you've made will be lost. Are you sure you want to go back?
-                </Text>
-              </View>
-              <View style={styles.dialogButtonsVertical}>
-                <TouchableOpacity
-                  onPress={() => setShowExitConfirmation(false)}
-                  style={[styles.confirmDialogButton, styles.stayButton]}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.stayButtonText}>Stay and Edit</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={confirmExit}
-                  style={[styles.confirmDialogButton, styles.discardButton]}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.discardButtonText}>Discard Changes</Text>
-                </TouchableOpacity>
-              </View>
+          <BottomSheetView style={styles.sheetContent}>
+            <View style={styles.dialogHeader}>
+              <Text style={styles.dialogTitle}>Unsaved Changes</Text>
+              <Text style={styles.dialogDescription}>
+                You are currently in edit mode. If you leave now, any changes you've made will be lost. Are you sure you want to go back?
+              </Text>
             </View>
-          </View>
-        </Modal>
+            <View style={styles.dialogButtonsVertical}>
+              <TouchableOpacity
+                onPress={() => discardBottomSheetRef.current?.dismiss()}
+                style={[styles.confirmDialogButton, styles.stayButton]}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.stayButtonText}>Stay and Edit</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={confirmExit}
+                style={[styles.confirmDialogButton, styles.discardButton]}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.discardButtonText}>Discard Changes</Text>
+              </TouchableOpacity>
+            </View>
+          </BottomSheetView>
+        </BottomSheetModal>
       </SafeAreaView>
     </GestureHandlerRootView >
   )
@@ -568,24 +588,11 @@ const styles = StyleSheet.create({
     color: '#111827',
     fontFamily: 'Outfit-SemiBold',
   },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  dialog: {
+  sheetContent: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 18,
-    padding: 32,
-    width: '100%',
-    maxWidth: 400,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.25,
-    shadowRadius: 20,
-    elevation: 10,
+    paddingHorizontal: 20,
+    paddingBottom: 24,
+    flex: 1,
   },
   dialogHeader: {
     alignItems: 'center',

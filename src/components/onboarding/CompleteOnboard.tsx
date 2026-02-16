@@ -120,7 +120,7 @@ export default function CompleteOnboard() {
   const joinCollectiveMutation = useMutation({
     mutationFn: (collectiveId: string) => joinCollective(collectiveId),
     onSuccess: (_response: any, collectiveId: string) => {
-      showToast('Joined collective!');
+      // showToast('Joined collective!');
       setJoinedCollectiveIds((prev) => {
         const next = new Set(prev);
         const idNum = Number(collectiveId);
@@ -141,7 +141,7 @@ export default function CompleteOnboard() {
   const leaveCollectiveMutation = useMutation({
     mutationFn: (collectiveId: string) => leaveCollective(collectiveId),
     onSuccess: (_response: any, collectiveId: string) => {
-      showToast('Left collective!');
+      // showToast('Left collective!');
       setJoinedCollectiveIds((prev) => {
         const next = new Set(prev);
         const idNum = Number(collectiveId);
@@ -211,7 +211,7 @@ export default function CompleteOnboard() {
         setPreviousView(view);
         setView('success');
       } else {
-        showToast("No nonprofits found in selected collectives.");
+        // showToast("No nonprofits found in selected collectives.");
         setIsProcessingCollectives(false);
       }
     } catch (error) {
@@ -272,7 +272,7 @@ export default function CompleteOnboard() {
       return await createDonationBox(data);
     },
     onSuccess: () => {
-      showToast('Donation box created!');
+      // showToast('Donation box created!');
       queryClient.invalidateQueries({ queryKey: ['donationBox'] });
 
       handleRedirect();

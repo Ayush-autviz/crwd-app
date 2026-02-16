@@ -41,7 +41,7 @@ export default function Statistics() {
             if (targetUserId && targetUserId !== user?.id?.toString()) {
                 queryClient.invalidateQueries({ queryKey: ['userProfile', targetUserId] })
             }
-            showToast('Followed')
+            // showToast('Followed')
         },
         onError: (error) => {
             console.error('Error following user:', error)
@@ -62,7 +62,7 @@ export default function Statistics() {
             if (targetUserId && targetUserId !== user?.id?.toString()) {
                 queryClient.invalidateQueries({ queryKey: ['userProfile', targetUserId] })
             }
-            showToast('Unfollowed')
+            // showToast('Unfollowed')
         },
         onError: (error) => {
             console.error('Error unfollowing user:', error)
@@ -115,7 +115,7 @@ export default function Statistics() {
 
     console.log(followersData, 'followersData');
     console.log(followingData, 'followingData');
-    
+
 
 
     // Use API data with fallbacks - handling nested structures
@@ -151,8 +151,8 @@ export default function Statistics() {
         // is_following is at the item level, not inside followee
         const isFollowing = item.is_following ?? userData.is_following ?? false;
         return {
-            name: userData.first_name && userData.last_name 
-                ? `${userData.first_name} ${userData.last_name}` 
+            name: userData.first_name && userData.last_name
+                ? `${userData.first_name} ${userData.last_name}`
                 : userData.first_name || userData.name || 'Unknown User',
             username: userData.username || 'unknown',
             avatar: userData.profile_picture || userData.avatar || '',
@@ -167,8 +167,8 @@ export default function Statistics() {
         // is_following is at the item level, not inside follower
         const isFollowing = item.is_following ?? userData.is_following ?? false;
         return {
-            name: userData.first_name && userData.last_name 
-                ? `${userData.first_name} ${userData.last_name}` 
+            name: userData.first_name && userData.last_name
+                ? `${userData.first_name} ${userData.last_name}`
                 : userData.first_name || userData.name || 'Unknown User',
             username: userData.username || 'unknown',
             avatar: userData.profile_picture || userData.avatar || '',
@@ -206,12 +206,12 @@ export default function Statistics() {
                                 </View>
                                 <Text style={styles.causeName}>{cause.name}</Text>
                                 <Text style={styles.causeDescription}>{cause.description}</Text>
-                           
+
                             </View>
                         </View>
                         <View style={styles.causeActions}>
-                            <TouchableOpacity 
-                                style={styles.donateButton} 
+                            <TouchableOpacity
+                                style={styles.donateButton}
                                 onPress={() => (navigation as any).navigate('CauseScreen', { causeId: cause.id })}
                             >
                                 <Text style={styles.donateButtonText}>View Details</Text>
@@ -254,12 +254,12 @@ export default function Statistics() {
                                 </View>
                                 <Text style={styles.causeName}>{crwd.name}</Text>
                                 <Text style={styles.causeDescription}>{crwd.description}</Text>
-                                
+
                             </View>
                         </View>
                         <View style={styles.causeActions}>
-                            <TouchableOpacity 
-                                style={styles.donateButton} 
+                            <TouchableOpacity
+                                style={styles.donateButton}
                                 onPress={() => (navigation as any).navigate('GroupCRWD', { collectiveId: crwd.id })}
                             >
                                 <Text style={styles.donateButtonText}>View Details</Text>
@@ -279,7 +279,7 @@ export default function Statistics() {
         const isLoading = title === 'Following' ? followingLoading : followersLoading
         // In the Following tab, all users are already being followed, so always show "Following"
         const isFollowingTab = title === 'Following'
-        
+
         if (isLoading) {
             return (
                 <View style={styles.loadingContainer}>
@@ -308,23 +308,23 @@ export default function Statistics() {
                     {members.length > 0 ? members.map((member: any, index: number) => {
                         // In Following tab, user is always following, otherwise use member.is_following
                         const isFollowing = isFollowingTab ? true : (member.is_following || false)
-                        
+
                         return (
-                        <View key={member.id || index} style={styles.memberItem}>
-                            <View style={styles.memberInfo}>
-                                <Avatar size={40}>
-                                    <AvatarImage src={member.avatar} />
-                                    <AvatarFallback>
-                                        {member.name.split(' ').map((word: string) => word[0]).join('').toUpperCase()}
-                                    </AvatarFallback>
-                                </Avatar>
-                                <View>
-                                    <Text style={styles.memberName}>{member.name}</Text>
-                                    <Text style={styles.memberUsername}>@{member.username}</Text>
+                            <View key={member.id || index} style={styles.memberItem}>
+                                <View style={styles.memberInfo}>
+                                    <Avatar size={40}>
+                                        <AvatarImage src={member.avatar} />
+                                        <AvatarFallback>
+                                            {member.name.split(' ').map((word: string) => word[0]).join('').toUpperCase()}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <View>
+                                        <Text style={styles.memberName}>{member.name}</Text>
+                                        <Text style={styles.memberUsername}>@{member.username}</Text>
+                                    </View>
                                 </View>
-                            </View>
                                 {member.id !== user?.id && (
-                                    <TouchableOpacity 
+                                    <TouchableOpacity
                                         style={isFollowing ? styles.followingButton : styles.followButton}
                                         onPress={() => handleFollowToggle(member.id.toString(), isFollowing)}
                                         disabled={followUserMutation.isPending || unfollowUserMutation.isPending}
@@ -332,9 +332,9 @@ export default function Statistics() {
                                         <Text style={isFollowing ? styles.followingButtonText : styles.followButtonText}>
                                             {isFollowing ? 'Following' : 'Follow'}
                                         </Text>
-                                </TouchableOpacity>
-                            )}
-                        </View>
+                                    </TouchableOpacity>
+                                )}
+                            </View>
                         )
                     }) : (
                         <View style={styles.emptyState}>
@@ -356,9 +356,9 @@ export default function Statistics() {
 
     return (
         <SafeAreaView style={styles.container}>
-            <MainHeaderNav show menu={false} title={'Statistics'}  />
-            
-           
+            <MainHeaderNav show menu={false} title={'Statistics'} />
+
+
 
             {/* Tab Headers */}
             <View style={styles.tabsContainer}>

@@ -123,10 +123,11 @@ export default function CollectiveHeader({
   };
 
   const handleShareClick = () => {
-    if (onShare) {
-      onShare();
-    }
     setShowDropdown(false);
+    // Add a small delay for iOS modal dismissal conflict
+    setTimeout(() => {
+      onShare?.();
+    }, 100);
   };
 
   const handleReport = () => {

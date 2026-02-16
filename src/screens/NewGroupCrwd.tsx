@@ -1044,6 +1044,7 @@ export default function NewGroupCrwdPage() {
             collectiveId={crwdId}
             isJoined={crwdData.is_joined}
             collectiveData={crwdData}
+            onJoin={handleJoinCollective}
             onCommentPress={(post) => {
               console.log('onCommentPress called with post:', post);
               // Find the original post data to get firstName and lastName

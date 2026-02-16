@@ -89,7 +89,12 @@ export default function CauseHeader({
 
   const handleShareClick = () => {
     setShowDropdown(false);
-    onShare?.();
+    // Add a small delay to allow the modal to close before opening the share sheet
+    // This prevents conflicts on some iOS versions where you can't open a share sheet
+    // while a modal is being dismissed.
+    setTimeout(() => {
+      onShare?.();
+    }, 100);
   };
 
   const handleCopyLink = async () => {

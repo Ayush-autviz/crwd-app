@@ -239,7 +239,7 @@ export default function Profile() {
             if (targetUserId && targetUserId !== user?.id?.toString()) {
                 queryClient.invalidateQueries({ queryKey: ['userProfile', targetUserId] });
             }
-            showToast('Followed');
+            // showToast('Followed');
         },
         onError: (error: any) => {
             console.error('Error following user:', error);
@@ -256,7 +256,7 @@ export default function Profile() {
             if (targetUserId && targetUserId !== user?.id?.toString()) {
                 queryClient.invalidateQueries({ queryKey: ['userProfile', targetUserId] });
             }
-            showToast('Unfollowed');
+            // showToast('Unfollowed');
         },
         onError: (error: any) => {
             console.error('Error unfollowing user:', error);

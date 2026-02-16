@@ -63,7 +63,7 @@ export default function Login() {
           refresh_token: response.refresh_token,
         });
       }
-      showToast('Google authentication successful!');
+      // showToast('Google authentication successful!');
 
       // Handle redirect - use reset to prevent going back to login
       if (response.user && !response.user.last_login_at) {

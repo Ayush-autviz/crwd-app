@@ -13,6 +13,7 @@ interface CommunityActivityProps {
   isJoined?: boolean;
   collectiveData?: any;
   onCommentPress?: (post: any) => void;
+  onJoin?: () => void;
 }
 
 export default function CommunityActivity({
@@ -22,6 +23,7 @@ export default function CommunityActivity({
   isJoined = false,
   collectiveData,
   onCommentPress,
+  onJoin,
 }: CommunityActivityProps) {
   const navigation = useNavigation();
   const { user } = useAuthStore();
@@ -43,9 +45,13 @@ export default function CommunityActivity({
           )} */}
         </View>
         {!isJoined ? (
-          <View style={styles.joinButton}>
+          <TouchableOpacity
+            style={styles.joinButton}
+            onPress={onJoin}
+            activeOpacity={0.7}
+          >
             <Text style={styles.joinButtonText}>Join to post updates</Text>
-          </View>
+          </TouchableOpacity>
         ) : (
           <View>
             <TouchableOpacity
@@ -146,16 +152,18 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   joinButton: {
-    backgroundColor: '#1600ff',
+    backgroundColor: '#FFFFFF',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
   joinButtonText: {
     fontSize: 15,
     fontFamily: 'Outfit-Bold',
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#1F2937',
   },
   postButton: {
     backgroundColor: '#FFFFFF',

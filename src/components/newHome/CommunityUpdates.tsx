@@ -158,7 +158,7 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
   const unfollowMutation = useMutation({
     mutationFn: (userId: string) => unfollowUserById(userId),
     onSuccess: () => {
-      showToast('Unfollowed user');
+      // showToast('Unfollowed user');
       queryClient.invalidateQueries({ queryKey: ['userProfile', update.user.id] });
     },
     onError: (error: any) => {

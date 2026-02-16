@@ -114,7 +114,7 @@ export default function UserProfile() {
         mutationFn: () => followUserById(targetUserId || ''),
         onSuccess: () => {
             setIsFollowing(true);
-            showToast("Followed successfully!");
+            // showToast("Followed successfully!");
             queryClient.invalidateQueries({ queryKey: ['userProfile', targetUserId] });
         },
         onError: (error: any) => {
@@ -128,7 +128,7 @@ export default function UserProfile() {
         mutationFn: () => unfollowUserById(targetUserId || ''),
         onSuccess: () => {
             setIsFollowing(false);
-            showToast("Unfollowed successfully!");
+            // showToast("Unfollowed successfully!");
             queryClient.invalidateQueries({ queryKey: ['userProfile', targetUserId] });
         },
         onError: (error: any) => {
@@ -243,7 +243,7 @@ export default function UserProfile() {
             queryClient.invalidateQueries({ queryKey: ['followers', statsTargetUserId] });
             queryClient.invalidateQueries({ queryKey: ['following', statsTargetUserId] });
             queryClient.invalidateQueries({ queryKey: ['userProfile', targetUserId] });
-            showToast('Followed');
+            // showToast('Followed');
         },
         onError: (error: any) => {
             console.error('Error following user:', error);
@@ -257,7 +257,7 @@ export default function UserProfile() {
             queryClient.invalidateQueries({ queryKey: ['followers', statsTargetUserId] });
             queryClient.invalidateQueries({ queryKey: ['following', statsTargetUserId] });
             queryClient.invalidateQueries({ queryKey: ['userProfile', targetUserId] });
-            showToast('Unfollowed');
+            // showToast('Unfollowed');
         },
         onError: (error: any) => {
             console.error('Error unfollowing user:', error);
@@ -588,7 +588,7 @@ export default function UserProfile() {
                                         <Avatar size={48}>
                                             <AvatarImage src={userData.profile_picture || userData.avatar} />
                                             <AvatarFallback
-                                            style={{ backgroundColor: (userData.profile_picture || userData.avatar) ? 'transparent' : (userData.color || getConsistentColor(userData.id || userData.username || 'U', avatarColors)) }}
+                                                style={{ backgroundColor: (userData.profile_picture || userData.avatar) ? 'transparent' : (userData.color || getConsistentColor(userData.id || userData.username || 'U', avatarColors)) }}
                                                 textStyle={{ color: '#FFFFFF', fontSize: 16, fontFamily: 'Outfit-SemiBold' }}
                                             >
                                                 {getInitials(userData.first_name, userData.last_name, userData.username || userData.name)}

@@ -174,7 +174,7 @@ export default function PostDetail() {
     onSuccess: () => {
       setComment("");
       setReplyingTo(null);
-      showToast('Comment added successfully!', 3000);
+      // showToast('Comment added successfully!', 3000);
       queryClient.invalidateQueries({ queryKey: ['postComments', postId] });
     },
     onError: () => {
@@ -187,7 +187,7 @@ export default function PostDetail() {
     mutationFn: ({ commentId, data }: { commentId: number; data: { content: string } }) =>
       createPostComment(postId || '', { content: data.content, parent_comment_id: commentId }),
     onSuccess: () => {
-      showToast('Reply added successfully!', 3000);
+      // showToast('Reply added successfully!', 3000);
       queryClient.invalidateQueries({ queryKey: ['postComments', postId] });
       // Fetch replies for the parent comment to ensure they are displayed
       // We need to find the top-level parent if this was a nested reply, or just the parent
@@ -205,7 +205,7 @@ export default function PostDetail() {
   const deleteCommentMutation = useMutation({
     mutationFn: deleteComment,
     onSuccess: () => {
-      showToast('Comment deleted successfully!', 2000);
+      // showToast('Comment deleted successfully!', 2000);
       queryClient.invalidateQueries({ queryKey: ['postComments', postId] });
       // Also invalidate the post query to update comment count
       queryClient.invalidateQueries({ queryKey: ['post', postId] });
@@ -253,7 +253,7 @@ export default function PostDetail() {
   const likePostMutation = useMutation({
     mutationFn: () => likePost(postId || ''),
     onSuccess: () => {
-      showToast('Post liked!', 3000);
+      // showToast('Post liked!', 3000);
       queryClient.invalidateQueries({ queryKey: ['post', postId] });
     },
     onError: () => {
@@ -264,7 +264,7 @@ export default function PostDetail() {
   const unlikePostMutation = useMutation({
     mutationFn: () => unlikePost(postId || ''),
     onSuccess: () => {
-      showToast('Post unliked!', 3000);
+      // showToast('Post unliked!', 3000);
       queryClient.invalidateQueries({ queryKey: ['post', postId] });
     },
     onError: () => {
@@ -284,7 +284,7 @@ export default function PostDetail() {
   const likeCommentMutation = useMutation({
     mutationFn: (commentId: string) => likeComment(commentId),
     onSuccess: () => {
-      showToast('Comment liked!', 3000);
+      // showToast('Comment liked!', 3000);
       queryClient.invalidateQueries({ queryKey: ['postComments', postId] });
     },
     onError: () => {
@@ -295,7 +295,7 @@ export default function PostDetail() {
   const unlikeCommentMutation = useMutation({
     mutationFn: (commentId: string) => unlikeComment(commentId),
     onSuccess: () => {
-      showToast('Comment unliked!', 3000);
+      // showToast('Comment unliked!', 3000);
       queryClient.invalidateQueries({ queryKey: ['postComments', postId] });
     },
     onError: () => {
@@ -755,7 +755,7 @@ export default function PostDetail() {
       });
 
       if (result.action === Share.sharedAction) {
-        showToast('Post shared successfully!');
+        // showToast('Post shared successfully!');
       }
     } catch (error) {
       showToast('Failed to share post');

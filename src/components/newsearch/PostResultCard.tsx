@@ -193,7 +193,7 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
   const unfollowMutation = useMutation({
     mutationFn: (userId: string) => unfollowUserById(userId),
     onSuccess: () => {
-      showToast('Unfollowed user');
+      // showToast('Unfollowed user');
       queryClient.invalidateQueries({ queryKey: ['userProfile', String(user?.id)] });
     },
     onError: (error: any) => {

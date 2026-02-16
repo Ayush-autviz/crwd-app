@@ -254,7 +254,7 @@ export default function Account({ isEditMode, setIsEditMode }: AccountProps) {
             <View style={styles.fieldContainer}>
               <Text style={styles.fieldLabel}>First Name</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, isEditMode && styles.inputEditMode]}
                 value={formData.first_name}
                 onChangeText={(text) => setFormData(prev => ({ ...prev, first_name: text }))}
                 editable={isEditMode}
@@ -267,7 +267,7 @@ export default function Account({ isEditMode, setIsEditMode }: AccountProps) {
             <View style={styles.fieldContainer}>
               <Text style={styles.fieldLabel}>Last Name</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, isEditMode && styles.inputEditMode]}
                 value={formData.last_name}
                 onChangeText={(text) => setFormData(prev => ({ ...prev, last_name: text }))}
                 editable={isEditMode}
@@ -297,7 +297,7 @@ export default function Account({ isEditMode, setIsEditMode }: AccountProps) {
             <View style={styles.fieldContainer}>
               <Text style={styles.fieldLabel}>Email</Text>
               <TextInput
-                style={[styles.input, { opacity: 0.7 }]}
+                style={[styles.input, { opacity: 0.7 }, isEditMode && styles.inputEditMode]}
                 value={formData.email}
                 editable={false}
                 placeholderTextColor={PrimaryGrey}
@@ -311,10 +311,10 @@ export default function Account({ isEditMode, setIsEditMode }: AccountProps) {
             {/* Location */}
             <View style={styles.fieldContainer}>
               <Text style={styles.fieldLabel}>Location</Text>
-              <View style={styles.locationInputContainer}>
+              <View style={[styles.locationInputContainer, isEditMode && styles.locationInputContainerEditMode]}>
                 {/* <MapPin size={16} color={PrimaryGrey} style={styles.locationIcon} /> */}
                 <TextInput
-                  style={[styles.input, styles.locationInput]}
+                  style={[styles.input, styles.locationInput, isEditMode && styles.inputEditMode]}
                   value={formData.location}
                   onChangeText={(text) => setFormData(prev => ({ ...prev, location: text }))}
                   editable={isEditMode}
@@ -328,7 +328,7 @@ export default function Account({ isEditMode, setIsEditMode }: AccountProps) {
             <View style={styles.fieldContainer}>
               <Text style={styles.fieldLabel}>Bio</Text>
               <TextInput
-                style={[styles.input, styles.bioInput]}
+                style={[styles.input, styles.bioInput, isEditMode && styles.inputEditMode]}
                 value={formData.bio}
                 onChangeText={(text) => {
                   if (text.length <= 160) {
@@ -387,7 +387,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: SecondaryGrey,
     borderRadius: 10,
-    padding: 10,
+    paddingVertical: 10,
     marginTop: 10,
     marginBottom: 10,
   },
@@ -447,6 +447,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     minHeight: 40,
   },
+  locationInputContainerEditMode: {
+    backgroundColor: '#E5E5E5',
+  },
   locationIcon: {
     marginRight: 8,
   },
@@ -485,6 +488,10 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Regular',
     color: PrimaryGrey,
     minHeight: 40,
+  },
+  inputEditMode: {
+    backgroundColor: '#E5E5E5',
+    color: '#000000',
   },
   bioInput: {
     minHeight: 100,

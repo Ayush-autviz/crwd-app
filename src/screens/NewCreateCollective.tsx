@@ -1615,14 +1615,14 @@ const styles = StyleSheet.create({
   },
   promptContainer: {
     flex: 1,
-    justifyContent: 'center',
+    // justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 32,
+    padding: 32,
     backgroundColor: 'white',
   },
   promptIconContainer: {
-    width: 80,
-    height: 80,
+    width: 70,
+    height: 70,
     borderRadius: 40,
     backgroundColor: '#DBEAFE',
     justifyContent: 'center',
@@ -1640,9 +1640,9 @@ const styles = StyleSheet.create({
   promptDescription: {
     fontSize: 16,
     color: '#6B7280',
-    marginBottom: 32,
+    marginBottom: 28,
     textAlign: 'center',
-    lineHeight: 24,
+    // lineHeight: 24,
     fontFamily: 'Outfit-Regular',
   },
   promptButtons: {

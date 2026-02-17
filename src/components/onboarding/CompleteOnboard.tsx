@@ -412,12 +412,12 @@ export default function CompleteOnboard() {
   if (view === 'initial') {
     return (
       <View style={styles.container}>
-        <LinearGradient
+        {/* <LinearGradient
           colors={['#DBEAFE', '#F3E8FF', '#FCE7F3']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={{ flex: 1 }}
-        >
+        > */}
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 60, paddingBottom: 30, paddingHorizontal: 16 }}>
             <View style={styles.card}>
               {/* Progress Indicator - Step 4 */}
@@ -560,7 +560,7 @@ export default function CompleteOnboard() {
               </View>
             </View>
           </View>
-        </LinearGradient>
+        {/* </LinearGradient> */}
       </View>
     );
   }
@@ -575,12 +575,12 @@ export default function CompleteOnboard() {
 
     return (
       <View style={styles.container}>
-        <LinearGradient
+        {/* <LinearGradient
           colors={['#DBEAFE', '#F3E8FF', '#FCE7F3']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={{ flex: 1 }}
-        >
+        > */}
           {/* <KeyboardAwareScrollView
             contentContainerStyle={styles.scrollContentBrowse}
             showsVerticalScrollIndicator={false}
@@ -818,7 +818,7 @@ export default function CompleteOnboard() {
             </View>
           </View>
           {/* </KeyboardAwareScrollView> */}
-        </LinearGradient >
+        {/* </LinearGradient > */}
       </View >
     );
   }
@@ -827,12 +827,12 @@ export default function CompleteOnboard() {
   if (view === 'surprise') {
     return (
       <View style={styles.container}>
-        <LinearGradient
+        {/* <LinearGradient
           colors={['#DBEAFE', '#F3E8FF', '#FCE7F3']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={{ flex: 1 }}
-        >
+        > */}
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 60, paddingBottom: 30, paddingHorizontal: 16 }}>
             <View style={styles.card}>
               {/* Progress Indicator - Step 4 */}
@@ -1007,7 +1007,7 @@ export default function CompleteOnboard() {
               </View>
             </View>
           </View>
-        </LinearGradient>
+        {/* </LinearGradient> */}
       </View>
     );
   }
@@ -1024,7 +1024,7 @@ export default function CompleteOnboard() {
           </View>
 
           <Text style={styles.successTitle}>
-            {`${addedNonprofitsCount} nonprofit${addedNonprofitsCount != 1 ? 's' : ''} have been added to\nyour donation box.`}
+            {`${addedNonprofitsCount} nonprofit${addedNonprofitsCount == 1 ? '' : 's'} have been added to\nyour donation box.`}
           </Text>
 
           <Text style={styles.successDescription}>
@@ -1069,12 +1069,12 @@ export default function CompleteOnboard() {
   // Browse & Search view
   return (
     <View style={styles.container}>
-      <LinearGradient
+      {/* <LinearGradient
         colors={['#DBEAFE', '#F3E8FF', '#FCE7F3']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={{ flex: 1 }}
-      >
+      > */}
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 60, paddingBottom: 30, paddingHorizontal: 16 }}>
           <View style={styles.card}>
             {/* Progress Indicator - Step 4 */}
@@ -1255,7 +1255,7 @@ export default function CompleteOnboard() {
             </View>
           </View>
         </View>
-      </LinearGradient>
+      {/* </LinearGradient> */}
     </View>
   );
 }
@@ -1263,6 +1263,7 @@ export default function CompleteOnboard() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: 'white',
   },
 
   card: {
@@ -1305,8 +1306,8 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   gradientIconCircle: {
-    width: 64,
-    height: 64,
+    width: 60,
+    height: 60,
     borderRadius: 32,
     alignItems: 'center',
     justifyContent: 'center',

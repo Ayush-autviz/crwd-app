@@ -148,12 +148,12 @@ export default function NonProfitInterests() {
 
   return (
     <View style={styles.container}>
-      <LinearGradient
+      {/* <LinearGradient
         colors={['#DBEAFE', '#F3E8FF', '#FCE7F3']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={{ flex: 1 }}
-      >
+      > */}
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
@@ -257,7 +257,7 @@ export default function NonProfitInterests() {
             </View>
           </View>
         </ScrollView>
-      </LinearGradient>
+      {/* </LinearGradient> */}
     </View>
   );
 }
@@ -265,6 +265,7 @@ export default function NonProfitInterests() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: 'white',
   },
   scrollContent: {
     flexGrow: 1,
@@ -287,7 +288,7 @@ const styles = StyleSheet.create({
   },
   stepIndicator: {
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 10,
   },
   stepBar: {
     flexDirection: 'row',
@@ -307,11 +308,11 @@ const styles = StyleSheet.create({
   },
   iconContainer: {
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 5,
   },
   iconCircle: {
-    width: 64,
-    height: 64,
+    width: 60,
+    height: 60,
     borderRadius: 32,
     backgroundColor: '#f3e8ff',
     alignItems: 'center',

@@ -1,10 +1,12 @@
-import { View, Text, Image, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform, Share, Dimensions, Modal, Pressable, TouchableWithoutFeedback, ActivityIndicator, Linking, Alert } from 'react-native'
+import { View, Text, Image, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform, Share, Dimensions, Modal, Pressable, TouchableWithoutFeedback, ActivityIndicator, Linking, Alert, BackHandler, Keyboard } from 'react-native'
 import React, { useState, useEffect } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import MainHeaderNav from '../components/MainHeaderNav'
 import { PrimaryGrey, PrimaryBlue, LightGrey } from '../Constants/Colors'
 import { Heart, MessageCircle, ChevronRight, Trash2, Ellipsis, X } from 'lucide-react-native'
-import { useNavigation, useRoute, useFocusEffect, NavigationProp, CommonActions } from '@react-navigation/native'
+import { BottomSheetModal } from '@gorhom/bottom-sheet'
+import DiscardBottomSheet from '../components/ui/DiscardBottomSheet'
+import { useNavigation, useRoute, useFocusEffect, NavigationProp, CommonActions, usePreventRemove } from '@react-navigation/native'
 import { useToast } from '../contexts/ToastContext'
 import { formatDistanceToNow } from 'date-fns'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -97,6 +99,9 @@ export default function PostDetail() {
   const [showExitConfirmation, setShowExitConfirmation] = useState(false)
   const [expandedComments, setExpandedComments] = useState<Set<number>>(new Set())
   const [loadingReplies, setLoadingReplies] = useState<Set<number>>(new Set())
+  const discardSheetRef = React.useRef<BottomSheetModal>(null)
+  const [isConfirmedDiscard, setIsConfirmedDiscard] = useState(false)
+  const [pendingAction, setPendingAction] = useState<any>(null)
 
   // Fetch post data using API
   const { data: postData, isLoading: isLoadingPost, error: postError } = useQuery({
@@ -723,22 +728,35 @@ export default function PostDetail() {
   };
 
   // Handle back button and navigation
-  // useEffect(() => {
-  //   const unsubscribe = navigation.addListener('beforeRemove', (e) => {
-  //     if (!comment.trim()) {
-  //       // If no comment, allow navigation
-  //       return;
-  //     }
+  // Navigation guard - using usePreventRemove for better compatibility (e.g. iOS back button)
+  usePreventRemove(
+    !!comment.trim() && !isConfirmedDiscard,
+    (e) => {
+      Keyboard.dismiss();
+      setPendingAction(e.data.action);
+      discardSheetRef.current?.present();
+    }
+  );
 
-  //     // Prevent default behavior of leaving the screen
-  //     e.preventDefault();
+  // Handle hardware back button
+  useEffect(() => {
+    const backAction = () => {
+      if (comment.trim() && !isConfirmedDiscard) {
+        Keyboard.dismiss();
+        // Trigger navigation back which will be caught by beforeRemove
+        navigation.goBack();
+        return true;
+      }
+      return false;
+    };
 
-  //     // Show confirmation modal
-  //     setShowExitConfirmation(true);
-  //   });
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      backAction
+    );
 
-  //   return unsubscribe;
-  // }, [navigation, comment]);
+    return () => backHandler.remove();
+  }, [comment, isConfirmedDiscard, navigation]);
 
   const handleConfirmExit = () => {
     setShowExitConfirmation(false);
@@ -1229,7 +1247,24 @@ export default function PostDetail() {
             </View>
           </TouchableWithoutFeedback>
         </Modal>
+
+        {/* Discard Confirmation Sheet */}
+        <DiscardBottomSheet
+          ref={discardSheetRef}
+          onDiscard={() => {
+            setIsConfirmedDiscard(true);
+            discardSheetRef.current?.dismiss();
+            setTimeout(() => {
+              if (pendingAction) {
+                navigation.dispatch(pendingAction);
+              } else {
+                navigation.goBack();
+              }
+            }, 300);
+          }}
+          onCancel={() => discardSheetRef.current?.dismiss()}
+        />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
-} 
+}

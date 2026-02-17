@@ -398,13 +398,13 @@ export default function ClaimProfile() {
         formData.termsAccepted;
 
     return (
-        <View style={{ flex: 1 }}>
-            <LinearGradient
+        <View style={{ flex: 1, backgroundColor: 'white' }}>
+            {/* <LinearGradient
                 colors={['#DBEAFE', '#F3E8FF', '#FCE7F3']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={{ flex: 1, }}
-            >
+            > */}
                 <KeyboardAwareScrollView
                     style={{ flex: 1 }}
                     contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 60 }}
@@ -771,7 +771,7 @@ export default function ClaimProfile() {
                         </View>
                     </View>
                 </Modal>
-            </LinearGradient>
+            {/* </LinearGradient> */}
         </View>
     )
 }

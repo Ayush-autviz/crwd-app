@@ -11,25 +11,28 @@ import {
   Platform,
   ActivityIndicator,
   Modal,
+  BackHandler,
+  Keyboard,
 } from 'react-native';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import DiscardBottomSheet from '../components/ui/DiscardBottomSheet';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute, usePreventRemove } from '@react-navigation/native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import {
   ArrowLeft,
   Info,
-  Palette,
-  Image as ImageIcon,
-  Camera,
-  X,
-  Check,
   Search,
   Building2,
   Eye,
   Share2,
   Sparkles,
   Loader2,
+  Calendar,
+  Check,
+  X,
+  Plus,
 } from 'lucide-react-native';
 import ImagePicker from 'react-native-image-crop-picker';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -107,6 +110,9 @@ export default function CreateFundraiser() {
   const [showConfetti, setShowConfetti] = useState(false);
   const [showAnimationComplete, setShowAnimationComplete] = useState(false);
   const [createdFundraiser, setCreatedFundraiser] = useState<any>(null);
+  const discardSheetRef = React.useRef<BottomSheetModal>(null);
+  const [isConfirmedDiscard, setIsConfirmedDiscard] = useState(false);
+  const [pendingAction, setPendingAction] = useState<any>(null);
   const confettiRef = React.useRef<ConfettiCannon>(null);
 
   // Fetch collective data
@@ -133,7 +139,7 @@ export default function CreateFundraiser() {
   // Create fundraiser mutation
   const createFundraiserMutation = useMutation({
     mutationFn: createFundraiser,
-    onSuccess: (response) => {
+    onSuccess: (response: any) => {
       console.log('Create fundraiser successful:', response);
       setCreatedFundraiser(response);
       // Wait for animation to complete (3 seconds for one full cycle) before showing success
@@ -177,6 +183,46 @@ export default function CreateFundraiser() {
     '#EF4444', // Red
     '#6366F1', // Indigo
   ];
+
+  const hasUnsavedChanges = React.useMemo(() => {
+    return (
+      campaignTitle.trim() !== '' ||
+      fundraisingGoal.trim() !== '' ||
+      endDate !== null ||
+      campaignStory.trim() !== '' ||
+      uploadedCoverImage !== null ||
+      selectedNonprofits.length > 0
+    );
+  }, [campaignTitle, fundraisingGoal, endDate, campaignStory, uploadedCoverImage, selectedNonprofits]);
+
+  // Navigation guard - using usePreventRemove for better compatibility (e.g. iOS back button)
+  usePreventRemove(
+    hasUnsavedChanges && !showSuccessModal && !isConfirmedDiscard,
+    (e) => {
+      Keyboard.dismiss();
+      setPendingAction(e.data.action);
+      discardSheetRef.current?.present();
+    }
+  );
+
+  // Handle hardware back button
+  useEffect(() => {
+    const backAction = () => {
+      if (hasUnsavedChanges && !showSuccessModal && !isConfirmedDiscard) {
+        Keyboard.dismiss();
+        navigation.goBack();
+        return true;
+      }
+      return false;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      backAction
+    );
+
+    return () => backHandler.remove();
+  }, [hasUnsavedChanges, showSuccessModal, isConfirmedDiscard, navigation]);
 
   const handleColorSelect = (color: string) => {
     setCoverColor(color);
@@ -332,13 +378,7 @@ export default function CreateFundraiser() {
   };
 
   const handleBack = () => {
-    if (step === 3) {
-      setStep(2);
-    } else if (step === 2) {
-      setStep(1);
-    } else {
-      navigation.goBack();
-    }
+    navigation.goBack();
   };
 
   const handleCancel = () => {

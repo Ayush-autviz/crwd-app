@@ -10,11 +10,15 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
-  ActivityIndicator
+  ActivityIndicator,
+  Keyboard // Added Keyboard here
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { ArrowLeft, Edit2, Check, X, Camera, MapPin, ChevronLeft } from 'lucide-react-native'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation, usePreventRemove } from '@react-navigation/native'
+import DiscardBottomSheet from '../components/ui/DiscardBottomSheet'
+import { BottomSheetModal } from '@gorhom/bottom-sheet'
+import { BackHandler } from 'react-native'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { PrimaryGrey, PrimaryBlue, LightGrey } from '../Constants/Colors'
 import MainHeaderNav from '../components/MainHeaderNav'
@@ -30,6 +34,10 @@ export default function ProfileEdit() {
   const { showToast } = useToast()
   const queryClient = useQueryClient()
 
+  const [isConfirmedDiscard, setIsConfirmedDiscard] = useState(false);
+  const [pendingAction, setPendingAction] = useState<any>(null);
+  const discardSheetRef = useRef<BottomSheetModal>(null);
+
   const [editingField, setEditingField] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     first_name: "",
@@ -39,6 +47,36 @@ export default function ProfileEdit() {
     bio: "",
     profile_picture_file: "https://randomuser.me/api/portraits/women/44.jpg"
   })
+
+  // Navigation guard
+  usePreventRemove(
+    !!editingField && !isConfirmedDiscard,
+    (e) => {
+      Keyboard.dismiss();
+      setPendingAction(e.data.action);
+      discardSheetRef.current?.present();
+    }
+  );
+
+  // Handle hardware back button
+  useEffect(() => {
+    const backAction = () => {
+      if (editingField && !isConfirmedDiscard) {
+        Keyboard.dismiss();
+        navigation.goBack();
+        return true;
+      }
+      return false;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      backAction
+    );
+
+    return () => backHandler.remove();
+  }, [editingField, isConfirmedDiscard, navigation]);
+
   const [selectedImageUri, setSelectedImageUri] = useState<string | null>(null)
   const [tempData, setTempData] = useState({
     first_name: "",
@@ -58,7 +96,7 @@ export default function ProfileEdit() {
   // Update profile mutation
   const updateProfileMutation = useMutation({
     mutationFn: updateProfile,
-    onSuccess: (response) => {
+    onSuccess: (response: any) => {
       // Update user in auth store with new profile picture if available
       if (response?.user?.profile_picture && user) {
         setUser({ ...user, profile_picture: response.user.profile_picture })
@@ -160,7 +198,7 @@ export default function ProfileEdit() {
       maxWidth: 2000,
     }
 
-    ImagePicker.launchImageLibrary(options, (response) => {
+    ImagePicker.launchImageLibrary(options, (response: any) => {
       if (response.didCancel) {
         return
       }
@@ -344,6 +382,22 @@ export default function ProfileEdit() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      <DiscardBottomSheet
+        ref={discardSheetRef}
+        onDiscard={() => {
+          setIsConfirmedDiscard(true);
+          discardSheetRef.current?.dismiss();
+          setTimeout(() => {
+            if (pendingAction) {
+              navigation.dispatch(pendingAction);
+            } else {
+              navigation.goBack();
+            }
+          }, 300);
+        }}
+        onCancel={() => discardSheetRef.current?.dismiss()}
+      />
     </SafeAreaView>
   )
 }

@@ -9,20 +9,23 @@ import {
   ActivityIndicator,
   Alert,
   Platform,
+  BackHandler,
+  Keyboard,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute, usePreventRemove } from '@react-navigation/native';
+import DiscardBottomSheet from '../components/ui/DiscardBottomSheet';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import {
   ArrowLeft,
   Edit2,
-  HelpCircle,
+  CircleHelp as HelpCircle,
   Loader2,
-  Palette,
   Camera,
   Search,
   X,
-  Save
+  Check
 } from 'lucide-react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getCollectiveById, patchCollective, getCollectiveCauses } from '../services/api/crwd';
@@ -81,6 +84,10 @@ export default function NewEditCollective() {
   const [initialDescription, setInitialDescription] = useState<string>('');
   const [initialCauseIds, setInitialCauseIds] = useState<number[]>([]);
   const [initialCauseCount, setInitialCauseCount] = useState(0);
+  const [isConfirmedDiscard, setIsConfirmedDiscard] = useState(false);
+  const [pendingAction, setPendingAction] = useState<any>(null);
+  const discardSheetRef = React.useRef<BottomSheetModal>(null);
+
 
   // Causes management state
   const [searchQuery, setSearchQuery] = useState('');
@@ -118,6 +125,48 @@ export default function NewEditCollective() {
     queryFn: () => getCausesBySearch('', '', 1),
     enabled: searchTrigger === 0 || searchQuery.trim().length === 0,
   });
+
+  const hasUnsavedChanges = React.useMemo(() => {
+    if (!crwdData) return false;
+    const nameChanged = name.trim() !== initialName;
+    const descriptionChanged = description.trim() !== initialDescription;
+    const causeIds = selectedCauses.map(cause => cause.id);
+    const causeIdsChanged = JSON.stringify(causeIds.sort()) !== JSON.stringify(initialCauseIds.sort());
+    const hasNewLogo = logoType === 'upload' && uploadedLogo !== null;
+    const colorChanged = logoType === 'letter' && letterLogoColor !== defaultColor;
+
+    return nameChanged || descriptionChanged || causeIdsChanged || hasNewLogo || colorChanged;
+  }, [name, initialName, description, initialDescription, selectedCauses, initialCauseIds, logoType, uploadedLogo, letterLogoColor, defaultColor, crwdData]);
+
+  // Navigation guard
+  usePreventRemove(
+    hasUnsavedChanges && !isConfirmedDiscard,
+    (e) => {
+      Keyboard.dismiss();
+      setPendingAction(e.data.action);
+      discardSheetRef.current?.present();
+    }
+  );
+
+  // Handle hardware back button
+  useEffect(() => {
+    const backAction = () => {
+      if (hasUnsavedChanges && !isConfirmedDiscard) {
+        Keyboard.dismiss();
+        navigation.goBack();
+        return true;
+      }
+      return false;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      backAction
+    );
+
+    return () => backHandler.remove();
+  }, [hasUnsavedChanges, isConfirmedDiscard, navigation]);
+
 
   // Initialize form data when collective data loads
   useEffect(() => {
@@ -458,7 +507,7 @@ export default function NewEditCollective() {
                     logoType === 'letter' && styles.logoTypeButtonActive
                   ]}
                 >
-                  <Palette size={16} color={logoType === 'letter' ? 'white' : '#111827'} />
+                  <Edit2 size={16} color={logoType === 'letter' ? 'white' : '#111827'} />
                   <Text style={[
                     styles.logoTypeButtonText,
                     logoType === 'letter' && styles.logoTypeButtonTextActive
@@ -689,12 +738,28 @@ export default function NewEditCollective() {
             <ActivityIndicator size="small" color="white" />
           ) : (
             <>
-              <Save size={16} color="white" />
+              <Check size={16} color="white" />
               <Text style={styles.saveButtonText}>Save Changes</Text>
             </>
           )}
         </TouchableOpacity>
       </View>
+
+      <DiscardBottomSheet
+        ref={discardSheetRef}
+        onDiscard={() => {
+          setIsConfirmedDiscard(true);
+          discardSheetRef.current?.dismiss();
+          setTimeout(() => {
+            if (pendingAction) {
+              navigation.dispatch(pendingAction);
+            } else {
+              navigation.goBack();
+            }
+          }, 300);
+        }}
+        onCancel={() => discardSheetRef.current?.dismiss()}
+      />
     </SafeAreaView >
   );
 }

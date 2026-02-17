@@ -1,20 +1,29 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Modal, Share, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Modal, Share, ActivityIndicator, Alert, BackHandler, Keyboard, TextInput } from 'react-native';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import MainHeaderNav from '../components/MainHeaderNav';
 import { LightGrey, PrimaryBlue, PrimaryGrey, SecondaryBlue, SecondaryGrey } from '../Constants/Colors';
-import { Bookmark, Heart, Plus, Search, X, Check, User } from 'lucide-react-native';
-import { TextInput } from 'react-native';
-// import { Organization, RECENTS, SUGGESTED } from '../Constants/organizations';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { createCollective, getCausesBySearch } from '../services/api/crwd';
-import { getFavoriteCauses } from '../services/api/social';
-import { useToast } from '../contexts/ToastContext';
+import { useNavigation, useFocusEffect, usePreventRemove } from '@react-navigation/native';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import DiscardBottomSheet from '../components/ui/DiscardBottomSheet';
 import { useAuthStore } from '../store/store';
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/Avatar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
+import { createCollective, getCausesBySearch } from '../services/api/crwd';
+import { getFavoriteCauses } from '../services/api/social';
+import { useToast } from '../contexts/ToastContext';
+import {
+  Bookmark,
+  Heart,
+  Plus,
+  Search,
+  X,
+  Check,
+  User,
+  Info
+} from 'lucide-react-native';
 
 export default function CreateCRWD() {
   const navigation = useNavigation<any>();
@@ -33,6 +42,44 @@ export default function CreateCRWD() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchTrigger, setSearchTrigger] = useState(0);
   const confettiRef = useRef<ConfettiCannon>(null);
+
+  const [isConfirmedDiscard, setIsConfirmedDiscard] = useState(false);
+  const [pendingAction, setPendingAction] = useState<any>(null);
+  const discardSheetRef = React.useRef<BottomSheetModal>(null);
+
+  const hasUnsavedChanges = React.useMemo(() => {
+    return name.trim() !== '' || desc.trim() !== '' || selectedCauses.length > 0;
+  }, [name, desc, selectedCauses]);
+
+  // Navigation guard
+  usePreventRemove(
+    hasUnsavedChanges && step === 1 && !showSuccess && !isConfirmedDiscard,
+    (e) => {
+      Keyboard.dismiss();
+      setPendingAction(e.data.action);
+      discardSheetRef.current?.present();
+    }
+  );
+
+  // Handle hardware back button
+  React.useEffect(() => {
+    const backAction = () => {
+      if (hasUnsavedChanges && step === 1 && !showSuccess && !isConfirmedDiscard) {
+        Keyboard.dismiss();
+        navigation.goBack();
+        return true;
+      }
+      return false;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      backAction
+    );
+
+    return () => backHandler.remove();
+  }, [hasUnsavedChanges, step, showSuccess, isConfirmedDiscard, navigation]);
+
 
   // Load saved form data from AsyncStorage on mount
   React.useEffect(() => {
@@ -115,7 +162,7 @@ export default function CreateCRWD() {
   // Create collective mutation
   const createCollectiveMutation = useMutation({
     mutationFn: createCollective,
-    onSuccess: async (response) => {
+    onSuccess: async (response: any) => {
       console.log('Create collective successful:', response);
       // Clear saved form data on successful creation
       try {
@@ -142,21 +189,21 @@ export default function CreateCRWD() {
 
   const handleCauseToggle = (cause: any, isFavorite: boolean = false) => {
     const causeId = isFavorite ? cause.cause?.id : cause.id;
-    const causeData = isFavorite 
-      ? { ...cause.cause, id: cause.cause.id, image: cause.image, logo: cause.image } 
+    const causeData = isFavorite
+      ? { ...cause.cause, id: cause.cause.id, image: cause.image, logo: cause.image }
       : { ...cause, id: cause.id, image: cause.image || cause.logo, logo: cause.logo || cause.image };
-    
+
     setSelectedCauses((prev) => {
       const isSelected = prev.includes(causeId);
       const newSelection = isSelected
         ? prev.filter((id) => id !== causeId)
         : [...prev, causeId];
-      
+
       // Update cause data array
       setSelectedCausesData((prevData) => {
         if (isSelected) {
           return prevData.filter((c) => c.id !== causeId);
-    } else {
+        } else {
           // Check if cause already exists to avoid duplicates
           const exists = prevData.some((c) => c.id === causeId);
           if (!exists) {
@@ -165,7 +212,7 @@ export default function CreateCRWD() {
           return prevData;
         }
       });
-      
+
       return newSelection;
     });
   };
@@ -190,7 +237,7 @@ export default function CreateCRWD() {
 
   const handleSearchSubmit = () => {
     // Trigger API call with search query
-      setSearchTrigger(prev => prev + 1);
+    setSearchTrigger(prev => prev + 1);
   };
 
   const handleCreateCRWD = () => {
@@ -220,86 +267,86 @@ export default function CreateCRWD() {
   };
 
   if (!currentUser?.id) {
-            return (
-            <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }} edges={['top', 'left', 'right']}>
-                <MainHeaderNav title={'Create a CRWD'} show={true} />
-                <View style={{ 
-                    flex: 1, 
-                    justifyContent: 'center', 
-                    alignItems: 'center', 
-                    paddingHorizontal: 32,
-                    backgroundColor: 'white'
-                }}>
-                    {/* Icon */}
-                    <View style={{
-                        width: 80,
-                        height: 80,
-                        backgroundColor: '#dbeafe',
-                        borderRadius: 40,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        marginBottom: 24
-                    }}>
-                        <User size={40} color={PrimaryBlue} />
-                    </View>
-                    
-                    {/* Title */}
-                    <Text style={{
-                        fontSize: 24,
-                        fontWeight: 'bold',
-                        color: '#111827',
-                        marginBottom: 12,
-                        textAlign: 'center'
-                    }}>
-                        Sign in to create a CRWD
-                    </Text>
-                    
-                    {/* Description */}
-                    <Text style={{
-                        fontSize: 16,
-                        color: '#6b7280',
-                        marginBottom: 32,
-                        textAlign: 'center',
-                        lineHeight: 24
-                    }}>
-                        Sign in to create a CRWD, manage your causes, and connect with your community.
-                    </Text>
-                    
-                    {/* CTA Button */}
-                    <TouchableOpacity
-                        onPress={() => navigation.navigate('Login' as never)}
-                        style={{
-                            backgroundColor: '#2563eb',
-                            paddingHorizontal: 32,
-                            paddingVertical: 12,
-                            borderRadius: 8,
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            gap: 8
-                        }}
-                    >
-                        <Text style={{ color: 'white', fontSize: 16, fontWeight: '500' }}>
-                            Sign In to Continue
-                        </Text>
-                    </TouchableOpacity>
-                    
-                    {/* Additional Info */}
-                    <TouchableOpacity
-                        onPress={() => navigation.navigate('ClaimProfile' as never)}
-                      >
-                    <Text style={{
-                        fontSize: 14,
-                        color: '#6b7280',
-                        marginTop: 24,
-                        textAlign: 'center'
-                    }}>
-                        Don't have an account? 
-                        <Text style={{ color: '#2563eb', fontWeight: '500' }}> Create one here</Text>
-                    </Text>
-                    </TouchableOpacity>
-                </View>
-            </SafeAreaView>
-        );
+    return (
+      <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }} edges={['top', 'left', 'right']}>
+        <MainHeaderNav title={'Create a CRWD'} show={true} />
+        <View style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          paddingHorizontal: 32,
+          backgroundColor: 'white'
+        }}>
+          {/* Icon */}
+          <View style={{
+            width: 80,
+            height: 80,
+            backgroundColor: '#dbeafe',
+            borderRadius: 40,
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginBottom: 24
+          }}>
+            <User size={40} color={PrimaryBlue} />
+          </View>
+
+          {/* Title */}
+          <Text style={{
+            fontSize: 24,
+            fontWeight: 'bold',
+            color: '#111827',
+            marginBottom: 12,
+            textAlign: 'center'
+          }}>
+            Sign in to create a CRWD
+          </Text>
+
+          {/* Description */}
+          <Text style={{
+            fontSize: 16,
+            color: '#6b7280',
+            marginBottom: 32,
+            textAlign: 'center',
+            lineHeight: 24
+          }}>
+            Sign in to create a CRWD, manage your causes, and connect with your community.
+          </Text>
+
+          {/* CTA Button */}
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Login' as never)}
+            style={{
+              backgroundColor: '#2563eb',
+              paddingHorizontal: 32,
+              paddingVertical: 12,
+              borderRadius: 8,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 8
+            }}
+          >
+            <Text style={{ color: 'white', fontSize: 16, fontWeight: '500' }}>
+              Sign In to Continue
+            </Text>
+          </TouchableOpacity>
+
+          {/* Additional Info */}
+          <TouchableOpacity
+            onPress={() => navigation.navigate('ClaimProfile' as never)}
+          >
+            <Text style={{
+              fontSize: 14,
+              color: '#6b7280',
+              marginTop: 24,
+              textAlign: 'center'
+            }}>
+              Don't have an account?
+              <Text style={{ color: '#2563eb', fontWeight: '500' }}> Create one here</Text>
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
   }
 
 
@@ -307,10 +354,10 @@ export default function CreateCRWD() {
     return (
       <SafeAreaView style={styles.container}>
         <MainHeaderNav menu={false} title={'Create a CRWD'} show={true} />
-        
+
         <View style={styles.successContainer}>
-          <Image 
-            source={require('../assets/logo/CRWD.png')} 
+          <Image
+            source={require('../assets/logo/CRWD.png')}
             style={styles.successLogo}
             resizeMode="contain"
           />
@@ -331,9 +378,9 @@ export default function CreateCRWD() {
               onPress={async () => {
                 try {
                   await Share.share({
-                  message: `Join me in my new CRWD "${name}"! We're working together to make a difference. Download the CRWD app to get involved!`,
-                  title: `Join my CRWD: ${name}`,
-                });
+                    message: `Join me in my new CRWD "${name}"! We're working together to make a difference. Download the CRWD app to get involved!`,
+                    title: `Join my CRWD: ${name}`,
+                  });
                 } catch (error) {
                   console.error('Error sharing:', error);
                 }
@@ -347,7 +394,7 @@ export default function CreateCRWD() {
               }}
             >
               <Text style={styles.inviteButtonText}>Invite Friends</Text>
-            </TouchableOpacity>
+            </TouchableOpacity >
             <TouchableOpacity
               style={styles.viewButton}
               onPress={() => {
@@ -365,16 +412,16 @@ export default function CreateCRWD() {
             >
               <Text style={styles.viewButtonText}>View Collective</Text>
             </TouchableOpacity>
-          </View>
-        </View>
-      </SafeAreaView>
+          </View >
+        </View >
+      </SafeAreaView >
     );
   }
 
   return (
     <SafeAreaView style={styles.container}>
       <MainHeaderNav menu={false} title={'Create a CRWD'} show={true} />
-      
+
       {/* Toast Notification */}
       {toast && (
         <View style={styles.toastContainer}>
@@ -461,9 +508,9 @@ export default function CreateCRWD() {
           )}
         </View>
 
-        <TextInput 
-          style={{ borderColor: SecondaryGrey, borderWidth: 1, borderRadius: 10, padding: 15, marginBottom: 20 }} 
-          placeholder='e.g. Atlanta Food Friends' 
+        <TextInput
+          style={{ borderColor: SecondaryGrey, borderWidth: 1, borderRadius: 10, padding: 15, marginBottom: 20 }}
+          placeholder='e.g. Atlanta Food Friends'
           placeholderTextColor={SecondaryGrey}
           value={name}
           onChangeText={setName}
@@ -536,11 +583,11 @@ export default function CreateCRWD() {
           )}
         </View>
 
-        <TextInput 
-          style={{ borderColor: SecondaryGrey, borderWidth: 1, borderRadius: 10, padding: 15, marginBottom: 20 }} 
-          multiline={true} 
-          numberOfLines={2} 
-          placeholder='e.g., "We support shelters & meals programs in ATL."' 
+        <TextInput
+          style={{ borderColor: SecondaryGrey, borderWidth: 1, borderRadius: 10, padding: 15, marginBottom: 20 }}
+          multiline={true}
+          numberOfLines={2}
+          placeholder='e.g., "We support shelters & meals programs in ATL."'
           placeholderTextColor={SecondaryGrey}
           value={desc}
           onChangeText={setDesc}
@@ -627,7 +674,7 @@ export default function CreateCRWD() {
           )}
 
           <Text style={styles.sectionTitle}>Suggested Causes</Text>
-          
+
           {/* Search Bar */}
           <View style={styles.searchContainer}>
             <Search size={16} color="#9ca3af" style={{ position: 'absolute', left: 12, top: 12, zIndex: 1 }} />
@@ -655,7 +702,7 @@ export default function CreateCRWD() {
                 })
                 .filter((id: any) => id !== null)
             );
-            
+
             const filteredCauses = (causesData?.results || []).filter((cause: any) => {
               const causeId = cause?.id ? String(cause.id) : null;
               return causeId && !favoriteCauseIds.has(causeId);
@@ -663,9 +710,9 @@ export default function CreateCRWD() {
 
             if (filteredCauses.length === 0) {
               return (
-            <View style={styles.emptyState}>
-              <Text style={styles.emptyText}>No causes found</Text>
-            </View>
+                <View style={styles.emptyState}>
+                  <Text style={styles.emptyText}>No causes found</Text>
+                </View>
               );
             }
 
@@ -722,9 +769,25 @@ export default function CreateCRWD() {
           </Text>
         )}
       </TouchableOpacity>
+
+      <DiscardBottomSheet
+        ref={discardSheetRef}
+        onDiscard={() => {
+          setIsConfirmedDiscard(true);
+          discardSheetRef.current?.dismiss();
+          setTimeout(() => {
+            if (pendingAction) {
+              navigation.dispatch(pendingAction);
+            } else {
+              navigation.goBack();
+            }
+          }, 300);
+        }}
+        onCancel={() => discardSheetRef.current?.dismiss()}
+      />
     </SafeAreaView>
   );
-} 
+}
 
 const styles = StyleSheet.create({
   container: {

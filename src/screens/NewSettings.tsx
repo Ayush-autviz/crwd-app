@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react'
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, TextInput, Alert, Modal, BackHandler } from 'react-native'
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, TextInput, Alert, Modal, BackHandler, Keyboard } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import BottomSheet, { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
@@ -40,11 +40,15 @@ export default function NewSettings() {
   const [isEditMode, setIsEditMode] = useState(false)
   const [pendingAction, setPendingAction] = useState<any>(null)
 
-  // Navigation guard
+  // Navigation guard (catches header back, iOS swipe-back, and hardware back)
   usePreventRemove(isEditMode, (e: any) => {
-    // Store the action that triggered the navigation so we can resume it if user discards changes
+    // Dismiss keyboard first so DiscardBottomSheet is visible
+    Keyboard.dismiss();
     setPendingAction(e.data.action);
-    discardBottomSheetRef.current?.present();
+    // Brief delay to let keyboard animate down before showing sheet
+    setTimeout(() => {
+      discardBottomSheetRef.current?.present();
+    }, 100);
   });
 
   // Handle hardware back button

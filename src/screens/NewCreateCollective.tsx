@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -13,6 +13,7 @@ import {
   Modal,
   Platform,
   BackHandler,
+  Keyboard,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -152,13 +153,29 @@ export default function NewCreateCollective() {
   const [hasStarted, setHasStarted] = useState(false);
   const [showAddToBoxModal, setShowAddToBoxModal] = useState(false);
 
-  const hasUnsavedChanges = useMemo(() => {
-    return name.trim() !== '' || description.trim() !== '' || selectedCauses.length > 0;
-  }, [name, description, selectedCauses]);
+  // Logo customization state (needed early for hasUnsavedChanges)
+  const [logoType, setLogoType] = useState<'letter' | 'upload'>('letter');
+  const [letterLogoColor, setLetterLogoColor] = useState('#1600ff');
+  const [uploadedLogo, setUploadedLogo] = useState<string | null>(null);
+  const [uploadedLogoPreview, setUploadedLogoPreview] = useState<string | null>(null);
 
-  const handleBack = () => {
+  const hasUnsavedChanges = useMemo(() => {
+    const hasFormData = name.trim() !== '' || description.trim() !== '' || selectedCauses.length > 0;
+    const hasLogoCustomization = uploadedLogo !== null || letterLogoColor !== '#1600ff';
+    return hasFormData || hasLogoCustomization;
+  }, [name, description, selectedCauses, uploadedLogo, letterLogoColor]);
+
+  const handleBack = useCallback(() => {
+    if (hasUnsavedChanges && step !== 3 && !isConfirmedDiscard) {
+      Keyboard.dismiss();
+      setPendingAction(null);
+      setTimeout(() => {
+        discardSheetRef.current?.present();
+      }, 250);
+      return;
+    }
     navigation.goBack();
-  };
+  }, [hasUnsavedChanges, step, isConfirmedDiscard, navigation]);
 
   const performBackNavigation = () => {
     const params = route.params as any;
@@ -177,11 +194,6 @@ export default function NewCreateCollective() {
     }
   };
 
-  // Logo customization state
-  const [logoType, setLogoType] = useState<'letter' | 'upload'>('letter');
-  const [letterLogoColor, setLetterLogoColor] = useState('#1600ff');
-  const [uploadedLogo, setUploadedLogo] = useState<string | null>(null);
-  const [uploadedLogoPreview, setUploadedLogoPreview] = useState<string | null>(null);
   const [showLogoCustomization, setShowLogoCustomization] = useState(false);
 
   // Dropdown state for sections
@@ -219,11 +231,13 @@ export default function NewCreateCollective() {
       // Prevent default behavior of leaving the screen
       e.preventDefault();
 
-      // Prompt the user before leaving the screen
-      discardSheetRef.current?.present();
-
-      // Store the action so we can resume it if user confirms
+      // Dismiss keyboard first so DiscardBottomSheet is visible (header back, iOS swipe, hardware back)
+      Keyboard.dismiss();
       setPendingAction(e.data.action);
+      // Delay to let keyboard animate down before showing sheet (iOS needs more time)
+      setTimeout(() => {
+        discardSheetRef.current?.present();
+      }, 250);
     });
 
     return unsubscribe;
@@ -238,6 +252,19 @@ export default function NewCreateCollective() {
       setIsConfirmedDiscard(false);
     }, [])
   );
+
+  // Handle hardware back button (Android)
+  useEffect(() => {
+    const backAction = () => {
+      if (hasUnsavedChanges && step !== 3 && !isConfirmedDiscard) {
+        handleBack();
+        return true;
+      }
+      return false;
+    };
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
+    return () => backHandler.remove();
+  }, [hasUnsavedChanges, step, isConfirmedDiscard, handleBack]);
 
   // Fetch favorite causes
   const { data: favoriteCausesData, isLoading: isLoadingFavoriteCauses } = useQuery({
@@ -1114,6 +1141,7 @@ export default function NewCreateCollective() {
         showsVerticalScrollIndicator={false}
         enableOnAndroid={true}
         extraScrollHeight={100}
+        keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
       >
         {/* Collective Name */}
         <View style={styles.formSection}>

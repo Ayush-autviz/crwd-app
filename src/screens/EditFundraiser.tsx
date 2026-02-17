@@ -11,16 +11,18 @@ import {
   Platform,
   ActivityIndicator,
   Modal,
+  BackHandler,
+  Keyboard,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute, usePreventRemove } from '@react-navigation/native';
+import DiscardBottomSheet from '../components/ui/DiscardBottomSheet';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import {
   ArrowLeft,
   Info,
-  Palette,
-  Image as ImageIcon,
   Camera,
   X,
   Search,
@@ -28,6 +30,7 @@ import {
   Plus,
   Calendar,
   Loader2,
+  Edit2,
 } from 'lucide-react-native';
 import * as ImagePicker from 'react-native-image-picker';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -104,6 +107,8 @@ export default function EditFundraiser() {
   const [initialCoverType, setInitialCoverType] = useState<'none' | 'color' | 'image'>('none');
   const [initialCoverColor, setInitialCoverColor] = useState('#1600ff');
   const [initialNonprofits, setInitialNonprofits] = useState<number[]>([]);
+
+
 
   const colorSwatches = [
     '#0000FF', // Blue
@@ -191,6 +196,54 @@ export default function EditFundraiser() {
 
   // Check if fundraiser has received donations
   const hasDonations = fundraiserData && parseFloat(fundraiserData.current_amount || '0') > 0;
+
+  const [isConfirmedDiscard, setIsConfirmedDiscard] = useState(false);
+  const [pendingAction, setPendingAction] = useState<any>(null);
+  const discardSheetRef = React.useRef<BottomSheetModal>(null);
+
+  const hasUnsavedChanges = React.useMemo(() => {
+    if (!fundraiserData) return false;
+    const titleChanged = campaignTitle.trim() !== initialTitle;
+    const storyChanged = campaignStory.trim() !== initialStory;
+    const goalAmountChanged = goalAmount !== initialGoalAmount && !hasDonations;
+    const endDateChanged = endDate ? endDate.getTime() !== initialEndDate?.getTime() : false;
+    const nonprofitsChanged = JSON.stringify(selectedNonprofits.sort()) !== JSON.stringify(initialNonprofits.sort());
+    const hasNewImage = coverType === 'image' && uploadedCoverImageFile !== null;
+    const colorChanged = coverType === 'color' && coverColor !== initialCoverColor;
+    const coverTypeChanged = coverType !== initialCoverType;
+
+    return titleChanged || storyChanged || goalAmountChanged || endDateChanged || nonprofitsChanged || hasNewImage || colorChanged || coverTypeChanged;
+  }, [campaignTitle, initialTitle, campaignStory, initialStory, goalAmount, initialGoalAmount, hasDonations, endDate, initialEndDate, selectedNonprofits, initialNonprofits, coverType, initialCoverType, uploadedCoverImageFile, coverColor, initialCoverColor, fundraiserData]);
+
+  // Navigation guard
+  usePreventRemove(
+    hasUnsavedChanges && !isConfirmedDiscard,
+    (e) => {
+      Keyboard.dismiss();
+      setPendingAction(e.data.action);
+      discardSheetRef.current?.present();
+    }
+  );
+
+  // Handle hardware back button
+  useEffect(() => {
+    const backAction = () => {
+      if (hasUnsavedChanges && !isConfirmedDiscard) {
+        Keyboard.dismiss();
+        navigation.goBack();
+        return true;
+      }
+      return false;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      backAction
+    );
+
+    return () => backHandler.remove();
+  }, [hasUnsavedChanges, isConfirmedDiscard, navigation]);
+
 
   // Calculate days left
   const daysLeft = endDate
@@ -620,7 +673,7 @@ export default function EditFundraiser() {
                 style={[styles.coverTypeButton, coverType === 'color' && styles.coverTypeButtonActive]}
                 activeOpacity={0.7}
               >
-                <Palette size={20} color={coverType === 'color' ? '#FFFFFF' : '#374151'} />
+                <Edit2 size={20} color={coverType === 'color' ? '#FFFFFF' : '#374151'} />
                 <Text style={[styles.coverTypeText, coverType === 'color' && styles.coverTypeTextActive]}>
                   Color
                 </Text>
@@ -630,7 +683,7 @@ export default function EditFundraiser() {
                 style={[styles.coverTypeButton, coverType === 'image' && styles.coverTypeButtonActive]}
                 activeOpacity={0.7}
               >
-                <ImageIcon size={20} color={coverType === 'image' ? '#FFFFFF' : '#374151'} />
+                <Camera size={20} color={coverType === 'image' ? '#FFFFFF' : '#374151'} />
                 <Text style={[styles.coverTypeText, coverType === 'image' && styles.coverTypeTextActive]}>
                   Image
                 </Text>
@@ -912,6 +965,22 @@ export default function EditFundraiser() {
           </View>
         </Modal>
       </View>
+
+      <DiscardBottomSheet
+        ref={discardSheetRef}
+        onDiscard={() => {
+          setIsConfirmedDiscard(true);
+          discardSheetRef.current?.dismiss();
+          setTimeout(() => {
+            if (pendingAction) {
+              navigation.dispatch(pendingAction);
+            } else {
+              navigation.goBack();
+            }
+          }, 300);
+        }}
+        onCancel={() => discardSheetRef.current?.dismiss()}
+      />
     </SafeAreaView>
   );
 }

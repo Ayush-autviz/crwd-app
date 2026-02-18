@@ -307,7 +307,7 @@ export default function Profile() {
         try {
             if (!user?.id) return;
 
-            const webUrl = `${WEB_BASE_URL}/user-profile/${user.id}`;
+            const webUrl = `${WEB_BASE_URL}/u/${user.username}`;
             const shareMessage = `Check out my profile!\n${webUrl}`;
 
             const result = await Share.share({

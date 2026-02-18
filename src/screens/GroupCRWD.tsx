@@ -239,7 +239,7 @@ export default function GroupCRWD() {
 
   const handleShare = async () => {
     try {
-      const webUrl = `${WEB_BASE_URL}/groupcrwd/${collectiveId}`;
+      const webUrl = `${WEB_BASE_URL}/g/${collectiveData?.sort_name}`;
       const shareMessage = `Check out this CRWD Collective: ${collectiveData?.name || 'Collective'}\n${webUrl}`;
       
       const result = await Share.share({

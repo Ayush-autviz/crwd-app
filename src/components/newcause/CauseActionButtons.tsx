@@ -88,7 +88,7 @@ export default function CauseActionButtons({
         ) : (
           <>
             <Plus size={20} color="#fff" />
-            <Text style={styles.addToBoxButtonText}>Add to Donation Box</Text>
+            <Text style={styles.addToBoxButtonText}>Donate</Text>
           </>
         )}
       </TouchableOpacity>

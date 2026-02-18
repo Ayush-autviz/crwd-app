@@ -7,11 +7,13 @@ import { favoriteCause, unfavoriteCause } from '../../services/api/social';
 import { useAuthStore } from '../../store/store';
 import { Clipboard } from 'react-native';
 import { useToast } from '../../contexts/ToastContext';
+import { WEB_BASE_URL } from '../../Constants/url';
 
 interface CauseHeaderProps {
   title: string;
   causeId?: string;
   isFavorite?: boolean;
+  sortName: string;
   onShare?: () => void;
   onOneTimeDonation?: () => void;
 }
@@ -20,6 +22,7 @@ export default function CauseHeader({
   title,
   causeId,
   isFavorite: initialIsFavorite = false,
+  sortName,
   onShare,
   onOneTimeDonation,
 }: CauseHeaderProps) {
@@ -100,7 +103,7 @@ export default function CauseHeader({
   const handleCopyLink = async () => {
     setShowDropdown(false);
     if (causeId) {
-      const url = `https://crwd.app/cause/${causeId}`;
+      const url = `${WEB_BASE_URL}/c/${sortName}`;
       try {
         Clipboard.setString(url);
         showToast('Link copied to clipboard!', 2000);

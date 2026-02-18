@@ -1067,7 +1067,7 @@ export default function NewCreateCollective() {
               <TouchableOpacity
                 onPress={async () => {
                   try {
-                    const url = `${WEB_BASE_URL}/groupcrwd/${createdCollective.id}`;
+                    const url = `${WEB_BASE_URL}/g/${createdCollective.sort_name}`;
                     await Share.share({
                       message: `Join my new CRWD: ${name} - ${url}`,
                       url: url,

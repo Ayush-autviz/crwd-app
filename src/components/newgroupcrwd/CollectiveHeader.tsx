@@ -7,6 +7,7 @@ import { favoriteCollective, unfavoriteCollective } from '../../services/api/soc
 import { useAuthStore } from '../../store/store';
 import { Clipboard } from 'react-native';
 import { useToast } from '../../contexts/ToastContext';
+import { WEB_BASE_URL } from '../../Constants/url';
 
 interface CollectiveHeaderProps {
   title: string;
@@ -20,6 +21,7 @@ interface CollectiveHeaderProps {
   onDonate?: () => void;
   onLeave?: () => void;
   onBack?: () => void;
+  sortName?: string;
 }
 
 export default function CollectiveHeader({
@@ -34,6 +36,7 @@ export default function CollectiveHeader({
   onDonate,
   onLeave,
   onBack,
+  sortName,
 }: CollectiveHeaderProps) {
   const navigation = useNavigation();
   const queryClient = useQueryClient();
@@ -94,8 +97,7 @@ export default function CollectiveHeader({
 
   const handleCopyLink = async () => {
     try {
-      // TODO: Get actual URL
-      const url = `https://crwd.app/groupcrwd/${collectiveId}`;
+      const url = `${WEB_BASE_URL}/g/${sortName}`;
       Clipboard.setString(url);
       setShowDropdown(false);
       showToast('Link copied to clipboard!', 2000);

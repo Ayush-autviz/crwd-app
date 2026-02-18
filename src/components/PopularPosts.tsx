@@ -342,7 +342,7 @@ export default function PopularPosts({
                 shareTitle = 'Post';
             } else if (user?.id) {
                 // Share profile
-                webUrl = `${WEB_BASE_URL}/user-profile/${user.id}`;
+                webUrl = `${WEB_BASE_URL}/u/${user.username}`;
                 shareMessage = `Check out my profile!\n${webUrl}`;
                 shareTitle = 'My Profile';
             }

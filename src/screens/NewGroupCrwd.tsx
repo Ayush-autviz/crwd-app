@@ -9,6 +9,7 @@ import {
   Modal,
   Alert,
   Dimensions,
+  Clipboard,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute, useNavigation, CommonActions } from '@react-navigation/native';
@@ -35,6 +36,7 @@ import SupportedNonprofits from '../components/newgroupcrwd/SupportedNonprofits'
 import CommunityActivity from '../components/newgroupcrwd/CommunityActivity';
 import DiscoverMoreCollectives from '../components/newgroupcrwd/DiscoverMoreCollectives';
 import { Share } from 'react-native';
+import { WEB_BASE_URL } from '../Constants/url';
 import CommentsBottomSheet from '../components/post/CommentsBottomSheet';
 import JoinCollectiveBottomSheet from '../components/newgroupcrwd/JoinCollectiveBottomSheet';
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/Avatar';
@@ -479,13 +481,27 @@ export default function NewGroupCrwdPage() {
 
   const handleShare = async () => {
     try {
-      const url = `https://crwd.app/groupcrwd/${crwdId}`;
-      await Share.share({
-        message: `Check out ${crwdData.name || 'this collective'}: ${url}`,
-        title: crwdData.name || 'Collective',
+      const webUrl = `${WEB_BASE_URL}/g/${crwdData?.sort_name}`;
+      const shareMessage = `Check out this collective: ${crwdData?.name || 'Collective'}\n${webUrl}`;
+
+
+      const result = await Share.share({
+        message: shareMessage,
+        title: crwdData?.name || 'Collective',
+        url: webUrl, // iOS only
       });
+
+      if (result.action === Share.sharedAction) {
+        try {
+          await Clipboard.setString(webUrl);
+          showToast('Link copied to clipboard!');
+        } catch (clipboardError) {
+          console.log('Error copying to clipboard:', clipboardError);
+        }
+      }
     } catch (error) {
       console.error('Error sharing:', error);
+      Alert.alert('Error', 'Failed to share collective');
     }
   };
 
@@ -809,6 +825,7 @@ export default function NewGroupCrwdPage() {
         isFavorite={crwdData.is_favorite}
         isAdmin={isAdmin}
         onShare={handleShare}
+        sortName={crwdData.sort_name}
         onManageCollective={handleManageCollective}
         onBack={handleBack}
         onCreateFundraiser={handleCreateFundraiser}
@@ -870,21 +887,12 @@ export default function NewGroupCrwdPage() {
               <>
                 {/* Joined Button - Non-clickable for admin */}
                 <TouchableOpacity
-                  style={[styles.button, styles.joinedButton, styles.disabledButton]}
+                  style={[styles.button, styles.joinedButton, styles.disabledButton, { flex: 1 }]}
                   disabled
                   activeOpacity={1}
                 >
                   <Check size={14} color="#16a34a" />
                   <Text style={styles.joinedButtonText}>Joined</Text>
-                </TouchableOpacity>
-                {/* Share Button */}
-                <TouchableOpacity
-                  onPress={handleShare}
-                  style={[styles.button, styles.shareButton]}
-                  activeOpacity={0.8}
-                >
-                  <Share2 size={14} color="#FFFFFF" />
-                  <Text style={styles.shareButtonText}>Share</Text>
                 </TouchableOpacity>
               </>
             ) : crwdData.is_joined ? (
@@ -911,15 +919,6 @@ export default function NewGroupCrwdPage() {
                       <Text style={styles.joinedButtonText}>Joined</Text>
                     </>
                   )}
-                </TouchableOpacity>
-                {/* Share Button */}
-                <TouchableOpacity
-                  onPress={handleShare}
-                  style={[styles.button, styles.shareButton]}
-                  activeOpacity={0.8}
-                >
-                  <Share2 size={14} color="#FFFFFF" />
-                  <Text style={styles.shareButtonText}>Share</Text>
                 </TouchableOpacity>
               </>
             ) : (

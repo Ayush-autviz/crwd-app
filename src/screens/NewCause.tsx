@@ -6,6 +6,8 @@ import {
   StyleSheet,
   ActivityIndicator,
   TouchableOpacity,
+  Clipboard,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute, useNavigation } from '@react-navigation/native';
@@ -26,6 +28,7 @@ import SimilarNonprofits from '../components/newcause/SimilarNonprofits';
 import { Share } from 'react-native';
 import AddToDonationBoxBottomSheet from '../components/newcause/AddToDonationBoxBottomSheet';
 import { categories } from '../Constants/categories';
+import { WEB_BASE_URL } from '../Constants/url';
 
 export default function NewCausePage() {
   const route = useRoute();
@@ -342,13 +345,26 @@ export default function NewCausePage() {
 
   const handleShare = async () => {
     try {
-      const url = `https://crwd.app/cause/${causeId}`;
-      await Share.share({
-        message: `Check out ${causeData.name || 'this nonprofit'}: ${url}`,
-        title: causeData.name || 'Nonprofit',
+      const webUrl = `${WEB_BASE_URL}/c/${causeData?.sort_name}`;
+      const shareMessage = `Check out this nonprofit: ${causeData?.name || 'Nonprofit'}\n${webUrl}`;
+
+      const result = await Share.share({
+        message: shareMessage,
+        title: causeData?.name || 'Nonprofit',
+        url: webUrl, // iOS only
       });
+
+      if (result.action === Share.sharedAction) {
+        try {
+          await Clipboard.setString(webUrl);
+          showToast('Link copied to clipboard!');
+        } catch (clipboardError) {
+          console.log('Error copying to clipboard:', clipboardError);
+        }
+      }
     } catch (error) {
       console.error('Error sharing:', error);
+      Alert.alert('Error', 'Failed to share nonprofit');
     }
   };
 
@@ -360,6 +376,7 @@ export default function NewCausePage() {
         isFavorite={causeData.is_favorite}
         onShare={handleShare}
         onOneTimeDonation={handleDonate}
+        sortName={causeData.sort_name}
       />
 
       <ScrollView

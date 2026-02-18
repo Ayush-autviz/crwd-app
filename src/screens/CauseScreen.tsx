@@ -37,7 +37,7 @@ export default function CauseScreen() {
 
   const handleShare = async () => {
     try {
-      const webUrl = `${WEB_BASE_URL}/cause/${causeId}`;
+      const webUrl = `${WEB_BASE_URL}/c/${causeData?.sort_name}`;
       const shareMessage = `Check out this Nonprofit: ${causeData?.name || 'Cause'}\n${webUrl}`;
       
       const result = await Share.share({

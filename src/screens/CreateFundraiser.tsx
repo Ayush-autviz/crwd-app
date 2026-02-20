@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -18,7 +18,7 @@ import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import DiscardBottomSheet from '../components/ui/DiscardBottomSheet';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation, useRoute, usePreventRemove } from '@react-navigation/native';
+import { useNavigation, useRoute, usePreventRemove, CommonActions } from '@react-navigation/native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import {
   ArrowLeft,
@@ -47,6 +47,8 @@ import { getCollectiveById, getCausesBySearch, createFundraiser } from '../servi
 import { useToast } from '../contexts/ToastContext';
 import CrwdAnimation from '../components/ui/CrwdAnimation';
 import { truncateAtFirstPeriod } from '../utils/truncateFirstPeriod';
+import SharePost from '../components/SharePost';
+import { WEB_BASE_URL } from '../Constants/url';
 
 // Avatar colors for consistent fallback styling
 const avatarColors = [
@@ -114,9 +116,11 @@ export default function CreateFundraiser() {
   const [showAnimationComplete, setShowAnimationComplete] = useState(false);
   const [createdFundraiser, setCreatedFundraiser] = useState<any>(null);
   const discardSheetRef = React.useRef<BottomSheetModal>(null);
-  const [isConfirmedDiscard, setIsConfirmedDiscard] = useState(false);
+  // Use a ref so the flag is readable synchronously when the beforeRemove event fires
+  const isConfirmedDiscardRef = React.useRef(false);
   const [pendingAction, setPendingAction] = useState<any>(null);
   const confettiRef = React.useRef<ConfettiCannon>(null);
+  const shareSheetRef = React.useRef<BottomSheetModal>(null);
 
   // Fetch collective data
   const { data: collectiveData, isLoading: isLoadingCollective } = useQuery({
@@ -161,7 +165,7 @@ export default function CreateFundraiser() {
       queryClient.invalidateQueries({ queryKey: ['posts'] });
     },
     onError: (error: any) => {
-      console.error('Create fundraiser error:', error);
+      console.log('Create fundraiser error:', error.response.data.error || error.response.data.message || error.message);
       let errorMessage = 'Failed to create fundraiser';
       if (error?.response?.data?.non_field_errors && Array.isArray(error.response.data.non_field_errors) && error.response.data.non_field_errors.length > 0) {
         errorMessage = error.response.data.non_field_errors[0];
@@ -170,6 +174,7 @@ export default function CreateFundraiser() {
       } else if (error?.message) {
         errorMessage = error.message;
       }
+      console.log('Create fundraiser error:', errorMessage);
       showToast(errorMessage, 3000);
     },
   });
@@ -187,7 +192,7 @@ export default function CreateFundraiser() {
     '#6366F1', // Indigo
   ];
 
-  const hasUnsavedChanges = React.useMemo(() => {
+  const hasUnsavedChanges = useMemo(() => {
     return (
       campaignTitle.trim() !== '' ||
       fundraisingGoal.trim() !== '' ||
@@ -200,7 +205,7 @@ export default function CreateFundraiser() {
 
   // Navigation guard - using usePreventRemove for better compatibility (e.g. iOS back button)
   usePreventRemove(
-    hasUnsavedChanges && !showSuccessModal && !isConfirmedDiscard,
+    hasUnsavedChanges && !showSuccessModal && !isConfirmedDiscardRef.current,
     (e) => {
       Keyboard.dismiss();
       setPendingAction(e.data.action);
@@ -211,7 +216,11 @@ export default function CreateFundraiser() {
   // Handle hardware back button
   useEffect(() => {
     const backAction = () => {
-      if (hasUnsavedChanges && !showSuccessModal && !isConfirmedDiscard) {
+      if (step > 1) {
+        setStep((prev) => (prev - 1) as 1 | 2 | 3);
+        return true;
+      }
+      if (hasUnsavedChanges && !showSuccessModal && !isConfirmedDiscardRef.current) {
         Keyboard.dismiss();
         navigation.goBack();
         return true;
@@ -225,7 +234,7 @@ export default function CreateFundraiser() {
     );
 
     return () => backHandler.remove();
-  }, [hasUnsavedChanges, showSuccessModal, isConfirmedDiscard, navigation]);
+  }, [hasUnsavedChanges, showSuccessModal, navigation, step]);
 
   const handleColorSelect = (color: string) => {
     setCoverColor(color);
@@ -310,6 +319,11 @@ export default function CreateFundraiser() {
         showToast('Please fill in all required campaign details.', 3000);
         return;
       }
+      // Validate fundraising goal minimum
+      if (parseFloat(fundraisingGoal) < 100) {
+        showToast('Fundraising goal must be at least $100.', 3000);
+        return;
+      }
       // Validate date is today or later
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -375,17 +389,49 @@ export default function CreateFundraiser() {
         is_active: true,
         cause_ids: selectedNonprofits,
       };
+      console.log('Create fundraiser request data:', requestData);
 
       createFundraiserMutation.mutate(requestData);
     }
   };
 
-  const handleBack = () => {
-    navigation.goBack();
-  };
+  const performBackNavigation = useCallback(() => {
+    const params = route.params as any;
+    const fromScreen = params?.from || params?.fromScreen;
+    const specialFlows = ['NewNonprofitInterests', 'NewCompleteDonation', 'Login'];
+
+    if (fromScreen && specialFlows.includes(fromScreen)) {
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: 'DrawerNav', state: { routes: [{ name: 'MainTabs', state: { routes: [{ name: 'Home' }] } }] } }],
+        })
+      );
+    } else {
+      navigation.goBack();
+    }
+  }, [navigation, route.params]);
+
+  const handleBack = useCallback(() => {
+    if (step > 1) {
+      setStep((prev) => (prev - 1) as 1 | 2 | 3);
+      return;
+    }
+
+    if (hasUnsavedChanges && !showSuccessModal && !isConfirmedDiscardRef.current) {
+      Keyboard.dismiss();
+      setPendingAction(null);
+      setTimeout(() => {
+        discardSheetRef.current?.present();
+      }, 250);
+      return;
+    }
+
+    performBackNavigation();
+  }, [step, hasUnsavedChanges, showSuccessModal, performBackNavigation]);
 
   const handleCancel = () => {
-    navigation.goBack();
+    handleBack();
   };
 
   // Step 2 handlers
@@ -470,6 +516,7 @@ export default function CreateFundraiser() {
                 style={styles.viewCampaignButton}
                 onPress={() => {
                   if (createdFundraiser?.id) {
+                    isConfirmedDiscardRef.current = true;
                     (navigation as any).navigate('FundraiserDetail', { id: createdFundraiser.id, fromCreate: true });
                   }
                 }}
@@ -481,7 +528,7 @@ export default function CreateFundraiser() {
               <TouchableOpacity
                 style={styles.backToCollectiveButton}
                 onPress={() => {
-                  setShowSuccessModal(false);
+                  isConfirmedDiscardRef.current = true;
                   (navigation as any).navigate('GroupCRWD', { id: collectiveId, fromCreate: true });
                 }}
               >
@@ -490,18 +537,10 @@ export default function CreateFundraiser() {
 
               <TouchableOpacity
                 style={styles.shareButton}
-                onPress={async () => {
-                  try {
-                    const { Share } = require('react-native');
-                    const url = `https://crwd.app/fundraiser/${createdFundraiser?.id}`;
-                    await Share.share({
-                      message: url,
-                      url: url,
-                    });
-                  } catch (error) {
-                    console.error('Error sharing:', error);
-                  }
+                onPress={() => {
+                  shareSheetRef.current?.present();
                 }}
+
               >
                 <Share2 size={20} color={PrimaryBlue} />
                 <Text style={styles.shareText}>Share Campaign</Text>
@@ -519,6 +558,12 @@ export default function CreateFundraiser() {
             fadeOut={true}
           />
         )}
+        <SharePost
+          ref={shareSheetRef}
+          url={`${WEB_BASE_URL}/fundraiser/${createdFundraiser?.id}`}
+          title={''}
+          message={''}
+        />
       </SafeAreaView>
     );
   }
@@ -1060,7 +1105,22 @@ export default function CreateFundraiser() {
           )}
         </View>
       </View>
-    </SafeAreaView >
+      <DiscardBottomSheet
+        ref={discardSheetRef}
+        onDiscard={() => {
+          isConfirmedDiscardRef.current = true;
+          discardSheetRef.current?.dismiss();
+          setTimeout(() => {
+            if (pendingAction) {
+              navigation.dispatch(pendingAction);
+            } else {
+              performBackNavigation();
+            }
+          }, 300);
+        }}
+        onCancel={() => discardSheetRef.current?.dismiss()}
+      />
+    </SafeAreaView>
   );
 }
 

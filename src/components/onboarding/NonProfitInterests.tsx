@@ -154,109 +154,109 @@ export default function NonProfitInterests() {
         end={{ x: 1, y: 1 }}
         style={{ flex: 1 }}
       > */}
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          <View style={styles.card}>
-            {/* Progress Indicator - Step 3 */}
-            <View style={styles.stepIndicator}>
-              <View style={styles.stepBar}>
-                <View style={[styles.stepDot, styles.stepDotInactive]} />
-                <View style={[styles.stepDot, styles.stepDotInactive]} />
-                <View style={[styles.stepDot, styles.stepDotActive]} />
-                <View style={[styles.stepDot, styles.stepDotInactive]} />
-              </View>
-            </View>
-
-            {/* Heart Icon */}
-            <View style={styles.iconContainer}>
-              <View style={styles.iconCircle}>
-                <Heart size={32} color="#9333ea" />
-              </View>
-            </View>
-
-            {/* Title */}
-            <Text style={styles.title}>
-              What causes do you care about?
-            </Text>
-
-            {/* Subtitle */}
-            <Text style={styles.subtitle}>
-              Select one or more interests to personalize your experience. We'll show you nonprofits and collectives that match.
-            </Text>
-
-            {/* Category Tags - Organic Layout */}
-            <View style={styles.categoriesContainer}>
-              {mainCategories.map((category) => {
-                const isSelected = selectedCategories.includes(category.id);
-                return (
-                  <TouchableOpacity
-                    key={category.id}
-                    onPress={() => handleCategoryToggle(category.id)}
-                    style={[
-                      styles.categoryButton,
-                      {
-                        backgroundColor: category.background,
-                        opacity: isSelected ? 1 : 0.4,
-                      }
-                    ]}
-                    activeOpacity={0.8}
-                  >
-                    <Text style={[
-                      styles.categoryButtonText,
-                      { color: category.text }
-                    ]}>
-                      {category.name}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-
-            {/* Selected Count */}
-            {selectedCategories.length > 0 && (
-              <View style={styles.selectedCountContainer}>
-                <Text style={styles.selectedCountText}>
-                  {selectedCategories.length} {selectedCategories.length === 1 ? "interest" : "interests"} selected
-                </Text>
-              </View>
-            )}
-
-            {/* Navigation Buttons */}
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity
-                onPress={handleContinue}
-                disabled={selectedCategories.length === 0 || postInterestsMutation.isPending}
-                style={[
-                  styles.continueButton,
-                  (selectedCategories.length === 0 || postInterestsMutation.isPending) && styles.continueButtonDisabled
-                ]}
-                activeOpacity={0.8}
-              >
-                {postInterestsMutation.isPending ? (
-                  <View style={styles.loadingContainer}>
-                    <Loader2 size={16} color="white" />
-                    <Text style={styles.continueButtonText}>Saving...</Text>
-                  </View>
-                ) : (
-                  <View style={styles.continueButtonContent}>
-                    <Text style={styles.continueButtonText}>Continue</Text>
-                    {/* <ArrowRight size={16} color="white" /> */}
-                  </View>
-                )}
-              </TouchableOpacity>
-
-              {/* Skip Link */}
-              <TouchableOpacity
-                onPress={handleSkip}
-                style={styles.skipButton}
-              >
-                <Text style={styles.skipText}>Skip for now</Text>
-              </TouchableOpacity>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.card}>
+          {/* Progress Indicator - Step 3 */}
+          <View style={styles.stepIndicator}>
+            <View style={styles.stepBar}>
+              <View style={[styles.stepDot, styles.stepDotInactive]} />
+              <View style={[styles.stepDot, styles.stepDotInactive]} />
+              <View style={[styles.stepDot, styles.stepDotActive]} />
+              <View style={[styles.stepDot, styles.stepDotInactive]} />
             </View>
           </View>
-        </ScrollView>
+
+          {/* Heart Icon */}
+          <View style={styles.iconContainer}>
+            <View style={styles.iconCircle}>
+              <Heart size={32} color="#9333ea" />
+            </View>
+          </View>
+
+          {/* Title */}
+          <Text style={styles.title}>
+            What causes do you care about?
+          </Text>
+
+          {/* Subtitle */}
+          <Text style={styles.subtitle}>
+            Select one or more interests to personalize your experience. We'll show you nonprofits and collectives that match.
+          </Text>
+
+          {/* Category Tags - Organic Layout */}
+          <View style={styles.categoriesContainer}>
+            {mainCategories.map((category) => {
+              const isSelected = selectedCategories.includes(category.id);
+              return (
+                <TouchableOpacity
+                  key={category.id}
+                  onPress={() => handleCategoryToggle(category.id)}
+                  style={[
+                    styles.categoryButton,
+                    {
+                      backgroundColor: category.background,
+                      opacity: isSelected ? 1 : 0.4,
+                    }
+                  ]}
+                  activeOpacity={0.8}
+                >
+                  <Text style={[
+                    styles.categoryButtonText,
+                    { color: category.text }
+                  ]}>
+                    {category.name}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          {/* Selected Count */}
+          {selectedCategories.length > 0 && (
+            <View style={styles.selectedCountContainer}>
+              <Text style={styles.selectedCountText}>
+                {selectedCategories.length} {selectedCategories.length === 1 ? "interest" : "interests"} selected
+              </Text>
+            </View>
+          )}
+
+          {/* Navigation Buttons */}
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity
+              onPress={handleContinue}
+              disabled={selectedCategories.length === 0 || postInterestsMutation.isPending}
+              style={[
+                styles.continueButton,
+                (selectedCategories.length === 0 || postInterestsMutation.isPending) && styles.continueButtonDisabled
+              ]}
+              activeOpacity={0.8}
+            >
+              {postInterestsMutation.isPending ? (
+                <View style={styles.loadingContainer}>
+                  <Loader2 size={16} color="white" />
+                  <Text style={styles.continueButtonText}>Saving...</Text>
+                </View>
+              ) : (
+                <View style={styles.continueButtonContent}>
+                  <Text style={styles.continueButtonText}>Continue</Text>
+                  {/* <ArrowRight size={16} color="white" /> */}
+                </View>
+              )}
+            </TouchableOpacity>
+
+            {/* Skip Link */}
+            <TouchableOpacity
+              onPress={handleSkip}
+              style={styles.skipButton}
+            >
+              <Text style={styles.skipText}>Skip for now</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ScrollView>
       {/* </LinearGradient> */}
     </View>
   );
@@ -280,11 +280,11 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 672,
     alignSelf: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 5,
+    // shadowColor: '#000',
+    // shadowOffset: { width: 0, height: 2 },
+    // shadowOpacity: 0.1,
+    // shadowRadius: 8,
+    // elevation: 5,
   },
   stepIndicator: {
     alignItems: 'center',

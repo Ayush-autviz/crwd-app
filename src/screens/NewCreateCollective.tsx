@@ -48,6 +48,7 @@ import * as ImagePicker from 'react-native-image-picker';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import CrwdAnimation from '../components/ui/CrwdAnimation';
 import { WEB_BASE_URL } from '../Constants/url';
+import SharePost from '../components/SharePost';
 import LinearGradient from 'react-native-linear-gradient';
 import { truncateAtFirstPeriod } from '../utils/truncateFirstPeriod';
 import DiscardBottomSheet from '../components/ui/DiscardBottomSheet';
@@ -139,6 +140,7 @@ export default function NewCreateCollective() {
   const discardSheetRef = React.useRef<BottomSheetModal>(null);
   const [isConfirmedDiscard, setIsConfirmedDiscard] = useState(false);
   const confettiRef = React.useRef<ConfettiCannon>(null);
+  const shareSheetRef = React.useRef<BottomSheetModal>(null);
   const route = useRoute();
 
   // Form state
@@ -1065,17 +1067,8 @@ export default function NewCreateCollective() {
               </TouchableOpacity>
 
               <TouchableOpacity
-                onPress={async () => {
-                  try {
-                    const url = `${WEB_BASE_URL}/g/${createdCollective.sort_name}`;
-                    await Share.share({
-                      message: `Join my new CRWD: ${name} - ${url}`,
-                      url: url,
-                      title: `Join my new CRWD: ${name}`,
-                    });
-                  } catch (error) {
-                    console.error('Error sharing:', error);
-                  }
+                onPress={() => {
+                  shareSheetRef.current?.present();
                 }}
                 style={styles.successLinkButton}
               >
@@ -1117,6 +1110,12 @@ export default function NewCreateCollective() {
           onJoin={handleAddToBoxConfirm}
           isJoining={false}
           donationBox={donationBoxData}
+        />
+        <SharePost
+          ref={shareSheetRef}
+          url={`${WEB_BASE_URL}/g/${createdCollective?.sort_name}`}
+          title={`Join my new CRWD: ${name}`}
+          message={`Join my new CRWD: ${name}`}
         />
       </SafeAreaView>
     );

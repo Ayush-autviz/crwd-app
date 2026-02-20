@@ -22,6 +22,7 @@ import { PrimaryBlue } from '../Constants/Colors';
 import { Share } from 'react-native';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import SharePost from '../components/SharePost';
+import { WEB_BASE_URL } from '../Constants/url';
 
 // Avatar colors for consistent fallback styling
 const avatarColors = [
@@ -162,7 +163,10 @@ export default function FundraiserDetail() {
   const handleBack = () => {
     const fromCreate = params?.fromCreate;
     if (fromCreate && fundraiserData?.collective) {
-      (navigation as any).navigate('GroupCRWD', { id: fundraiserData.collective, fromCreate: true });
+      const collectiveId = typeof fundraiserData.collective === 'object'
+        ? fundraiserData.collective.id
+        : fundraiserData.collective;
+      (navigation as any).navigate('GroupCRWD', { id: collectiveId, fromCreate: true });
     } else {
       navigation.goBack();
     }
@@ -284,8 +288,11 @@ export default function FundraiserDetail() {
             {(collectiveData || fundraiserData.collective_name) && (
               <TouchableOpacity
                 onPress={() => {
+                  const collectiveId = typeof fundraiserData.collective === 'object'
+                    ? fundraiserData.collective.id
+                    : fundraiserData.collective;
                   (navigation as any).navigate('GroupCRWD', {
-                    id: fundraiserData.collective,
+                    id: collectiveId,
                   });
                 }}
                 style={styles.collectiveTag}
@@ -332,8 +339,11 @@ export default function FundraiserDetail() {
               <Text style={styles.sectionTitle}>Organized By</Text>
               <TouchableOpacity
                 onPress={() => {
+                  const collectiveId = typeof fundraiserData.collective === 'object'
+                    ? fundraiserData.collective.id
+                    : fundraiserData.collective;
                   (navigation as any).navigate('GroupCRWD', {
-                    id: fundraiserData.collective,
+                    id: collectiveId,
                   });
                 }}
                 style={styles.organizedByCard}
@@ -488,7 +498,7 @@ export default function FundraiserDetail() {
       </View>
       <SharePost
         ref={shareSheetRef}
-        url={`https://crwd.autviz.com/fundraiser/${fundraiserId}`}
+        url={`${WEB_BASE_URL}/fundraiser/${fundraiserId}`}
         title={''}
         message={''}
       />

@@ -418,133 +418,133 @@ export default function CompleteOnboard() {
           end={{ x: 1, y: 1 }}
           style={{ flex: 1 }}
         > */}
-          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 60, paddingBottom: 30, paddingHorizontal: 16 }}>
-            <View style={styles.card}>
-              {/* Progress Indicator - Step 4 */}
-              <View style={styles.stepIndicator}>
-                <View style={styles.stepBar}>
-                  <View style={[styles.stepDot, styles.stepDotInactive]} />
-                  <View style={[styles.stepDot, styles.stepDotInactive]} />
-                  <View style={[styles.stepDot, styles.stepDotInactive]} />
-                  <View style={[styles.stepDot, styles.stepDotActive]} />
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 60, paddingBottom: 30, paddingHorizontal: 16 }}>
+          <View style={[styles.card, { flex: 0 }]}>
+            {/* Progress Indicator - Step 4 */}
+            <View style={styles.stepIndicator}>
+              <View style={styles.stepBar}>
+                <View style={[styles.stepDot, styles.stepDotInactive]} />
+                <View style={[styles.stepDot, styles.stepDotInactive]} />
+                <View style={[styles.stepDot, styles.stepDotInactive]} />
+                <View style={[styles.stepDot, styles.stepDotActive]} />
+              </View>
+            </View>
+
+            {/* Heart Icon with Gradient */}
+            <View style={styles.iconContainer}>
+              <LinearGradient
+                colors={['#A855F7', '#EC4899', '#3B82F6']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.gradientIconCircle}
+              >
+                <Heart size={32} color="white" />
+              </LinearGradient>
+            </View>
+
+            {/* Title */}
+            <Text style={styles.title}>
+              Start Supporting Causes
+            </Text>
+
+            {/* Description */}
+            <Text style={styles.description}>
+              Choose how you'd like to select nonprofits
+            </Text>
+
+            {/* Selected Categories Tags */}
+            {selectedCategoryObjects.length > 0 && (
+              <View style={styles.categoriesContainer}>
+                {selectedCategoryObjects.map((category: any) => (
+                  <View
+                    key={category.id}
+                    style={[
+                      styles.categoryTag,
+                      { backgroundColor: category.background }
+                    ]}
+                  >
+                    <Text style={styles.categoryTagText}>{category.name}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {/* Option Cards */}
+            {/* <View style={{ flex: 1 }}> */}
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              nestedScrollEnabled
+              style={styles.optionsScroll}
+              contentContainerStyle={styles.optionsContainer}
+            >
+              {/* Join a Collective Card */}
+              <TouchableOpacity
+                onPress={handleJoinCollective}
+                style={styles.optionCard}
+                activeOpacity={0.8}
+              >
+                <View style={styles.optionIconContainer}>
+                  <View style={styles.joinIconCircle}>
+                    <Users size={20} color="white" />
+                  </View>
                 </View>
-              </View>
+                <Text style={styles.optionTitle}>Join a Collective</Text>
+                <Text style={styles.optionDescription}>
+                  Join crwd giving communities
+                </Text>
+              </TouchableOpacity>
 
-              {/* Heart Icon with Gradient */}
-              <View style={styles.iconContainer}>
-                <LinearGradient
-                  colors={['#A855F7', '#EC4899', '#3B82F6']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.gradientIconCircle}
-                >
-                  <Heart size={32} color="white" />
-                </LinearGradient>
-              </View>
-
-              {/* Title */}
-              <Text style={styles.title}>
-                Start Supporting Causes
-              </Text>
-
-              {/* Description */}
-              <Text style={styles.description}>
-                Choose how you'd like to select nonprofits
-              </Text>
-
-              {/* Selected Categories Tags */}
-              {selectedCategoryObjects.length > 0 && (
-                <View style={styles.categoriesContainer}>
-                  {selectedCategoryObjects.map((category: any) => (
-                    <View
-                      key={category.id}
-                      style={[
-                        styles.categoryTag,
-                        { backgroundColor: category.background }
-                      ]}
-                    >
-                      <Text style={styles.categoryTagText}>{category.name}</Text>
-                    </View>
-                  ))}
+              {/* Choose My Own Card */}
+              <TouchableOpacity
+                onPress={handleBrowseSearch}
+                style={styles.optionCard}
+                activeOpacity={0.8}
+              >
+                <View style={styles.optionIconContainer}>
+                  <View style={styles.browseIconCircle}>
+                    <Search size={20} color="white" />
+                  </View>
                 </View>
-              )}
+                <Text style={styles.optionTitle}>I'll Choose My Own</Text>
+                <Text style={styles.optionDescription}>
+                  Select nonprofits to add to your box
+                </Text>
+              </TouchableOpacity>
 
-              {/* Option Cards */}
-              <View style={{ flex: 1 }}>
-                <ScrollView
-                  showsVerticalScrollIndicator={false}
-                  nestedScrollEnabled
-                  style={styles.optionsScroll}
-                  contentContainerStyle={styles.optionsContainer}
+              {/* Surprise Me Card */}
+              <TouchableOpacity
+                onPress={handleSurpriseMe}
+                style={styles.optionCard}
+                activeOpacity={0.8}
+              >
+                <View style={styles.optionIconContainer}>
+                  <View style={styles.surpriseIconCircle}>
+                    {/* <Text style={{ fontSize: 24, color: 'white' }}>✨</Text> */}
+                    <Heart size={20} color="white" />
+                  </View>
+                </View>
+                <Text style={styles.optionTitle}>Surprise Me</Text>
+                <Text style={styles.optionDescription}>
+                  We'll pick nonprofits based on your interests
+                </Text>
+              </TouchableOpacity>
+
+
+            </ScrollView>
+            {/* </View> */}
+
+            <View style={styles.footerContainer}>
+              <View style={[styles.footerMainButtons, { marginBottom: 0 }]}>
+                <TouchableOpacity
+                  onPress={handleEditCategories}
+                  style={styles.outlineButton}
+                  activeOpacity={0.8}
                 >
-                  {/* Join a Collective Card */}
-                  <TouchableOpacity
-                    onPress={handleJoinCollective}
-                    style={styles.optionCard}
-                    activeOpacity={0.8}
-                  >
-                    <View style={styles.optionIconContainer}>
-                      <View style={styles.joinIconCircle}>
-                        <Users size={20} color="white" />
-                      </View>
-                    </View>
-                    <Text style={styles.optionTitle}>Join a Collective</Text>
-                    <Text style={styles.optionDescription}>
-                      Join crwd giving communities
-                    </Text>
-                  </TouchableOpacity>
-
-                  {/* Choose My Own Card */}
-                  <TouchableOpacity
-                    onPress={handleBrowseSearch}
-                    style={styles.optionCard}
-                    activeOpacity={0.8}
-                  >
-                    <View style={styles.optionIconContainer}>
-                      <View style={styles.browseIconCircle}>
-                        <Search size={20} color="white" />
-                      </View>
-                    </View>
-                    <Text style={styles.optionTitle}>I'll Choose My Own</Text>
-                    <Text style={styles.optionDescription}>
-                      Select nonprofits to add to your box
-                    </Text>
-                  </TouchableOpacity>
-
-                  {/* Surprise Me Card */}
-                  <TouchableOpacity
-                    onPress={handleSurpriseMe}
-                    style={styles.optionCard}
-                    activeOpacity={0.8}
-                  >
-                    <View style={styles.optionIconContainer}>
-                      <View style={styles.surpriseIconCircle}>
-                        {/* <Text style={{ fontSize: 24, color: 'white' }}>✨</Text> */}
-                        <Heart size={20} color="white" />
-                      </View>
-                    </View>
-                    <Text style={styles.optionTitle}>Surprise Me</Text>
-                    <Text style={styles.optionDescription}>
-                      We'll pick nonprofits based on your interests
-                    </Text>
-                  </TouchableOpacity>
-
-
-                </ScrollView>
-              </View>
-
-              <View style={styles.footerContainer}>
-                <View style={[styles.footerMainButtons, { marginBottom: 0 }]}>
-                  <TouchableOpacity
-                    onPress={handleEditCategories}
-                    style={styles.outlineButton}
-                    activeOpacity={0.8}
-                  >
-                    <Text style={styles.outlineButtonText}>Back</Text>
-                  </TouchableOpacity>
-                  {/* Skip for now on initial view is usually the skip link, but showing Continue here to keep UI consistent if user wants it */}
-                  {/* Actually Vite initial has Back and Skip inside the flex row if no continue, but let's stick to the pattern */}
-                  {/* <TouchableOpacity
+                  <Text style={styles.outlineButtonText}>Back</Text>
+                </TouchableOpacity>
+                {/* Skip for now on initial view is usually the skip link, but showing Continue here to keep UI consistent if user wants it */}
+                {/* Actually Vite initial has Back and Skip inside the flex row if no continue, but let's stick to the pattern */}
+                {/* <TouchableOpacity
                     onPress={handleStartWithNonprofits}
                     style={styles.primaryButton}
                     activeOpacity={0.8}
@@ -552,14 +552,14 @@ export default function CompleteOnboard() {
                     <Text style={styles.primaryButtonText}>Continue</Text>
                     <ArrowRight size={18} color="white" />
                   </TouchableOpacity> */}
-                  <TouchableOpacity onPress={handleSkip} style={{ alignItems: 'center', justifyContent: 'center', flex: 1 }} activeOpacity={0.8}>
-                    <Text style={styles.skipLinkText}>Skip for now</Text>
-                  </TouchableOpacity>
-                </View>
-
+                <TouchableOpacity onPress={handleSkip} style={{ alignItems: 'center', justifyContent: 'center', flex: 1 }} activeOpacity={0.8}>
+                  <Text style={styles.skipLinkText}>Skip for now</Text>
+                </TouchableOpacity>
               </View>
+
             </View>
           </View>
+        </View>
         {/* </LinearGradient> */}
       </View>
     );
@@ -581,7 +581,7 @@ export default function CompleteOnboard() {
           end={{ x: 1, y: 1 }}
           style={{ flex: 1 }}
         > */}
-          {/* <KeyboardAwareScrollView
+        {/* <KeyboardAwareScrollView
             contentContainerStyle={styles.scrollContentBrowse}
             showsVerticalScrollIndicator={false}
             enableOnAndroid={true}
@@ -589,235 +589,235 @@ export default function CompleteOnboard() {
             keyboardShouldPersistTaps="handled"
             scrollEnabled={false}
           > */}
-          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 60, paddingBottom: 30, paddingHorizontal: 16 }}>
-            <View style={styles.card}>
-              <View style={styles.stepIndicator}>
-                <View style={styles.stepBar}>
-                  <View style={[styles.stepDot, styles.stepDotInactive]} />
-                  <View style={[styles.stepDot, styles.stepDotInactive]} />
-                  <View style={[styles.stepDot, styles.stepDotInactive]} />
-                  <View style={[styles.stepDot, styles.stepDotActive]} />
-                </View>
-              </View>
-
-              <View style={styles.iconContainer}>
-                <LinearGradient
-                  colors={['#A855F7', '#EC4899', '#3B82F6']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.gradientIconCircle}
-                >
-                  <Heart size={32} color="white" />
-                </LinearGradient>
-              </View>
-
-              <Text style={styles.title}>Start Supporting Causes</Text>
-              <Text style={styles.description}>Join a community supporting causes together</Text>
-
-              <View style={{ flex: 1 }}>
-                <ScrollView
-                  showsVerticalScrollIndicator={false}
-                  style={styles.collectivesSectionScroll}
-                  contentContainerStyle={styles.collectivesSectionContent}
-                >
-                  <View style={styles.collectiveInfoCard}>
-                    <View style={styles.collectiveInfoIcon}>
-                      <Users size={18} color="#fff" />
-                    </View>
-                    <View style={styles.collectiveInfoText}>
-                      <Text style={styles.collectiveInfoTitle}>What's a Collective?</Text>
-                      <Text style={styles.collectiveInfoDescription}>
-                        A giving community around shared causes where you can discover nonprofits, join discussions, and connect with others. Collectives are free to start or join.
-                      </Text>
-                    </View>
-                  </View>
-
-                  <View style={styles.collectivesHeader}>
-                    <Text style={styles.sectionTitle}>Join a Collective</Text>
-                    <TouchableOpacity onPress={handleChangeMethod} style={styles.changeMethodButton} activeOpacity={0.8}>
-                      <Text style={styles.changeMethodText}>Change Method</Text>
-                    </TouchableOpacity>
-                  </View>
-
-                  {isLoadingCollectives ? (
-                    <View style={styles.loadingContainer}>
-                      <ActivityIndicator size="large" color="#9ca3af" />
-                    </View>
-                  ) : (
-                    <View style={styles.collectivesList}>
-                      {displayCollectives.length > 0 ? (
-                        displayCollectives.slice(0, 10).map((collective: any, index: number) => {
-                          const founderName = collective.created_by
-                            ? `${collective.created_by.first_name || ''} ${collective.created_by.last_name || ''}`.trim() || collective.created_by.username || 'Unknown'
-                            : 'Unknown';
-
-                          const causes = getCollectiveCauses(collective);
-                          const nonprofitCount =
-                            causes.length ||
-                            collective.causes_count ||
-                            collective.supported_causes_count ||
-                            collective.cause_count ||
-                            collective.nonprofit_count ||
-                            0;
-
-                          const circleColor = collective.color || getConsistentColor(collective.id || index, avatarColors);
-                          const initialLetter = (collective.name || 'C').charAt(0).toUpperCase();
-                          const isJoining = joiningCollectiveId === collective.id;
-                          const isLeaving = leavingCollectiveId === collective.id;
-                          const isExpanded = !!collective.id && expandedCollectiveIds.has(collective.id);
-                          const isJoined = !!collective.id && joinedCollectiveIds.has(collective.id);
-                          const isPending = (joinCollectiveMutation.isPending && isJoining) || (leaveCollectiveMutation.isPending && isLeaving);
-
-                          return (
-                            <View key={collective.id || index} style={styles.collectiveCard}>
-                              <View style={styles.collectiveRow}>
-                                <Avatar size={44} style={styles.collectiveAvatar}>
-                                  <AvatarImage src={collective.image || collective.logo} style={{ width: '100%', height: '100%', borderRadius: 10 }} />
-                                  <AvatarFallback
-                                    style={{ backgroundColor: circleColor, borderRadius: 10 }}
-                                    textStyle={styles.collectiveAvatarText}
-                                  >
-                                    {initialLetter}
-                                  </AvatarFallback>
-                                </Avatar>
-
-                                <View style={styles.collectiveMain}>
-                                  <View style={styles.collectiveTopRow}>
-                                    <Text style={styles.collectiveName}>{collective.name || 'Unknown Collective'}</Text>
-                                    <TouchableOpacity
-                                      style={[
-                                        styles.joinButton,
-                                        isJoined && styles.joinedButton,
-                                        isPending && styles.joinButtonDisabled,
-                                      ]}
-                                      onPress={() => {
-                                        if (collective.id) {
-                                          if (isJoined) {
-                                            setLeavingCollectiveId(collective.id);
-                                            leaveCollectiveMutation.mutate(String(collective.id));
-                                          } else {
-                                            setJoiningCollectiveId(collective.id);
-                                            joinCollectiveMutation.mutate(String(collective.id));
-                                          }
-                                        }
-                                      }}
-                                      disabled={isPending}
-                                      activeOpacity={0.8}
-                                    >
-                                      {isPending ? (
-                                        <Text style={styles.joinButtonText}>{isJoining ? 'Joining...' : 'Leaving...'}</Text>
-                                      ) : isJoined ? (
-                                        <>
-                                          <Check size={14} color="#fff" />
-                                          <Text style={styles.joinedButtonText}>Joined</Text>
-                                        </>
-                                      ) : (
-                                        <Text style={styles.joinButtonText}>Join</Text>
-                                      )}
-                                    </TouchableOpacity>
-                                  </View>
-
-                                  <Text style={styles.collectiveMeta}>Created by {founderName}</Text>
-                                  {!!collective.description && (
-                                    <Text style={styles.collectiveDescription} numberOfLines={2}>
-                                      {collective.description}
-                                    </Text>
-                                  )}
-
-                                  <TouchableOpacity
-                                    style={styles.supportingRow}
-                                    activeOpacity={causes.length > 0 ? 0.8 : 1}
-                                    onPress={() => {
-                                      if (causes.length > 0 && collective.id) {
-                                        toggleCollectiveExpanded(collective.id);
-                                      }
-                                    }}
-                                  >
-                                    <Text style={styles.supportingText}>Supporting {nonprofitCount} nonprofits</Text>
-                                    {causes.length > 0 && (
-                                      <ChevronDown
-                                        size={16}
-                                        color="#1600ff"
-                                        style={[styles.supportingChevron, isExpanded && styles.supportingChevronExpanded]}
-                                      />
-                                    )}
-                                  </TouchableOpacity>
-
-                                </View>
-                              </View>
-                              {isExpanded && causes.length > 0 && (
-                                <View style={styles.causeList}>
-                                  {causes.map((cause: any, causeIndex: number) => {
-                                    const causeName = cause?.name || cause?.title || 'Nonprofit';
-                                    const causeInitial = causeName.charAt(0).toUpperCase();
-                                    return (
-                                      <View key={cause?.id || `${collective.id}-cause-${causeIndex}`} style={styles.causeItem}>
-                                        <Avatar style={styles.collectiveCauseAvatar}>
-                                          <AvatarImage src={cause?.image || cause?.logo} />
-                                          <AvatarFallback textStyle={styles.collectiveCauseAvatarText}>
-                                            {causeInitial}
-                                          </AvatarFallback>
-                                        </Avatar>
-                                        <Text style={styles.collectiveCauseName} numberOfLines={1}>
-                                          {causeName}
-                                        </Text>
-                                      </View>
-                                    );
-                                  })}
-                                </View>
-                              )}
-                            </View>
-                          );
-                        })
-                      ) : (
-                        <View style={styles.emptyContainer}>
-                          <View style={styles.emptyIconCircle}>
-                            <Users size={32} color="#1600ff" />
-                          </View>
-                          <Text style={styles.emptyTitle}>No collectives found</Text>
-                          <Text style={styles.emptyDescription}>
-                            There are no collectives available for your selected interests right now. Try searching or picking individual nonprofits.
-                          </Text>
-                        </View>
-                      )}
-                    </View>
-
-                  )}
-                </ScrollView>
-              </View>
-
-              <View style={styles.footerContainer}>
-                <View style={styles.footerMainButtons}>
-                  <TouchableOpacity
-                    onPress={handleChangeMethod}
-                    style={styles.outlineButton}
-                    activeOpacity={0.8}
-                  >
-                    <Text style={styles.outlineButtonText}>Back</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={handleContinueWithCollective}
-                    disabled={joinedCollectiveIds.size === 0 || joinCollectiveMutation.isPending}
-                    style={[
-                      styles.primaryButton,
-                      (joinedCollectiveIds.size === 0 || joinCollectiveMutation.isPending) && styles.primaryButtonDisabled
-                    ]}
-                    activeOpacity={0.8}
-                  >
-                    <Text style={styles.primaryButtonText}>
-                      {joinCollectiveMutation.isPending ? 'Saving...' : 'Continue'}
-                    </Text>
-                    {!joinCollectiveMutation.isPending && <ArrowRight size={18} color="white" />}
-                  </TouchableOpacity>
-                </View>
-
-                <TouchableOpacity onPress={handleSkip} style={styles.skipLink} activeOpacity={0.8}>
-                  <Text style={styles.skipLinkText}>Skip for now</Text>
-                </TouchableOpacity>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 60, paddingBottom: 30, paddingHorizontal: 16 }}>
+          <View style={styles.card}>
+            <View style={styles.stepIndicator}>
+              <View style={styles.stepBar}>
+                <View style={[styles.stepDot, styles.stepDotInactive]} />
+                <View style={[styles.stepDot, styles.stepDotInactive]} />
+                <View style={[styles.stepDot, styles.stepDotInactive]} />
+                <View style={[styles.stepDot, styles.stepDotActive]} />
               </View>
             </View>
+
+            <View style={styles.iconContainer}>
+              <LinearGradient
+                colors={['#A855F7', '#EC4899', '#3B82F6']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.gradientIconCircle}
+              >
+                <Heart size={32} color="white" />
+              </LinearGradient>
+            </View>
+
+            <Text style={styles.title}>Start Supporting Causes</Text>
+            <Text style={styles.description}>Join a community supporting causes together</Text>
+
+            <View style={{ flex: 1 }}>
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                style={styles.collectivesSectionScroll}
+                contentContainerStyle={styles.collectivesSectionContent}
+              >
+                <View style={styles.collectiveInfoCard}>
+                  <View style={styles.collectiveInfoIcon}>
+                    <Users size={18} color="#fff" />
+                  </View>
+                  <View style={styles.collectiveInfoText}>
+                    <Text style={styles.collectiveInfoTitle}>What's a Collective?</Text>
+                    <Text style={styles.collectiveInfoDescription}>
+                      A giving community around shared causes where you can discover nonprofits, join discussions, and connect with others. Collectives are free to start or join.
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={styles.collectivesHeader}>
+                  <Text style={styles.sectionTitle}>Join a Collective</Text>
+                  <TouchableOpacity onPress={handleChangeMethod} style={styles.changeMethodButton} activeOpacity={0.8}>
+                    <Text style={styles.changeMethodText}>Change Method</Text>
+                  </TouchableOpacity>
+                </View>
+
+                {isLoadingCollectives ? (
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color="#9ca3af" />
+                  </View>
+                ) : (
+                  <View style={styles.collectivesList}>
+                    {displayCollectives.length > 0 ? (
+                      displayCollectives.slice(0, 10).map((collective: any, index: number) => {
+                        const founderName = collective.created_by
+                          ? `${collective.created_by.first_name || ''} ${collective.created_by.last_name || ''}`.trim() || collective.created_by.username || 'Unknown'
+                          : 'Unknown';
+
+                        const causes = getCollectiveCauses(collective);
+                        const nonprofitCount =
+                          causes.length ||
+                          collective.causes_count ||
+                          collective.supported_causes_count ||
+                          collective.cause_count ||
+                          collective.nonprofit_count ||
+                          0;
+
+                        const circleColor = collective.color || getConsistentColor(collective.id || index, avatarColors);
+                        const initialLetter = (collective.name || 'C').charAt(0).toUpperCase();
+                        const isJoining = joiningCollectiveId === collective.id;
+                        const isLeaving = leavingCollectiveId === collective.id;
+                        const isExpanded = !!collective.id && expandedCollectiveIds.has(collective.id);
+                        const isJoined = !!collective.id && joinedCollectiveIds.has(collective.id);
+                        const isPending = (joinCollectiveMutation.isPending && isJoining) || (leaveCollectiveMutation.isPending && isLeaving);
+
+                        return (
+                          <View key={collective.id || index} style={styles.collectiveCard}>
+                            <View style={styles.collectiveRow}>
+                              <Avatar size={44} style={styles.collectiveAvatar}>
+                                <AvatarImage src={collective.image || collective.logo} style={{ width: '100%', height: '100%', borderRadius: 10 }} />
+                                <AvatarFallback
+                                  style={{ backgroundColor: circleColor, borderRadius: 10 }}
+                                  textStyle={styles.collectiveAvatarText}
+                                >
+                                  {initialLetter}
+                                </AvatarFallback>
+                              </Avatar>
+
+                              <View style={styles.collectiveMain}>
+                                <View style={styles.collectiveTopRow}>
+                                  <Text style={styles.collectiveName}>{collective.name || 'Unknown Collective'}</Text>
+                                  <TouchableOpacity
+                                    style={[
+                                      styles.joinButton,
+                                      isJoined && styles.joinedButton,
+                                      isPending && styles.joinButtonDisabled,
+                                    ]}
+                                    onPress={() => {
+                                      if (collective.id) {
+                                        if (isJoined) {
+                                          setLeavingCollectiveId(collective.id);
+                                          leaveCollectiveMutation.mutate(String(collective.id));
+                                        } else {
+                                          setJoiningCollectiveId(collective.id);
+                                          joinCollectiveMutation.mutate(String(collective.id));
+                                        }
+                                      }
+                                    }}
+                                    disabled={isPending}
+                                    activeOpacity={0.8}
+                                  >
+                                    {isPending ? (
+                                      <Text style={styles.joinButtonText}>{isJoining ? 'Joining...' : 'Leaving...'}</Text>
+                                    ) : isJoined ? (
+                                      <>
+                                        <Check size={14} color="#fff" />
+                                        <Text style={styles.joinedButtonText}>Joined</Text>
+                                      </>
+                                    ) : (
+                                      <Text style={styles.joinButtonText}>Join</Text>
+                                    )}
+                                  </TouchableOpacity>
+                                </View>
+
+                                <Text style={styles.collectiveMeta}>Created by {founderName}</Text>
+                                {!!collective.description && (
+                                  <Text style={styles.collectiveDescription} numberOfLines={2}>
+                                    {collective.description}
+                                  </Text>
+                                )}
+
+                                <TouchableOpacity
+                                  style={styles.supportingRow}
+                                  activeOpacity={causes.length > 0 ? 0.8 : 1}
+                                  onPress={() => {
+                                    if (causes.length > 0 && collective.id) {
+                                      toggleCollectiveExpanded(collective.id);
+                                    }
+                                  }}
+                                >
+                                  <Text style={styles.supportingText}>Supporting {nonprofitCount} nonprofits</Text>
+                                  {causes.length > 0 && (
+                                    <ChevronDown
+                                      size={16}
+                                      color="#1600ff"
+                                      style={[styles.supportingChevron, isExpanded && styles.supportingChevronExpanded]}
+                                    />
+                                  )}
+                                </TouchableOpacity>
+
+                              </View>
+                            </View>
+                            {isExpanded && causes.length > 0 && (
+                              <View style={styles.causeList}>
+                                {causes.map((cause: any, causeIndex: number) => {
+                                  const causeName = cause?.name || cause?.title || 'Nonprofit';
+                                  const causeInitial = causeName.charAt(0).toUpperCase();
+                                  return (
+                                    <View key={cause?.id || `${collective.id}-cause-${causeIndex}`} style={styles.causeItem}>
+                                      <Avatar style={styles.collectiveCauseAvatar}>
+                                        <AvatarImage src={cause?.image || cause?.logo} />
+                                        <AvatarFallback textStyle={styles.collectiveCauseAvatarText}>
+                                          {causeInitial}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                      <Text style={styles.collectiveCauseName} numberOfLines={1}>
+                                        {causeName}
+                                      </Text>
+                                    </View>
+                                  );
+                                })}
+                              </View>
+                            )}
+                          </View>
+                        );
+                      })
+                    ) : (
+                      <View style={styles.emptyContainer}>
+                        <View style={styles.emptyIconCircle}>
+                          <Users size={32} color="#1600ff" />
+                        </View>
+                        <Text style={styles.emptyTitle}>No collectives found</Text>
+                        <Text style={styles.emptyDescription}>
+                          There are no collectives available for your selected interests right now. Try searching or picking individual nonprofits.
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+
+                )}
+              </ScrollView>
+            </View>
+
+            <View style={styles.footerContainer}>
+              <View style={styles.footerMainButtons}>
+                <TouchableOpacity
+                  onPress={handleChangeMethod}
+                  style={styles.outlineButton}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.outlineButtonText}>Back</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={handleContinueWithCollective}
+                  disabled={joinedCollectiveIds.size === 0 || joinCollectiveMutation.isPending}
+                  style={[
+                    styles.primaryButton,
+                    (joinedCollectiveIds.size === 0 || joinCollectiveMutation.isPending) && styles.primaryButtonDisabled
+                  ]}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.primaryButtonText}>
+                    {joinCollectiveMutation.isPending ? 'Saving...' : 'Continue'}
+                  </Text>
+                  {!joinCollectiveMutation.isPending && <ArrowRight size={18} color="white" />}
+                </TouchableOpacity>
+              </View>
+
+              <TouchableOpacity onPress={handleSkip} style={styles.skipLink} activeOpacity={0.8}>
+                <Text style={styles.skipLinkText}>Skip for now</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-          {/* </KeyboardAwareScrollView> */}
+        </View>
+        {/* </KeyboardAwareScrollView> */}
         {/* </LinearGradient > */}
       </View >
     );
@@ -833,180 +833,180 @@ export default function CompleteOnboard() {
           end={{ x: 1, y: 1 }}
           style={{ flex: 1 }}
         > */}
-          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 60, paddingBottom: 30, paddingHorizontal: 16 }}>
-            <View style={styles.card}>
-              {/* Progress Indicator - Step 4 */}
-              <View style={styles.stepIndicator}>
-                <View style={styles.stepBar}>
-                  <View style={[styles.stepDot, styles.stepDotInactive]} />
-                  <View style={[styles.stepDot, styles.stepDotInactive]} />
-                  <View style={[styles.stepDot, styles.stepDotInactive]} />
-                  <View style={[styles.stepDot, styles.stepDotActive]} />
-                </View>
-              </View>
-
-              {/* Header */}
-              <View style={styles.iconContainer}>
-                <LinearGradient
-                  colors={['#A855F7', '#EC4899', '#3B82F6']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.gradientIconCircle}
-                >
-                  <Heart size={32} color="white" />
-                </LinearGradient>
-              </View>
-
-              <Text style={styles.title}>
-                Start Supporting Causes
-              </Text>
-              <Text style={styles.description}>
-                Choose how you'd like to select nonprofits
-              </Text>
-
-              <View style={{ flex: 1 }}>
-                <ScrollView
-                  showsVerticalScrollIndicator={false}
-                  style={styles.collectivesSectionScroll}
-                  contentContainerStyle={styles.collectivesSectionContent}
-                >
-                  {/* Your Random Selection Section */}
-                  <View style={[styles.section, { marginBottom: 0 }]}>
-                    {/* Fixed Header Layout: Button inside sectionHeader */}
-                    {/* <View style={styles.sectionHeader}> */}
-                    <Text style={styles.sectionTitle}>Your Random Selection</Text>
-                    <TouchableOpacity
-                      onPress={handleChangeMethod}
-                      style={[styles.changeMethodButton, { marginTop: 6, width: 140 }]}
-                    >
-                      <Text style={[styles.changeMethodText, { textAlign: 'center', }]}>Change Method</Text>
-                    </TouchableOpacity>
-                    {/* </View> */}
-
-                    {/* Removed the awkward standalone button that was here */}
-
-                    {isLoadingSurprise ? (
-                      <View style={styles.loadingContainer}>
-                        <ActivityIndicator size="large" color="#9ca3af" />
-                      </View>
-                    ) : (
-                      <>
-                        {surpriseCauses.length > 0 ? (
-                          <>
-                            <View style={[styles.causesGrid, { marginTop: 8 }]}>
-                              {surpriseCauses.slice(0, 6).map((cause: any) => {
-                                const isSelected = selectedCauses.includes(cause.id);
-                                const avatarBgColor = getConsistentColor(cause.id, avatarColors);
-                                const initials = getInitials(cause.name);
-                                const categoryInfo = getCategoryInfo(cause.category);
-
-                                return (
-                                  <TouchableOpacity
-                                    key={cause.id}
-                                    onPress={() => handleCauseToggle(cause.id)}
-                                    style={[
-                                      styles.causeCard,
-                                      isSelected && styles.causeCardSelected
-                                    ]}
-                                    activeOpacity={0.8}
-                                  >
-                                    <View style={styles.causeCardContent}>
-                                      <Avatar size={48} style={{ ...styles.causeAvatar, borderRadius: 8, overflow: 'hidden' }}>
-                                        <AvatarImage src={cause.image || cause.logo} style={{ width: '100%', height: '100%', borderRadius: 8 }} />
-                                        <AvatarFallback
-                                          style={{ backgroundColor: avatarBgColor, borderRadius: 8 }}
-                                          textStyle={{ color: '#FFFFFF', fontSize: 14, fontFamily: 'Outfit-Bold' }}
-                                        >
-                                          {initials}
-                                        </AvatarFallback>
-                                      </Avatar>
-                                      <View style={styles.causeInfo}>
-                                        <Text style={styles.causeName} numberOfLines={2}>
-                                          {cause.name}
-                                        </Text>
-                                        <View style={styles.causeCategoriesContainer}>
-                                          {categoryInfo.map((cat: any, index: number) => (
-                                            <View
-                                              key={index}
-                                              style={[
-                                                styles.causeCategoryBadge,
-                                                { backgroundColor: (cat as any).background }
-                                              ]}
-                                            >
-                                              <Text style={styles.causeCategoryText}>
-                                                {cat.name}
-                                              </Text>
-                                            </View>
-                                          ))}
-                                        </View>
-                                      </View>
-                                      {isSelected && (
-                                        <Check size={20} color="#3b82f6" />
-                                      )}
-                                    </View>
-                                  </TouchableOpacity>
-                                );
-                              })}
-                            </View>
-
-                            <View style={styles.pickDifferentContainer}>
-                              <TouchableOpacity
-                                onPress={handlePickDifferent}
-                                style={styles.pickDifferentButton}
-                              >
-                                <Text style={{ fontSize: 16, marginRight: 6 }}>✨</Text>
-                                <Text style={styles.pickDifferentText}>Pick Different Nonprofits</Text>
-                              </TouchableOpacity>
-                            </View>
-                          </>
-                        ) : (
-                          <View style={styles.emptyContainer}>
-                            <View style={styles.emptyIconCircle}>
-                              <Heart size={32} color="#1600ff" />
-                            </View>
-                            <Text style={styles.emptyTitle}>No suggestions found</Text>
-                            <Text style={styles.emptyDescription}>
-                              We couldn't find any nonprofits for your selected interests. Try changing your interests or browsing manually.
-                            </Text>
-                          </View>
-                        )}
-                      </>
-                    )}
-                  </View>
-                </ScrollView>
-              </View>
-
-              <View style={styles.footerContainer}>
-                <View style={styles.footerMainButtons}>
-                  <TouchableOpacity
-                    onPress={handleChangeMethod}
-                    style={styles.outlineButton}
-                    activeOpacity={0.8}
-                  >
-                    <Text style={styles.outlineButtonText}>Back</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={handleStartWithNonprofits}
-                    disabled={selectedCauses.length === 0 || createBoxMutation.isPending}
-                    style={[
-                      styles.primaryButton,
-                      (selectedCauses.length === 0 || createBoxMutation.isPending) && styles.primaryButtonDisabled
-                    ]}
-                    activeOpacity={0.8}
-                  >
-                    <Text style={styles.primaryButtonText}>
-                      {createBoxMutation.isPending ? 'Saving...' : 'Continue'}
-                    </Text>
-                    {!createBoxMutation.isPending && <ArrowRight size={18} color="white" />}
-                  </TouchableOpacity>
-                </View>
-
-                <TouchableOpacity onPress={handleSkip} style={styles.skipLink} activeOpacity={0.8}>
-                  <Text style={styles.skipLinkText}>Skip for now</Text>
-                </TouchableOpacity>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 60, paddingBottom: 30, paddingHorizontal: 16 }}>
+          <View style={styles.card}>
+            {/* Progress Indicator - Step 4 */}
+            <View style={styles.stepIndicator}>
+              <View style={styles.stepBar}>
+                <View style={[styles.stepDot, styles.stepDotInactive]} />
+                <View style={[styles.stepDot, styles.stepDotInactive]} />
+                <View style={[styles.stepDot, styles.stepDotInactive]} />
+                <View style={[styles.stepDot, styles.stepDotActive]} />
               </View>
             </View>
+
+            {/* Header */}
+            <View style={styles.iconContainer}>
+              <LinearGradient
+                colors={['#A855F7', '#EC4899', '#3B82F6']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.gradientIconCircle}
+              >
+                <Heart size={32} color="white" />
+              </LinearGradient>
+            </View>
+
+            <Text style={styles.title}>
+              Start Supporting Causes
+            </Text>
+            <Text style={styles.description}>
+              Choose how you'd like to select nonprofits
+            </Text>
+
+            <View style={{ flex: 1 }}>
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                style={styles.collectivesSectionScroll}
+                contentContainerStyle={styles.collectivesSectionContent}
+              >
+                {/* Your Random Selection Section */}
+                <View style={[styles.section, { marginBottom: 0 }]}>
+                  {/* Fixed Header Layout: Button inside sectionHeader */}
+                  {/* <View style={styles.sectionHeader}> */}
+                  <Text style={styles.sectionTitle}>Your Random Selection</Text>
+                  <TouchableOpacity
+                    onPress={handleChangeMethod}
+                    style={[styles.changeMethodButton, { marginTop: 6, width: 140 }]}
+                  >
+                    <Text style={[styles.changeMethodText, { textAlign: 'center', }]}>Change Method</Text>
+                  </TouchableOpacity>
+                  {/* </View> */}
+
+                  {/* Removed the awkward standalone button that was here */}
+
+                  {isLoadingSurprise ? (
+                    <View style={styles.loadingContainer}>
+                      <ActivityIndicator size="large" color="#9ca3af" />
+                    </View>
+                  ) : (
+                    <>
+                      {surpriseCauses.length > 0 ? (
+                        <>
+                          <View style={[styles.causesGrid, { marginTop: 8 }]}>
+                            {surpriseCauses.slice(0, 6).map((cause: any) => {
+                              const isSelected = selectedCauses.includes(cause.id);
+                              const avatarBgColor = getConsistentColor(cause.id, avatarColors);
+                              const initials = getInitials(cause.name);
+                              const categoryInfo = getCategoryInfo(cause.category);
+
+                              return (
+                                <TouchableOpacity
+                                  key={cause.id}
+                                  onPress={() => handleCauseToggle(cause.id)}
+                                  style={[
+                                    styles.causeCard,
+                                    isSelected && styles.causeCardSelected
+                                  ]}
+                                  activeOpacity={0.8}
+                                >
+                                  <View style={styles.causeCardContent}>
+                                    <Avatar size={48} style={{ ...styles.causeAvatar, borderRadius: 8, overflow: 'hidden' }}>
+                                      <AvatarImage src={cause.image || cause.logo} style={{ width: '100%', height: '100%', borderRadius: 8 }} />
+                                      <AvatarFallback
+                                        style={{ backgroundColor: avatarBgColor, borderRadius: 8 }}
+                                        textStyle={{ color: '#FFFFFF', fontSize: 14, fontFamily: 'Outfit-Bold' }}
+                                      >
+                                        {initials}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                    <View style={styles.causeInfo}>
+                                      <Text style={styles.causeName} numberOfLines={2}>
+                                        {cause.name}
+                                      </Text>
+                                      <View style={styles.causeCategoriesContainer}>
+                                        {categoryInfo.map((cat: any, index: number) => (
+                                          <View
+                                            key={index}
+                                            style={[
+                                              styles.causeCategoryBadge,
+                                              { backgroundColor: (cat as any).background }
+                                            ]}
+                                          >
+                                            <Text style={styles.causeCategoryText}>
+                                              {cat.name}
+                                            </Text>
+                                          </View>
+                                        ))}
+                                      </View>
+                                    </View>
+                                    {isSelected && (
+                                      <Check size={20} color="#3b82f6" />
+                                    )}
+                                  </View>
+                                </TouchableOpacity>
+                              );
+                            })}
+                          </View>
+
+                          <View style={styles.pickDifferentContainer}>
+                            <TouchableOpacity
+                              onPress={handlePickDifferent}
+                              style={styles.pickDifferentButton}
+                            >
+                              <Text style={{ fontSize: 16, marginRight: 6 }}>✨</Text>
+                              <Text style={styles.pickDifferentText}>Pick Different Nonprofits</Text>
+                            </TouchableOpacity>
+                          </View>
+                        </>
+                      ) : (
+                        <View style={styles.emptyContainer}>
+                          <View style={styles.emptyIconCircle}>
+                            <Heart size={32} color="#1600ff" />
+                          </View>
+                          <Text style={styles.emptyTitle}>No suggestions found</Text>
+                          <Text style={styles.emptyDescription}>
+                            We couldn't find any nonprofits for your selected interests. Try changing your interests or browsing manually.
+                          </Text>
+                        </View>
+                      )}
+                    </>
+                  )}
+                </View>
+              </ScrollView>
+            </View>
+
+            <View style={styles.footerContainer}>
+              <View style={styles.footerMainButtons}>
+                <TouchableOpacity
+                  onPress={handleChangeMethod}
+                  style={styles.outlineButton}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.outlineButtonText}>Back</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={handleStartWithNonprofits}
+                  disabled={selectedCauses.length === 0 || createBoxMutation.isPending}
+                  style={[
+                    styles.primaryButton,
+                    (selectedCauses.length === 0 || createBoxMutation.isPending) && styles.primaryButtonDisabled
+                  ]}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.primaryButtonText}>
+                    {createBoxMutation.isPending ? 'Saving...' : 'Continue'}
+                  </Text>
+                  {!createBoxMutation.isPending && <ArrowRight size={18} color="white" />}
+                </TouchableOpacity>
+              </View>
+
+              <TouchableOpacity onPress={handleSkip} style={styles.skipLink} activeOpacity={0.8}>
+                <Text style={styles.skipLinkText}>Skip for now</Text>
+              </TouchableOpacity>
+            </View>
           </View>
+        </View>
         {/* </LinearGradient> */}
       </View>
     );
@@ -1075,186 +1075,186 @@ export default function CompleteOnboard() {
         end={{ x: 1, y: 1 }}
         style={{ flex: 1 }}
       > */}
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 60, paddingBottom: 30, paddingHorizontal: 16 }}>
-          <View style={styles.card}>
-            {/* Progress Indicator - Step 4 */}
-            <View style={styles.stepIndicator}>
-              <View style={styles.stepBar}>
-                <View style={[styles.stepDot, styles.stepDotInactive]} />
-                <View style={[styles.stepDot, styles.stepDotInactive]} />
-                <View style={[styles.stepDot, styles.stepDotInactive]} />
-                <View style={[styles.stepDot, styles.stepDotActive]} />
-              </View>
-            </View>
-
-            {/* Header */}
-            <View style={styles.iconContainer}>
-              <LinearGradient
-                colors={['#A855F7', '#EC4899', '#3B82F6']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.gradientIconCircle}
-              >
-                <Heart size={32} color="white" />
-              </LinearGradient>
-            </View>
-
-            <Text style={styles.title}>
-              Start Supporting Causes
-            </Text>
-            <Text style={styles.description}>
-              Choose how you'd like to select nonprofits
-            </Text>
-
-            <View style={{ flex: 1 }}>
-              <ScrollView
-                showsVerticalScrollIndicator={false}
-                style={styles.collectivesSectionScroll}
-                contentContainerStyle={styles.collectivesSectionContent}
-              >
-                {/* Browse Nonprofits Section */}
-                <View style={[styles.section, { marginBottom: 0 }]}>
-                  <View style={styles.sectionHeader}>
-                    <Text style={styles.sectionTitle}>Browse Nonprofits</Text>
-                    <TouchableOpacity
-                      onPress={handleChangeMethod}
-                      style={styles.changeMethodButton}
-                    >
-                      <Text style={styles.changeMethodText}>Change Method</Text>
-                    </TouchableOpacity>
-                  </View>
-
-                  {/* Search Bar */}
-                  <View style={styles.searchContainer}>
-                    <Search size={20} color="#9ca3af" style={styles.searchIcon} />
-                    <TextInput
-                      style={styles.searchInput}
-                      placeholder="Search for nonprofits..."
-                      placeholderTextColor="#9ca3af"
-                      value={searchQuery}
-                      onChangeText={setSearchQuery}
-                      onSubmitEditing={handleSearch}
-                    />
-                  </View>
-
-                  {/* Select Nonprofits Count */}
-                  <View style={styles.countContainer}>
-                    <Text style={styles.countText}>
-                      Select Nonprofits ({selectedCauses.length})
-                    </Text>
-                  </View>
-
-                  {/* Causes List */}
-                  {isLoadingBrowse ? (
-                    <View style={styles.loadingContainer}>
-                      <ActivityIndicator size="large" color="#9ca3af" />
-                    </View>
-                  ) : (
-                    <View style={styles.causesListContainer}>
-                      {browseCauses.length > 0 ? (
-                        browseCauses.map((cause: any) => {
-                          const isSelected = selectedCauses.includes(cause.id);
-                          const avatarBgColor = getConsistentColor(cause.id, avatarColors);
-                          const initials = getInitials(cause.name);
-                          const categoryInfo = getCategoryInfo(cause.category);
-
-                          return (
-                            <View key={cause.id} style={{ marginBottom: 12 }}>
-                              <TouchableOpacity
-                                onPress={() => handleCauseToggle(cause.id)}
-                                style={[
-                                  styles.causeCard,
-                                  isSelected && styles.causeCardSelected
-                                ]}
-                                activeOpacity={0.8}
-                              >
-                                <View style={styles.causeCardContent}>
-                                  <Avatar size={48} style={{ ...styles.causeAvatar, borderRadius: 8, overflow: 'hidden' }}>
-                                    <AvatarImage src={cause.image || cause.logo} style={{ width: '100%', height: '100%', borderRadius: 8 }} />
-                                    <AvatarFallback
-                                      style={{ backgroundColor: avatarBgColor, borderRadius: 8 }}
-                                      textStyle={{ color: '#FFFFFF', fontSize: 14, fontFamily: 'Outfit-Bold' }}
-                                    >
-                                      {initials}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                  <View style={styles.causeInfo}>
-                                    <Text style={styles.causeName}>
-                                      {cause.name}
-                                    </Text>
-                                    <View style={styles.causeCategoriesContainer}>
-                                      {categoryInfo.map((cat: any, index: number) => (
-                                        <View
-                                          key={index}
-                                          style={[
-                                            styles.causeCategoryBadge,
-                                            { backgroundColor: (cat as any).background }
-                                          ]}
-                                        >
-                                          <Text style={styles.causeCategoryText}>
-                                            {cat.name}
-                                          </Text>
-                                        </View>
-                                      ))}
-                                    </View>
-                                  </View>
-                                  {isSelected && (
-                                    <Check size={20} color="#3b82f6" />
-                                  )}
-                                </View>
-                              </TouchableOpacity>
-                            </View>
-                          );
-                        })
-                      ) : (
-                        <View style={styles.emptyContainer}>
-                          <View style={styles.emptyIconCircle}>
-                            <Search size={32} color="#1600ff" />
-                          </View>
-                          <Text style={styles.emptyTitle}>No nonprofits found</Text>
-                          <Text style={styles.emptyDescription}>
-                            We couldn't find any nonprofits {searchQuery ? `matching "${searchQuery}"` : 'for your selected interests'}. Try different keywords or categories.
-                          </Text>
-                        </View>
-                      )}
-                    </View>
-                  )}
-                </View>
-              </ScrollView>
-            </View>
-
-            {/* Footer Navigation */}
-            <View style={styles.footerContainer}>
-              <View style={styles.footerMainButtons}>
-                <TouchableOpacity
-                  onPress={handleChangeMethod}
-                  style={styles.outlineButton}
-                  activeOpacity={0.8}
-                >
-                  <Text style={styles.outlineButtonText}>Back</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={handleStartWithNonprofits}
-                  disabled={selectedCauses.length === 0 || createBoxMutation.isPending}
-                  style={[
-                    styles.primaryButton,
-                    (selectedCauses.length === 0 || createBoxMutation.isPending) && styles.primaryButtonDisabled
-                  ]}
-                  activeOpacity={0.8}
-                >
-                  <Text style={styles.primaryButtonText}>
-                    {createBoxMutation.isPending ? 'Saving...' : 'Continue'}
-                  </Text>
-                  {!createBoxMutation.isPending && <ArrowRight size={18} color="white" />}
-                </TouchableOpacity>
-              </View>
-
-              <TouchableOpacity onPress={handleSkip} style={styles.skipLink} activeOpacity={0.8}>
-                <Text style={styles.skipLinkText}>Skip for now</Text>
-              </TouchableOpacity>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 60, paddingBottom: 30, paddingHorizontal: 16 }}>
+        <View style={styles.card}>
+          {/* Progress Indicator - Step 4 */}
+          <View style={styles.stepIndicator}>
+            <View style={styles.stepBar}>
+              <View style={[styles.stepDot, styles.stepDotInactive]} />
+              <View style={[styles.stepDot, styles.stepDotInactive]} />
+              <View style={[styles.stepDot, styles.stepDotInactive]} />
+              <View style={[styles.stepDot, styles.stepDotActive]} />
             </View>
           </View>
+
+          {/* Header */}
+          <View style={styles.iconContainer}>
+            <LinearGradient
+              colors={['#A855F7', '#EC4899', '#3B82F6']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.gradientIconCircle}
+            >
+              <Heart size={32} color="white" />
+            </LinearGradient>
+          </View>
+
+          <Text style={styles.title}>
+            Start Supporting Causes
+          </Text>
+          <Text style={styles.description}>
+            Choose how you'd like to select nonprofits
+          </Text>
+
+          <View style={{ flex: 1 }}>
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              style={styles.collectivesSectionScroll}
+              contentContainerStyle={styles.collectivesSectionContent}
+            >
+              {/* Browse Nonprofits Section */}
+              <View style={[styles.section, { marginBottom: 0 }]}>
+                <View style={styles.sectionHeader}>
+                  <Text style={styles.sectionTitle}>Browse Nonprofits</Text>
+                  <TouchableOpacity
+                    onPress={handleChangeMethod}
+                    style={styles.changeMethodButton}
+                  >
+                    <Text style={styles.changeMethodText}>Change Method</Text>
+                  </TouchableOpacity>
+                </View>
+
+                {/* Search Bar */}
+                <View style={styles.searchContainer}>
+                  <Search size={20} color="#9ca3af" style={styles.searchIcon} />
+                  <TextInput
+                    style={styles.searchInput}
+                    placeholder="Search for nonprofits..."
+                    placeholderTextColor="#9ca3af"
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                    onSubmitEditing={handleSearch}
+                  />
+                </View>
+
+                {/* Select Nonprofits Count */}
+                <View style={styles.countContainer}>
+                  <Text style={styles.countText}>
+                    Select Nonprofits ({selectedCauses.length})
+                  </Text>
+                </View>
+
+                {/* Causes List */}
+                {isLoadingBrowse ? (
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color="#9ca3af" />
+                  </View>
+                ) : (
+                  <View style={styles.causesListContainer}>
+                    {browseCauses.length > 0 ? (
+                      browseCauses.map((cause: any) => {
+                        const isSelected = selectedCauses.includes(cause.id);
+                        const avatarBgColor = getConsistentColor(cause.id, avatarColors);
+                        const initials = getInitials(cause.name);
+                        const categoryInfo = getCategoryInfo(cause.category);
+
+                        return (
+                          <View key={cause.id} style={{ marginBottom: 12 }}>
+                            <TouchableOpacity
+                              onPress={() => handleCauseToggle(cause.id)}
+                              style={[
+                                styles.causeCard,
+                                isSelected && styles.causeCardSelected
+                              ]}
+                              activeOpacity={0.8}
+                            >
+                              <View style={styles.causeCardContent}>
+                                <Avatar size={48} style={{ ...styles.causeAvatar, borderRadius: 8, overflow: 'hidden' }}>
+                                  <AvatarImage src={cause.image || cause.logo} style={{ width: '100%', height: '100%', borderRadius: 8 }} />
+                                  <AvatarFallback
+                                    style={{ backgroundColor: avatarBgColor, borderRadius: 8 }}
+                                    textStyle={{ color: '#FFFFFF', fontSize: 14, fontFamily: 'Outfit-Bold' }}
+                                  >
+                                    {initials}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <View style={styles.causeInfo}>
+                                  <Text style={styles.causeName}>
+                                    {cause.name}
+                                  </Text>
+                                  <View style={styles.causeCategoriesContainer}>
+                                    {categoryInfo.map((cat: any, index: number) => (
+                                      <View
+                                        key={index}
+                                        style={[
+                                          styles.causeCategoryBadge,
+                                          { backgroundColor: (cat as any).background }
+                                        ]}
+                                      >
+                                        <Text style={styles.causeCategoryText}>
+                                          {cat.name}
+                                        </Text>
+                                      </View>
+                                    ))}
+                                  </View>
+                                </View>
+                                {isSelected && (
+                                  <Check size={20} color="#3b82f6" />
+                                )}
+                              </View>
+                            </TouchableOpacity>
+                          </View>
+                        );
+                      })
+                    ) : (
+                      <View style={styles.emptyContainer}>
+                        <View style={styles.emptyIconCircle}>
+                          <Search size={32} color="#1600ff" />
+                        </View>
+                        <Text style={styles.emptyTitle}>No nonprofits found</Text>
+                        <Text style={styles.emptyDescription}>
+                          We couldn't find any nonprofits {searchQuery ? `matching "${searchQuery}"` : 'for your selected interests'}. Try different keywords or categories.
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                )}
+              </View>
+            </ScrollView>
+          </View>
+
+          {/* Footer Navigation */}
+          <View style={styles.footerContainer}>
+            <View style={styles.footerMainButtons}>
+              <TouchableOpacity
+                onPress={handleChangeMethod}
+                style={styles.outlineButton}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.outlineButtonText}>Back</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleStartWithNonprofits}
+                disabled={selectedCauses.length === 0 || createBoxMutation.isPending}
+                style={[
+                  styles.primaryButton,
+                  (selectedCauses.length === 0 || createBoxMutation.isPending) && styles.primaryButtonDisabled
+                ]}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.primaryButtonText}>
+                  {createBoxMutation.isPending ? 'Saving...' : 'Continue'}
+                </Text>
+                {!createBoxMutation.isPending && <ArrowRight size={18} color="white" />}
+              </TouchableOpacity>
+            </View>
+
+            <TouchableOpacity onPress={handleSkip} style={styles.skipLink} activeOpacity={0.8}>
+              <Text style={styles.skipLinkText}>Skip for now</Text>
+            </TouchableOpacity>
+          </View>
         </View>
+      </View>
       {/* </LinearGradient> */}
     </View>
   );
@@ -1275,11 +1275,11 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 768,
     alignSelf: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 5,
+    // shadowColor: '#000',
+    // shadowOffset: { width: 0, height: 2 },
+    // shadowOpacity: 0.1,
+    // shadowRadius: 8,
+    // elevation: 5,
   },
   stepIndicator: {
     alignItems: 'center',
@@ -1351,7 +1351,7 @@ const styles = StyleSheet.create({
   },
   optionsContainer: {
     gap: 12,
-    flexGrow: 1,
+    // flexGrow: 1,
     justifyContent: 'center',
   },
   optionCard: {
@@ -1365,7 +1365,7 @@ const styles = StyleSheet.create({
     marginBottom: 0,
   },
   optionsScroll: {
-    paddingVertical: 4,
+    paddingVertical: 10,
   },
   optionIconContainer: {
     marginBottom: 10,
@@ -1400,9 +1400,9 @@ const styles = StyleSheet.create({
     color: '#111827',
     marginBottom: 4,
   },
-  optionsScroll: {
-    flex: 1,
-  },
+  // optionsScroll: {
+  //   flex: 1,
+  // },
   optionDescription: {
     fontSize: 14,
     color: '#6b7280',

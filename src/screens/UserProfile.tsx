@@ -16,6 +16,7 @@ import PopularPosts from '../components/PopularPosts'
 import { PrimaryBlue, PrimaryGrey } from '../Constants/Colors'
 import { WEB_BASE_URL } from '../Constants/url'
 import CommentsBottomSheet from '../components/post/CommentsBottomSheet'
+import SharePost from '../components/SharePost'
 import { truncateAtFirstPeriod } from '../utils/truncateFirstPeriod'
 
 // Avatar colors for consistent fallback styling
@@ -150,29 +151,9 @@ export default function UserProfile() {
     };
 
     const handleShareProfile = async () => {
-        try {
-            if (!targetUserId) return;
-
-            const profileUrl = `${WEB_BASE_URL}/u/${userProfile?.username}`;
-            const result = await Share.share({
-                message: `Check out ${userProfile?.first_name} ${userProfile?.last_name}'s profile!\n${profileUrl}`,
-                title: `${userProfile?.first_name} ${userProfile?.last_name}'s Profile`,
-                url: profileUrl, // iOS only
-            });
-
-            if (result.action === Share.sharedAction) {
-                try {
-                    await Clipboard.setString(profileUrl);
-                    showToast('Link copied to clipboard!');
-                } catch (clipboardError) {
-                    console.log('Error copying to clipboard:', clipboardError);
-                }
-            }
-            setShowMenu(false);
-        } catch (err) {
-            console.error("Failed to share profile:", err);
-            showToast("Failed to share profile");
-        }
+        if (!targetUserId) return;
+        shareSheetRef.current?.present();
+        setShowMenu(false);
     };
 
     // Statistics bottom sheet queries
@@ -336,7 +317,7 @@ export default function UserProfile() {
     // Redirect to own profile if viewing own profile
     useEffect(() => {
         if (isOwnProfile) {
-            (navigation as any).navigate('Profile');
+            (navigation as any).navigate('DrawerNav', { screen: 'MainTabs', params: { screen: 'Profile' } });
         }
     }, [isOwnProfile, navigation]);
 
@@ -366,6 +347,7 @@ export default function UserProfile() {
 
     // Bottom sheet ref and snap points
     const bottomSheetRef = useRef<BottomSheetModal>(null);
+    const shareSheetRef = useRef<BottomSheetModal>(null);
     const founderSheetRef = useRef<BottomSheetModal>(null);
     const screenHeight = Dimensions.get('window').height;
     const snapPoints = useMemo(() => [screenHeight * 0.75], [screenHeight]);
@@ -578,7 +560,7 @@ export default function UserProfile() {
                                     onPress={() => {
                                         bottomSheetRef.current?.dismiss();
                                         if (userData.id === currentUser?.id) {
-                                            (navigation as any).navigate('Profile');
+                                            (navigation as any).navigate('DrawerNav', { screen: 'MainTabs', params: { screen: 'Profile' } });
                                         } else {
                                             (navigation as any).navigate('UserProfile', { userId: userData.id });
                                         }
@@ -1184,6 +1166,13 @@ export default function UserProfile() {
                     post={selectedPost}
                 />
             )}
+            {/* Share Sheet */}
+            <SharePost
+                ref={shareSheetRef}
+                url={`${WEB_BASE_URL}/u/${userProfile?.username}`}
+                title={''}
+                message={''}
+            />
         </SafeAreaView>
     )
 }

@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, TouchableOpacity, Share, Alert, Image, Modal, TouchableWithoutFeedback, ActivityIndicator, RefreshControl, Clipboard, StyleSheet, Dimensions } from 'react-native'
+import { View, Text, ScrollView, TouchableOpacity, Alert, Image, Modal, TouchableWithoutFeedback, ActivityIndicator, RefreshControl, StyleSheet, Dimensions } from 'react-native'
 import React, { useState, useCallback, useMemo, useRef } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -11,6 +11,7 @@ import ProfileInterests from '../components/ProfileInterests'
 import { PrimaryBlue, PrimaryGrey, LightGrey } from '../Constants/Colors'
 import { useNavigation, NavigationProp } from '@react-navigation/native'
 import { Share2, Flag, ChevronRight, Ellipsis, MessageCircle, MessageSquare, ArrowLeft, X, Users } from 'lucide-react-native'
+import SharePost from '../components/SharePost'
 import { getPosts, getUserProfileById, getUserFollowers, getUserFollowing, getFavoriteCauses, getSupportedCausesByUserId, followUser, unfollowUser } from '../services/api/social'
 import { getUserCollectives, getJoinCollective } from '../services/api/crwd'
 import { useAuthStore } from '../store/store'
@@ -76,7 +77,9 @@ export default function Profile() {
 
     // Bottom sheet ref
     const bottomSheetRef = useRef<BottomSheetModal>(null);
+
     const founderSheetRef = useRef<BottomSheetModal>(null);
+    const shareSheetRef = useRef<BottomSheetModal>(null);
     const screenHeight = Dimensions.get('window').height;
     const snapPoints = useMemo(() => [screenHeight * 0.75], [screenHeight]);
     const founderSnapPoints = useMemo(() => [screenHeight * 0.75], [screenHeight]);
@@ -303,34 +306,10 @@ export default function Profile() {
         color: post.user?.color,
     })) || [];
 
-    const handleShare = async () => {
-        try {
-            if (!user?.id) return;
-
-            const webUrl = `${WEB_BASE_URL}/u/${user.username}`;
-            const shareMessage = `Check out my profile!\n${webUrl}`;
-
-            const result = await Share.share({
-                message: shareMessage,
-                title: `My Profile`,
-                url: webUrl, // iOS only
-            });
-
-            // Copy link to clipboard when sharing
-            if (result.action === Share.sharedAction) {
-                try {
-                    await Clipboard.setString(webUrl);
-                    showToast('Link copied to clipboard!');
-                } catch (clipboardError) {
-                    console.log('Error copying to clipboard:', clipboardError);
-                }
-            }
-        } catch (error) {
-            Alert.alert('Error', 'Failed to share profile');
-        }
-        finally {
-            setShowMenu(false);
-        }
+    const handleShare = () => {
+        if (!user?.id) return;
+        setShowMenu(false);
+        shareSheetRef.current?.present();
     };
 
     const handleReportProfile = () => {
@@ -1386,6 +1365,14 @@ export default function Profile() {
                     post={selectedPost}
                 />
             )}
+            {/* Share Post Sheet */}
+            <SharePost
+                ref={shareSheetRef}
+                url={`${WEB_BASE_URL}/u/${user?.username}`}
+                title={''}
+                message={''}
+                onClose={() => setShowMenu(false)}
+            />
         </SafeAreaView>
     )
 }

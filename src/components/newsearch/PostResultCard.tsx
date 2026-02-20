@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, Linking, ActivityIndicator, Share, Clipboard } from 'react-native';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import SharePost from '../SharePost';
 import { useNavigation, CommonActions } from '@react-navigation/native';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
 import { Heart, MessageCircle, Share2, Users } from 'lucide-react-native';
@@ -115,6 +117,7 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
   const { showToast } = useToast();
   const [isLiked, setIsLiked] = useState(post.is_liked || false);
   const [likesCount, setLikesCount] = useState(post.likes_count || 0);
+  const shareSheetRef = useRef<BottomSheetModal>(null);
 
   const user = post.user;
   // Use user.color first if available, then fall back to consistent color based on ID or username
@@ -227,33 +230,7 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
   };
 
   const handleShare = async () => {
-    try {
-      const webUrl = post.fundraiser
-        ? `${WEB_BASE_URL}/fundraiser/${post.fundraiser.id}`
-        : `${WEB_BASE_URL}/post/${post.id}`;
-
-      const title = post.fundraiser?.name || 'Post';
-      const shareMessage = `Check out this ${post.fundraiser ? 'fundraiser' : 'post'}: ${webUrl}`;
-
-      const result = await Share.share({
-        message: shareMessage,
-        title: title,
-        url: webUrl, // iOS only
-      });
-
-      // Copy link to clipboard when sharing
-      if (result.action === Share.sharedAction) {
-        try {
-          await Clipboard.setString(webUrl);
-          showToast('Link copied to clipboard!');
-        } catch (clipboardError) {
-          console.log('Error copying to clipboard:', clipboardError);
-        }
-      }
-    } catch (error) {
-      console.error('Error sharing post:', error);
-      showToast('Error sharing post');
-    }
+    shareSheetRef.current?.present();
   };
 
   const handleCardPress = () => {
@@ -265,68 +242,16 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
   };
 
   return (
-    <TouchableOpacity
-      onPress={handleCardPress}
-      style={styles.card}
-      activeOpacity={0.7}
-    >
-      <View style={styles.content}>
-        {/* User Header */}
-        <View style={styles.header}>
-          {user && (
-            <TouchableOpacity
-              onPress={(e) => {
-                e.stopPropagation();
-                if (currentUser?.id && user?.id && currentUser.id.toString() === user.id.toString()) {
-                  navigation.dispatch(
-                    CommonActions.reset({
-                      index: 0,
-                      routes: [
-                        {
-                          name: 'DrawerNav' as never,
-                          state: {
-                            routes: [
-                              {
-                                name: 'MainTabs' as never,
-                                state: {
-                                  routes: [
-                                    { name: 'Home' as never },
-                                    { name: 'Search' as never },
-                                    { name: 'Donate' as never },
-                                    { name: 'Collectives' as never },
-                                    { name: 'Profile' as never },
-                                  ],
-                                  index: 4,
-                                },
-                              },
-                            ],
-                            index: 0,
-                          },
-                        },
-                      ],
-                    })
-                  );
-                } else {
-                  (navigation as any).navigate('UserProfile', { userId: user.id.toString() });
-                }
-              }}
-              activeOpacity={0.7}
-            >
-              <Avatar size={40} style={styles.avatar}>
-                <AvatarImage src={user.profile_picture} />
-                <AvatarFallback
-                  style={{ backgroundColor: user.profile_picture ? 'transparent' : avatarBgColor }}
-                  textStyle={{ color: '#FFFFFF', fontSize: 15, fontWeight: '700' }}
-                >
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
-            </TouchableOpacity>
-          )}
-
-          <View style={styles.userInfo}>
-            {/* Top Row: Name and Follow Button */}
-            <View style={styles.topRow}>
+    <>
+      <TouchableOpacity
+        onPress={handleCardPress}
+        style={styles.card}
+        activeOpacity={0.7}
+      >
+        <View style={styles.content}>
+          {/* User Header */}
+          <View style={styles.header}>
+            {user && (
               <TouchableOpacity
                 onPress={(e) => {
                   e.stopPropagation();
@@ -359,274 +284,344 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
                         ],
                       })
                     );
-                  } else if (user?.id) {
+                  } else {
                     (navigation as any).navigate('UserProfile', { userId: user.id.toString() });
                   }
                 }}
                 activeOpacity={0.7}
-                style={{ flex: 1 }}
               >
-                <Text style={styles.name} numberOfLines={1}>{fullName}</Text>
+                <Avatar size={40} style={styles.avatar}>
+                  <AvatarImage src={user.profile_picture} />
+                  <AvatarFallback
+                    style={{ backgroundColor: user.profile_picture ? 'transparent' : avatarBgColor }}
+                    textStyle={{ color: '#FFFFFF', fontSize: 15, fontWeight: '700' }}
+                  >
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
               </TouchableOpacity>
+            )}
 
-              {/* Follow Button */}
-              {isHomeFeed && user?.id && user.id.toString() !== currentUser?.id?.toString() && !isFollowing && (
-                <TouchableOpacity
-                  onPress={handleFollowPress}
-                  disabled={followMutation.isPending || unfollowMutation.isPending || isLoadingProfile}
-                  style={[
-                    styles.followButton,
-                    isFollowing && styles.followingButton,
-                  ]}
-                  activeOpacity={0.7}
-                >
-                  {followMutation.isPending || unfollowMutation.isPending || isLoadingProfile ? (
-                    <ActivityIndicator size="small" color={isFollowing ? "#FFFFFF" : "#1600ff"} />
-                  ) : (
-                    <Text style={[
-                      styles.followButtonText,
-                      isFollowing && styles.followingButtonText,
-                    ]}>
-                      {isFollowing ? 'Following' : 'Follow'}
-                    </Text>
-                  )}
-                </TouchableOpacity>
-              )}
-            </View>
-
-            {/* Bottom Row: Collective Name and Time */}
-            <View style={styles.metaRow}>
-              {!showSimplifiedHeader && post.collective && (
+            <View style={styles.userInfo}>
+              {/* Top Row: Name and Follow Button */}
+              <View style={styles.topRow}>
                 <TouchableOpacity
                   onPress={(e) => {
                     e.stopPropagation();
-                    if (post.collective?.id) {
-                      (navigation as any).navigate('GroupCRWD', { id: post.collective.id.toString() });
+                    if (currentUser?.id && user?.id && currentUser.id.toString() === user.id.toString()) {
+                      navigation.dispatch(
+                        CommonActions.reset({
+                          index: 0,
+                          routes: [
+                            {
+                              name: 'DrawerNav' as never,
+                              state: {
+                                routes: [
+                                  {
+                                    name: 'MainTabs' as never,
+                                    state: {
+                                      routes: [
+                                        { name: 'Home' as never },
+                                        { name: 'Search' as never },
+                                        { name: 'Donate' as never },
+                                        { name: 'Collectives' as never },
+                                        { name: 'Profile' as never },
+                                      ],
+                                      index: 4,
+                                    },
+                                  },
+                                ],
+                                index: 0,
+                              },
+                            },
+                          ],
+                        })
+                      );
+                    } else if (user?.id) {
+                      (navigation as any).navigate('UserProfile', { userId: user.id.toString() });
                     }
                   }}
                   activeOpacity={0.7}
-                  style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
+                  style={{ flex: 1 }}
                 >
-                  <Users size={14} color={PrimaryGrey} />
-                  <Text style={styles.collectiveName}>{post.collective.name}</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 }}>
+                    <Text style={[styles.name, { flexShrink: 1 }]} numberOfLines={1}>{fullName}</Text>
+                    {post.fundraiser && (
+                      <View style={styles.founderBadge}>
+                        <Text style={styles.founderBadgeText}>Organizer</Text>
+                      </View>
+                    )}
+                  </View>
                 </TouchableOpacity>
-              )}
-              {/* {!showSimplifiedHeader && post.collective && (
+
+                {/* Follow Button */}
+                {isHomeFeed && user?.id && user.id.toString() !== currentUser?.id?.toString() && !isFollowing && (
+                  <TouchableOpacity
+                    onPress={handleFollowPress}
+                    disabled={followMutation.isPending || unfollowMutation.isPending || isLoadingProfile}
+                    style={[
+                      styles.followButton,
+                      isFollowing && styles.followingButton,
+                    ]}
+                    activeOpacity={0.7}
+                  >
+                    {followMutation.isPending || unfollowMutation.isPending || isLoadingProfile ? (
+                      <ActivityIndicator size="small" color={isFollowing ? "#FFFFFF" : "#1600ff"} />
+                    ) : (
+                      <Text style={[
+                        styles.followButtonText,
+                        isFollowing && styles.followingButtonText,
+                      ]}>
+                        {isFollowing ? 'Following' : 'Follow'}
+                      </Text>
+                    )}
+                  </TouchableOpacity>
+                )}
+              </View>
+
+              {/* Bottom Row: Collective Name and Time */}
+              <View style={styles.metaRow}>
+                {!showSimplifiedHeader && post.collective && (
+                  <TouchableOpacity
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      if (post.collective?.id) {
+                        (navigation as any).navigate('GroupCRWD', { id: post.collective.id.toString() });
+                      }
+                    }}
+                    activeOpacity={0.7}
+                    style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
+                  >
+                    <Users size={14} color={PrimaryGrey} />
+                    <Text style={styles.collectiveName}>{post.collective.name}</Text>
+                  </TouchableOpacity>
+                )}
+                {/* {!showSimplifiedHeader && post.collective && (
                 <Text style={styles.separator}>•</Text>
               )}
 
               <Text style={styles.time}>{timeAgo}</Text> */}
+              </View>
             </View>
           </View>
         </View>
-      </View>
 
-      {/* Post Content - Only show if not fundraiser */}
-      {post.content && !post.fundraiser ? (
-        <Text style={styles.postContent} numberOfLines={3}>
-          {post.content}
-        </Text>
-      ) : null}
+        {/* Post Content - Only show if not fundraiser */}
+        {post.content && !post.fundraiser ? (
+          <Text style={styles.postContent} numberOfLines={3}>
+            {post.content}
+          </Text>
+        ) : null}
 
-      {/* Media Section - Only show if no fundraiser */}
-      {!post.fundraiser && !post.preview_details?.image && post.media && (
-        // <TouchableOpacity
-        //   onPress={() => {
-        //     if (post.media) {
-        //       Linking.openURL(post.media);
-        //     }
-        //   }}
-        //   activeOpacity={0.9}
-        // >
-        <Image source={{ uri: post.media }} style={styles.media} resizeMode="cover" />
-        // </TouchableOpacity>
-      )}
+        {/* Media Section - Only show if no fundraiser */}
+        {!post.fundraiser && !post.preview_details?.image && post.media && (
+          // <TouchableOpacity
+          //   onPress={() => {
+          //     if (post.media) {
+          //       Linking.openURL(post.media);
+          //     }
+          //   }}
+          //   activeOpacity={0.9}
+          // >
+          <Image source={{ uri: post.media }} style={styles.media} resizeMode="cover" />
+          // </TouchableOpacity>
+        )}
 
-      {/* Fundraiser UI */}
-      {post.fundraiser ? (
-        <TouchableOpacity
-          onPress={handleCardPress}
-          activeOpacity={0.9}
-          style={styles.fundraiserCard}
-        >
-          {/* Fundraiser Cover Image/Color - rounded-t-lg only */}
-          <View style={{ width: '100%', aspectRatio: 2, borderTopLeftRadius: 12, borderTopRightRadius: 12, overflow: 'hidden' }}>
-            {post.fundraiser.color ? (
-              <View style={{
-                width: '100%',
-                height: '100%',
-                backgroundColor: post.fundraiser.color,
-                justifyContent: 'center',
-                alignItems: 'center'
-              }}>
-                <Text style={{ color: 'white', fontSize: 20, fontWeight: 'bold' }}>
-                  {post.fundraiser.name}
-                </Text>
-              </View>
-            ) : post.fundraiser.image ? (
-              <Image
-                source={{ uri: post.fundraiser.image }}
-                style={{ width: '100%', height: '100%' }}
-                resizeMode="cover"
-              />
-            ) : (
-              <View style={{
-                width: '100%',
-                height: '100%',
-                backgroundColor: '#1600ff',
-                justifyContent: 'center',
-                alignItems: 'center'
-              }}>
-                <Text style={{ color: 'white', fontSize: 20, fontWeight: 'bold' }}>
-                  {post.fundraiser.name}
-                </Text>
-              </View>
-            )}
-          </View>
-
-          {/* Fundraiser Info - rounded-b-lg only, connected to cover */}
-          <View style={{ marginBottom: 8, backgroundColor: 'white', padding: 16, borderBottomLeftRadius: 12, borderBottomRightRadius: 12, borderWidth: 1, borderColor: '#E5E7EB', borderTopWidth: 0 }}>
-            <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#111827', marginBottom: 12 }}>
-              {post.fundraiser.name}
-            </Text>
-
-            {/* Amount and Progress */}
-            <View style={{ marginBottom: 8 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 8, marginBottom: 6 }}>
-                <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#1600ff' }}>
-                  ${parseFloat(post.fundraiser.current_amount || '0').toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                </Text>
-                <Text style={{ fontSize: 14, color: '#6b7280' }}>
-                  raised of ${parseFloat(post.fundraiser.target_amount || '0').toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} goal
-                </Text>
-              </View>
-              {/* Progress Bar */}
-              <View style={{
-                width: '100%',
-                height: 6,
-                backgroundColor: '#e5e7eb',
-                borderRadius: 999,
-                overflow: 'hidden',
-                marginBottom: 6
-              }}>
+        {/* Fundraiser UI */}
+        {post.fundraiser ? (
+          <TouchableOpacity
+            onPress={handleCardPress}
+            activeOpacity={0.9}
+            style={styles.fundraiserCard}
+          >
+            {/* Fundraiser Cover Image/Color - rounded-t-lg only */}
+            <View style={{ width: '100%', aspectRatio: 2, borderTopLeftRadius: 12, borderTopRightRadius: 12, overflow: 'hidden' }}>
+              {post.fundraiser.color ? (
                 <View style={{
+                  width: '100%',
+                  height: '100%',
+                  backgroundColor: post.fundraiser.color,
+                  justifyContent: 'center',
+                  alignItems: 'center'
+                }}>
+                  <Text style={{ color: 'white', fontSize: 20, fontWeight: 'bold' }}>
+                    {post.fundraiser.name}
+                  </Text>
+                </View>
+              ) : post.fundraiser.image ? (
+                <Image
+                  source={{ uri: post.fundraiser.image }}
+                  style={{ width: '100%', height: '100%' }}
+                  resizeMode="cover"
+                />
+              ) : (
+                <View style={{
+                  width: '100%',
                   height: '100%',
                   backgroundColor: '#1600ff',
-                  width: `${Math.min(post.fundraiser.progress_percentage || 0, 100)}%`
-                }} />
-              </View>
-              {/* Donors and Days Left */}
-              <View style={{ flexDirection: 'row', gap: 12 }}>
-                {post.fundraiser.total_donors !== undefined && (
-                  <Text style={{ fontSize: 14, color: '#111827' }}>
-                    <Text style={{ fontWeight: '600' }}>{post.fundraiser.total_donors}</Text> donor{post.fundraiser.total_donors !== 1 ? 's' : ''}
+                  justifyContent: 'center',
+                  alignItems: 'center'
+                }}>
+                  <Text style={{ color: 'white', fontSize: 20, fontWeight: 'bold' }}>
+                    {post.fundraiser.name}
                   </Text>
-                )}
-                {post.fundraiser.end_date && post.fundraiser.is_active && (
-                  <Text style={{ fontSize: 14, color: '#111827' }}>
-                    <Text style={{ fontWeight: '600' }}>
-                      {Math.max(0, Math.ceil((new Date(post.fundraiser.end_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))}
-                    </Text> days left
-                  </Text>
-                )}
-                {!post.fundraiser.is_active && (
-                  <Text style={{ fontSize: 14, color: '#666', fontWeight: '500' }}>
-                    Fundraiser Ended
-                  </Text>
-                )}
-              </View>
-            </View>
-          </View>
-        </TouchableOpacity>
-      ) : (
-        /* Preview Card */
-        post.preview_details && (post.preview_details.url || post.preview_details.title || post.preview_details.image) ? (
-          <View
-            // onPress={() => {
-            //   if (post.preview_details?.url) {
-            //     Linking.openURL(post.preview_details.url);
-            //   }
-            // }}
-            style={styles.previewCardVertical}
-          // activeOpacity={0.8}
-          >
-            {post.preview_details.image && (
-              <Image
-                source={{ uri: post.preview_details.image }}
-                style={{ width: '100%', aspectRatio: 2 }}
-                resizeMode="cover"
-              />
-            )}
-            <View style={{ padding: 12 }}>
-              {post.preview_details.site_name && (
-                <Text style={{ fontSize: 14, color: '#6B7280', textTransform: 'uppercase', marginBottom: 4 }}>
-                  {post.preview_details.site_name.toUpperCase()}
-                </Text>
-              )}
-              {post.preview_details.title && (
-                <Text style={{ fontSize: 15, fontWeight: '600', color: '#111827', marginBottom: 4 }} numberOfLines={2}>
-                  {post.preview_details.title}
-                </Text>
-              )}
-              {post.preview_details.description && (
-                <Text style={{ fontSize: 14, color: '#4B5563' }} numberOfLines={2}>
-                  {post.preview_details.description}
-                </Text>
+                </View>
               )}
             </View>
-          </View>
-        ) : null
-      )}
 
-      {/* Like, Comment, and Share */}
-      <View style={styles.engagement}>
-        <View style={styles.engagementLeft}>
-          <TouchableOpacity
-            style={styles.engagementItem}
-            onPress={handleLikePress}
-            activeOpacity={0.7}
-            disabled={likeMutation.isPending || unlikeMutation.isPending}
-          >
-            {likeMutation.isPending || unlikeMutation.isPending ? (
-              <ActivityIndicator size={14} color="#4B5563" />
-            ) : (
-              <Heart
-                size={14}
-                color={isLiked ? '#EF4444' : '#4B5563'}
-                {...(isLiked && { fill: '#EF4444' })}
-              />
-            )}
-            <Text style={[styles.engagementText, isLiked && styles.likedText]}>
-              {likesCount}
-            </Text>
+            {/* Fundraiser Info - rounded-b-lg only, connected to cover */}
+            <View style={{ marginBottom: 8, backgroundColor: 'white', padding: 16, borderBottomLeftRadius: 12, borderBottomRightRadius: 12, borderWidth: 1, borderColor: '#E5E7EB', borderTopWidth: 0 }}>
+              <Text style={styles.startedFundraiserText}>Started a fundraiser</Text>
+              <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#111827', marginBottom: 12 }}>
+                {post.fundraiser.name}
+              </Text>
+
+              {/* Amount and Progress */}
+              <View style={{ marginBottom: 8 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 8, marginBottom: 6 }}>
+                  <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#1600ff' }}>
+                    ${parseFloat(post.fundraiser.current_amount || '0').toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                  </Text>
+                  <Text style={{ fontSize: 14, color: '#6b7280' }}>
+                    raised of ${parseFloat(post.fundraiser.target_amount || '0').toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} goal
+                  </Text>
+                </View>
+                {/* Progress Bar */}
+                <View style={{
+                  width: '100%',
+                  height: 6,
+                  backgroundColor: '#e5e7eb',
+                  borderRadius: 999,
+                  overflow: 'hidden',
+                  marginBottom: 6
+                }}>
+                  <View style={{
+                    height: '100%',
+                    backgroundColor: '#1600ff',
+                    width: `${Math.min(post.fundraiser.progress_percentage || 0, 100)}%`
+                  }} />
+                </View>
+                {/* Donors and Days Left */}
+                <View style={{ flexDirection: 'row', gap: 12 }}>
+                  {post.fundraiser.total_donors !== undefined && (
+                    <Text style={{ fontSize: 14, color: '#111827' }}>
+                      <Text style={{ fontWeight: '600' }}>{post.fundraiser.total_donors}</Text> donor{post.fundraiser.total_donors !== 1 ? 's' : ''}
+                    </Text>
+                  )}
+                  {post.fundraiser.end_date && post.fundraiser.is_active && (
+                    <Text style={{ fontSize: 14, color: '#111827' }}>
+                      <Text style={{ fontWeight: '600' }}>
+                        {Math.max(0, Math.ceil((new Date(post.fundraiser.end_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))}
+                      </Text> days left
+                    </Text>
+                  )}
+                  {!post.fundraiser.is_active && (
+                    <Text style={{ fontSize: 14, color: '#666', fontWeight: '500' }}>
+                      Fundraiser Ended
+                    </Text>
+                  )}
+                </View>
+              </View>
+            </View>
           </TouchableOpacity>
+        ) : (
+          /* Preview Card */
+          post.preview_details && (post.preview_details.url || post.preview_details.title || post.preview_details.image) ? (
+            <View
+              // onPress={() => {
+              //   if (post.preview_details?.url) {
+              //     Linking.openURL(post.preview_details.url);
+              //   }
+              // }}
+              style={styles.previewCardVertical}
+            // activeOpacity={0.8}
+            >
+              {post.preview_details.image && (
+                <Image
+                  source={{ uri: post.preview_details.image }}
+                  style={{ width: '100%', aspectRatio: 2 }}
+                  resizeMode="cover"
+                />
+              )}
+              <View style={{ padding: 12 }}>
+                {post.preview_details.site_name && (
+                  <Text style={{ fontSize: 14, color: '#6B7280', textTransform: 'uppercase', marginBottom: 4 }}>
+                    {post.preview_details.site_name.toUpperCase()}
+                  </Text>
+                )}
+                {post.preview_details.title && (
+                  <Text style={{ fontSize: 15, fontWeight: '600', color: '#111827', marginBottom: 4 }} numberOfLines={2}>
+                    {post.preview_details.title}
+                  </Text>
+                )}
+                {post.preview_details.description && (
+                  <Text style={{ fontSize: 14, color: '#4B5563' }} numberOfLines={2}>
+                    {post.preview_details.description}
+                  </Text>
+                )}
+              </View>
+            </View>
+          ) : null
+        )}
+
+        {/* Like, Comment, and Share */}
+        <View style={styles.engagement}>
+          <View style={styles.engagementLeft}>
+            <TouchableOpacity
+              style={styles.engagementItem}
+              onPress={handleLikePress}
+              activeOpacity={0.7}
+              disabled={likeMutation.isPending || unlikeMutation.isPending}
+            >
+              {likeMutation.isPending || unlikeMutation.isPending ? (
+                <ActivityIndicator size={14} color="#4B5563" />
+              ) : (
+                <Heart
+                  size={14}
+                  color={isLiked ? '#EF4444' : '#4B5563'}
+                  {...(isLiked && { fill: '#EF4444' })}
+                />
+              )}
+              <Text style={[styles.engagementText, isLiked && styles.likedText]}>
+                {likesCount}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.engagementItem}
+              onPress={() => {
+                if (onCommentPress) {
+                  onCommentPress(post);
+                } else {
+                  (navigation as any).navigate('PostDetail', { postId: post.id });
+                }
+              }}
+              activeOpacity={0.7}
+            >
+              <MessageCircle size={14} color="#4B5563" />
+              <Text style={styles.engagementText}>{post.comments_count}</Text>
+            </TouchableOpacity>
+          </View>
           <TouchableOpacity
-            style={styles.engagementItem}
-            onPress={() => {
-              if (onCommentPress) {
-                onCommentPress(post);
-              } else {
-                (navigation as any).navigate('PostDetail', { postId: post.id });
-              }
+            style={styles.shareButton}
+            onPress={(e) => {
+              e.stopPropagation();
+              handleShare();
             }}
             activeOpacity={0.7}
           >
-            <MessageCircle size={14} color="#4B5563" />
-            <Text style={styles.engagementText}>{post.comments_count}</Text>
+            <Share2 size={14} color="#4B5563" />
           </TouchableOpacity>
         </View>
-        <TouchableOpacity
-          style={styles.shareButton}
-          onPress={(e) => {
-            e.stopPropagation();
-            handleShare();
-          }}
-          activeOpacity={0.7}
-        >
-          <Share2 size={14} color="#4B5563" />
-        </TouchableOpacity>
-      </View>
-    </TouchableOpacity >
+      </TouchableOpacity >
+      <SharePost
+        ref={shareSheetRef}
+        url={post.fundraiser
+          ? `${WEB_BASE_URL}/fundraiser/${post.fundraiser.id}`
+          : `${WEB_BASE_URL}/post/${post.id}`}
+        title={''}
+        message={''}
+      />
+    </>
   );
 }
 
@@ -925,5 +920,23 @@ const styles = StyleSheet.create({
   likedText: {
     color: '#EF4444',
   },
+  // founderBadge: {
+  //   backgroundColor: '#EF4444',
+  //   paddingHorizontal: 8,
+  //   paddingVertical: 2,
+  //   borderRadius: 12,
+  // },
+  founderBadgeText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    fontFamily: 'Outfit-Bold',
+  },
+  // startedFundraiserText: {
+  //   fontSize: 12,
+  //   color: '#6b7280',
+  //   marginBottom: 4,
+  //   fontFamily: 'Outfit-Regular',
+  // },
 });
 

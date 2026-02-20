@@ -33,6 +33,9 @@ import {
   Check,
   X,
   Plus,
+  Palette,
+  Image as ImageIcon,
+  Camera,
 } from 'lucide-react-native';
 import ImagePicker from 'react-native-image-crop-picker';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -148,7 +151,7 @@ export default function CreateFundraiser() {
         setShowSuccessModal(true);
         setShowConfetti(true);
         if (confettiRef.current) {
-          confettiRef.current.startConfetti();
+          confettiRef.current.start();
         }
         setTimeout(() => {
           setShowConfetti(false);
@@ -492,7 +495,7 @@ export default function CreateFundraiser() {
                     const { Share } = require('react-native');
                     const url = `https://crwd.app/fundraiser/${createdFundraiser?.id}`;
                     await Share.share({
-                      message: `Check out this fundraiser: ${campaignTitle}\n${url}`,
+                      message: url,
                       url: url,
                     });
                   } catch (error) {
@@ -1267,7 +1270,7 @@ const styles = StyleSheet.create({
     borderColor: '#111827',
   },
   previewBox: {
-    height: 300,
+    height: 200,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#E5E7EB',
@@ -1278,12 +1281,12 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '700',
     color: '#FFFFFF',
-    opacity: 0.5,
+    // opacity: 0.5,
     fontFamily: 'Outfit-Bold',
   },
   imagePreviewContainer: {
     position: 'relative',
-    height: 300,
+    height: 200,
     borderRadius: 8,
     overflow: 'hidden',
   },
@@ -1300,7 +1303,7 @@ const styles = StyleSheet.create({
     padding: 6,
   },
   uploadArea: {
-    height: 300,
+    height: 200,
     borderWidth: 2,
     borderStyle: 'dashed',
     borderColor: '#D1D5DB',

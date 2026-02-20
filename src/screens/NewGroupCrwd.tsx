@@ -38,7 +38,9 @@ import DiscoverMoreCollectives from '../components/newgroupcrwd/DiscoverMoreColl
 import { Share } from 'react-native';
 import { WEB_BASE_URL } from '../Constants/url';
 import CommentsBottomSheet from '../components/post/CommentsBottomSheet';
+
 import JoinCollectiveBottomSheet from '../components/newgroupcrwd/JoinCollectiveBottomSheet';
+import SharePost from '../components/SharePost';
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/Avatar';
 import { truncateAtFirstPeriod } from '../utils/truncateFirstPeriod';
 
@@ -49,6 +51,8 @@ export default function NewGroupCrwdPage() {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
   const [showShareModal, setShowShareModal] = useState(false);
+
+  const shareSheetRef = useRef<BottomSheetModal>(null);
   const [showStatisticsModal, setShowStatisticsModal] = useState(false);
   const [statisticsTab, setStatisticsTab] = useState<'Nonprofits' | 'Members' | 'Donations'>(
     'Nonprofits'
@@ -481,29 +485,7 @@ export default function NewGroupCrwdPage() {
   };
 
   const handleShare = async () => {
-    try {
-      const webUrl = `${WEB_BASE_URL}/g/${crwdData?.sort_name}`;
-      const shareMessage = `Check out this collective: ${crwdData?.name || 'Collective'}\n${webUrl}`;
-
-
-      const result = await Share.share({
-        message: shareMessage,
-        title: crwdData?.name || 'Collective',
-        url: webUrl, // iOS only
-      });
-
-      if (result.action === Share.sharedAction) {
-        try {
-          await Clipboard.setString(webUrl);
-          showToast('Link copied to clipboard!');
-        } catch (clipboardError) {
-          console.log('Error copying to clipboard:', clipboardError);
-        }
-      }
-    } catch (error) {
-      console.error('Error sharing:', error);
-      Alert.alert('Error', 'Failed to share collective');
-    }
+    shareSheetRef.current?.present();
   };
 
   const handleManageCollective = () => {
@@ -1198,6 +1180,14 @@ export default function NewGroupCrwdPage() {
           {renderStatisticsContent()}
         </BottomSheetScrollView>
       </BottomSheetModal>
+
+      {/* Share Sheet */}
+      <SharePost
+        ref={shareSheetRef}
+        url={`${WEB_BASE_URL}/g/${crwdData?.sort_name}`}
+        title={''}
+        message={''}
+      />
     </SafeAreaView>
   );
 }

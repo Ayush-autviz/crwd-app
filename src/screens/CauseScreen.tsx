@@ -19,10 +19,10 @@ export default function CauseScreen() {
   const navigation = useNavigation();
   const route = useRoute();
   const { showToast } = useToast();
-  
+
   // Get cause ID from route params or use default
   const causeId = (route.params as any)?.causeId || '';
-  
+
   // Fetch cause data using React Query
   const { data: causeData, isLoading: isLoadingCause, error: causeError } = useQuery({
     queryKey: ['cause', causeId],
@@ -39,13 +39,13 @@ export default function CauseScreen() {
     try {
       const webUrl = `${WEB_BASE_URL}/c/${causeData?.sort_name}`;
       const shareMessage = `Check out this Nonprofit: ${causeData?.name || 'Cause'}\n${webUrl}`;
-      
+
       const result = await Share.share({
-        message: shareMessage,
-        title: `${causeData?.name || 'Helping Humanity'} - CRWD`,
+        message: webUrl,
+        title: '',
         url: webUrl, // iOS only
       });
-      
+
       // Copy link to clipboard when sharing
       if (result.action === Share.sharedAction) {
         try {
@@ -79,7 +79,7 @@ export default function CauseScreen() {
   if (isLoadingCause) {
     return (
       <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }}>
-        <MainHeaderNav show={true} menu={false} title={'Nonprofit'}/>
+        <MainHeaderNav show={true} menu={false} title={'Nonprofit'} />
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <ActivityIndicator size="large" color={PrimaryBlue} />
           <Text style={{ marginTop: 16, fontSize: 16, color: '#6b7280' }}>
@@ -94,7 +94,7 @@ export default function CauseScreen() {
   if (causeError) {
     return (
       <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }}>
-        <MainHeaderNav show={true} menu={false} title={'Nonprofit'}/>
+        <MainHeaderNav show={true} menu={false} title={'Nonprofit'} />
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <Text style={{ fontSize: 16, color: '#ef4444' }}>
             Failed to load cause details
@@ -106,37 +106,37 @@ export default function CauseScreen() {
 
   return (
     <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }}>
-      <MainHeaderNav show={true} menu={false} title={'Nonprofit'}/>
-      
+      <MainHeaderNav show={true} menu={false} title={'Nonprofit'} />
+
       {/* Action Buttons Header */}
-      <View style={{ 
-        flexDirection: 'row', 
-        alignItems: 'center', 
-        gap: 8, 
-        paddingTop: 24, 
-        paddingBottom: 16, 
+      <View style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        paddingTop: 24,
+        paddingBottom: 16,
         paddingHorizontal: 16,
         backgroundColor: 'white',
         borderBottomWidth: 1,
         borderBottomColor: '#e5e7eb'
       }}>
-        <View style={{ 
-          backgroundColor: SecondaryBlue, 
-          paddingHorizontal: 8, 
-          paddingVertical: 4, 
-          borderRadius: 8 
+        <View style={{
+          backgroundColor: SecondaryBlue,
+          paddingHorizontal: 8,
+          paddingVertical: 4,
+          borderRadius: 8
         }}>
           <Text style={{ fontSize: 16, fontWeight: '600', color: PrimaryBlue }}>
             Nonprofit
           </Text>
         </View>
         <View style={{ flex: 1 }} />
-        <TouchableOpacity 
-          style={{ 
-            borderWidth: 1, 
-            borderColor: '#d1d5db', 
-            paddingHorizontal: 16, 
-            paddingVertical: 8, 
+        <TouchableOpacity
+          style={{
+            borderWidth: 1,
+            borderColor: '#d1d5db',
+            paddingHorizontal: 16,
+            paddingVertical: 8,
             borderRadius: 8,
             backgroundColor: SecondaryGrey,
           }}
@@ -144,12 +144,12 @@ export default function CauseScreen() {
         >
           <Text style={{ color: 'black', fontSize: 14, fontWeight: '500' }}>Share</Text>
         </TouchableOpacity>
-        <TouchableOpacity 
-          style={{ 
-            backgroundColor: PrimaryBlue, 
-            paddingHorizontal: 16, 
-            paddingVertical: 8, 
-            borderRadius: 8 
+        <TouchableOpacity
+          style={{
+            backgroundColor: PrimaryBlue,
+            paddingHorizontal: 16,
+            paddingVertical: 8,
+            borderRadius: 8
           }}
           onPress={handleDonate}
         >
@@ -157,19 +157,19 @@ export default function CauseScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView 
+      <ScrollView
         ref={aboutCardRef}
-        style={{ flex: 1 }} 
+        style={{ flex: 1 }}
         showsVerticalScrollIndicator={false}
       >
         <View style={{ paddingBottom: 30 }}>
-          <CauseProfileCard 
-            onLearnMoreClick={scrollToAboutCard} 
+          <CauseProfileCard
+            onLearnMoreClick={scrollToAboutCard}
             causeData={causeData}
           />
-          <CauseRecentDonations 
-            donations={causeData?.recent_donations} 
-            showEmpty={!causeData?.recent_donations || causeData.recent_donations.length === 0} 
+          <CauseRecentDonations
+            donations={causeData?.recent_donations}
+            showEmpty={!causeData?.recent_donations || causeData.recent_donations.length === 0}
           />
           <View style={{ paddingTop: 24 }}>
             <CauseAboutCard causeData={causeData} />

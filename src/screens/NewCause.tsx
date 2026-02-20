@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -29,7 +29,8 @@ import { Share } from 'react-native';
 import AddToDonationBoxBottomSheet from '../components/newcause/AddToDonationBoxBottomSheet';
 import { categories } from '../Constants/categories';
 import { WEB_BASE_URL } from '../Constants/url';
-
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import SharePost from '../components/SharePost';
 export default function NewCausePage() {
   const route = useRoute();
   const navigation = useNavigation();
@@ -37,6 +38,7 @@ export default function NewCausePage() {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
   const [showShareModal, setShowShareModal] = useState(false);
+  const shareSheetRef = useRef<BottomSheetModal>(null);
   const [showAddToBoxModal, setShowAddToBoxModal] = useState(false);
 
   // Get cause ID from route params
@@ -344,28 +346,7 @@ export default function NewCausePage() {
   };
 
   const handleShare = async () => {
-    try {
-      const webUrl = `${WEB_BASE_URL}/c/${causeData?.sort_name}`;
-      const shareMessage = `Check out this nonprofit: ${causeData?.name || 'Nonprofit'}\n${webUrl}`;
-
-      const result = await Share.share({
-        message: shareMessage,
-        title: causeData?.name || 'Nonprofit',
-        url: webUrl, // iOS only
-      });
-
-      if (result.action === Share.sharedAction) {
-        try {
-          await Clipboard.setString(webUrl);
-          showToast('Link copied to clipboard!');
-        } catch (clipboardError) {
-          console.log('Error copying to clipboard:', clipboardError);
-        }
-      }
-    } catch (error) {
-      console.error('Error sharing:', error);
-      Alert.alert('Error', 'Failed to share nonprofit');
-    }
+    shareSheetRef.current?.present();
   };
 
   return (
@@ -419,6 +400,12 @@ export default function NewCausePage() {
           isPending={addToDonationBoxMutation.isPending}
         />
       )}
+      <SharePost
+        ref={shareSheetRef}
+        url={`${WEB_BASE_URL}/c/${causeData?.sort_name}`}
+        title={''}
+        message={''}
+      />
     </SafeAreaView>
   );
 }

@@ -20,6 +20,8 @@ import { getFundraiserById, getCollectiveById } from '../services/api/crwd';
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/Avatar';
 import { PrimaryBlue } from '../Constants/Colors';
 import { Share } from 'react-native';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import SharePost from '../components/SharePost';
 
 // Avatar colors for consistent fallback styling
 const avatarColors = [
@@ -55,7 +57,9 @@ export default function FundraiserDetail() {
   const fundraiserId = String(params?.id || params?.fundraiserId || '');
   const [donationAmount, setDonationAmount] = useState('25');
   const [showDropdown, setShowDropdown] = useState(false);
+
   const dropdownRef = useRef<View>(null);
+  const shareSheetRef = useRef<BottomSheetModal>(null);
 
   // Fetch fundraiser data
   const { data: fundraiserData, isLoading, error } = useQuery({
@@ -112,15 +116,7 @@ export default function FundraiserDetail() {
   };
 
   const handleShare = async () => {
-    try {
-      const url = `https://crwd.autviz.com/fundraiser/${fundraiserId}`;
-      await Share.share({
-        message: `Check out this fundraiser: ${fundraiserData?.name || 'Fundraiser'}\n${url}`,
-        title: fundraiserData?.name || 'Fundraiser',
-      });
-    } catch (error) {
-      console.error('Error sharing:', error);
-    }
+    shareSheetRef.current?.present();
   };
 
   const handleReport = () => {
@@ -171,6 +167,9 @@ export default function FundraiserDetail() {
       navigation.goBack();
     }
   };
+
+  const bannerImage = fundraiserData?.image || collectiveData?.image;
+  const bannerColor = fundraiserData?.color || collectiveData?.color || getConsistentColor(fundraiserData?.id, fundraiserData?.name);
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -487,6 +486,12 @@ export default function FundraiserDetail() {
           </TouchableOpacity>
         </View>
       </View>
+      <SharePost
+        ref={shareSheetRef}
+        url={`https://crwd.autviz.com/fundraiser/${fundraiserId}`}
+        title={''}
+        message={''}
+      />
     </SafeAreaView>
   );
 }

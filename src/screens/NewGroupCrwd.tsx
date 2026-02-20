@@ -62,9 +62,10 @@ export default function NewGroupCrwdPage() {
   const handleBack = () => {
     const params = route.params as any;
     const fromScreen = params?.from || params?.fromScreen;
+    const fromCreate = params?.fromCreate;
     const specialFlows = ['NewNonprofitInterests', 'NewCompleteDonation', 'Login'];
 
-    if (fromScreen && specialFlows.includes(fromScreen)) {
+    if ((fromScreen && specialFlows.includes(fromScreen)) || fromCreate) {
       navigation.dispatch(
         CommonActions.reset({
           index: 0,

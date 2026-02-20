@@ -139,7 +139,7 @@ export default function CollectiveProfile({
         </View>
       </View>
       {description && (
-        <Text style={styles.description}>{truncateAtFirstPeriod(description)}</Text>
+        <Text style={styles.description}>{description}</Text>
       )}
     </View>
   );

@@ -86,10 +86,7 @@ export default function CauseActionButtons({
             <Text style={styles.addedButtonText}>Added</Text>
           </>
         ) : (
-          <>
-            <Plus size={20} color="#fff" />
-            <Text style={styles.addToBoxButtonText}>Donate</Text>
-          </>
+          <Text style={styles.addToBoxButtonText}>Donate</Text>
         )}
       </TouchableOpacity>
 
@@ -113,7 +110,7 @@ const styles = StyleSheet.create({
   },
   addToBoxButton: {
     width: '100%',
-    backgroundColor: '#1661ff',
+    backgroundColor: '#1600ff',
     paddingVertical: 10,
     borderRadius: 24,
     alignItems: 'center',

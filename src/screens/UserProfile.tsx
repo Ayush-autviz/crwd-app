@@ -316,7 +316,7 @@ export default function UserProfile() {
     const userPosts = posts?.results?.map((post: any) => ({
         id: post.id,
         userId: post.user?.id,
-        avatarUrl: post.user?.profile_picture || '/placeholder.svg',
+        avatarUrl: post.user?.profile_picture,
         username: post.user?.full_name || 'Unknown User',
         time: post.created_at || new Date().toISOString(), // Pass raw timestamp for proper relative time calculation
         created_at: post.created_at, // Also include created_at for ProfileActivityCard to use
@@ -330,7 +330,7 @@ export default function UserProfile() {
         comments: post.comments_count || 0,
         shares: 0, // API doesn't provide shares count
         isLiked: post.is_liked || false,
-        color: post.user.color
+        color: post.user?.color
     })) || [];
 
     // Redirect to own profile if viewing own profile

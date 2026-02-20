@@ -163,8 +163,14 @@ export default function FundraiserDetail() {
     );
   }
 
-  const bannerColor = fundraiserData.color || '#1600ff';
-  const bannerImage = fundraiserData.image;
+  const handleBack = () => {
+    const fromCreate = params?.fromCreate;
+    if (fromCreate && fundraiserData?.collective) {
+      (navigation as any).navigate('GroupCRWD', { id: fundraiserData.collective, fromCreate: true });
+    } else {
+      navigation.goBack();
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -197,7 +203,7 @@ export default function FundraiserDetail() {
           <View style={styles.headerContent}>
             <View style={styles.headerTop}>
               <TouchableOpacity
-                onPress={() => navigation.goBack()}
+                onPress={handleBack}
                 style={styles.headerButton}
                 activeOpacity={0.7}
               >

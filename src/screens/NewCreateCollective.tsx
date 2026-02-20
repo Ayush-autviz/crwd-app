@@ -1057,7 +1057,7 @@ export default function NewCreateCollective() {
               )}
 
               <TouchableOpacity
-                onPress={() => (navigation as any).navigate('GroupCRWD', { id: createdCollective.id })}
+                onPress={() => (navigation as any).navigate('GroupCRWD', { id: createdCollective.id, fromCreate: true })}
                 style={styles.successSecondaryButton}
               >
                 <Eye size={20} color="#111827" />

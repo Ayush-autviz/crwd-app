@@ -467,7 +467,7 @@ export default function CreateFundraiser() {
                 style={styles.viewCampaignButton}
                 onPress={() => {
                   if (createdFundraiser?.id) {
-                    (navigation as any).navigate('FundraiserDetail', { id: createdFundraiser.id });
+                    (navigation as any).navigate('FundraiserDetail', { id: createdFundraiser.id, fromCreate: true });
                   }
                 }}
               >
@@ -479,7 +479,7 @@ export default function CreateFundraiser() {
                 style={styles.backToCollectiveButton}
                 onPress={() => {
                   setShowSuccessModal(false);
-                  (navigation as any).navigate('GroupCRWD', { id: collectiveId });
+                  (navigation as any).navigate('GroupCRWD', { id: collectiveId, fromCreate: true });
                 }}
               >
                 <Text style={styles.backToCollectiveText}>Back to Collective</Text>

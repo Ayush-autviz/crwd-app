@@ -1,41 +1,33 @@
 import React, { useRef, useEffect, useMemo, useCallback } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator } from 'react-native';
-import BottomSheet, { BottomSheetView, BottomSheetBackdrop } from '@gorhom/bottom-sheet';
-import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import { BottomSheetView, BottomSheetBackdrop, BottomSheetModal } from '@gorhom/bottom-sheet';
+import { X, ChevronRight, Heart, ShoppingBag } from 'lucide-react-native';
 
 interface AddToDonationBoxBottomSheetProps {
   isOpen: boolean;
   onClose: () => void;
-  causeData: {
-    id: number;
-    name: string;
-    mission?: string;
-    description?: string;
-    image?: string;
-    logo?: string;
-    category?: string;
-  };
-  donationBoxCount: number;
   onConfirm: () => void;
+  onOneTimeDonation: () => void;
   isPending?: boolean;
 }
 
 export default function AddToDonationBoxBottomSheet({
   isOpen,
   onClose,
-  causeData,
-  donationBoxCount,
   onConfirm,
+  onOneTimeDonation,
   isPending = false,
 }: AddToDonationBoxBottomSheetProps) {
-  const bottomSheetRef = useRef<BottomSheet>(null);
-  const snapPoints = useMemo(() => ['50%'], []);
+  const bottomSheetRef = useRef<BottomSheetModal>(null);
+
+  // Use slightly larger snap point for the new content
+  const snapPoints = useMemo(() => ['42%'], []);
 
   useEffect(() => {
     if (isOpen) {
-      bottomSheetRef.current?.snapToIndex(0);
+      bottomSheetRef.current?.present();
     } else {
-      bottomSheetRef.current?.close();
+      bottomSheetRef.current?.dismiss();
     }
   }, [isOpen]);
 
@@ -45,230 +37,226 @@ export default function AddToDonationBoxBottomSheet({
         {...props}
         disappearsOnIndex={-1}
         appearsOnIndex={0}
-        opacity={0.5}
+        opacity={0.6}
       />
     ),
     []
   );
 
-  // Get icon color for avatar fallback
-  const getIconColor = (id: number | string): string => {
-    const colors = [
-      '#1600ff', // Blue
-      '#10B981', // Green
-      '#EC4899', // Pink
-      '#F59E0B', // Amber
-      '#8B5CF6', // Purple
-      '#EF4444', // Red
-    ];
-    const hash = typeof id === 'number' ? id : id.toString().split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
-    return colors[hash % colors.length];
+  const handleOneTimeClick = () => {
+    onClose();
+    onOneTimeDonation();
   };
 
-  const iconColor = getIconColor(causeData.id);
-  const iconLetter = causeData.name.charAt(0).toUpperCase();
-  const imageUrl = causeData.logo || causeData.image || '';
-  const hasImage = imageUrl && (imageUrl.startsWith('http') || imageUrl.startsWith('/') || imageUrl.startsWith('data:'));
-
   return (
-    <BottomSheet
+    <BottomSheetModal
       ref={bottomSheetRef}
-      index={isOpen ? 0 : -1}
       snapPoints={snapPoints}
       enablePanDownToClose
       backdropComponent={renderBackdrop}
-      onClose={onClose}
+      onDismiss={onClose}
+      handleIndicatorStyle={styles.indicator}
+      backgroundStyle={styles.background}
+      enableDynamicSizing={false}
     >
       <BottomSheetView style={styles.container}>
+        {/* Close Button */}
+        <TouchableOpacity
+          onPress={() => bottomSheetRef.current?.dismiss()}
+          style={styles.closeButton}
+          activeOpacity={0.7}
+        >
+          <X size={20} color="#9CA3AF" />
+        </TouchableOpacity>
 
-
-        {/* Content */}
         <View style={styles.content}>
-          {/* Title */}
-          <Text style={styles.title}>Add to Donation Box</Text>
-
-          {/* Donation Box Count */}
-          <Text style={styles.countText}>
-            You have {donationBoxCount} nonprofit{donationBoxCount !== 1 ? 's' : ''} in your donation box
-          </Text>
-
-          {/* Cause Card */}
-          <View style={styles.causeCard}>
-            {/* Image */}
-            <View style={styles.imageContainer}>
-              {hasImage ? (
-                <Image source={{ uri: imageUrl }} style={styles.image} resizeMode="cover" />
-              ) : (
-                <Avatar size={64} style={styles.avatar}>
-                  <AvatarFallback
-                    style={{ backgroundColor: iconColor }}
-                    textStyle={styles.avatarFallbackText}
-                  >
-                    {iconLetter}
-                  </AvatarFallback>
-                </Avatar>
-              )}
-            </View>
-
-            {/* Content */}
-            <View style={styles.causeContent}>
-              <Text style={styles.causeName} numberOfLines={2}>
-                {causeData.name}
-              </Text>
-              <Text style={styles.causeDescription} numberOfLines={2}>
-                {causeData.mission || causeData.description || ''}
-              </Text>
-            </View>
+          {/* Header */}
+          <View style={styles.header}>
+            <Text style={styles.title}>Support this cause</Text>
+            <Text style={styles.subtitle}>Choose how you want to make an impact</Text>
           </View>
 
-          {/* Confirm Button */}
-          <TouchableOpacity
-            style={[styles.confirmButton, isPending && styles.confirmButtonDisabled]}
-            onPress={onConfirm}
-            disabled={isPending}
-            activeOpacity={0.8}
-          >
-            {isPending ? (
-              <>
-                <ActivityIndicator size="small" color="#FFFFFF" style={{ marginRight: 8 }} />
-                <Text style={styles.confirmButtonText}>Adding...</Text>
-              </>
-            ) : (
-              <Text style={styles.confirmButtonText}>Confirm</Text>
-            )}
-          </TouchableOpacity>
+          {/* Options */}
+          <View style={styles.optionsContainer}>
+            {/* Create a Donation Box Option */}
+            <TouchableOpacity
+              onPress={onConfirm}
+              disabled={isPending}
+              style={styles.optionCardPrimary}
+              activeOpacity={0.9}
+            >
+              <View style={styles.optionLeft}>
+                <View style={styles.iconContainerPrimary}>
+                  {isPending ? (
+                    <ActivityIndicator size="small" color="#FFFFFF" />
+                  ) : (
+                    <ShoppingBag size={24} color="#FFFFFF" strokeWidth={2.5} />
+                  )}
+                </View>
+                <View>
+                  <Text style={styles.optionTitlePrimary}>Create a Donation Box</Text>
+                  <Text style={styles.optionSubtitlePrimary}>Support multiple causes monthly</Text>
+                </View>
+              </View>
+              <View style={styles.arrowContainerPrimary}>
+                <ChevronRight size={20} color="#FFFFFF" />
+              </View>
+            </TouchableOpacity>
 
-          {/* Cancel Link */}
-          <TouchableOpacity
-            onPress={onClose}
-            style={styles.cancelButton}
-            disabled={isPending}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.cancelText}>Cancel</Text>
-          </TouchableOpacity>
+            {/* One-time Donation Option */}
+            <TouchableOpacity
+              onPress={handleOneTimeClick}
+              disabled={isPending}
+              style={styles.optionCardSecondary}
+              activeOpacity={0.9}
+            >
+              <View style={styles.optionLeft}>
+                <View style={styles.iconContainerSecondary}>
+                  <Heart size={24} color="#9CA3AF" strokeWidth={2.5} />
+                </View>
+                <View>
+                  <Text style={styles.optionTitleSecondary}>One-time Donation</Text>
+                  <Text style={styles.optionSubtitleSecondary}>Make a single contribution</Text>
+                </View>
+              </View>
+              <View style={styles.arrowContainerSecondary}>
+                <ChevronRight size={20} color="#9CA3AF" />
+              </View>
+            </TouchableOpacity>
+          </View>
         </View>
       </BottomSheetView>
-    </BottomSheet>
+    </BottomSheetModal>
   );
 }
 
 const styles = StyleSheet.create({
+  background: {
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+  },
+  indicator: {
+    backgroundColor: '#F3F4F6',
+    width: 48,
+    height: 6,
+  },
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
-  },
-  missionBanner: {
-    backgroundColor: '#374151',
-    paddingVertical: 12,
     paddingHorizontal: 16,
+    paddingTop: 8,
   },
-  missionText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '500',
-    textAlign: 'center',
+  closeButton: {
+    position: 'absolute',
+    right: 20,
+    top: 0,
+    zIndex: 10,
+    padding: 6,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 20,
   },
   content: {
-    padding: 16,
+    marginTop: 12,
   },
-  title: {
-    fontSize: 20,
-    fontFamily: 'Outfit-Bold',
-    color: '#111827',
-    marginBottom: 8,
-  },
-  countText: {
-    fontSize: 14,
-    color: '#6B7280',
-    marginBottom: 16,
-    fontFamily: 'Outfit-Regular',
-  },
-  causeCard: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 12,
-    padding: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    backgroundColor: '#FFFFFF',
+  header: {
+    alignItems: 'center',
     marginBottom: 24,
   },
-  imageContainer: {
-    width: 64,
-    height: 64,
-    borderRadius: 8,
-    overflow: 'hidden',
-    flexShrink: 0,
-  },
-  image: {
-    width: '100%',
-    height: '100%',
-  },
-  avatar: {
-    borderRadius: 8,
-  },
-  avatarFallbackText: {
-    color: '#FFFFFF',
+  title: {
     fontSize: 24,
-    fontFamily: 'Outfit-Bold',
-  },
-  causeContent: {
-    flex: 1,
-    minWidth: 0,
-  },
-  causeName: {
-    fontSize: 16,
     fontFamily: 'Outfit-Bold',
     color: '#111827',
     marginBottom: 4,
   },
-  causeDescription: {
-    fontSize: 12,
+  subtitle: {
+    fontSize: 15,
+    fontFamily: 'Outfit-Medium',
     color: '#6B7280',
-    lineHeight: 18,
-    marginBottom: 8,
-    fontFamily: 'Outfit-Regular',
   },
-  categoryTag: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#EC4899',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 9999,
+  optionsContainer: {
+    gap: 12,
   },
-  categoryText: {
-    color: '#FFFFFF',
-    fontSize: 10,
-    fontWeight: '600',
+  optionCardPrimary: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#1600ff',
+    padding: 12,
+    borderRadius: 12,
+    shadowColor: '#1600ff',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
-  confirmButton: {
-    backgroundColor: '#84CC16',
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    borderRadius: 8,
+  optionCardSecondary: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FFFFFF',
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
+    borderStyle: 'solid',
+  },
+  optionLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  iconContainerPrimary: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     alignItems: 'center',
     justifyContent: 'center',
-    flexDirection: 'row',
-    marginBottom: 12,
   },
-  confirmButtonDisabled: {
-    opacity: 0.6,
-  },
-  confirmButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontFamily: 'Outfit-SemiBold',
-  },
-  cancelButton: {
+  iconContainerSecondary: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#F9FAFB',
     alignItems: 'center',
-    paddingVertical: 8,
+    justifyContent: 'center',
   },
-  cancelText: {
-    color: '#6B7280',
+  optionTitlePrimary: {
+    fontSize: 18,
+    fontFamily: 'Outfit-Bold',
+    color: '#FFFFFF',
+    marginBottom: 2,
+  },
+  optionSubtitlePrimary: {
     fontSize: 14,
     fontFamily: 'Outfit-Medium',
+    color: 'rgba(255, 255, 255, 0.8)',
+  },
+  optionTitleSecondary: {
+    fontSize: 18,
+    fontFamily: 'Outfit-Bold',
+    color: '#111827',
+    marginBottom: 2,
+  },
+  optionSubtitleSecondary: {
+    fontSize: 14,
+    fontFamily: 'Outfit-Medium',
+    color: '#6B7280',
+  },
+  arrowContainerPrimary: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  arrowContainerSecondary: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#F9FAFB',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
 

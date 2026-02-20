@@ -5,7 +5,7 @@ interface AvatarProps {
   size?: number;
   style?: StyleProp<ViewStyle>;
   className?: string;
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 interface AvatarImageProps {
@@ -16,7 +16,7 @@ interface AvatarImageProps {
 }
 
 interface AvatarFallbackProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   style?: StyleProp<ViewStyle>;
   textStyle?: StyleProp<TextStyle>;
 }

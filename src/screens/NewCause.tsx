@@ -414,9 +414,8 @@ export default function NewCausePage() {
         <AddToDonationBoxBottomSheet
           isOpen={showAddToBoxModal}
           onClose={() => setShowAddToBoxModal(false)}
-          causeData={causeData}
-          donationBoxCount={donationBoxData?.box_causes?.length || 0}
           onConfirm={handleConfirmAddToBox}
+          onOneTimeDonation={handleDonate}
           isPending={addToDonationBoxMutation.isPending}
         />
       )}

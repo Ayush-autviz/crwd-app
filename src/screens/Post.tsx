@@ -1,15 +1,17 @@
-import { View, Text, TouchableOpacity, TextInput, Image, ScrollView, StyleSheet, ActivityIndicator } from 'react-native'
-import React, { useState, useEffect } from 'react'
+import { View, Text, TouchableOpacity, TextInput, Image, ScrollView, StyleSheet, ActivityIndicator, Keyboard, BackHandler, Platform } from 'react-native'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { PrimaryGrey, PrimaryBlue, LightGrey } from '../Constants/Colors'
 import { ImageIcon, X, ArrowLeft, Paperclip, Lightbulb } from 'lucide-react-native'
-import ImagePicker from 'react-native-image-crop-picker'
-import { useNavigation, useRoute } from '@react-navigation/native'
+import * as ImagePicker from 'react-native-image-picker'
+import { useNavigation, useRoute, usePreventRemove, CommonActions } from '@react-navigation/native'
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query'
 import { createPost, getLinkPreview } from '../services/api/social'
 import { useAuthStore } from '../store/store'
 import { Toast } from '../components/Toast'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
+import { BottomSheetModal } from '@gorhom/bottom-sheet'
+import DiscardBottomSheet from '../components/ui/DiscardBottomSheet'
 
 export default function Post() {
   const navigation = useNavigation<any>();
@@ -32,8 +34,60 @@ export default function Post() {
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [urlError, setUrlError] = useState<string | null>(null)
 
+  const [isConfirmedDiscard, setIsConfirmedDiscard] = useState(false);
+  const discardSheetRef = React.useRef<BottomSheetModal>(null);
+  const [pendingAction, setPendingAction] = useState<any>(null);
+
   // Track link preview
   const [showPreview, setShowPreview] = useState(false)
+
+  const hasUnsavedChanges = useMemo(() => {
+    return form.content.trim() !== '' || form.url.trim() !== '' || selectedImage !== null;
+  }, [form.content, form.url, selectedImage]);
+
+  const performBackNavigation = useCallback(() => {
+    navigation.goBack();
+  }, [navigation]);
+
+  const handleBack = useCallback(() => {
+    if (hasUnsavedChanges && !isConfirmedDiscard) {
+      Keyboard.dismiss();
+      setPendingAction(null);
+      setTimeout(() => {
+        discardSheetRef.current?.present();
+      }, 250);
+      return;
+    }
+    performBackNavigation();
+  }, [hasUnsavedChanges, isConfirmedDiscard, performBackNavigation]);
+
+  // Navigation guard
+  usePreventRemove(
+    hasUnsavedChanges && !isConfirmedDiscard,
+    (e) => {
+      Keyboard.dismiss();
+      setPendingAction(e.data.action);
+      discardSheetRef.current?.present();
+    }
+  );
+
+  // Handle hardware back button
+  useEffect(() => {
+    const backAction = () => {
+      if (hasUnsavedChanges && !isConfirmedDiscard) {
+        handleBack();
+        return true;
+      }
+      return false;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      backAction
+    );
+
+    return () => backHandler.remove();
+  }, [hasUnsavedChanges, isConfirmedDiscard, handleBack]);
 
   // Validate URL format - defined before useQuery
   const validateUrl = (url: string): boolean => {
@@ -112,20 +166,27 @@ export default function Post() {
 
   // Handle image selection
   const handleImageSelect = () => {
-    ImagePicker.openPicker({
+    const options: ImagePicker.ImageLibraryOptions = {
       mediaType: 'photo',
-      cropping: true,
-      width: 1200,
-      height: 600,
-      freeStyleCropEnabled: false,
       includeBase64: false,
-      cropperToolbarTitle: 'Edit Image',
-    }).then(image => {
-      setSelectedImage(image.path);
-      setImagePreview(image.path);
-    }).catch(error => {
-      if (error.code !== 'E_PICKER_CANCELLED') {
-        console.log('ImagePicker Error: ', error);
+      maxHeight: 2000,
+      maxWidth: 2000,
+    };
+
+    ImagePicker.launchImageLibrary(options, (response) => {
+      if (response.didCancel) {
+        return;
+      }
+      if (response.errorMessage) {
+        console.log('ImagePicker Error: ', response.errorMessage);
+        return;
+      }
+      if (response.assets && response.assets[0]) {
+        const asset = response.assets[0];
+        if (asset.uri) {
+          setSelectedImage(asset.uri);
+          setImagePreview(asset.uri);
+        }
       }
     });
   }
@@ -150,6 +211,7 @@ export default function Post() {
       handleImageSelect();
     }
   }
+
 
   // Check if post can be submitted
   const canSubmitPost = () => {
@@ -196,7 +258,7 @@ export default function Post() {
       <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }} edges={['top', 'left', 'right']}>
         <View style={styles.header}>
           <TouchableOpacity
-            onPress={() => navigation.goBack()}
+            onPress={() => handleBack()}
             style={styles.backButton}
           >
             <ArrowLeft size={20} color="#374151" />
@@ -230,7 +292,7 @@ export default function Post() {
       <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }} edges={['top', 'left', 'right']}>
         <View style={styles.header}>
           <TouchableOpacity
-            onPress={() => navigation.goBack()}
+            onPress={() => handleBack()}
             style={styles.backButton}
           >
             <ArrowLeft size={20} color="#374151" />
@@ -245,7 +307,7 @@ export default function Post() {
             Please select a collective to create a post.
           </Text>
           <TouchableOpacity
-            onPress={() => navigation.goBack()}
+            onPress={() => handleBack()}
             style={styles.signInButton}
           >
             <Text style={styles.signInButtonText}>Go Back</Text>
@@ -265,7 +327,7 @@ export default function Post() {
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <TouchableOpacity
-            onPress={() => navigation.goBack()}
+            onPress={() => handleBack()}
             style={styles.backButton}
           >
             <ArrowLeft size={20} color="#374151" />
@@ -481,6 +543,22 @@ export default function Post() {
         show={showToast}
         onHide={() => setShowToast(false)}
         duration={2000}
+      />
+
+      <DiscardBottomSheet
+        ref={discardSheetRef}
+        onDiscard={() => {
+          setIsConfirmedDiscard(true);
+          discardSheetRef.current?.dismiss();
+          setTimeout(() => {
+            if (pendingAction) {
+              navigation.dispatch(pendingAction);
+            } else {
+              performBackNavigation();
+            }
+          }, 300);
+        }}
+        onCancel={() => discardSheetRef.current?.dismiss()}
       />
     </SafeAreaView>
   )

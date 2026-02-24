@@ -11,7 +11,7 @@ import RequestNonprofitModal from '../components/newsearch/RequestNonprofitModal
 import PaymentMethodsBottomSheet from '../components/donation/PaymentMethodsBottomSheet'
 import { CircleHelp, CreditCard, FileText, Info, Lock, Mail, MessageSquare, Shield, Eye, Bookmark, Heart, ChevronDown, UserPlus, DoorOpenIcon } from 'lucide-react-native'
 import { LightGrey, PrimaryBlue, PrimaryGrey, SecondaryGrey } from '../Constants/Colors'
-import { useNavigation, usePreventRemove } from '@react-navigation/native'
+import { useNavigation, usePreventRemove, CommonActions } from '@react-navigation/native'
 import { useAuthStore } from '../store/store'
 import { useMutation } from '@tanstack/react-query'
 import { useToast } from '../contexts/ToastContext'
@@ -19,6 +19,7 @@ import messaging from '@react-native-firebase/messaging';
 import { unregisterToken } from '../services/api/auth';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { useQueryClient } from '@tanstack/react-query';
+import DiscardBottomSheet from '../components/ui/DiscardBottomSheet'
 
 export default function NewSettings() {
   const navigation = useNavigation()
@@ -30,8 +31,6 @@ export default function NewSettings() {
   const passwordBottomSheetRef = useRef<BottomSheet>(null)
   const emailBottomSheetRef = useRef<BottomSheet>(null)
   const discardBottomSheetRef = useRef<BottomSheetModal>(null)
-
-  const discardSnapPoints = useMemo(() => ['40%'], [])
 
   // State
   const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null)
@@ -376,38 +375,11 @@ export default function NewSettings() {
         />
 
         {/* Exit Confirmation Bottom Sheet */}
-        <BottomSheetModal
+        <DiscardBottomSheet
           ref={discardBottomSheetRef}
-          snapPoints={discardSnapPoints}
-          enablePanDownToClose
-          backdropComponent={renderBackdrop}
-          backgroundStyle={{ backgroundColor: 'white' }}
-        >
-          <BottomSheetView style={styles.sheetContent}>
-            <View style={styles.dialogHeader}>
-              <Text style={styles.dialogTitle}>Unsaved Changes</Text>
-              <Text style={styles.dialogDescription}>
-                You are currently in edit mode. If you leave now, any changes you've made will be lost. Are you sure you want to go back?
-              </Text>
-            </View>
-            <View style={styles.dialogButtonsVertical}>
-              <TouchableOpacity
-                onPress={() => discardBottomSheetRef.current?.dismiss()}
-                style={[styles.confirmDialogButton, styles.stayButton]}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.stayButtonText}>Stay and Edit</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={confirmExit}
-                style={[styles.confirmDialogButton, styles.discardButton]}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.discardButtonText}>Discard Changes</Text>
-              </TouchableOpacity>
-            </View>
-          </BottomSheetView>
-        </BottomSheetModal>
+          onDiscard={confirmExit}
+          onCancel={() => discardBottomSheetRef.current?.dismiss()}
+        />
       </SafeAreaView>
     </GestureHandlerRootView >
   )
@@ -591,55 +563,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#111827',
     fontFamily: 'Outfit-SemiBold',
-  },
-  sheetContent: {
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 20,
-    paddingBottom: 24,
-    flex: 1,
-  },
-  dialogHeader: {
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  dialogTitle: {
-    fontSize: 24,
-    fontFamily: 'Outfit-Bold',
-    fontWeight: '700',
-    color: '#111827',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  dialogDescription: {
-    fontSize: 15,
-    color: '#6B7280',
-    textAlign: 'center',
-    // lineHeight: 22,
-    fontFamily: 'Outfit-Regular',
-  },
-  dialogButtonsVertical: {
-    gap: 12,
-  },
-  confirmDialogButton: {
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '100%',
-  },
-  stayButton: {
-    borderWidth: 1.5,
-    borderColor: '#E5E7EB',
-    backgroundColor: '#FFFFFF',
-  },
-  discardButton: {
-    backgroundColor: '#EF4444',
-  },
-  stayButtonText: {
-    fontSize: 16,
-    fontFamily: 'Outfit-Bold',
-    fontWeight: '700',
-    color: '#111827',
   },
   discardButtonText: {
     fontSize: 16,

@@ -22,6 +22,8 @@ import { updateProfile } from '../../services/api/auth'
 import { useAuthStore } from '../../store/store'
 import { useToast } from '../../contexts/ToastContext'
 import * as ImagePicker from 'react-native-image-picker'
+import { BottomSheetModal } from '@gorhom/bottom-sheet'
+import DiscardBottomSheet from '../ui/DiscardBottomSheet'
 
 interface AccountProps {
   isEditMode: boolean;
@@ -53,6 +55,17 @@ export default function Account({ isEditMode, setIsEditMode }: AccountProps) {
     profile_picture_file: ''
   })
   const [selectedImageUri, setSelectedImageUri] = useState<string | null>(null)
+  const discardSheetRef = React.useRef<BottomSheetModal>(null)
+
+  const hasUnsavedChanges = React.useMemo(() => {
+    return (
+      formData.first_name !== originalData.first_name ||
+      formData.last_name !== originalData.last_name ||
+      formData.location !== originalData.location ||
+      formData.bio !== originalData.bio ||
+      selectedImageUri !== null
+    )
+  }, [formData, originalData, selectedImageUri])
 
   // Fetch current profile data
   const { data: profileData } = useQuery({
@@ -70,7 +83,7 @@ export default function Account({ isEditMode, setIsEditMode }: AccountProps) {
       }
       queryClient.invalidateQueries({ queryKey: ['userProfile', user?.id] })
       queryClient.invalidateQueries({ queryKey: ['profile'] })
-      showToast('Profile updated successfully!', 3000)
+      // showToast('Profile updated successfully!', 3000)
       setIsEditMode(false)
       setOriginalData(formData)
     },
@@ -106,10 +119,19 @@ export default function Account({ isEditMode, setIsEditMode }: AccountProps) {
     setIsEditMode(true)
   }
 
-  const handleCancel = () => {
+  const handleCancelClick = () => {
+    if (hasUnsavedChanges) {
+      discardSheetRef.current?.present()
+    } else {
+      setIsEditMode(false)
+    }
+  }
+
+  const performDiscard = () => {
     setFormData(originalData)
     setSelectedImageUri(null)
     setIsEditMode(false)
+    discardSheetRef.current?.dismiss()
   }
 
   const handleSave = async () => {
@@ -366,7 +388,7 @@ export default function Account({ isEditMode, setIsEditMode }: AccountProps) {
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.actionButton, styles.cancelButton]}
-                onPress={handleCancel}
+                onPress={handleCancelClick}
                 disabled={updateProfileMutation.isPending}
               >
                 <Text style={styles.cancelButtonText}>Cancel</Text>
@@ -376,6 +398,11 @@ export default function Account({ isEditMode, setIsEditMode }: AccountProps) {
           )}
         </ScrollView>
       </KeyboardAvoidingView>
+      <DiscardBottomSheet
+        ref={discardSheetRef}
+        onDiscard={performDiscard}
+        onCancel={() => discardSheetRef.current?.dismiss()}
+      />
     </View>
   )
 }

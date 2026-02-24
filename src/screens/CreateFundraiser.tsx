@@ -117,7 +117,7 @@ export default function CreateFundraiser() {
   const [createdFundraiser, setCreatedFundraiser] = useState<any>(null);
   const discardSheetRef = React.useRef<BottomSheetModal>(null);
   // Use a ref so the flag is readable synchronously when the beforeRemove event fires
-  const isConfirmedDiscardRef = React.useRef(false);
+  const [isConfirmedDiscard, setIsConfirmedDiscard] = useState(false);
   const [pendingAction, setPendingAction] = useState<any>(null);
   const confettiRef = React.useRef<ConfettiCannon>(null);
   const shareSheetRef = React.useRef<BottomSheetModal>(null);
@@ -205,7 +205,7 @@ export default function CreateFundraiser() {
 
   // Navigation guard - using usePreventRemove for better compatibility (e.g. iOS back button)
   usePreventRemove(
-    hasUnsavedChanges && !showSuccessModal && !isConfirmedDiscardRef.current,
+    hasUnsavedChanges && !showSuccessModal && !isConfirmedDiscard,
     (e) => {
       Keyboard.dismiss();
       setPendingAction(e.data.action);
@@ -220,7 +220,7 @@ export default function CreateFundraiser() {
         setStep((prev) => (prev - 1) as 1 | 2 | 3);
         return true;
       }
-      if (hasUnsavedChanges && !showSuccessModal && !isConfirmedDiscardRef.current) {
+      if (hasUnsavedChanges && !showSuccessModal && !isConfirmedDiscard) {
         Keyboard.dismiss();
         navigation.goBack();
         return true;
@@ -418,7 +418,7 @@ export default function CreateFundraiser() {
       return;
     }
 
-    if (hasUnsavedChanges && !showSuccessModal && !isConfirmedDiscardRef.current) {
+    if (hasUnsavedChanges && !showSuccessModal && !isConfirmedDiscard) {
       Keyboard.dismiss();
       setPendingAction(null);
       setTimeout(() => {
@@ -516,7 +516,7 @@ export default function CreateFundraiser() {
                 style={styles.viewCampaignButton}
                 onPress={() => {
                   if (createdFundraiser?.id) {
-                    isConfirmedDiscardRef.current = true;
+                    setIsConfirmedDiscard(true);
                     (navigation as any).navigate('FundraiserDetail', { id: createdFundraiser.id, fromCreate: true });
                   }
                 }}
@@ -528,7 +528,7 @@ export default function CreateFundraiser() {
               <TouchableOpacity
                 style={styles.backToCollectiveButton}
                 onPress={() => {
-                  isConfirmedDiscardRef.current = true;
+                  setIsConfirmedDiscard(true);
                   (navigation as any).navigate('GroupCRWD', { id: collectiveId, fromCreate: true });
                 }}
               >
@@ -1108,7 +1108,7 @@ export default function CreateFundraiser() {
       <DiscardBottomSheet
         ref={discardSheetRef}
         onDiscard={() => {
-          isConfirmedDiscardRef.current = true;
+          setIsConfirmedDiscard(true);
           discardSheetRef.current?.dismiss();
           setTimeout(() => {
             if (pendingAction) {

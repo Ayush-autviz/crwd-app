@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, TextInput, Image, ScrollView, StyleSheet, ActivityIndicator, Keyboard, BackHandler, Platform } from 'react-native'
+import { View, Text, TouchableOpacity, TextInput, Image, ScrollView, StyleSheet, ActivityIndicator, Keyboard, BackHandler, Platform, Dimensions } from 'react-native'
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { PrimaryGrey, PrimaryBlue, LightGrey } from '../Constants/Colors'
@@ -18,6 +18,7 @@ export default function Post() {
   const route = useRoute<any>();
   const queryClient = useQueryClient();
   const { user: currentUser } = useAuthStore();
+  const screenWidth = Dimensions.get('window').width;
 
   // Get collectiveData from route params (similar to location.state in Vite)
   const collectiveData = route.params?.collectiveData || (route.params?.collectiveId ? { id: route.params.collectiveId } : null);
@@ -32,6 +33,7 @@ export default function Post() {
   })
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [previewWidth, setPreviewWidth] = useState<number | null>(null)
   const [urlError, setUrlError] = useState<string | null>(null)
 
   const [isConfirmedDiscard, setIsConfirmedDiscard] = useState(false);
@@ -115,6 +117,22 @@ export default function Post() {
     }
   }, [previewData, form.url, urlError])
 
+  // Calculate image preview size
+  useEffect(() => {
+    if (imagePreview) {
+      Image.getSize(
+        imagePreview,
+        (width, height) => {
+          const calculatedWidth = (200 * width) / height;
+          setPreviewWidth(Math.min(calculatedWidth, screenWidth - 32));
+        },
+        (error) => console.log('Image size error for preview', error)
+      );
+    } else {
+      setPreviewWidth(null);
+    }
+  }, [imagePreview, screenWidth]);
+
   // Create post mutation
   const createPostMutation = useMutation({
     mutationFn: createPost,
@@ -122,6 +140,13 @@ export default function Post() {
       console.log('Post created successfully:', response);
       setToastMessage("Post created successfully!");
       setShowToast(true);
+
+      // Clear form data on success to prevent discard sheet
+      setForm({ content: '', url: '' });
+      setSelectedImage(null);
+      setImagePreview(null);
+      setPostType(null);
+      setShowPreview(false);
 
       // Invalidate posts queries to refresh the list
       if (collectiveData?.id) {
@@ -490,10 +515,14 @@ export default function Post() {
         {/* Image Preview */}
         {selectedImage && imagePreview && (
           <View style={styles.imagePreviewSection}>
-            <View style={styles.imagePreviewContainer}>
+            <View style={[styles.imagePreviewContainer, { flexDirection: 'row' }]}>
               <Image
                 source={{ uri: imagePreview }}
-                style={styles.imagePreview}
+                style={[styles.imagePreview, {
+                  width: previewWidth || 0,
+                  borderRadius: 8,
+                  opacity: previewWidth ? 1 : 0
+                }]}
                 resizeMode="cover"
               />
               <TouchableOpacity
@@ -778,8 +807,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   imagePreview: {
-    width: '100%',
-    aspectRatio: 2,
+    height: 200,
   },
   removeImageButton: {
     position: 'absolute',

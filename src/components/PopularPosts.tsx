@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { BottomSheetModal } from '@gorhom/bottom-sheet'
 import SharePost from './SharePost'
 import { LightGrey, PrimaryBlue, PrimaryGrey, SecondaryGrey } from '../Constants/Colors'
-import { Ellipsis, Heart, MessageCircle, Trash2, Share2, MessageSquare, Users, Pin, MoreHorizontal, Pencil, Flag } from 'lucide-react-native'
+import { Ellipsis, Heart, MessageCircle, Trash2, Share2, MessageSquare, Users, MapPin, MoreHorizontal, Pencil, Flag } from 'lucide-react-native'
 import { useNavigation, NavigationProp, CommonActions } from '@react-navigation/native'
 import SocialShare from './SocialShare'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
@@ -171,6 +171,7 @@ export default function PopularPosts({
     const [showFundraiserMenu, setShowFundraiserMenu] = useState<number | null>(null);
     const shareSheetRef = useRef<BottomSheetModal>(null);
     const [shareData, setShareData] = useState({ url: '', title: '', message: '' });
+    const [imageWidths, setImageWidths] = useState<Record<string, number>>({});
 
     const queryClient = useQueryClient();
     const { showToast } = useToast();
@@ -189,7 +190,7 @@ export default function PopularPosts({
     // Like post mutation
     const likeMutation = useMutation({
         mutationFn: likePost,
-        onSuccess: (data, postId) => {
+        onSuccess: (_data: any, postId: string) => {
             setLikedPosts(prev => new Set([...prev, postId]));
             setPostsLikesCount(prev => ({
                 ...prev,
@@ -198,7 +199,7 @@ export default function PopularPosts({
             showToast('Post liked!', 2000);
             queryClient.invalidateQueries({ queryKey: ['posts'] });
         },
-        onError: (error) => {
+        onError: (error: any) => {
             console.error('Error liking post:', error);
             showToast('Failed to like post', 2000);
         },
@@ -207,7 +208,7 @@ export default function PopularPosts({
     // Unlike post mutation
     const unlikeMutation = useMutation({
         mutationFn: unlikePost,
-        onSuccess: (data, postId) => {
+        onSuccess: (_data: any, postId: string) => {
             setLikedPosts(prev => {
                 const newSet = new Set(prev);
                 newSet.delete(postId);
@@ -220,7 +221,7 @@ export default function PopularPosts({
             showToast('Post unliked!', 2000);
             queryClient.invalidateQueries({ queryKey: ['posts'] });
         },
-        onError: (error) => {
+        onError: (error: any) => {
             console.error('Error unliking post:', error);
             showToast('Failed to unlike post', 2000);
         },
@@ -236,7 +237,7 @@ export default function PopularPosts({
             setSelectedPost(null);
             queryClient.invalidateQueries({ queryKey: ['posts'] });
         },
-        onError: (error) => {
+        onError: (error: any) => {
             console.error('Error deleting post:', error);
             showToast('Failed to delete post', 2000);
             setDeleteConfirmVisible(false);
@@ -300,6 +301,23 @@ export default function PopularPosts({
         setLikedPosts(likedSet);
         setPostsLikesCount(likesCount);
     }, [posts]);
+
+    // Calculate image sizes for all posts
+    useEffect(() => {
+        if (!posts) return;
+        posts.forEach(item => {
+            const imageUrl = item.imageUrl || item.fundraiser?.image;
+            if (imageUrl && !imageWidths[item.id]) {
+                Image.getSize(imageUrl, (width, height) => {
+                    const calculatedWidth = (200 * width) / height;
+                    setImageWidths(prev => ({
+                        ...prev,
+                        [item.id]: Math.min(calculatedWidth, screenWidth - 32)
+                    }));
+                }, (error) => console.log('Image size error for post', item.id, error));
+            }
+        });
+    }, [posts, screenWidth]);
 
     // Handle like button press
     const handleLikePress = (postId: string) => {
@@ -578,7 +596,7 @@ export default function PopularPosts({
                                             paddingHorizontal: 4
                                         }}>
                                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                                                <Pin size={16} color="#1600ff" />
+                                                <MapPin size={16} color="#1600ff" />
                                                 <Text style={{ fontSize: 12, fontFamily: 'Outfit-Medium', color: '#1600ff' }}>
                                                     PINNED FUNDRAISER
                                                 </Text>
@@ -742,7 +760,7 @@ export default function PopularPosts({
                                         {item.fundraiser?.is_active ? (
                                             <>
                                                 {/* Fundraiser Cover Image/Color - rounded-t-lg only */}
-                                                <View style={{ width: '100%', aspectRatio: 2, borderTopLeftRadius: 12, borderTopRightRadius: 12, overflow: 'hidden' }}>
+                                                <View style={{ width: '100%', height: 200, borderTopLeftRadius: 8, borderTopRightRadius: 8, overflow: 'hidden' }}>
                                                     {item.fundraiser.color ? (
                                                         <View style={{
                                                             width: '100%',
@@ -756,11 +774,18 @@ export default function PopularPosts({
                                                             </Text>
                                                         </View>
                                                     ) : item.fundraiser.image ? (
-                                                        <Image
-                                                            source={{ uri: item.fundraiser.image }}
-                                                            style={{ width: '100%', height: '100%' }}
-                                                            resizeMode="cover"
-                                                        />
+                                                        <View style={{ flexDirection: 'row' }}>
+                                                            <Image
+                                                                source={{ uri: item.fundraiser.image }}
+                                                                style={{
+                                                                    width: imageWidths[item.id] || 0,
+                                                                    height: 200,
+                                                                    borderRadius: 8,
+                                                                    opacity: imageWidths[item.id] ? 1 : 0
+                                                                }}
+                                                                resizeMode="cover"
+                                                            />
+                                                        </View>
                                                     ) : (
                                                         <View style={{
                                                             width: '100%',
@@ -831,7 +856,7 @@ export default function PopularPosts({
                                         ) : item.fundraiser ? (
                                             <>
                                                 {/* Legacy Fundraiser UI for inactive fundraisers */}
-                                                <View style={{ width: '100%', aspectRatio: 2, borderTopLeftRadius: 12, borderTopRightRadius: 12, overflow: 'hidden' }}>
+                                                <View style={{ width: '100%', height: 200, borderTopLeftRadius: 8, borderTopRightRadius: 8, overflow: 'hidden' }}>
                                                     {item.fundraiser.color ? (
                                                         <View style={{
                                                             width: '100%',
@@ -845,11 +870,18 @@ export default function PopularPosts({
                                                             </Text>
                                                         </View>
                                                     ) : item.fundraiser.image ? (
-                                                        <Image
-                                                            source={{ uri: item.fundraiser.image }}
-                                                            style={{ width: '100%', height: '100%' }}
-                                                            resizeMode="cover"
-                                                        />
+                                                        <View style={{ flexDirection: 'row' }}>
+                                                            <Image
+                                                                source={{ uri: item.fundraiser.image }}
+                                                                style={{
+                                                                    width: imageWidths[item.id] || 0,
+                                                                    height: 200,
+                                                                    borderRadius: 8,
+                                                                    opacity: imageWidths[item.id] ? 1 : 0
+                                                                }}
+                                                                resizeMode="cover"
+                                                            />
+                                                        </View>
                                                     ) : (
                                                         <View style={{
                                                             width: '100%',
@@ -902,10 +934,13 @@ export default function PopularPosts({
 
                                         {/* Media Section - Only show if NO fundraiser */}
                                         {!item.fundraiser && !item.previewDetails?.image && item.imageUrl && (
-                                            <View style={styles.mediaContainer}>
+                                            <View style={[styles.mediaContainer, { alignSelf: 'flex-start', width: 'auto' }]}>
                                                 <Image
                                                     source={{ uri: item.imageUrl }}
-                                                    style={styles.postImage}
+                                                    style={[styles.postImage, {
+                                                        width: imageWidths[item.id] || 0,
+                                                        opacity: imageWidths[item.id] ? 1 : 0
+                                                    }]}
                                                     resizeMode="cover"
                                                 />
                                             </View>
@@ -1150,7 +1185,7 @@ export default function PopularPosts({
                         </View>
                     </TouchableWithoutFeedback>
                 </Modal>
-            </View>
+            </View >
             <SharePost
                 ref={shareSheetRef}
                 url={shareData.url}
@@ -1262,16 +1297,13 @@ const styles = StyleSheet.create({
     mediaContainer: {
         width: '100%',
         borderRadius: 8,
-        borderWidth: 1,
-        borderColor: '#e5e7eb',
         backgroundColor: 'white',
         overflow: 'hidden',
         marginBottom: 12,
     },
     postImage: {
-        width: '100%',
-        aspectRatio: 2,
-        borderRadius: 12,
+        height: 200,
+        borderRadius: 8,
     },
     mediaPlaceholder: {
         width: '100%',

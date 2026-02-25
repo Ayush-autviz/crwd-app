@@ -102,6 +102,8 @@ export default function PostDetail() {
   const discardSheetRef = React.useRef<BottomSheetModal>(null)
   const [isConfirmedDiscard, setIsConfirmedDiscard] = useState(false)
   const [pendingAction, setPendingAction] = useState<any>(null)
+  const [imageWidth, setImageWidth] = useState<number | null>(null)
+  const [previewImageWidth, setPreviewImageWidth] = useState<number | null>(null)
 
   // Fetch post data using API
   const { data: postData, isLoading: isLoadingPost, error: postError } = useQuery({
@@ -140,6 +142,33 @@ export default function PostDetail() {
     queryFn: () => getPostComments(postId || ''),
     enabled: !!postId,
   });
+
+  // Calculate image sizes
+  useEffect(() => {
+    if (post?.imageUrl) {
+      Image.getSize(
+        post.imageUrl,
+        (width, height) => {
+          const calculatedWidth = (200 * width) / height;
+          setImageWidth(Math.min(calculatedWidth, screenWidth - 40)); // padding 20 on each side
+        },
+        (error) => console.log('Image size error', error)
+      );
+    }
+  }, [post?.imageUrl, screenWidth]);
+
+  useEffect(() => {
+    if (post?.previewDetails?.image) {
+      Image.getSize(
+        post.previewDetails.image,
+        (width, height) => {
+          const calculatedWidth = (200 * width) / height;
+          setPreviewImageWidth(Math.min(calculatedWidth, screenWidth - 42)); // padding + border
+        },
+        (error) => console.log('Preview image size error', error)
+      );
+    }
+  }, [post?.previewDetails?.image, screenWidth]);
 
   // Transform API comments to CommentData format
   const apiComments = React.useMemo(() => {
@@ -958,7 +987,7 @@ export default function PostDetail() {
                   }
                 }}
                 style={{
-                  width: '100%',
+                  alignSelf: 'flex-start',
                   marginTop: 12,
                   borderRadius: 8,
                   borderWidth: 1,
@@ -968,11 +997,17 @@ export default function PostDetail() {
                 }}
               >
                 {post.previewDetails.image && (
-                  <Image
-                    source={{ uri: post.previewDetails.image }}
-                    style={{ width: '100%', height: 200 }}
-                    resizeMode="cover"
-                  />
+                  <View style={{ flexDirection: 'row' }}>
+                    <Image
+                      source={{ uri: post.previewDetails.image }}
+                      style={{
+                        width: previewImageWidth || 0,
+                        height: 200,
+                        opacity: previewImageWidth ? 1 : 0
+                      }}
+                      resizeMode="cover"
+                    />
+                  </View>
                 )}
                 <View style={{ padding: 12 }}>
                   {post.previewDetails.site_name && (
@@ -996,15 +1031,18 @@ export default function PostDetail() {
                 </View>
               </TouchableOpacity>
             ) : post.imageUrl ? (
-              <Image
-                source={{ uri: post.imageUrl }}
-                style={{
-                  width: '100%',
-                  height: 200,
-                  borderRadius: 8,
-                  marginTop: 12
-                }}
-              />
+              <View style={{ flexDirection: 'row', borderRadius: 8, marginTop: 12 }}>
+                <Image
+                  source={{ uri: post.imageUrl }}
+                  style={{
+                    width: imageWidth || 0,
+                    height: 200,
+                    borderRadius: 8,
+                    opacity: imageWidth ? 1 : 0
+                  }}
+                  resizeMode="cover"
+                />
+              </View>
             ) : null}
 
             <View style={{

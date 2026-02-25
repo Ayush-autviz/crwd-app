@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, Linking, ActivityIndicator, Share, Clipboard } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Image, Linking, ActivityIndicator, Share, Clipboard, Dimensions } from 'react-native';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import SharePost from '../SharePost';
 import { useNavigation, CommonActions } from '@react-navigation/native';
@@ -117,7 +117,25 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
   const { showToast } = useToast();
   const [isLiked, setIsLiked] = useState(post.is_liked || false);
   const [likesCount, setLikesCount] = useState(post.likes_count || 0);
+  const [imageWidth, setImageWidth] = useState<number | null>(null);
   const shareSheetRef = useRef<BottomSheetModal>(null);
+
+  useEffect(() => {
+    const imageUrl = post.media || post.fundraiser?.image;
+    if (imageUrl) {
+      Image.getSize(
+        imageUrl,
+        (width, height) => {
+          const screenWidth = Dimensions.get('window').width - 32; // adjust for padding
+          const calculatedWidth = Math.min((200 * width) / height, screenWidth);
+          setImageWidth(calculatedWidth);
+        },
+        (error) => {
+          console.log('Image size error', error);
+        }
+      );
+    }
+  }, [post.media, post.fundraiser?.image]);
 
   const user = post.user;
   // Use user.color first if available, then fall back to consistent color based on ID or username
@@ -415,16 +433,19 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
 
         {/* Media Section - Only show if no fundraiser */}
         {!post.fundraiser && !post.preview_details?.image && post.media && (
-          // <TouchableOpacity
-          //   onPress={() => {
-          //     if (post.media) {
-          //       Linking.openURL(post.media);
-          //     }
-          //   }}
-          //   activeOpacity={0.9}
-          // >
-          <Image source={{ uri: post.media }} style={styles.media} resizeMode="cover" />
-          // </TouchableOpacity>
+          <View style={{ flexDirection: 'row', borderRadius: 8 }}>
+            <Image
+              source={{ uri: post.media }}
+              style={[
+                styles.media,
+                {
+                  width: imageWidth || 0,
+                  opacity: imageWidth ? 1 : 0
+                }
+              ]}
+              resizeMode="cover"
+            />
+          </View>
         )}
 
         {/* Fundraiser UI */}
@@ -435,7 +456,7 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
             style={styles.fundraiserCard}
           >
             {/* Fundraiser Cover Image/Color - rounded-t-lg only */}
-            <View style={{ width: '100%', aspectRatio: 2, borderTopLeftRadius: 12, borderTopRightRadius: 12, overflow: 'hidden' }}>
+            <View style={{ width: '100%', height: 200, borderTopLeftRadius: 12, borderTopRightRadius: 12, overflow: 'hidden' }}>
               {post.fundraiser.color ? (
                 <View style={{
                   width: '100%',
@@ -449,11 +470,18 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
                   </Text>
                 </View>
               ) : post.fundraiser.image ? (
-                <Image
-                  source={{ uri: post.fundraiser.image }}
-                  style={{ width: '100%', height: '100%' }}
-                  resizeMode="cover"
-                />
+                <View style={{ flexDirection: 'row', borderRadius: 8, }}>
+                  <Image
+                    source={{ uri: post.fundraiser.image }}
+                    style={{
+                      width: imageWidth || 0,
+                      height: 200,
+                      borderRadius: 8,
+                      opacity: imageWidth ? 1 : 0
+                    }}
+                    resizeMode="cover"
+                  />
+                </View>
               ) : (
                 <View style={{
                   width: '100%',
@@ -830,8 +858,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Regular',
   },
   media: {
-    width: '100%',
-    aspectRatio: 2,
+    height: 200,        // ✅ fixed height
     borderRadius: 8,
     marginBottom: 10,
   },

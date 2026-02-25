@@ -465,7 +465,7 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
                   justifyContent: 'center',
                   alignItems: 'center'
                 }}>
-                  <Text style={{ color: 'white', fontSize: 20, fontWeight: 'bold' }}>
+                  <Text style={{ color: 'white', fontSize: 20, fontWeight: 'bold', textAlign: 'center' }}>
                     {post.fundraiser.name}
                   </Text>
                 </View>
@@ -490,7 +490,7 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
                   justifyContent: 'center',
                   alignItems: 'center'
                 }}>
-                  <Text style={{ color: 'white', fontSize: 20, fontWeight: 'bold' }}>
+                  <Text style={{ color: 'white', fontSize: 20, fontWeight: 'bold', textAlign: 'center' }}>
                     {post.fundraiser.name}
                   </Text>
                 </View>

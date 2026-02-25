@@ -769,7 +769,7 @@ export default function PopularPosts({
                                                             justifyContent: 'center',
                                                             alignItems: 'center'
                                                         }}>
-                                                            <Text style={{ color: 'white', fontSize: 20, fontFamily: 'Outfit-Bold' }}>
+                                                            <Text style={{ color: 'white', fontSize: 20, fontFamily: 'Outfit-Bold', textAlign: 'center' }}>
                                                                 {item.fundraiser.name}
                                                             </Text>
                                                         </View>
@@ -803,7 +803,7 @@ export default function PopularPosts({
 
                                                 {/* Fundraiser Info - rounded-b-lg only, connected to cover */}
                                                 <View style={{ marginBottom: 8, backgroundColor: 'white', padding: 16, borderBottomLeftRadius: 12, borderBottomRightRadius: 12 }}>
-                                                    <Text style={{ fontSize: 14, fontFamily: 'Outfit-Bold', color: '#111827', marginBottom: 12 }}>
+                                                    <Text style={{ fontSize: 16, fontFamily: 'Outfit-Bold', color: '#111827', marginBottom: 12 }}>
                                                         {item.fundraiser.name}
                                                     </Text>
 
@@ -865,7 +865,7 @@ export default function PopularPosts({
                                                             justifyContent: 'center',
                                                             alignItems: 'center'
                                                         }}>
-                                                            <Text style={{ color: 'white', fontSize: 20, fontFamily: 'Outfit-Bold' }}>
+                                                            <Text style={{ color: 'white', fontSize: 20, fontFamily: 'Outfit-Bold', textAlign: 'center' }}>
                                                                 {item.fundraiser.name}
                                                             </Text>
                                                         </View>
@@ -890,7 +890,7 @@ export default function PopularPosts({
                                                             justifyContent: 'center',
                                                             alignItems: 'center'
                                                         }}>
-                                                            <Text style={{ color: 'white', fontSize: 20, fontFamily: 'Outfit-Bold' }}>
+                                                            <Text style={{ color: 'white', fontSize: 20, fontFamily: 'Outfit-Bold', textAlign: 'center' }}>
                                                                 {item.fundraiser.name}
                                                             </Text>
                                                         </View>

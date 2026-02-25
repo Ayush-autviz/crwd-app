@@ -40,7 +40,7 @@ const instance = axios.create({
 
 // const BaseURL = 'https://crwd.autviz.com';
 // const BaseURL = 'http://ec2-65-0-54-143.ap-south-1.compute.amazonaws.com:8200';
-const BaseURL = 'https://api.crwdfund.org'
+const BaseURL = 'https://api.crwdfund.org/api'
 // const BaseURL = 'https://stage-api.crwdfund.org'
 
 

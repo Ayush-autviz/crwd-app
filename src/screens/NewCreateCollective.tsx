@@ -952,9 +952,6 @@ export default function NewCreateCollective() {
                         </Avatar>
                         <View style={styles.reviewCauseInfo}>
                           <Text style={styles.reviewCauseName}>{causeData.name}</Text>
-                          <Text style={styles.reviewCauseDescription}>
-                            {truncateAtFirstPeriod(causeData.mission || causeData.description)}
-                          </Text>
                           <View style={styles.reviewCauseCategoriesContainer}>
                             {categoryNames.map((name, index) => {
                               const singleCategoryId = categoryIds[index];
@@ -972,6 +969,9 @@ export default function NewCreateCollective() {
                               );
                             })}
                           </View>
+                          <Text style={styles.reviewCauseDescription}>
+                            {truncateAtFirstPeriod(causeData.mission || causeData.description)}
+                          </Text>
                         </View>
                       </View>
                     </View>
@@ -2154,9 +2154,9 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   causeHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    gap: 4,
     marginBottom: 4,
     flexWrap: 'wrap',
   },
@@ -2354,7 +2354,7 @@ const styles = StyleSheet.create({
   reviewCauseDescription: {
     fontSize: 14,
     color: '#6B7280',
-    marginBottom: 8,
+    marginVertical: 4,
     fontFamily: 'Outfit-Regular',
   },
   reviewCauseCategoriesContainer: {

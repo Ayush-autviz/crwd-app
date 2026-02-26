@@ -34,7 +34,7 @@ export default function ProfileStats({
         if (onStatPress) {
             onStatPress(tab);
         } else {
-            navigation.navigate('Statistics' as never, { screen: tab, userId: profileId || undefined })
+            (navigation as any).navigate('Statistics', { screen: tab, userId: profileId || undefined })
         }
     }
 
@@ -57,7 +57,7 @@ export default function ProfileStats({
                         <Text style={{ fontSize: 14, fontFamily: 'Outfit-SemiBold', color: '#595959', textAlign: 'center' }}>
                             {causes}
                         </Text>
-                        <Text style={{ fontSize: 14, color: '#595959', textAlign: 'center', fontFamily: 'Outfit-Medium' }}>Causes</Text>
+                        <Text style={{ fontSize: 14, color: '#595959', textAlign: 'center', fontFamily: 'Outfit-Medium' }}>cause{causes !== 1 ? 's' : ''}</Text>
                     </View>
 
                 )}
@@ -75,7 +75,7 @@ export default function ProfileStats({
                         <Text style={{ fontSize: 14, fontFamily: 'Outfit-SemiBold', color: '#595959', textAlign: "center" }}>
                             {crwds}
                         </Text>
-                        <Text style={{ fontSize: 14, color: '#595959', textAlign: "center", fontFamily: 'Outfit-Medium' }}>Collectives</Text>
+                        <Text style={{ fontSize: 14, color: '#595959', textAlign: "center", fontFamily: 'Outfit-Medium' }}>collective{crwds !== 1 ? 's' : ''}</Text>
                     </View>
                 )}
             </TouchableOpacity>
@@ -91,7 +91,7 @@ export default function ProfileStats({
                         <Text style={{ fontSize: 14, fontFamily: 'Outfit-SemiBold', color: '#595959', textAlign: "center" }}>
                             {followers}
                         </Text>
-                        <Text style={{ fontSize: 14, color: '#595959', textAlign: "center", fontFamily: 'Outfit-Medium' }}>Followers</Text>
+                        <Text style={{ fontSize: 14, color: '#595959', textAlign: "center", fontFamily: 'Outfit-Medium' }}>follower{followers !== 1 ? 's' : ''}</Text>
                     </View>
                 )}
             </TouchableOpacity>
@@ -107,7 +107,7 @@ export default function ProfileStats({
                         <Text style={{ fontSize: 14, fontFamily: 'Outfit-SemiBold', color: '#595959', textAlign: "center" }}>
                             {following}
                         </Text>
-                        <Text style={{ fontSize: 14, color: '#595959', textAlign: "center", fontFamily: 'Outfit-Medium' }}>Following</Text>
+                        <Text style={{ fontSize: 14, color: '#595959', textAlign: "center", fontFamily: 'Outfit-Medium' }}>following{following !== 1 ? 's' : ''}</Text>
                     </View>
                 )}
             </TouchableOpacity>

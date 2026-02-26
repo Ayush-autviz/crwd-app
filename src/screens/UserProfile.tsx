@@ -718,8 +718,8 @@ export default function UserProfile() {
                         <View style={styles.profileMeta}>
                             {userProfile.location && (
                                 <View style={styles.metaItem}>
-                                    <MapPin size={16} color="#6b7280" />
-                                    <Text style={[styles.metaText, { fontSize: 15, color: '#6b7280', fontFamily: 'Outfit-Regular' }]}>{userProfile.location}</Text>
+                                    <MapPin size={16} color="#000000" />
+                                    <Text style={[styles.metaText, { fontSize: 15, color: '#000000', fontFamily: 'Outfit-Regular' }]}>{userProfile.location}</Text>
                                 </View>
                             )
                             }

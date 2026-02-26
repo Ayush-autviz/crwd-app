@@ -24,9 +24,10 @@ import { getDonationBox, createDonationBox, removeCauseFromBox, removeCollective
 import DonationBoxSummaryCard from '../components/donation/DonationBoxSummaryCard';
 import { getCausesBySearch, getJoinCollective, getCollectiveById } from '../services/api/crwd';
 import { useAuthStore } from '../store/store';
-import { Alert, ActivityIndicator, Modal, Pressable } from 'react-native';
+import { ActivityIndicator, Modal, Pressable } from 'react-native';
 import { useStripe } from '@stripe/stripe-react-native';
 import MainHeaderNav from '../components/MainHeaderNav';
+import { useToast } from '../contexts/ToastContext';
 import DonationReviewBottomSheet from '../components/donation/DonationReviewBottomSheet';
 import RequestNonprofitModal from '../components/newsearch/RequestNonprofitModal';
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/Avatar';
@@ -70,6 +71,7 @@ export default function DonationScreen() {
   const [amountTarget, setAmountTarget] = useState<'donationAmount' | 'editableAmount'>('donationAmount');
   const { user: currentUser } = useAuthStore();
   const queryClient = useQueryClient();
+  const { showToast } = useToast();
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const boxCauses = donationBox?.box_causes || [];
   const causes = boxCauses.map((boxCause: any) => boxCause.cause).filter((cause: any) => cause != null);
@@ -186,9 +188,9 @@ export default function DonationScreen() {
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['donationBox'] });
       setIsEditingAmount(false);
-      Alert.alert('Success', 'Monthly donation amount updated!');
+      showToast('Monthly donation amount updated!');
     },
-    onError: (e: any) => Alert.alert('Error', e?.response?.data?.message || 'Failed to update amount'),
+    onError: (e: any) => showToast(e?.response?.data?.message || 'Failed to update amount'),
   });
 
   const handleSaveAmount = () => {
@@ -198,7 +200,7 @@ export default function DonationScreen() {
     const currentDonationBoxCauses = donationBox?.box_causes?.length || 0;
 
     if (currentDonationBoxCauses > maxCapacity) {
-      Alert.alert('Capacity Limit', `You can only support up to ${maxCapacity} causes with $${editableAmount}. Please increase the amount.`);
+      showToast(`You can support up to ${maxCapacity} causes with $${editableAmount}. Please increase amount.`);
       return;
     }
     updateAmountMutation.mutate(editableAmount);
@@ -216,10 +218,9 @@ export default function DonationScreen() {
   const addCausesMutation = useMutation({
     mutationFn: (causeId: number) => addCausesToBox({ causes: [{ cause_id: causeId }] }),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['donationBox'] });
       setSearchQuery(''); // Clear search
     },
-    onError: (e: any) => Alert.alert('Error', e?.response?.data?.message || 'Failed to add cause'),
+    onError: (e: any) => showToast(e?.response?.data?.message || 'Failed to add cause'),
   });
 
   // Create donation box
@@ -234,7 +235,7 @@ export default function DonationScreen() {
         reviewBottomSheetRef.current?.open();
       }, 100);
     },
-    onError: (e: any) => Alert.alert('Error', e?.response?.data?.message || 'Failed to create box'),
+    onError: (e: any) => showToast(e?.response?.data?.message || 'Failed to create box'),
   });
 
 
@@ -254,7 +255,7 @@ export default function DonationScreen() {
     onError: (error: any) => {
       console.error('Error removing cause:', error);
       const errorMessage = error?.response?.data?.message || error?.message || 'Failed to remove cause';
-      Alert.alert('Error', errorMessage);
+      showToast(errorMessage);
     },
   });
 
@@ -274,7 +275,7 @@ export default function DonationScreen() {
     onError: (error: any) => {
       console.error('Error removing collective:', error);
       const errorMessage = error?.response?.data?.message || error?.message || 'Failed to remove collective';
-      Alert.alert('Error', errorMessage);
+      showToast(errorMessage);
     },
   });
 
@@ -299,7 +300,7 @@ export default function DonationScreen() {
       setIsProcessingPayment(false);
     },
     onError: (e: any) => {
-      Alert.alert('Error', e?.response?.data?.message || 'Activation failed');
+      showToast(e?.response?.data?.message || 'Activation failed');
       setIsProcessingPayment(false);
     },
   });
@@ -310,7 +311,7 @@ export default function DonationScreen() {
     onSuccess: async (response: any) => {
       const clientSecret = response?.client_secret;
       if (!clientSecret) {
-        Alert.alert('Error', 'Missing client secret');
+        showToast('Missing client secret');
         setIsProcessingPayment(false);
         return;
       }
@@ -327,13 +328,13 @@ export default function DonationScreen() {
           }
         });
         if (init.error) {
-          Alert.alert('Error', init.error.message || 'Failed to initialize payment');
+          showToast(init.error.message || 'Failed to initialize payment');
           setIsProcessingPayment(false);
           return;
         }
         const present = await presentPaymentSheet();
         if (present.error && present.error.code !== 'Canceled') {
-          Alert.alert('Payment Failed', present.error.message || 'Unable to complete payment');
+          showToast(present.error.message || 'Unable to complete payment');
           setIsProcessingPayment(false);
           return;
         }
@@ -348,12 +349,12 @@ export default function DonationScreen() {
         }
       } catch (error) {
         setIsProcessingPayment(false);
-        Alert.alert('Error', 'Payment processing failed');
+        showToast('Payment processing failed');
       }
     },
     onError: (e: any) => {
       console.log('error', e);
-      Alert.alert('Error', e?.response?.data?.message || 'Activation failed');
+      showToast(e?.response?.data?.message || 'Activation failed');
       queryClient.invalidateQueries({ queryKey: ['donationBox'] });
       setIsProcessingPayment(false);
     },
@@ -471,7 +472,7 @@ export default function DonationScreen() {
       const currentDonationBoxCauses = (donationBoxQuery.data?.box_causes || donationBox?.box_causes || []).length;
 
       if (currentDonationBoxCauses > maxCapacity) {
-        Alert.alert('Capacity Limit', `You can only support up to ${maxCapacity} causes with $${finalValue}. Please increase the amount.`);
+        showToast(`You can support up to ${maxCapacity} causes with $${finalValue}. Please increase amount.`);
         return;
       }
 
@@ -1095,10 +1096,7 @@ export default function DonationScreen() {
 
                                         // Check if adding this cause would exceed capacity
                                         if (currentCapacity >= maxCapacity) {
-                                          Alert.alert(
-                                            'Capacity Reached',
-                                            `You can only add up to ${maxCapacity} cause${maxCapacity !== 1 ? 's' : ''} for $${donationAmount}. Increase your donation amount to support more causes.`
-                                          );
+                                          showToast(`You can only add up to ${maxCapacity} causes for $${donationAmount}. Increase donation to support more.`);
                                           return;
                                         }
 

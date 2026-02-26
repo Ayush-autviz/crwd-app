@@ -69,13 +69,8 @@ export default function SearchResults() {
         },
         getNextPageParam: (lastPage: any) => {
             if (lastPage.next) {
-                try {
-                    const url = new URL(lastPage.next);
-                    const page = url.searchParams.get('page');
-                    return page ? parseInt(page) : undefined;
-                } catch (e) {
-                    return undefined;
-                }
+                const match = lastPage.next.match(/[?&]page=(\d+)/);
+                return match ? parseInt(match[1]) : undefined;
             }
             return undefined;
         },
@@ -216,16 +211,31 @@ export default function SearchResults() {
                     keyExtractor={(item, index) => item.id?.toString() || index.toString()}
                     contentContainerStyle={styles.listContent}
                     ListEmptyComponent={renderEmptyState}
-                    onEndReached={() => {
-                        if (hasNextPage) fetchNextPage();
-                    }}
-                    onEndReachedThreshold={0.5}
                     ListFooterComponent={
-                        isFetchingNextPage ? (
+                        hasNextPage ? (
+                            <View style={styles.loadMoreContainer}>
+                                <TouchableOpacity
+                                    style={styles.loadMoreButton}
+                                    onPress={() => fetchNextPage()}
+                                    disabled={isFetchingNextPage}
+                                >
+                                    {isFetchingNextPage ? (
+                                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                            <ActivityIndicator size="small" color="#6B7280" style={{ marginRight: 8 }} />
+                                            <Text style={styles.loadMoreText}>Loading...</Text>
+                                        </View>
+                                    ) : (
+                                        <Text style={styles.loadMoreText}>Load More</Text>
+                                    )}
+                                </TouchableOpacity>
+                            </View>
+                        ) : isFetchingNextPage ? (
                             <View style={styles.bottomLoader}>
                                 <ActivityIndicator size="small" color="#2c7fff" />
                             </View>
-                        ) : null
+                        ) : (
+                            <View style={{ height: 40 }} />
+                        )
                     }
                 />
             </View>
@@ -345,5 +355,28 @@ const styles = StyleSheet.create({
     bottomLoader: {
         paddingVertical: 16,
         alignItems: 'center',
+    },
+    loadMoreContainer: {
+        marginTop: 10,
+        marginBottom: 30,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    loadMoreButton: {
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
+        borderRadius: 8,
+        paddingVertical: 10,
+        paddingHorizontal: 24,
+        minWidth: 120,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#FFFFFF',
+    },
+    loadMoreText: {
+        fontSize: 14,
+        color: '#374151',
+        fontWeight: '500',
+        fontFamily: 'Outfit-Medium',
     },
 });

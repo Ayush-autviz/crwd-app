@@ -4,13 +4,15 @@ import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import SharePost from '../SharePost';
 import { useNavigation, CommonActions } from '@react-navigation/native';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
-import { Heart, MessageCircle, Share2, Users } from 'lucide-react-native';
+import { Heart, MessageCircle, Share2, Users, Ellipsis, Trash2 } from 'lucide-react-native';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
-import { likePost, unlikePost, followUserById, unfollowUserById, getUserProfileById } from '../../services/api/social';
+import { likePost, unlikePost, followUserById, unfollowUserById, getUserProfileById, deletePost } from '../../services/api/social';
 import { useAuthStore } from '../../store/store';
 import { WEB_BASE_URL } from '../../Constants/url';
+import DeletePostBottomSheet from '../post/DeletePostBottomSheet';
 import { useToast } from '../../contexts/ToastContext';
 import { LightGrey, PrimaryBlue, PrimaryGrey } from '../../Constants/Colors';
+import { Modal, TouchableWithoutFeedback, Pressable } from 'react-native';
 
 interface PreviewDetails {
   title?: string | null;
@@ -119,6 +121,9 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
   const [likesCount, setLikesCount] = useState(post.likes_count || 0);
   const [imageWidth, setImageWidth] = useState<number | null>(null);
   const shareSheetRef = useRef<BottomSheetModal>(null);
+  const deleteBottomSheetRef = useRef<BottomSheetModal>(null);
+  const [tooltipVisible, setTooltipVisible] = useState(false);
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     const imageUrl = post.media || post.fundraiser?.image;
@@ -184,6 +189,22 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
     },
     onError: (error: any) => {
       console.error('Error unliking post:', error);
+    },
+  });
+
+  // Delete post mutation
+  const deletePostMutation = useMutation({
+    mutationFn: () => deletePost(post.id.toString()),
+    onSuccess: () => {
+      showToast('Post deleted successfully!');
+      deleteBottomSheetRef.current?.dismiss();
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
+      queryClient.invalidateQueries({ queryKey: ['search'] });
+    },
+    onError: (error: any) => {
+      console.error('Error deleting post:', error);
+      showToast('Failed to delete post');
+      deleteBottomSheetRef.current?.dismiss();
     },
   });
 
@@ -257,6 +278,12 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
     } else {
       (navigation as any).navigate('PostDetail', { postId: post.id });
     }
+  };
+
+  const handleEllipsisPress = (event: any) => {
+    const { pageX, pageY } = event.nativeEvent;
+    setTooltipPosition({ x: pageX, y: pageY });
+    setTooltipVisible(true);
   };
 
   return (
@@ -393,6 +420,20 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
                         {isFollowing ? 'Following' : 'Follow'}
                       </Text>
                     )}
+                  </TouchableOpacity>
+                )}
+
+                {/* Ellipsis Menu for Own Posts */}
+                {currentUser?.id && user?.id && currentUser.id.toString() === user.id.toString() && !post.fundraiser?.is_active && (
+                  <TouchableOpacity
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      handleEllipsisPress(e);
+                    }}
+                    style={styles.menuButton}
+                    activeOpacity={0.7}
+                  >
+                    <Ellipsis size={20} color={PrimaryGrey} />
                   </TouchableOpacity>
                 )}
               </View>
@@ -640,6 +681,42 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
             <Share2 size={14} color="#4B5563" />
           </TouchableOpacity>
         </View>
+
+        {/* Post Options Tooltip */}
+        <Modal
+          visible={tooltipVisible}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setTooltipVisible(false)}
+        >
+          <TouchableWithoutFeedback onPress={() => setTooltipVisible(false)}>
+            <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.1)' }}>
+              <TouchableWithoutFeedback onPress={() => { }}>
+                <View style={[
+                  styles.tooltip,
+                  {
+                    position: 'absolute',
+                    left: tooltipPosition.x - 140,
+                    top: tooltipPosition.y + 10,
+                  }
+                ]}>
+                  <TouchableOpacity
+                    style={styles.tooltipItem}
+                    onPress={() => {
+                      setTooltipVisible(false);
+                      deleteBottomSheetRef.current?.present();
+                    }}
+                  >
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                      <Trash2 size={16} color="#ef4444" />
+                      <Text style={[styles.tooltipText, { color: '#ef4444' }]}>Delete Post</Text>
+                    </View>
+                  </TouchableOpacity>
+                </View>
+              </TouchableWithoutFeedback>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
       </TouchableOpacity >
       <SharePost
         ref={shareSheetRef}
@@ -648,6 +725,13 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
           : `${WEB_BASE_URL}/post/${post.id}`}
         title={''}
         message={''}
+      />
+
+      <DeletePostBottomSheet
+        ref={deleteBottomSheetRef}
+        onDelete={() => deletePostMutation.mutate()}
+        onCancel={() => deleteBottomSheetRef.current?.dismiss()}
+        isDeleting={deletePostMutation.isPending}
       />
     </>
   );
@@ -965,5 +1049,34 @@ const styles = StyleSheet.create({
   //   marginBottom: 4,
   //   fontFamily: 'Outfit-Regular',
   // },
+  menuButton: {
+    padding: 4,
+    paddingLeft: 10,
+  },
+  tooltip: {
+    backgroundColor: 'white',
+    borderRadius: 8,
+    padding: 4,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 5,
+    width: 150,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  tooltipItem: {
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+  },
+  tooltipText: {
+    fontSize: 14,
+    color: '#111',
+    fontFamily: 'Outfit-Medium',
+  },
 });
 

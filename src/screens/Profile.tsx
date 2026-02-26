@@ -860,8 +860,8 @@ export default function Profile() {
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                                     {/* <Text style={{ fontSize: 16, color: '#6b7280' }}>📍</Text> */}
-                                    <MapPin size={16} color="#6b7280" />
-                                    <Text style={{ fontSize: 14, color: '#6b7280' }}>{profileData.location}</Text>
+                                    <MapPin size={16} color="#000000" />
+                                    <Text style={{ fontSize: 14, color: '#000000' }}>{profileData.location}</Text>
                                 </View>
 
                                 {/* {profileData?.username && (

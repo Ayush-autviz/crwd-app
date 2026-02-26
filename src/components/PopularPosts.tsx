@@ -12,6 +12,7 @@ import { patchFundraiser } from '../services/api/crwd'
 import { useToast } from '../contexts/ToastContext'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/Avatar'
 import { useAuthStore } from '../store/store'
+import DeletePostBottomSheet from './post/DeletePostBottomSheet'
 import { WEB_BASE_URL } from '../Constants/url'
 
 // Format date to relative time or full date
@@ -165,13 +166,13 @@ export default function PopularPosts({
     const [tooltipVisible, setTooltipVisible] = useState(false);
     const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
     const [shareModalVisible, setShareModalVisible] = useState(false);
-    const [deleteConfirmVisible, setDeleteConfirmVisible] = useState(false);
     const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
     const [postsLikesCount, setPostsLikesCount] = useState<Record<string, number>>({});
     const [showFundraiserMenu, setShowFundraiserMenu] = useState<number | null>(null);
     const shareSheetRef = useRef<BottomSheetModal>(null);
     const [shareData, setShareData] = useState({ url: '', title: '', message: '' });
     const [imageWidths, setImageWidths] = useState<Record<string, number>>({});
+    const deleteBottomSheetRef = useRef<BottomSheetModal>(null);
 
     const queryClient = useQueryClient();
     const { showToast } = useToast();
@@ -232,7 +233,7 @@ export default function PopularPosts({
         mutationFn: deletePost,
         onSuccess: () => {
             showToast('Post deleted successfully!', 2000);
-            setDeleteConfirmVisible(false);
+            deleteBottomSheetRef.current?.dismiss();
             setTooltipVisible(false);
             setSelectedPost(null);
             queryClient.invalidateQueries({ queryKey: ['posts'] });
@@ -240,7 +241,7 @@ export default function PopularPosts({
         onError: (error: any) => {
             console.error('Error deleting post:', error);
             showToast('Failed to delete post', 2000);
-            setDeleteConfirmVisible(false);
+            deleteBottomSheetRef.current?.dismiss();
         },
     });
 
@@ -501,7 +502,7 @@ export default function PopularPosts({
                 {!isLoading && !error && (!posts || posts.length === 0) && (
                     <View style={styles.emptyContainer}>
                         <View style={styles.emptyIconContainer}>
-                            <Users size={48} color="#1600ff" strokeWidth={1.5} />
+                            <Users size={48} color="#1600ff" strokeWidth={1.5} {...({} as any)} />
                         </View>
                         <Text style={styles.emptyTitle}>No posts yet</Text>
                         <Text style={styles.emptyDescription}>
@@ -725,7 +726,7 @@ export default function PopularPosts({
                                                             }}
                                                             style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
                                                         >
-                                                            <Users size={14} color="#6b7280" strokeWidth={2.5} />
+                                                            <Users size={14} color="#6b7280" strokeWidth={2.5} {...({} as any)} />
                                                             <Text style={{ fontSize: 13, color: '#6b7280', fontFamily: 'Outfit-Regular' }}>
                                                                 {item.org}
                                                             </Text>
@@ -998,6 +999,7 @@ export default function PopularPosts({
                                                         size={18}
                                                         color={likedPosts.has(item.id) ? '#ef4444' : '#6b7280'}
                                                         fill={likedPosts.has(item.id) ? '#ef4444' : 'none'}
+                                                        {...({} as any)}
                                                     />
                                                     <Text style={styles.footerCount}>
                                                         {postsLikesCount[item.id] !== undefined ? postsLikesCount[item.id] : item.likes}
@@ -1059,7 +1061,7 @@ export default function PopularPosts({
                                         style={styles.tooltipItem}
                                         onPress={() => {
                                             setTooltipVisible(false);
-                                            setDeleteConfirmVisible(true);
+                                            deleteBottomSheetRef.current?.present();
                                         }}
                                     >
                                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -1091,106 +1093,25 @@ export default function PopularPosts({
                     url={selectedPost?.imageUrl}
                 />
 
-                {/* Delete Confirmation Dialog */}
-                <Modal
-                    visible={deleteConfirmVisible}
-                    transparent={true}
-                    animationType="fade"
-                    onRequestClose={() => setDeleteConfirmVisible(false)}
-                >
-                    <TouchableWithoutFeedback onPress={() => setDeleteConfirmVisible(false)}>
-                        <View style={{
-                            flex: 1,
-                            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            padding: 20
-                        }}>
-                            <TouchableWithoutFeedback onPress={() => { }}>
-                                <View style={{
-                                    backgroundColor: 'white',
-                                    borderRadius: 12,
-                                    padding: 20,
-                                    width: '100%',
-                                    maxWidth: 400
-                                }}>
-                                    <Text style={{
-                                        fontSize: 18,
-                                        fontFamily: 'Outfit-SemiBold',
-                                        color: '#111827',
-                                        marginBottom: 8
-                                    }}>
-                                        Delete Post
-                                    </Text>
-                                    <Text style={{
-                                        fontSize: 14,
-                                        color: '#6b7280',
-                                        marginBottom: 20,
-                                        fontFamily: 'Outfit-Regular'
-                                    }}>
-                                        Are you sure you want to delete this post? This action cannot be undone.
-                                    </Text>
-                                    <View style={{
-                                        flexDirection: 'row',
-                                        justifyContent: 'flex-end',
-                                        gap: 12
-                                    }}>
-                                        <TouchableOpacity
-                                            onPress={() => setDeleteConfirmVisible(false)}
-                                            disabled={deletePostMutation.isPending}
-                                            style={{
-                                                paddingHorizontal: 16,
-                                                paddingVertical: 8,
-                                                borderRadius: 6,
-                                                borderWidth: 1,
-                                                borderColor: '#e5e7eb',
-                                                opacity: deletePostMutation.isPending ? 0.5 : 1
-                                            }}
-                                        >
-                                            <Text style={{ color: '#111827', fontSize: 14, fontFamily: 'Outfit-Medium' }}>
-                                                Cancel
-                                            </Text>
-                                        </TouchableOpacity>
-                                        <TouchableOpacity
-                                            onPress={() => {
-                                                if (selectedPost) {
-                                                    deletePostMutation.mutate(selectedPost.id);
-                                                }
-                                            }}
-                                            disabled={deletePostMutation.isPending}
-                                            style={{
-                                                paddingHorizontal: 16,
-                                                paddingVertical: 8,
-                                                borderRadius: 6,
-                                                backgroundColor: '#ef4444',
-                                                opacity: deletePostMutation.isPending ? 0.5 : 1
-                                            }}
-                                        >
-                                            {deletePostMutation.isPending ? (
-                                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                                                    <ActivityIndicator size="small" color="white" />
-                                                    <Text style={{ color: 'white', fontSize: 14, fontFamily: 'Outfit-Medium' }}>
-                                                        Deleting...
-                                                    </Text>
-                                                </View>
-                                            ) : (
-                                                <Text style={{ color: 'white', fontSize: 14, fontFamily: 'Outfit-Medium' }}>
-                                                    Delete
-                                                </Text>
-                                            )}
-                                        </TouchableOpacity>
-                                    </View>
-                                </View>
-                            </TouchableWithoutFeedback>
-                        </View>
-                    </TouchableWithoutFeedback>
-                </Modal>
+                {/* Delete Confirmation Dialog removed and replaced with BottomSheet below */}
+
             </View >
             <SharePost
                 ref={shareSheetRef}
                 url={shareData.url}
                 title={shareData.title}
                 message={shareData.message}
+            />
+
+            <DeletePostBottomSheet
+                ref={deleteBottomSheetRef}
+                onDelete={() => {
+                    if (selectedPost) {
+                        deletePostMutation.mutate(selectedPost.id);
+                    }
+                }}
+                onCancel={() => deleteBottomSheetRef.current?.dismiss()}
+                isDeleting={deletePostMutation.isPending}
             />
         </>
     );

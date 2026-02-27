@@ -168,7 +168,7 @@ export default function CollectiveProfile({
               activeOpacity={0.7}
               style={{ alignSelf: 'flex-start' }}
             >
-              <Text style={styles.readMoreText}>{isExpanded ? 'Read Less' : 'Read More...'}</Text>
+              <Text style={styles.readMoreText}>{isExpanded ? 'Less' : 'More...'}</Text>
             </TouchableOpacity>
           )}
         </View>

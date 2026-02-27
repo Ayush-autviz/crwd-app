@@ -733,7 +733,7 @@ export default function CompleteOnboard() {
                                     }
                                   }}
                                 >
-                                  <Text style={styles.supportingText}>Supporting {nonprofitCount} nonprofits</Text>
+                                  <Text style={styles.supportingText}>Supporting {nonprofitCount} nonprofit{nonprofitCount !== 1 ? 's' : ''}</Text>
                                   {causes.length > 0 && (
                                     <ChevronDown
                                       size={16}

@@ -34,7 +34,7 @@ export default function MyDonationBoxCard({
         {/* Icon and Title Row */}
         <View style={styles.iconTitleRow}>
           <View style={styles.iconContainer}>
-            <ShoppingBag size={16} color="#FFFFFF" />
+            <ShoppingBag size={20} color="#FFFFFF" />
           </View>
           <Text style={styles.title}>My Donation Box</Text>
         </View>
@@ -81,8 +81,8 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   iconContainer: {
-    width: 32,
-    height: 32,
+    width: 40,
+    height: 40,
     backgroundColor: '#8B5CF6',
     borderRadius: 8,
     justifyContent: 'center',

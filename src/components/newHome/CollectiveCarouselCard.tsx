@@ -139,8 +139,7 @@ export default function CollectiveCarouselCard({
             activeOpacity={0.7}
           >
             {/* Circular Icon */}
-            {/* Circular Icon */}
-            <View style={[styles.iconContainer, { backgroundColor: '#9333ea', borderRadius: 20 }]}>
+            <View style={styles.iconContainer}>
               <Users size={20} color="white" />
             </View>
 
@@ -270,7 +269,8 @@ const styles = StyleSheet.create({
   iconContainer: {
     width: 40,
     height: 40,
-    borderRadius: 12,
+    borderRadius: 20,
+    backgroundColor: '#9333ea',
     justifyContent: 'center',
     alignItems: 'center',
     flexShrink: 0,

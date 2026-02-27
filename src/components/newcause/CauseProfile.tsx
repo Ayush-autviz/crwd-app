@@ -83,14 +83,14 @@ export default function CauseProfile({ causeData }: CauseProfileProps) {
           {(causeData?.collective_count > 0 || causeData?.donation_count > 0) && (
             <Text style={styles.stats}> in{' '}
               {causeData?.collective_count > 0 && (
-                <>{causeData.collective_count} Collectives</>
+                <>{causeData.collective_count} Collective{causeData.collective_count !== 1 ? 's' : ''}</>
               )}
               {causeData?.collective_count > 0 &&
                 causeData?.donation_count > 0 && (
                   <> • </>
                 )}
               {causeData?.donation_count > 0 && (
-                <>{causeData.donation_count} donations</>
+                <>{causeData.donation_count} donation{causeData.donation_count !== 1 ? 's' : ''}</>
               )}
             </Text>
           )}

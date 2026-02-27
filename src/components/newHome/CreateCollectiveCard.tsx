@@ -15,7 +15,7 @@ export default function CreateCollectiveCard() {
       >
         <View style={styles.cardInner}>
           <View style={[styles.iconContainer, styles.greenIcon]}>
-            <Plus size={24} color="#000000" />
+            <Plus size={20} color="#000000" />
           </View>
           <View style={styles.content}>
             <Text style={styles.cardTitle}>Start Your Own Collective</Text>
@@ -57,9 +57,9 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   iconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
     flexShrink: 0,

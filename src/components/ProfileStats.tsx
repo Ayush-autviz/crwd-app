@@ -107,7 +107,7 @@ export default function ProfileStats({
                         <Text style={{ fontSize: 14, fontFamily: 'Outfit-SemiBold', color: '#595959', textAlign: "center" }}>
                             {following}
                         </Text>
-                        <Text style={{ fontSize: 14, color: '#595959', textAlign: "center", fontFamily: 'Outfit-Medium' }}>following{following !== 1 ? 's' : ''}</Text>
+                        <Text style={{ fontSize: 14, color: '#595959', textAlign: "center", fontFamily: 'Outfit-Medium' }}>following</Text>
                     </View>
                 )}
             </TouchableOpacity>

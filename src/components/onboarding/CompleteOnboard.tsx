@@ -87,8 +87,8 @@ export default function CompleteOnboard() {
 
   // Fetch causes for browse/search
   const { data: browseData, isLoading: isLoadingBrowse } = useQuery({
-    queryKey: ['browse-causes', searchQuery, searchTrigger],
-    queryFn: () => getCausesBySearch(searchQuery || '', '', 1),
+    queryKey: ['browse-causes', searchQuery, searchTrigger, selectedCategoryIds],
+    queryFn: () => getCausesBySearch(searchQuery || '', selectedCategoryIds.join(','), 1),
     enabled: view === 'browse',
     refetchOnMount: true,
   });

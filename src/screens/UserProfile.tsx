@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, TouchableOpacity, Share, Alert, StyleSheet, ActivityIndicator, Clipboard, TouchableWithoutFeedback, Dimensions, Image, Modal } from 'react-native'
+import { View, Text, ScrollView, TouchableOpacity, Share, Alert, StyleSheet, ActivityIndicator, Clipboard, TouchableWithoutFeedback, Dimensions, Image, Modal, RefreshControl } from 'react-native'
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query'
@@ -62,6 +62,7 @@ export default function UserProfile() {
     const { user: currentUser } = useAuthStore();
     const queryClient = useQueryClient();
     const [modalImageFailed, setModalImageFailed] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
 
     // Use userId if available
     const targetUserId = userId || '';
@@ -137,6 +138,19 @@ export default function UserProfile() {
             showToast("Failed to unfollow user");
         },
     });
+
+    const onRefresh = useCallback(async () => {
+        setRefreshing(true);
+        await Promise.all([
+            queryClient.invalidateQueries({ queryKey: ['userProfile', targetUserId] }),
+            queryClient.invalidateQueries({ queryKey: ['posts', targetUserId] }),
+            queryClient.invalidateQueries({ queryKey: ['supportedCauses', targetUserId] }),
+            queryClient.invalidateQueries({ queryKey: ['joinCollective', targetUserId] }),
+            queryClient.invalidateQueries({ queryKey: ['followers', targetUserId] }),
+            queryClient.invalidateQueries({ queryKey: ['following', targetUserId] }),
+        ]);
+        setRefreshing(false);
+    }, [targetUserId, queryClient]);
 
     const handleFollowClick = () => {
         if (!currentUser?.id) {
@@ -672,7 +686,18 @@ export default function UserProfile() {
                 </View>
             </View>
 
-            <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+            <ScrollView
+                style={styles.scrollView}
+                showsVerticalScrollIndicator={false}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={onRefresh}
+                        tintColor={'#9CA3AF'}
+                        colors={['#9CA3AF']}
+                    />
+                }
+            >
                 <View style={styles.content}>
                     {/* Profile Header */}
                     <View style={styles.profileHeader}>

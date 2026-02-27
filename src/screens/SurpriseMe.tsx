@@ -176,15 +176,15 @@ export default function SurpriseMePage() {
       const fees = calculateFees(monthlyAmount);
       const net = fees.net;
       const maxCapacity = Math.floor(net / 0.20);
-      
+
       // Count current causes in the box
       const boxCauses = donationBoxData.box_causes || [];
       const currentCapacity = boxCauses.length;
-      
+
       // Check if adding all surprise causes would exceed capacity
       const newCausesCount = surpriseCauses.length;
       const totalAfterAdding = currentCapacity + newCausesCount;
-      
+
       if (totalAfterAdding > maxCapacity) {
         const availableSlots = maxCapacity - currentCapacity;
         if (availableSlots <= 0) {
@@ -200,7 +200,7 @@ export default function SurpriseMePage() {
         }
         return;
       }
-      
+
       // If capacity check passes, proceed with adding
       const causes = surpriseCauses.map((cause) => ({
         cause_id: cause.id,
@@ -239,7 +239,7 @@ export default function SurpriseMePage() {
           style={styles.surpriseAgainButton}
           activeOpacity={0.7}
         >
-          <Text style={styles.sparkleEmoji}>✨</Text>
+          {/* <Text style={styles.sparkleEmoji}>✨</Text> */}
           <Text style={styles.surpriseAgainText}>Surprise Me Again</Text>
         </TouchableOpacity>
       </View>
@@ -252,11 +252,11 @@ export default function SurpriseMePage() {
         {/* Main Content */}
         <View style={styles.contentContainer}>
           {/* Sparkle Icons */}
-          <View style={styles.sparkleContainer}>
+          {/* <View style={styles.sparkleContainer}>
             <Text style={styles.sparkleEmojiLarge}>✨</Text>
             <View style={styles.sparkleGap} />
             <Text style={styles.sparkleEmojiLarge}>✨</Text>
-          </View>
+          </View> */}
 
           {/* Title */}
           <Text style={styles.title}>Your Surprise Nonprofits!</Text>
@@ -317,7 +317,7 @@ export default function SurpriseMePage() {
           style={[
             styles.addAllButton,
             (addToBoxMutation.isPending || surpriseCauses.length === 0) &&
-              styles.addAllButtonDisabled,
+            styles.addAllButtonDisabled,
           ]}
           activeOpacity={0.7}
         >
@@ -339,7 +339,7 @@ export default function SurpriseMePage() {
           style={styles.surpriseAgainFooter}
           activeOpacity={0.7}
         >
-          <Text style={styles.sparkleEmoji}>✨</Text>
+          {/* <Text style={styles.sparkleEmoji}>✨</Text> */}
           <Text style={styles.surpriseAgainFooterText}>Surprise Me Again</Text>
         </TouchableOpacity>
       </View>

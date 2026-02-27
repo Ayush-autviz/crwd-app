@@ -399,7 +399,7 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
                       {match[1]}
                     </Text>
                     <Text> {match[2]} </Text>
-                    <Text style={styles.boldText}>{match[3]}</Text>
+                    {/* <Text style={styles.boldText}>{match[3]}</Text> */}
                     <Text> {match[4]} {match[5]}</Text>
                   </>
                 );

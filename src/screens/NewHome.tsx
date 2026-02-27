@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect, useState, useRef } from 'react';
+import React, { useMemo, useEffect, useState, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import {
   PermissionsAndroid,
   Animated,
   Easing,
+  RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
@@ -44,6 +45,7 @@ export default function NewHome() {
   const queryClient = useQueryClient();
   const [showCommentsSheet, setShowCommentsSheet] = useState(false);
   const [selectedPost, setSelectedPost] = useState<any>(null);
+  const [refreshing, setRefreshing] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
   const scrollYRef = useRef(0);
   const animateScrollToTop = (duration = 200) => {
@@ -63,6 +65,18 @@ export default function NewHome() {
       anim.removeListener(listenerId);
     });
   };
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['collectives'] }),
+      queryClient.invalidateQueries({ queryKey: ['nonprofitts'] }),
+      queryClient.invalidateQueries({ queryKey: ['donationBox', user?.id] }),
+      queryClient.invalidateQueries({ queryKey: ['joined-collectives', user?.id] }),
+      queryClient.invalidateQueries({ queryKey: ['communityUpdatesPosts'] }),
+    ]);
+    setRefreshing(false);
+  }, [user?.id, queryClient]);
 
   // FCM token send to backend
   const sendFcmTokenToBackend = useMutation({
@@ -634,6 +648,9 @@ export default function NewHome() {
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
           onScroll={(e) => {
             scrollYRef.current = e.nativeEvent.contentOffset.y;
           }}

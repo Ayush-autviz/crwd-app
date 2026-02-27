@@ -28,6 +28,8 @@ interface DonationReviewBottomSheetProps {
   onSubmit?: () => void;
   isOneTime?: boolean;
   isProcessing?: boolean;
+  onEditCauses?: () => void;
+  showEditButton?: boolean;
 }
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
@@ -40,6 +42,8 @@ const DonationReviewBottomSheet = forwardRef<any, DonationReviewBottomSheetProps
   onSubmit,
   isOneTime = false,
   isProcessing: externalIsProcessing = false,
+  onEditCauses,
+  showEditButton = false,
 }, ref) => {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const [showLogoAnimation, setShowLogoAnimation] = useState(false);
@@ -325,7 +329,17 @@ const DonationReviewBottomSheet = forwardRef<any, DonationReviewBottomSheetProps
 
             {/* Selected Causes */}
             <View style={styles.causesSection}>
-              <Text style={styles.causesTitle}>Your Selected Causes ({totalCauses})</Text>
+              <View style={styles.causesHeaderRow}>
+                <Text style={styles.causesTitle}>Your Selected Causes ({totalCauses})</Text>
+                {showEditButton && onEditCauses && (
+                  <TouchableOpacity
+                    onPress={onEditCauses}
+                    style={styles.editButton}
+                  >
+                    <Text style={styles.editButtonText}>Edit</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
               <View style={styles.causesList}>
                 {selectedCauses.map((cause: any) => {
                   const avatarBgColor = getConsistentColor(cause.id, avatarColors);
@@ -541,8 +555,25 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: '#111827',
-    marginBottom: 12,
     fontFamily: 'Outfit-Bold',
+  },
+  causesHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  editButton: {
+    paddingVertical: 4,
+    paddingHorizontal: 12,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 12,
+  },
+  editButtonText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#3B82F6',
+    fontFamily: 'Outfit-SemiBold',
   },
   causesList: {
     gap: 6,

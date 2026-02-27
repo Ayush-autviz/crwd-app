@@ -94,6 +94,9 @@ export default function CollectiveProfile({
   // Fallback to image prop if logo is not available (for backward compatibility)
   const imageUrl = hasLogo ? logo : image || undefined;
 
+  const [isExpanded, setIsExpanded] = React.useState(false);
+  const [canExpand, setCanExpand] = React.useState(false);
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -139,7 +142,36 @@ export default function CollectiveProfile({
         </View>
       </View>
       {description && (
-        <Text style={styles.description}>{description}</Text>
+        <View>
+          {/* Hidden text for measurement */}
+          {!canExpand && (
+            <Text
+              style={[styles.description, { position: 'absolute', opacity: 0 }]}
+              onTextLayout={(e) => {
+                if (e.nativeEvent.lines.length > 3) {
+                  setCanExpand(true);
+                }
+              }}
+            >
+              {description}
+            </Text>
+          )}
+          <Text
+            style={styles.description}
+            numberOfLines={isExpanded ? undefined : 3}
+          >
+            {description}
+          </Text>
+          {canExpand && (
+            <TouchableOpacity
+              onPress={() => setIsExpanded(!isExpanded)}
+              activeOpacity={0.7}
+              style={{ alignSelf: 'flex-start' }}
+            >
+              <Text style={styles.readMoreText}>{isExpanded ? 'Read Less' : 'Read More...'}</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       )}
     </View>
   );
@@ -206,7 +238,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#111827',
     lineHeight: 22,
-    marginTop: 16,
+    // marginTop: 2,
     fontFamily: 'Outfit-Regular',
   },
   perksContainer: {
@@ -227,6 +259,12 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Regular',
     color: '#374151',
     lineHeight: 20,
+  },
+  readMoreText: {
+    color: '#1600ff',
+    fontSize: 14,
+    fontFamily: 'Outfit-Medium',
+    marginTop: 4,
   },
 });
 

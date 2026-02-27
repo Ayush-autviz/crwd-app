@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Clipboard,
   Alert,
+  RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute, useNavigation } from '@react-navigation/native';
@@ -31,6 +32,7 @@ import { categories } from '../Constants/categories';
 import { WEB_BASE_URL } from '../Constants/url';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import SharePost from '../components/SharePost';
+import { useCallback } from 'react';
 export default function NewCausePage() {
   const route = useRoute();
   const navigation = useNavigation();
@@ -40,9 +42,19 @@ export default function NewCausePage() {
   const [showShareModal, setShowShareModal] = useState(false);
   const shareSheetRef = useRef<BottomSheetModal>(null);
   const [showAddToBoxModal, setShowAddToBoxModal] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   // Get cause ID from route params
   const causeId = (route.params as any)?.id || '';
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['cause', causeId] }),
+      queryClient.invalidateQueries({ queryKey: ['donationBox', currentUser?.id] }),
+    ]);
+    setRefreshing(false);
+  }, [causeId, currentUser?.id, queryClient]);
 
   // Fetch cause data
   const {
@@ -364,6 +376,9 @@ export default function NewCausePage() {
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       >
         <View style={styles.content}>
           <CauseProfile causeData={causeData} />

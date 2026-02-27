@@ -218,6 +218,7 @@ export default function DonationScreen() {
   const addCausesMutation = useMutation({
     mutationFn: (causeId: number) => addCausesToBox({ causes: [{ cause_id: causeId }] }),
     onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['donationBox'] });
       setSearchQuery(''); // Clear search
     },
     onError: (e: any) => showToast(e?.response?.data?.message || 'Failed to add cause'),
@@ -1317,7 +1318,7 @@ export default function DonationScreen() {
                                           {cause.mission || cause.description || 'Making a positive impact'}
                                         </Text>
                                       </View>
-                                      {/* <View style={{ alignItems: 'flex-end', marginRight: 12 }}>
+                                      <View style={{ alignItems: 'flex-end', marginRight: 6 }}>
                                         <Text style={{ fontWeight: '700', fontSize: 13, color: '#111827' }}>
                                           {(() => {
                                             const customPercentage = getCausePercentage(cause.id);
@@ -1331,7 +1332,7 @@ export default function DonationScreen() {
                                         <Text style={{ fontSize: 11, color: '#6B7280' }}>
                                           ${getAmountPerItem(cause.id).toFixed(2)}/mo
                                         </Text>
-                                      </View> */}
+                                      </View>
                                       <TouchableOpacity
                                         onPress={() => {
                                           setItemToDelete({ id: cause.id.toString(), name: cause.name, type: 'cause' });
@@ -1524,6 +1525,11 @@ export default function DonationScreen() {
           onClose={() => {
             setJustCreatedBox(false); // Reset flag when closing
           }}
+          showEditButton={step === 2}
+          onEditCauses={() => {
+            reviewBottomSheetRef.current?.close();
+            setShowEditSplitSheet(true);
+          }}
         />
 
         <BottomSheetModal
@@ -1711,6 +1717,9 @@ export default function DonationScreen() {
               onClose={() => {
                 console.log('Closing Edit Split sheet');
                 setShowEditSplitSheet(false);
+                setTimeout(() => {
+                  reviewBottomSheetRef.current?.open();
+                }, 100);
               }}
               causes={causesForEditSplit}
               monthlyAmount={parseFloat((donationBoxQuery.data?.monthly_amount || donationBox?.monthly_amount || donationAmount).toString())}
@@ -2394,7 +2403,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Regular',
   },
   removeCauseButton: {
-    padding: 8,
+    paddingVertical: 8,
   },
   addMoreSection: {
     marginBottom: 24,

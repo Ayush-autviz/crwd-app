@@ -10,6 +10,7 @@ import {
   Alert,
   Dimensions,
   Clipboard,
+  RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute, useNavigation, CommonActions } from '@react-navigation/native';
@@ -62,6 +63,7 @@ export default function NewGroupCrwdPage() {
   const [selectedPost, setSelectedPost] = useState<any>(null);
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [showFounderPerk, setShowFounderPerk] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   const handleBack = () => {
     const params = route.params as any;
@@ -80,6 +82,21 @@ export default function NewGroupCrwdPage() {
       navigation.goBack();
     }
   };
+
+  // Get collective ID from route params
+  const crwdId = String((route.params as any)?.id || (route.params as any)?.collectiveId || (route.params as any)?.crwdId || '');
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['crwd', crwdId] }),
+      queryClient.invalidateQueries({ queryKey: ['collective-causes', crwdId] }),
+      queryClient.invalidateQueries({ queryKey: ['donationBox'] }),
+      queryClient.invalidateQueries({ queryKey: ['collective-stats', crwdId] }),
+      queryClient.invalidateQueries({ queryKey: ['posts', crwdId] }),
+    ]);
+    setRefreshing(false);
+  }, [crwdId, queryClient]);
 
   // Bottom sheet ref for statistics
   const statisticsBottomSheetRef = useRef<BottomSheetModal>(null);
@@ -106,11 +123,6 @@ export default function NewGroupCrwdPage() {
       statisticsBottomSheetRef.current?.dismiss();
     }
   }, [showStatisticsModal]);
-
-  // Get collective ID from route params
-  const crwdId = String((route.params as any)?.id || (route.params as any)?.collectiveId || (route.params as any)?.crwdId || '');
-
-  // Debug: Log params to troubleshoot
   useEffect(() => {
     console.log('NewGroupCrwd - Route params:', JSON.stringify(route.params, null, 2));
     console.log('NewGroupCrwd - Extracted crwdId:', crwdId);
@@ -830,6 +842,9 @@ export default function NewGroupCrwdPage() {
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       >
         <View style={styles.content}>
           <CollectiveProfile

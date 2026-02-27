@@ -175,7 +175,7 @@ const Circles = () => {
 
         {/* Supporting nonprofits count */}
         <Text style={styles.nonprofitCount}>
-          Supporting {circle.causes_count} nonprofit{circle.causes_count > 1 ? 's' : ''}
+          Supporting {circle.causes_count} nonprofit{circle.causes_count !== 1 ? 's' : ''}
         </Text>
       </TouchableOpacity>
     );
@@ -254,7 +254,7 @@ const Circles = () => {
 
         {/* Supporting nonprofits count */}
         <Text style={styles.nonprofitCount}>
-          Supporting {item.causes_count} nonprofit{item.causes_count > 1 ? 's' : ''}
+          Supporting {item.causes_count} nonprofit{item.causes_count !== 1 ? 's' : ''}
         </Text>
       </TouchableOpacity>
     )

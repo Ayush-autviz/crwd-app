@@ -63,7 +63,7 @@ export default function ProfileStats({
                 )}
                 {/* <Text style={{ fontSize: 14, color: PrimaryGrey, textAlign: 'center' }}>Causes</Text> */}
             </TouchableOpacity>
-            <View style={{ width: 4, height: 4, backgroundColor: '#595959', marginHorizontal: 8, borderRadius: 5, alignSelf: 'center' }} />
+            {/* <View style={{ width: 4, height: 4, backgroundColor: '#595959', marginHorizontal: 8, borderRadius: 5, alignSelf: 'center' }} /> */}
             <TouchableOpacity
                 onPress={() => handleStatsPress('crwds')}
                 style={{ flex: 1, alignItems: 'center', justifyContent: "center" }}
@@ -79,7 +79,7 @@ export default function ProfileStats({
                     </View>
                 )}
             </TouchableOpacity>
-            <View style={{ width: 4, height: 4, backgroundColor: '#595959', marginHorizontal: 8, borderRadius: 5, alignSelf: 'center' }} />
+            {/* <View style={{ width: 4, height: 4, backgroundColor: '#595959', marginHorizontal: 8, borderRadius: 5, alignSelf: 'center' }} /> */}
             <TouchableOpacity
                 onPress={() => handleStatsPress('followers')}
                 style={{ flex: 1, alignItems: 'center', justifyContent: "center" }}
@@ -95,7 +95,7 @@ export default function ProfileStats({
                     </View>
                 )}
             </TouchableOpacity>
-            <View style={{ width: 4, height: 4, backgroundColor: '#595959', marginHorizontal: 8, borderRadius: 5, alignSelf: 'center' }} />
+            {/* <View style={{ width: 4, height: 4, backgroundColor: '#595959', marginHorizontal: 8, borderRadius: 5, alignSelf: 'center' }} /> */}
             <TouchableOpacity
                 onPress={() => handleStatsPress('following')}
                 style={{ flex: 1, alignItems: 'center', justifyContent: "center" }}

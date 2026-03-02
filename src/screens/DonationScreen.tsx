@@ -1319,7 +1319,7 @@ export default function DonationScreen() {
                                         </Text>
                                       </View>
                                       <View style={{ alignItems: 'flex-end', marginRight: 6 }}>
-                                        <Text style={{ fontWeight: '700', fontSize: 13, color: '#111827' }}>
+                                        {/* <Text style={{ fontWeight: '700', fontSize: 13, color: '#111827' }}>
                                           {(() => {
                                             const customPercentage = getCausePercentage(cause.id);
                                             return customPercentage != null
@@ -1331,7 +1331,7 @@ export default function DonationScreen() {
                                         </Text>
                                         <Text style={{ fontSize: 11, color: '#6B7280' }}>
                                           ${getAmountPerItem(cause.id).toFixed(2)}/mo
-                                        </Text>
+                                        </Text> */}
                                       </View>
                                       <TouchableOpacity
                                         onPress={() => {

@@ -78,9 +78,10 @@ export default function Account({ isEditMode, setIsEditMode }: AccountProps) {
   const updateProfileMutation = useMutation({
     mutationFn: updateProfile,
     onSuccess: (response: any) => {
-      if (response?.user?.profile_picture && user) {
-        setUser({ ...user, profile_picture: response.user.profile_picture })
-      }
+      // if (response?.user?.profile_picture && user) {
+      //   setUser({ ...user, profile_picture: response.user.profile_picture })
+      // }
+      setUser(response.user)
       queryClient.invalidateQueries({ queryKey: ['userProfile', user?.id] })
       queryClient.invalidateQueries({ queryKey: ['profile'] })
       // showToast('Profile updated successfully!', 3000)

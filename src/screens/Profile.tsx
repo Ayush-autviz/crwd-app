@@ -902,7 +902,7 @@ export default function Profile() {
                         </TouchableOpacity>
                         <TouchableOpacity onPress={handleShare} style={{ paddingHorizontal: 16, paddingVertical: 10, borderRadius: 8, borderWidth: 1, borderColor: '#e5e7eb', minWidth: 120 }}>
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, justifyContent: 'center' }}>
-                                <Share2 size={16} color="#595959" />
+                                {/* <Share2 size={16} color="#595959" /> */}
                                 <Text style={{ fontSize: 15, color: '#595959', fontFamily: 'Outfit-Bold' }}>Share Profile</Text>
                             </View>
                         </TouchableOpacity>

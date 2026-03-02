@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react'
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
+import {
+  View,
+  Text,
+  StyleSheet,
   ActivityIndicator,
   TouchableOpacity
 } from 'react-native'
@@ -20,7 +20,7 @@ export default function GoogleCallback() {
   const { setUser, setToken } = useAuthStore()
   const { showToast } = useToast()
   const [error, setError] = useState<string | null>(null)
-  
+
   const code = (route.params as any)?.code || null
 
   const googleCallbackQuery = useQuery({
@@ -37,15 +37,15 @@ export default function GoogleCallback() {
 
     if (googleCallbackQuery.data) {
       console.log('Google callback successful:', googleCallbackQuery.data)
-      
+
       if (googleCallbackQuery.data) {
         setUser(googleCallbackQuery.data.user)
         setToken({
-          access_token: googleCallbackQuery.data.access_token, 
+          access_token: googleCallbackQuery.data.access_token,
           refresh_token: googleCallbackQuery.data.refresh_token
         })
         showToast('Google authentication successful!')
-        
+
         // If last_login_at is null, navigate to nonprofit interests page (new user)
         if (googleCallbackQuery.data.user && !googleCallbackQuery.data.user.last_login_at) {
           (navigation as any).navigate('NonProfitInterests', { fromAuth: true })
@@ -61,9 +61,9 @@ export default function GoogleCallback() {
 
     if (googleCallbackQuery.error) {
       console.error('Google callback error:', googleCallbackQuery.error)
-      const errorMessage = (googleCallbackQuery.error as any)?.response?.data?.message || 
-                          (googleCallbackQuery.error as any)?.message || 
-                          'Authentication failed'
+      const errorMessage = (googleCallbackQuery.error as any)?.response?.data?.message ||
+        (googleCallbackQuery.error as any)?.message ||
+        'Authentication failed'
       setError(errorMessage)
       showToast(`Authentication failed: ${errorMessage}`)
     }
@@ -95,10 +95,10 @@ export default function GoogleCallback() {
         <View style={styles.loadingIcon}>
           <ActivityIndicator size="large" color="#2563eb" />
         </View>
-        <Text style={styles.title}>Completing Authentication</Text>
-        <Text style={styles.subtitle}>
+        {/* <Text style={styles.title}>Completing Authentication</Text> */}
+        {/* <Text style={styles.subtitle}>
           Please wait while we complete your Google authentication...
-        </Text>
+        </Text> */}
         {googleCallbackQuery.isFetching && (
           <Text style={styles.processingText}>Processing authorization code...</Text>
         )}

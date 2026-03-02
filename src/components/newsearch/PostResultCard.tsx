@@ -609,7 +609,7 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
                 <Image
                   source={{ uri: post.preview_details.image }}
                   style={{ width: '100%', aspectRatio: 2 }}
-                  resizeMode="cover"
+                  resizeMode="contain"
                 />
               )}
               <View style={{ padding: 12 }}>

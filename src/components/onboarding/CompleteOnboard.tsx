@@ -954,7 +954,7 @@ export default function CompleteOnboard() {
                               onPress={handlePickDifferent}
                               style={styles.pickDifferentButton}
                             >
-                              <Text style={{ fontSize: 16, marginRight: 6 }}>✨</Text>
+                              {/* <Text style={{ fontSize: 16, marginRight: 6 }}>✨</Text> */}
                               <Text style={styles.pickDifferentText}>Pick Different Nonprofits</Text>
                             </TouchableOpacity>
                           </View>

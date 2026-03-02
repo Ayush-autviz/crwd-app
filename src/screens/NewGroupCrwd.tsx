@@ -723,9 +723,9 @@ export default function NewGroupCrwdPage() {
           {/* Summary Box */}
           <View style={styles.donationSummaryBox}>
             <Text style={styles.donationSummaryTitle}>Collective Donations</Text>
-            <Text style={styles.donationSummaryAmount}>
+            {/* <Text style={styles.donationSummaryAmount}>
               ${donationHistoryData?.total_donated_to_collective?.toFixed(2) || '0.00'}
-            </Text>
+            </Text> */}
             <Text style={styles.donationSummaryText}>
               {donations.filter((d: any) => d.amount_attributed_to_collective > 0).length} donation{donations.filter((d: any) => d.amount_attributed_to_collective > 0).length !== 1 ? 's' : ''} credited to this collective
             </Text>
@@ -739,12 +739,13 @@ export default function NewGroupCrwdPage() {
               const lastName = user.last_name || '';
               const fullName = `${firstName} ${lastName}`.trim() || user.username || 'Unknown User';
               const initials = firstName && lastName
-                ? `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase()
+                ? `${firstName.charAt(0)}`.toUpperCase()
                 : fullName.charAt(0).toUpperCase();
               const avatar = user.profile_picture || '';
               const isCollectiveDonation = donation.amount_attributed_to_collective > 0;
               const userId = user.id || index;
-              const avatarBgColor = getConsistentColor(userId, avatarColors);
+              // const avatarBgColor = getConsistentColor(userId, avatarColors);
+              const avatarBgColor = user.color || getConsistentColor(userId, avatarColors);
 
               // Format time ago
               const formatTimeAgo = (dateString: string) => {
@@ -787,11 +788,11 @@ export default function NewGroupCrwdPage() {
                   <View style={styles.donationInfo}>
                     <View style={styles.donationNameRow}>
                       <Text style={styles.donationName}>{fullName}</Text>
-                      {isCollectiveDonation && (
+                      {/* {isCollectiveDonation && (
                         <View style={styles.collectiveBadge}>
                           <Text style={styles.collectiveBadgeText}>Collective</Text>
                         </View>
-                      )}
+                      )} */}
                     </View>
                     <Text style={styles.donationTime}>
                       {donation.charged_at ? formatTimeAgo(donation.charged_at) : 'Recently'}
@@ -1396,6 +1397,7 @@ const styles = StyleSheet.create({
   },
   bottomSheetHeader: {
     marginBottom: 16,
+    paddingHorizontal: 16,
   },
   bottomSheetHeaderTop: {
     flexDirection: 'row',

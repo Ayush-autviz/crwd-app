@@ -987,7 +987,7 @@ export default function PostDetail() {
                   }
                 }}
                 style={{
-                  alignSelf: 'flex-start',
+                  // alignSelf: 'flex-start',
                   marginTop: 12,
                   borderRadius: 8,
                   borderWidth: 1,
@@ -997,19 +997,20 @@ export default function PostDetail() {
                 }}
               >
                 {post.previewDetails.image && (
-                  <View style={{ flexDirection: 'row' }}>
+                  <View style={{ flexDirection: 'row', padding: 12, borderRadius: 8 }}>
                     <Image
                       source={{ uri: post.previewDetails.image }}
                       style={{
                         width: previewImageWidth || 0,
                         height: 200,
-                        opacity: previewImageWidth ? 1 : 0
+                        opacity: previewImageWidth ? 1 : 0,
+                        borderRadius: 8,
                       }}
                       resizeMode="cover"
                     />
                   </View>
                 )}
-                <View style={{ padding: 12 }}>
+                <View style={{ paddingHorizontal: 12, paddingBottom: 12 }}>
                   {post.previewDetails.site_name && (
                     <Text style={{ fontSize: 10, color: PrimaryGrey, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>
                       {post.previewDetails.site_name}
@@ -1025,7 +1026,7 @@ export default function PostDetail() {
                       {post.previewDetails.description}
                     </Text>
                   )}
-                  <Text style={{ fontSize: 11, color: PrimaryGrey }} numberOfLines={1}>
+                  <Text style={{ fontSize: 12, color: '#6B7280', marginVertical: 0, fontFamily: 'Outfit-SemiBold' }}>
                     {post.previewDetails.domain}
                   </Text>
                 </View>

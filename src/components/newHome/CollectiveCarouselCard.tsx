@@ -103,50 +103,51 @@ export default function CollectiveCarouselCard({
 
   return (
     <View style={styles.container}>
-      <View style={styles.card}>
-        {/* Carousel Navigation */}
-        {totalCollectives > 1 && (
-          <View style={styles.navigation}>
-            <TouchableOpacity
-              onPress={handlePrevious}
-              style={styles.navButton}
-              activeOpacity={0.7}
-            >
-              <ChevronLeft size={20} color="#374151" />
-            </TouchableOpacity>
-            <Text style={styles.navText}>
-              {currentIndex + 1} of {totalCollectives}
-            </Text>
-            <TouchableOpacity
-              onPress={handleNext}
-              style={styles.navButton}
-              activeOpacity={0.7}
-            >
-              <ChevronRight size={20} color="#374151" />
-            </TouchableOpacity>
-          </View>
-        )}
-
-        <View style={styles.content}>
-          {/* Icon and Title/Badge Row */}
-          <TouchableOpacity
-            style={styles.headerRow}
-            onPress={() => {
-              if (currentCollective?.id) {
-                (navigation as any).navigate('GroupCRWD', { id: currentCollective.id });
-              }
-            }}
-            activeOpacity={0.7}
-          >
-            {/* Circular Icon */}
-            <View style={styles.iconContainer}>
-              <Users size={20} color="white" />
+      <TouchableOpacity
+        // style={styles.headerRow}
+        onPress={() => {
+          if (currentCollective?.id) {
+            (navigation as any).navigate('GroupCRWD', { id: currentCollective.id });
+          }
+        }}
+        activeOpacity={0.7}
+      >
+        <View style={styles.card}>
+          {/* Carousel Navigation */}
+          {totalCollectives > 1 && (
+            <View style={styles.navigation}>
+              <TouchableOpacity
+                onPress={handlePrevious}
+                style={styles.navButton}
+                activeOpacity={0.7}
+              >
+                <ChevronLeft size={20} color="#374151" />
+              </TouchableOpacity>
+              <Text style={styles.navText}>
+                {currentIndex + 1} of {totalCollectives}
+              </Text>
+              <TouchableOpacity
+                onPress={handleNext}
+                style={styles.navButton}
+                activeOpacity={0.7}
+              >
+                <ChevronRight size={20} color="#374151" />
+              </TouchableOpacity>
             </View>
+          )}
 
-            {/* Title and Badge */}
-            <View style={styles.titleBadgeContainer}>
-              <Text style={styles.title}>My Collectives</Text>
-              {/* {currentCollective?.role === 'Admin' && (
+          <View style={styles.content}>
+            {/* Icon and Title/Badge Row */}
+            <View style={styles.headerRow}>
+              {/* Circular Icon */}
+              <View style={styles.iconContainer}>
+                <Users size={20} color="white" />
+              </View>
+
+              {/* Title and Badge */}
+              <View style={styles.titleBadgeContainer}>
+                <Text style={styles.title}>My Collectives</Text>
+                {/* {currentCollective?.role === 'Admin' && (
                 <View
                   style={[
                     styles.badge,
@@ -166,56 +167,57 @@ export default function CollectiveCarouselCard({
                   </Text>
                 </View>
               )} */}
+              </View>
             </View>
-          </TouchableOpacity>
 
-          {/* Content */}
-          <View style={styles.textContent}>
-            <Text style={styles.description}>
-              <Text
-                style={styles.bold}
-                onPress={() => {
-                  if (currentCollective?.id) {
-                    (navigation as any).navigate('GroupCRWD', { id: currentCollective.id });
-                  }
-                }}
-              >{currentCollective?.name || 'Unknown Collective'}</Text> has{' '}
-              <Text style={styles.bold}>{currentCollective?.memberCount || 0}</Text> {currentCollective?.memberCount === 1 ? 'member' : 'members'} donating to{' '}
-              <Text style={styles.bold}>{currentCollective?.causeCount || 0} {currentCollective?.causeCount === 1 ? 'cause' : 'causes'}</Text>.
-            </Text>
+            {/* Content */}
+            <View style={styles.textContent}>
+              <Text style={styles.description}>
+                <Text
+                  style={styles.bold}
+                  onPress={() => {
+                    if (currentCollective?.id) {
+                      (navigation as any).navigate('GroupCRWD', { id: currentCollective.id });
+                    }
+                  }}
+                >{currentCollective?.name || 'Unknown Collective'}</Text> has{' '}
+                <Text style={styles.bold}>{currentCollective?.memberCount || 0}</Text> {currentCollective?.memberCount === 1 ? 'member' : 'members'} and{' '}
+                <Text style={styles.bold}>{currentCollective?.causeCount || 0} {currentCollective?.causeCount === 1 ? 'cause' : 'causes'}</Text>.
+              </Text>
 
-            {/* Action Buttons */}
-            <View style={styles.actions}>
-              <TouchableOpacity
-                style={styles.outlineButton}
-                onPress={handleButtonClick}
-                activeOpacity={0.7}
-              >
-                {isFounder ? (
-                  <>
-                    <Text style={[styles.outlineButtonText, { color: '#1600ff' }]}>Manage</Text>
-                    <ArrowRight size={14} color="#1600ff" />
-                  </>
-                ) : (
-                  <>
-                    <Text style={[styles.outlineButtonText, { color: '#1600ff' }]}>View</Text>
-                    <ArrowRight size={14} color="#1600ff" />
-                  </>
-                )}
-              </TouchableOpacity>
-              {/* <TouchableOpacity
+              {/* Action Buttons */}
+              <View style={styles.actions}>
+                <TouchableOpacity
+                  style={styles.outlineButton}
+                  onPress={handleButtonClick}
+                  activeOpacity={0.7}
+                >
+                  {isFounder ? (
+                    <>
+                      <Text style={[styles.outlineButtonText, { color: '#1600ff' }]}>Manage</Text>
+                      <ArrowRight size={14} color="#1600ff" />
+                    </>
+                  ) : (
+                    <>
+                      <Text style={[styles.outlineButtonText, { color: '#1600ff' }]}>View</Text>
+                      <ArrowRight size={14} color="#1600ff" />
+                    </>
+                  )}
+                </TouchableOpacity>
+                {/* <TouchableOpacity
                 style={styles.primaryButton}
                 activeOpacity={0.7}
                 onPress={() => {
                   // TODO: Implement share functionality
-                }}
-              >
-                <Text style={styles.primaryButtonText}>Share</Text>
-              </TouchableOpacity> */}
+                  }}
+                  >
+                  <Text style={styles.primaryButtonText}>Share</Text>
+                  </TouchableOpacity> */}
+              </View>
             </View>
           </View>
         </View>
-      </View>
+      </TouchableOpacity>
     </View >
   );
 }

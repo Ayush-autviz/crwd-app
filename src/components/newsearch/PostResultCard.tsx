@@ -126,7 +126,7 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
-    const imageUrl = post.media || post.fundraiser?.image;
+    const imageUrl = post.fundraiser?.image || post.preview_details?.image || post.media;
     if (imageUrl) {
       Image.getSize(
         imageUrl,
@@ -140,7 +140,7 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
         }
       );
     }
-  }, [post.media, post.fundraiser?.image]);
+  }, [post.media, post.fundraiser?.image, post.preview_details?.image]);
 
   const user = post.user;
   // Use user.color first if available, then fall back to consistent color based on ID or username
@@ -606,26 +606,38 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
             // activeOpacity={0.8}
             >
               {post.preview_details.image && (
-                <Image
-                  source={{ uri: post.preview_details.image }}
-                  style={{ width: '100%', aspectRatio: 2 }}
-                  resizeMode="contain"
-                />
+                <View style={{ flexDirection: 'row', borderRadius: 8, paddingHorizontal: 0, paddingTop: 0 }}>
+                  <Image
+                    source={{ uri: post.preview_details.image }}
+                    style={{
+                      width: imageWidth || 0,
+                      height: 200,
+                      borderRadius: 8,
+                      opacity: imageWidth ? 1 : 0
+                    }}
+                    resizeMode="cover"
+                  />
+                </View>
               )}
-              <View style={{ padding: 12 }}>
+              <View style={{ paddingVertical: 12 }}>
                 {post.preview_details.site_name && (
-                  <Text style={{ fontSize: 14, color: '#6B7280', textTransform: 'uppercase', marginBottom: 4 }}>
+                  <Text style={{ fontSize: 12, color: '#6B7280', textTransform: 'uppercase', marginBottom: 4 }}>
                     {post.preview_details.site_name.toUpperCase()}
                   </Text>
                 )}
                 {post.preview_details.title && (
-                  <Text style={{ fontSize: 15, fontWeight: '600', color: '#111827', marginBottom: 4 }} numberOfLines={2}>
+                  <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827', marginBottom: 4 }} numberOfLines={2}>
                     {post.preview_details.title}
                   </Text>
                 )}
                 {post.preview_details.description && (
                   <Text style={{ fontSize: 14, color: '#4B5563' }} numberOfLines={2}>
                     {post.preview_details.description}
+                  </Text>
+                )}
+                {post.preview_details.domain && (
+                  <Text style={{ fontSize: 12, color: '#6B7280', marginVertical: 0, fontFamily: 'Outfit-SemiBold' }}>
+                    {post.preview_details.domain}
                   </Text>
                 )}
               </View>
@@ -963,8 +975,8 @@ const styles = StyleSheet.create({
   previewCardVertical: {
     backgroundColor: '#FFFFFF',
     borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
+    // borderWidth: 1,
+    // borderColor: '#E5E7EB',
     marginBottom: 10,
     overflow: 'hidden',
   },

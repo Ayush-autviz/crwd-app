@@ -307,7 +307,7 @@ export default function PopularPosts({
     useEffect(() => {
         if (!posts) return;
         posts.forEach(item => {
-            const imageUrl = item.imageUrl || item.fundraiser?.image;
+            const imageUrl = item.fundraiser?.image || item.previewDetails?.image || item.imageUrl;
             if (imageUrl && !imageWidths[item.id]) {
                 Image.getSize(imageUrl, (width, height) => {
                     const calculatedWidth = (200 * width) / height;
@@ -950,8 +950,8 @@ export default function PopularPosts({
                                         {/* Link Preview Section */}
                                         {!item.fundraiser && item.previewDetails && (
                                             <View style={{
-                                                borderWidth: 1,
-                                                borderColor: '#E5E7EB',
+                                                // borderWidth: 1,
+                                                // borderColor: '#E5E7EB',
                                                 borderRadius: 8,
                                                 backgroundColor: 'white',
                                                 overflow: 'hidden',
@@ -959,16 +959,23 @@ export default function PopularPosts({
                                             }}>
                                                 {/* Preview Image */}
                                                 {item.previewDetails.image && (
-                                                    <Image
-                                                        source={{ uri: item.previewDetails.image }}
-                                                        style={{ width: '100%', aspectRatio: 2 }}
-                                                        resizeMode="cover"
-                                                    />
+                                                    <View style={{ flexDirection: 'row', borderRadius: 8, paddingHorizontal: 0, paddingTop: 0 }}>
+                                                        <Image
+                                                            source={{ uri: item.previewDetails.image }}
+                                                            style={{
+                                                                width: imageWidths[item.id] || 0,
+                                                                height: 200,
+                                                                borderRadius: 8,
+                                                                opacity: imageWidths[item.id] ? 1 : 0
+                                                            }}
+                                                            resizeMode="cover"
+                                                        />
+                                                    </View>
                                                 )}
                                                 {/* Preview Content */}
-                                                <View style={{ padding: 12 }}>
+                                                <View style={{ paddingVertical: 12 }}>
                                                     {item.previewDetails.site_name && (
-                                                        <Text style={{ fontSize: 10, color: '#6B7280', textTransform: 'uppercase', marginBottom: 4, fontFamily: 'Outfit-SemiBold' }}>
+                                                        <Text style={{ fontSize: 12, color: '#6B7280', textTransform: 'uppercase', marginBottom: 4, fontFamily: 'Outfit-SemiBold' }}>
                                                             {item.previewDetails.site_name}
                                                         </Text>
                                                     )}
@@ -978,8 +985,13 @@ export default function PopularPosts({
                                                         </Text>
                                                     )}
                                                     {item.previewDetails.description && (
-                                                        <Text style={{ fontSize: 12, color: '#4B5563', fontFamily: 'Outfit-Regular' }} numberOfLines={2}>
+                                                        <Text style={{ fontSize: 14, color: '#4B5563', fontFamily: 'Outfit-Regular' }} numberOfLines={2}>
                                                             {item.previewDetails.description}
+                                                        </Text>
+                                                    )}
+                                                    {item.previewDetails.domain && (
+                                                        <Text style={{ fontSize: 12, color: '#6B7280', marginVertical: 0, fontFamily: 'Outfit-SemiBold' }}>
+                                                            {item.previewDetails.domain}
                                                         </Text>
                                                     )}
                                                 </View>

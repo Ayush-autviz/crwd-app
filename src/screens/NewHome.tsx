@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
-import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueries, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import { useNavigation } from '@react-navigation/native';
 import { useAuthStore } from '../store/store';
 import { getCollectives, getCauses, getJoinCollective } from '../services/api/crwd';
@@ -174,18 +174,36 @@ export default function NewHome() {
   });
 
   // Fetch community updates (posts and notifications mixed)
-  const { data: communityUpdatesPostsData, isLoading: communityUpdatesLoading } = useQuery({
+  const {
+    data: communityUpdatesPostsData,
+    isLoading: communityUpdatesLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage
+  } = useInfiniteQuery({
     queryKey: ['communityUpdatesPosts'],
-    queryFn: getCommunityUpdatesPosts,
+    queryFn: ({ pageParam = 1 }) => getCommunityUpdatesPosts(pageParam),
+    getNextPageParam: (lastPage: any) => {
+      if (lastPage.next) {
+        const match = lastPage.next.match(/page=(\d+)/);
+        return match ? parseInt(match[1]) : undefined;
+      }
+      return undefined;
+    },
+    initialPageParam: 1,
     enabled: !!token?.access_token,
   });
+
+  const allCommunityUpdates = useMemo(() => {
+    return communityUpdatesPostsData?.pages.flatMap((page: any) => page.results) || [];
+  }, [communityUpdatesPostsData]);
 
   const isLoading = collectivesLoading || nonprofitsLoading || donationBoxLoading || joinedCollectivesLoading;
 
   // Extract unique user IDs from community updates in the feed
   const uniqueUserIds = useMemo(() => {
     try {
-      const results = communityUpdatesPostsData?.results || [];
+      const results = allCommunityUpdates || [];
       const notifications = results.filter((n: any) => n.item_type === 'notification');
       return Array.from(
         new Set(
@@ -419,7 +437,7 @@ export default function NewHome() {
   // Transform feed data (posts and notifications mixed)
   const transformedFeedItems = useMemo(() => {
     try {
-      return communityUpdatesPostsData?.results
+      return allCommunityUpdates
         ?.map((item: any) => {
           if (item.item_type === 'post') {
             return {
@@ -800,11 +818,33 @@ export default function NewHome() {
             )}
 
             {/* Feed Part 3 - Rest of Items */}
-            {token?.access_token && feedPart3.length > 0 && (
+            {token?.access_token && (hasNextPage || feedPart3.length > 0) && (
               <View style={styles.feedSection}>
-                <View style={styles.feedList}>
-                  {feedPart3.map(renderFeedItem)}
-                </View>
+                {feedPart3.length > 0 && (
+                  <View style={styles.feedList}>
+                    {feedPart3.map(renderFeedItem)}
+                  </View>
+                )}
+
+                {/* Load More Button */}
+                {hasNextPage && (
+                  <View style={styles.loadMoreContainer}>
+                    <TouchableOpacity
+                      style={styles.loadMoreButton}
+                      onPress={() => fetchNextPage()}
+                      disabled={isFetchingNextPage}
+                    >
+                      {isFetchingNextPage ? (
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                          <ActivityIndicator size="small" color="#6B7280" style={{ marginRight: 8 }} />
+                          <Text style={styles.loadMoreText}>Loading...</Text>
+                        </View>
+                      ) : (
+                        <Text style={styles.loadMoreText}>Load More</Text>
+                      )}
+                    </TouchableOpacity>
+                  </View>
+                )}
               </View>
             )}
 
@@ -882,6 +922,29 @@ const styles = StyleSheet.create({
   },
   feedList: {
     gap: 10,
+  },
+  loadMoreContainer: {
+    marginTop: 10,
+    marginBottom: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadMoreButton: {
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 24,
+    minWidth: 120,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
+  },
+  loadMoreText: {
+    fontSize: 14,
+    color: '#374151',
+    fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
   },
 });
 

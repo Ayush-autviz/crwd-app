@@ -142,8 +142,9 @@ export default function NewGroupCrwdPage() {
       return getCollectiveById(crwdId);
     },
     enabled: !!crwdId && crwdId !== '',
-    refetchOnMount: true,
+    refetchOnMount: 'always',
     staleTime: 0,
+    gcTime: 0,
   });
 
   // Fetch collective causes (nonprofits)
@@ -151,6 +152,9 @@ export default function NewGroupCrwdPage() {
     queryKey: ['collective-causes', crwdId],
     queryFn: () => getCollectiveCauses(crwdId),
     enabled: !!crwdId,
+    refetchOnMount: 'always',
+    staleTime: 0,
+    gcTime: 0,
   });
 
   // Fetch donation box to check for existing causes and capacity
@@ -158,6 +162,9 @@ export default function NewGroupCrwdPage() {
     queryKey: ['donationBox'],
     queryFn: getDonationBox,
     enabled: !!currentUser?.id && !!token?.access_token,
+    refetchOnMount: 'always',
+    staleTime: 0,
+    gcTime: 0,
   });
 
   // Fetch collective stats
@@ -165,6 +172,9 @@ export default function NewGroupCrwdPage() {
     queryKey: ['collective-stats', crwdId],
     queryFn: () => getCollectiveStats(crwdId),
     enabled: !!crwdId && !!token?.access_token,
+    refetchOnMount: 'always',
+    staleTime: 0,
+    gcTime: 0,
   });
 
   // Fetch members for statistics modal
@@ -172,6 +182,9 @@ export default function NewGroupCrwdPage() {
     queryKey: ['members', crwdId],
     queryFn: () => getCollectiveMembers(crwdId),
     enabled: !!crwdId && showStatisticsModal && statisticsTab === 'Members',
+    refetchOnMount: 'always',
+    staleTime: 0,
+    gcTime: 0,
   });
 
   // Fetch donation history for statistics modal
@@ -179,6 +192,9 @@ export default function NewGroupCrwdPage() {
     queryKey: ['donationHistory', crwdId],
     queryFn: () => getCollectiveDonationHistory(crwdId),
     enabled: !!crwdId && showStatisticsModal && statisticsTab === 'Donations',
+    refetchOnMount: 'always',
+    staleTime: 0,
+    gcTime: 0,
   });
 
   // Fetch posts
@@ -195,6 +211,9 @@ export default function NewGroupCrwdPage() {
     },
     initialPageParam: 1,
     enabled: !!crwdId,
+    refetchOnMount: 'always',
+    staleTime: 0,
+    gcTime: 0,
   });
 
   // Flatten posts

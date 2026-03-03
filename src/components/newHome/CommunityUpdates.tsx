@@ -287,13 +287,13 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
             <Text style={styles.actionText}>
               {isJoinNotification && update.data?.new_member_id && cleanActionText.includes(' joined ') ? (
                 <>
-                  <Text
+                  {/* <Text
                     style={styles.boldText}
                     onPress={() => handleUserNavigation(update.data?.new_member_id)}
                   >
                     {cleanActionText.split(' joined ')[0]}
-                  </Text>
-                  {' joined '}
+                  </Text> */}
+                  {'Joined '}
                   <Text
                     style={styles.boldText}
                     onPress={() => handleCollectiveNavigation(update.data?.collective_id || update.collective?.id, update.collective?.name)}
@@ -379,11 +379,11 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
       </View>
 
       {/* Content Box */}
-      <View style={styles.contentBox}>
+      <View style={[styles.contentBox, { backgroundColor: "#F0FDF4" }]}>
         {/* Icon */}
-        <View style={styles.iconContainerDonation}>
+        {/* <View style={styles.iconContainerDonation}>
           <HandHeart size={20} color="#FFFFFF" />
-        </View>
+        </View> */}
         {/* Action Text */}
         <Text style={styles.actionTextDonation}>
           {(() => {
@@ -392,13 +392,13 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
               if (match) {
                 return (
                   <>
-                    <Text
+                    {/* <Text
                       style={styles.boldText}
                       onPress={() => handleUserNavigation(update.user.id)}
                     >
                       {match[1]}
-                    </Text>
-                    <Text> {match[2]} </Text>
+                    </Text> */}
+                    <Text> {match[2].charAt(0).toUpperCase() + match[2].slice(1)} </Text>
                     {/* <Text style={styles.boldText}>{match[3]}</Text> */}
                     <Text>{match[4]} {match[5]}</Text>
                   </>

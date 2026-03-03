@@ -81,4 +81,10 @@ export const categories = [
   { id: "u", name: "LGBTQ+", text: "#FFFFFF", background: "#DC2626" }, // Bright Cyan
   { id: "v", name: "Poverty", text: "#FFFFFF", background: "#10B981" }, // Bright Cyan
   { id: "w", name: "Women's Health", text: "#FFFFFF", background: "#A855F7" }, // Bright Cyan
+  { id: "x", name: "Training", text: "#FFFFFF", background: "#10B981" }, // Bright Cyan
+  { id: "y", name: "Women", text: "#FFFFFF", background: "#06B6D4" }, // Bright Cyan
+  { id: "z", name: "Men's Health", text: "#FFFFFF", background: "#EC4899" }, // Bright Cyan
+  { id: "1", name: "Equality", text: "#FFFFFF", background: "#DC2626" }, // Bright Cyan
+  { id: "2", name: "Marine", text: "#FFFFFF", background: "#10B981" }, // Bright Cyan
+  { id: "3", name: "Latin", text: "#FFFFFF", background: "#06B6D4" }, // Bright Cyan
 ];

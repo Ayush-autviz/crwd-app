@@ -705,7 +705,8 @@ export default function UserProfile() {
                             <Avatar size={130}>
                                 <AvatarImage src={userProfile.profile_picture} />
                                 <AvatarFallback
-                                    style={{ backgroundColor: userProfile.profile_picture ? 'transparent' : (userProfile.color || getConsistentColor(userProfile.id || userProfile.username || 'U', avatarColors)) }}
+                                    // style={{ backgroundColor: userProfile.profile_picture ? 'transparent' : (userProfile.color || getConsistentColor(userProfile.id || userProfile.username || 'U', avatarColors)) }}
+                                    style={{ backgroundColor: userProfile.color || getConsistentColor(userProfile.id || userProfile.username || 'U', avatarColors) }}
                                     textStyle={{ color: '#FFFFFF', fontSize: 32, fontFamily: 'Outfit-Bold' }}
                                 >
                                     {getInitials(userProfile.first_name, userProfile.last_name, userProfile.username)}

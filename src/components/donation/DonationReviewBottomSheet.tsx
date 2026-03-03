@@ -311,10 +311,10 @@ const DonationReviewBottomSheet = forwardRef<any, DonationReviewBottomSheetProps
                 </View>
                 <Text style={styles.summaryValue}>${platformFee.toFixed(2)}</Text>
               </View>
-              <View style={styles.summaryRow}>
+              {/* <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>Per cause:</Text>
                 <Text style={styles.summaryValue}>${perCause.toFixed(2)}</Text>
-              </View>
+              </View> */}
               <View style={styles.summaryDivider} />
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryTotalLabel}>Total:</Text>
@@ -336,7 +336,7 @@ const DonationReviewBottomSheet = forwardRef<any, DonationReviewBottomSheetProps
                     onPress={onEditCauses}
                     style={styles.editButton}
                   >
-                    <Text style={styles.editButtonText}>Edit</Text>
+                    <Text style={styles.editButtonText}>Adjust</Text>
                   </TouchableOpacity>
                 )}
               </View>
@@ -360,9 +360,13 @@ const DonationReviewBottomSheet = forwardRef<any, DonationReviewBottomSheetProps
                           {cause.name}
                         </Text>
                       </View>
-                      <Text style={styles.causeAmount}>
-                        ${perCause.toFixed(2)}
-                      </Text>
+                      {showEditButton && (
+                        <Text style={styles.causeAmount}>
+                          {cause.percentage != null
+                            ? `${Number(cause.percentage).toFixed(0)}%`
+                            : `${(100 / (selectedCauses.length || 1)).toFixed(0)}%`}
+                        </Text>
+                      )}
                     </View>
                   );
                 })}
@@ -570,7 +574,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   editButtonText: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '600',
     color: '#3B82F6',
     fontFamily: 'Outfit-SemiBold',

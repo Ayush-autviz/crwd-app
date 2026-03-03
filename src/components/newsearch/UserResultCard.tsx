@@ -107,8 +107,9 @@ export default function UserResultCard({ user, currentUserId }: UserResultCardPr
         <Avatar size={48} style={styles.avatar}>
           <AvatarImage src={user.profile_picture} />
           <AvatarFallback
-            style={{ backgroundColor: user.profile_picture ? 'transparent' : avatarBgColor }}
-            textStyle={{ color: '#FFFFFF', fontSize: 14, fontWeight: '700' }}
+            // style={{ backgroundColor: user.profile_picture ? 'transparent' : avatarBgColor }}
+            style={{ backgroundColor: avatarBgColor }}
+            textStyle={{ color: '#FFFFFF', fontSize: 16, fontWeight: '700' }}
           >
             {initials}
           </AvatarFallback>

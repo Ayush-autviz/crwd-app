@@ -1514,6 +1514,7 @@ export default function DonationScreen() {
                   name: cause.name,
                   description: cause.description || cause.mission,
                   image: cause.image,
+                  percentage: boxCause.percentage,
                 };
               }).filter((cause: any) => cause.id != null)
           }

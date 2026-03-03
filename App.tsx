@@ -81,24 +81,31 @@ import notifee, { AndroidImportance } from '@notifee/react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { useAuthStore } from './src/store/store';
+import { PostHog, PostHogProvider, usePostHog } from 'posthog-react-native'
+
+const Tab = createBottomTabNavigator()
+const Drawer = createDrawerNavigator()
+const Stack = createNativeStackNavigator()
+
+// Create QueryClient outside to prevent re-creation on every render
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
+// Initialize PostHog outside the component
+export const posthog = new PostHog('phc_H8FvO89VZLDakgosw6EbwV9LPl7u2Mvjz9Iu7rPDpQF', {
+  host: 'https://us.i.posthog.com',
+  debug: true,
+})
 
 export default function App() {
-
-  const Tab = createBottomTabNavigator()
-  const Drawer = createDrawerNavigator()
-  const Stack = createNativeStackNavigator()
-
-
-  // Create QueryClient once
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: {
-        retry: 1,
-        staleTime: 5 * 60 * 1000, // 5 minutes
-        refetchOnWindowFocus: false,
-      },
-    },
-  });
+  const { user: currentUser } = useAuthStore();
 
 
   async function requestPermission() {
@@ -130,6 +137,20 @@ export default function App() {
   useEffect(() => {
     requestPermission();
   }, []);
+
+
+  // Identify user in PostHog when they log in
+  useEffect(() => {
+    if (currentUser && currentUser.id) {
+      posthog.identify(currentUser.id.toString(), {
+        email: currentUser.email,
+        username: currentUser.username,
+        full_name: currentUser.full_name,
+      });
+    } else {
+      posthog.reset();
+    }
+  }, [currentUser]);
 
   // Handle foreground messages
   useEffect(() => {
@@ -339,19 +360,29 @@ export default function App() {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <NavigationContainer ref={navigationRef}>
-        <StripeProvider publishableKey={STRIPE_PUBLISHABLE_KEY} merchantIdentifier='merchant.com.react.crwd'>
-          <QueryClientProvider client={queryClient}>
-            <BottomSheetModalProvider>
-              <ToastProvider>
-                <StackNavigator />
-              </ToastProvider>
-            </BottomSheetModalProvider>
-          </QueryClientProvider>
-        </StripeProvider>
-      </NavigationContainer>
-    </GestureHandlerRootView>
+    <PostHogProvider client={posthog}>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <NavigationContainer
+          ref={navigationRef}
+          onStateChange={() => {
+            const currentRouteName = navigationRef.getCurrentRoute()?.name;
+            if (currentRouteName) {
+              posthog.screen(currentRouteName);
+            }
+          }}
+        >
+          <StripeProvider publishableKey={STRIPE_PUBLISHABLE_KEY} merchantIdentifier='merchant.com.react.crwd'>
+            <QueryClientProvider client={queryClient}>
+              <BottomSheetModalProvider>
+                <ToastProvider>
+                  <StackNavigator />
+                </ToastProvider>
+              </BottomSheetModalProvider>
+            </QueryClientProvider>
+          </StripeProvider>
+        </NavigationContainer>
+      </GestureHandlerRootView>
+    </PostHogProvider>
   )
 
 }

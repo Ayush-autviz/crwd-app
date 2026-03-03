@@ -524,7 +524,9 @@ export default function UserProfile() {
                                     {hasImage ? (
                                         <AvatarImage src={crwd.avatar} />
                                     ) : null}
-                                    <AvatarFallback style={{ backgroundColor: hasImage ? 'transparent' : (iconColor || '#10B981') }} textStyle={{ color: '#FFFFFF', fontFamily: 'Outfit-Bold', fontSize: 20 }}>
+                                    <AvatarFallback
+                                        style={{ backgroundColor: hasImage ? 'transparent' : (iconColor || '#10B981') }}
+                                        textStyle={{ color: '#FFFFFF', fontFamily: 'Outfit-Bold', fontSize: 20 }}>
                                         {iconLetter}
                                     </AvatarFallback>
                                 </Avatar>
@@ -584,7 +586,8 @@ export default function UserProfile() {
                                         <Avatar size={48}>
                                             <AvatarImage src={userData.profile_picture || userData.avatar} />
                                             <AvatarFallback
-                                                style={{ backgroundColor: (userData.profile_picture || userData.avatar) ? 'transparent' : (userData.color || getConsistentColor(userData.id || userData.username || 'U', avatarColors)) }}
+                                                // style={{ backgroundColor: (userData.profile_picture || userData.avatar) ? 'transparent' : (userData.color || getConsistentColor(userData.id || userData.username || 'U', avatarColors)) }}
+                                                style={{ backgroundColor: userData.color || getConsistentColor(userData.id || userData.username || 'U', avatarColors) }}
                                                 textStyle={{ color: '#FFFFFF', fontSize: 16, fontFamily: 'Outfit-SemiBold' }}
                                             >
                                                 {getInitials(userData.first_name, userData.last_name, userData.username || userData.name)}

@@ -1555,25 +1555,28 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         paddingVertical: 12,
         borderBottomWidth: 1,
-        borderBottomColor: LightGrey,
+        borderBottomColor: '#F3F4F6',
     },
     memberInfo: {
         flexDirection: 'row',
         alignItems: 'center',
+        gap: 12,
         flex: 1,
+        minWidth: 0,
     },
     memberDetails: {
-        marginLeft: 12,
+        flex: 1,
+        minWidth: 0,
     },
     memberName: {
         fontSize: 15,
         fontFamily: 'Outfit-Medium',
         color: '#111827',
+        marginBottom: 2,
     },
     memberUsername: {
-        fontSize: 14,
-        color: PrimaryGrey,
-        marginTop: 2,
+        fontSize: 13,
+        color: '#6B7280',
         fontFamily: 'Outfit-Regular',
     },
     followButton: {
@@ -1583,15 +1586,15 @@ const styles = StyleSheet.create({
         borderRadius: 20,
     },
     followingButton: {
-        backgroundColor: '#f3f4f6',
+        backgroundColor: '#F3F4F6',
     },
     followButtonText: {
-        color: 'white',
-        fontSize: 14,
-        fontFamily: 'Outfit-Medium',
+        fontSize: 12,
+        fontFamily: 'Outfit-SemiBold',
+        color: '#FFFFFF',
     },
     followingButtonText: {
-        color: '#6b7280',
+        color: '#6B7280',
     },
     emptyContainer: {
         backgroundColor: '#FFFFFF',

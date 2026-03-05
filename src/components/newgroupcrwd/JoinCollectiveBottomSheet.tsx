@@ -294,7 +294,7 @@ export default function JoinCollectiveBottomSheet({
       handleIndicatorStyle={styles.handleIndicator}
       onDismiss={handleClose}
     >
-      <BottomSheetView style={styles.container}>
+      <View style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerContent}>
@@ -312,7 +312,10 @@ export default function JoinCollectiveBottomSheet({
         </View>
 
         {/* Content - Scrollable */}
-        <BottomSheetScrollView contentContainerStyle={styles.scrollContent}>
+        <BottomSheetScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+        >
           {/* Capacity Error Message */}
           {isAtCapacity && (
             <View style={styles.capacityError}>
@@ -447,7 +450,7 @@ export default function JoinCollectiveBottomSheet({
             </>
           )}
         </View>
-      </BottomSheetView>
+      </View>
     </BottomSheetModal>
   );
 }
@@ -462,6 +465,9 @@ const styles = StyleSheet.create({
     height: 4,
   },
   container: {
+    flex: 1,
+  },
+  scrollView: {
     flex: 1,
   },
   header: {
@@ -586,7 +592,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   nonprofitAvatarText: {
-    fontSize: 16,
     fontSize: 16,
     fontFamily: 'Outfit-Bold',
     color: '#FFFFFF',

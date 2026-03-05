@@ -9,6 +9,7 @@ interface AddToDonationBoxBottomSheetProps {
   onConfirm: () => void;
   onOneTimeDonation: () => void;
   isPending?: boolean;
+  hasDonationBox?: boolean;
 }
 
 export default function AddToDonationBoxBottomSheet({
@@ -17,6 +18,7 @@ export default function AddToDonationBoxBottomSheet({
   onConfirm,
   onOneTimeDonation,
   isPending = false,
+  hasDonationBox = false,
 }: AddToDonationBoxBottomSheetProps) {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
 
@@ -94,7 +96,9 @@ export default function AddToDonationBoxBottomSheet({
                   )}
                 </View>
                 <View>
-                  <Text style={styles.optionTitlePrimary}>Create a Donation Box</Text>
+                  <Text style={styles.optionTitlePrimary}>
+                    {hasDonationBox ? 'Add to Donation Box' : 'Create a Donation Box'}
+                  </Text>
                   <Text style={styles.optionSubtitlePrimary}>Support multiple causes monthly</Text>
                 </View>
               </View>

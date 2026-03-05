@@ -104,6 +104,8 @@ export default function PostDetail() {
   const [pendingAction, setPendingAction] = useState<any>(null)
   const [imageWidth, setImageWidth] = useState<number | null>(null)
   const [previewImageWidth, setPreviewImageWidth] = useState<number | null>(null)
+  const [isImageModalVisible, setIsImageModalVisible] = useState(false)
+  const [selectedImage, setSelectedImage] = useState<string | null>(null)
 
   // Fetch post data using API
   const { data: postData, isLoading: isLoadingPost, error: postError } = useQuery({
@@ -1032,7 +1034,14 @@ export default function PostDetail() {
                 </View>
               </TouchableOpacity>
             ) : post.imageUrl ? (
-              <View style={{ flexDirection: 'row', borderRadius: 8, marginTop: 12 }}>
+              <TouchableOpacity
+                onPress={() => {
+                  setSelectedImage(post.imageUrl || null);
+                  setIsImageModalVisible(true);
+                }}
+                activeOpacity={0.9}
+                style={{ flexDirection: 'row', borderRadius: 8, marginTop: 12 }}
+              >
                 <Image
                   source={{ uri: post.imageUrl }}
                   style={{
@@ -1043,7 +1052,7 @@ export default function PostDetail() {
                   }}
                   resizeMode="cover"
                 />
-              </View>
+              </TouchableOpacity>
             ) : null}
 
             <View style={{
@@ -1061,7 +1070,7 @@ export default function PostDetail() {
                   disabled={likePostMutation.isPending || unlikePostMutation.isPending}
                   style={{ flexDirection: 'row', alignItems: 'center', gap: 4, opacity: (likePostMutation.isPending || unlikePostMutation.isPending) ? 0.5 : 1 }}
                 >
-                  <Heart size={18} color={post.isLiked ? 'red' : PrimaryGrey} />
+                  <Heart size={18} fill={post.isLiked ? 'red' : 'none'} color={post.isLiked ? 'red' : PrimaryGrey} />
                   <Text style={{ fontSize: 12, color: post.isLiked ? 'red' : PrimaryGrey }}>
                     {likePostMutation.isPending || unlikePostMutation.isPending ? '' : post.likes}
                   </Text>
@@ -1218,6 +1227,51 @@ export default function PostDetail() {
             </View>
           </View>
         )}
+
+        {/* Full Image Modal */}
+        <Modal
+          visible={isImageModalVisible}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setIsImageModalVisible(false)}
+        >
+          <View style={{
+            flex: 1,
+            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}>
+            <TouchableOpacity
+              style={{
+                position: 'absolute',
+                top: Platform.OS === 'ios' ? 60 : 40,
+                right: 20,
+                zIndex: 10,
+                padding: 10,
+                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                borderRadius: 20
+              }}
+              onPress={() => setIsImageModalVisible(false)}
+            >
+              <X color="white" size={24} />
+            </TouchableOpacity>
+
+            <TouchableWithoutFeedback onPress={() => setIsImageModalVisible(false)}>
+              <View style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}>
+                {selectedImage && (
+                  <Image
+                    source={{ uri: selectedImage }}
+                    style={{
+                      width: '100%',
+                      height: '80%',
+                    }}
+                    resizeMode="contain"
+                  />
+                )}
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </Modal>
 
         {/* Exit Confirmation Modal */}
         <Modal

@@ -413,6 +413,7 @@ export default function NewCausePage() {
           onConfirm={handleConfirmAddToBox}
           onOneTimeDonation={handleDonate}
           isPending={addToDonationBoxMutation.isPending}
+          hasDonationBox={!!donationBoxData?.id || !!donationBoxData?.box_id}
         />
       )}
       <SharePost

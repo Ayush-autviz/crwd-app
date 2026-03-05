@@ -1,7 +1,11 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAuthStore } from '../../store/store';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
+import { HandHeart, Users } from 'lucide-react-native';
+import { getUserProfileById, followUser, unfollowUser } from '../../services/api/social';
 
 interface ActivityCardProps {
   activity: any;
@@ -90,6 +94,8 @@ const getInitials = (name: string): string => {
 
 export default function ActivityCard({ activity }: ActivityCardProps) {
   const navigation = useNavigation();
+  const queryClient = useQueryClient();
+  const { user: currentUser, token } = useAuthStore();
 
   // Extract username from activity body (e.g., "@jake_long" -> "jake_long")
   const usernameMatch = activity.body?.match(/@(\w+)/);
@@ -123,8 +129,70 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
     ? formatTimeAgo(activity.created_at)
     : activity.timestamp || '';
 
-  // Determine activity description - use body which contains the full description
-  const activityDescription = activity.body || activity.title || '';
+  // Determine activity type
+  const isDonation = activity.title === 'New Donation' || activity.body?.toLowerCase().includes('donated');
+  const isJoin = activity.title === 'New Member' || activity.body?.toLowerCase().includes('joined');
+
+  // Format activity body (remove username and amount if it's already in the header)
+  const formatActivityBody = (bodyText: string) => {
+    if (!bodyText) return '';
+
+    if (isDonation) {
+      // Input: "Conrad McMurray donated $5 to Atlanta Mission and 12 others"
+      // Regex: /^(.*?) (donated) (\$[\d,.]+) (to) (.*)$/i
+      const donationMatch = bodyText.match(/^(.*?) (donated) (\$[\d,.]+) (to) (.*)$/i);
+      if (donationMatch) {
+        return `${donationMatch[2].charAt(0).toUpperCase() + donationMatch[2].slice(1)} ${donationMatch[4]} ${donationMatch[5]}`;
+      }
+    }
+
+    if (isJoin) {
+      // Input: "Chad F. joined Everything Everywhere All At Once"
+      const joinMatch = bodyText.match(/^(.*?) (joined) (.*)$/i);
+      if (joinMatch) {
+        return `${joinMatch[2].charAt(0).toUpperCase() + joinMatch[2].slice(1)} ${joinMatch[3]}`;
+      }
+    }
+
+    return bodyText;
+  };
+
+  const activityDescription = formatActivityBody(activity.body || activity.title || '');
+
+  // Fetch user profile to check follow status (only for donations and if it's not the current user)
+  const shouldFetchProfile = !!userId && !!token?.access_token && isDonation && String(currentUser?.id) !== String(userId);
+
+  const { data: userProfile, isLoading: isLoadingProfile } = useQuery({
+    queryKey: ['userProfile', userId],
+    queryFn: () => getUserProfileById(userId?.toString() || ''),
+    enabled: shouldFetchProfile,
+  });
+
+  const isFollowing = userProfile?.is_following || false;
+
+  // Follow/Unfollow mutations
+  const followMutation = useMutation({
+    mutationFn: (id: string) => followUser(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['userProfile', userId] });
+    },
+  });
+
+  const unfollowMutation = useMutation({
+    mutationFn: (id: string) => unfollowUser(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['userProfile', userId] });
+    },
+  });
+
+  const handleFollowPress = () => {
+    if (!userId) return;
+    if (isFollowing) {
+      unfollowMutation.mutate(userId.toString());
+    } else {
+      followMutation.mutate(userId.toString());
+    }
+  };
 
   // Handle profile navigation
   const handleProfilePress = () => {
@@ -139,52 +207,59 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
 
   return (
     <View style={styles.card}>
-      <View style={styles.content}>
-        {/* Profile Avatar */}
-        {hasProfileLink ? (
-          <TouchableOpacity onPress={handleProfilePress} activeOpacity={0.7}>
-            <Avatar size={40}>
+      <View style={styles.cardContent}>
+        {/* Top Section: Profile info */}
+        <View style={styles.topSection}>
+          <TouchableOpacity
+            onPress={handleProfilePress}
+            activeOpacity={0.7}
+            style={styles.profileInfo}
+          >
+            <Avatar size={36}>
               <AvatarImage src={profilePicture} />
               <AvatarFallback
                 style={{ backgroundColor: avatarBgColor }}
-                textStyle={{ color: '#FFFFFF', fontSize: 16, fontFamily: 'Outfit-Bold' }}
+                textStyle={{ color: '#FFFFFF', fontSize: 14, fontFamily: 'Outfit-Bold' }}
               >
                 {initials}
               </AvatarFallback>
             </Avatar>
+            <View style={styles.nameContainer}>
+              <Text style={styles.userName} numberOfLines={1}>{userName}</Text>
+              {/* <Text style={styles.timestamp}>{formattedTime}</Text> */}
+            </View>
           </TouchableOpacity>
-        ) : (
-          <Avatar size={40}>
-            <AvatarImage src={profilePicture} />
-            <AvatarFallback
-              style={{ backgroundColor: avatarBgColor }}
-              textStyle={{ color: '#FFFFFF', fontSize: 16, fontFamily: 'Outfit-Bold' }}
+
+          {/* Follow Button */}
+          {/* {shouldFetchProfile && !isFollowing && (
+            <TouchableOpacity
+              style={styles.followButton}
+              onPress={handleFollowPress}
+              disabled={followMutation.isPending || unfollowMutation.isPending || isLoadingProfile}
+              activeOpacity={0.8}
             >
-              {initials}
-            </AvatarFallback>
-          </Avatar>
-        )}
+              <Text style={styles.followButtonText}>
+                {followMutation.isPending ? '...' : 'Follow'}
+              </Text>
+            </TouchableOpacity>
+          )} */}
+        </View>
 
-        {/* Content */}
-        <View style={styles.textContent}>
-          {/* Name and Timestamp Row */}
-          <View style={styles.nameRow}>
-            {hasProfileLink ? (
-              <TouchableOpacity onPress={handleProfilePress} activeOpacity={0.7}>
-                <Text style={styles.userName}>{userName}</Text>
-              </TouchableOpacity>
+        {/* Content Box */}
+        <View style={[
+          styles.descriptionBox,
+          { backgroundColor: isDonation ? '#F0FDF4' : isJoin ? '#EEF2FF' : '#F9FAFB' }
+        ]}>
+          {/* <View style={styles.iconContainer}>
+            {isDonation ? (
+              <HandHeart size={16} color={isDonation ? '#16A34A' : '#4B5563'} />
             ) : (
-              <Text style={styles.userName}>{userName}</Text>
+              <Users size={16} color={isJoin ? '#3B82F6' : '#4B5563'} />
             )}
-            <Text style={styles.timestamp}>{formattedTime}</Text>
-          </View>
-
-          {/* Activity Description Box */}
-          <View style={styles.descriptionBox}>
-            <Text style={styles.descriptionText}>
-              {activityDescription}
-            </Text>
-          </View>
+          </View> */}
+          <Text style={styles.descriptionText} numberOfLines={2}>
+            {activityDescription}
+          </Text>
         </View>
       </View>
     </View>
@@ -194,49 +269,82 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderRadius: 16,
+    // borderWidth: 1,
+    // borderColor: '#F3F4F6',
     marginBottom: 12,
     overflow: 'hidden',
   },
-  content: {
-    flexDirection: 'row',
-    gap: 12,
-    padding: 10,
+  cardContent: {
+    // padding: 12,
   },
-  textContent: {
-    flex: 1,
-    minWidth: 0,
-  },
-  nameRow: {
+  topSection: {
     flexDirection: 'row',
     alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: 4,
-    marginBottom: 8,
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  profileInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flex: 1,
+  },
+  nameContainer: {
+    flex: 1,
+    paddingRight: 8,
   },
   userName: {
-    fontSize: 15,
+    fontSize: 14,
     fontFamily: 'Outfit-Bold',
     fontWeight: '700',
     color: '#111827',
   },
+  followButton: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#1600ff',
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 20,
+  },
+  followButtonText: {
+    fontSize: 12,
+    fontFamily: 'Outfit-Bold',
+    fontWeight: '700',
+    color: '#1600ff',
+  },
   timestamp: {
-    fontSize: 13,
+    fontSize: 12,
     color: '#6B7280',
     fontFamily: 'Outfit-Regular',
+    marginTop: 1,
   },
   descriptionBox: {
-    backgroundColor: '#F0FDF4',
-    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
     padding: 10,
+    borderRadius: 12,
+  },
+  iconContainer: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
   descriptionText: {
     fontSize: 14,
-    fontFamily: 'Outfit-SemiBold',
-    color: '#111827',
-    lineHeight: 22,
+    fontFamily: 'Outfit-Regular',
+    color: '#374151',
+    flex: 1,
   },
 });
 

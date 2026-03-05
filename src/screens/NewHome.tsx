@@ -68,14 +68,20 @@ export default function NewHome() {
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await Promise.all([
-      queryClient.invalidateQueries({ queryKey: ['collectives'] }),
-      queryClient.invalidateQueries({ queryKey: ['nonprofitts'] }),
-      queryClient.invalidateQueries({ queryKey: ['donationBox', user?.id] }),
-      queryClient.invalidateQueries({ queryKey: ['joined-collectives', user?.id] }),
-      queryClient.invalidateQueries({ queryKey: ['communityUpdatesPosts'] }),
-    ]);
-    setRefreshing(false);
+    try {
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: ['collectives'], type: 'active' }),
+        queryClient.refetchQueries({ queryKey: ['nonprofitts'], type: 'active' }),
+        queryClient.refetchQueries({ queryKey: ['donationBox', user?.id], type: 'active' }),
+        queryClient.refetchQueries({ queryKey: ['joined-collectives', user?.id], type: 'active' }),
+        queryClient.resetQueries({ queryKey: ['communityUpdatesPosts'] }),
+        queryClient.invalidateQueries({ queryKey: ['userProfile'] }),
+      ]);
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+    } finally {
+      setRefreshing(false);
+    }
   }, [user?.id, queryClient]);
 
   // FCM token send to backend
@@ -382,8 +388,7 @@ export default function NewHome() {
       ? {
         monthlyAmount: donationBoxData.monthly_amount || donationBoxData.amount || 10,
         causeCount:
-          (donationBoxData.manual_causes?.length || 0) +
-          (donationBoxData.attributing_collectives?.length || 0),
+          (donationBoxData.box_causes?.length || 0)
       }
       : null;
 
@@ -849,7 +854,9 @@ export default function NewHome() {
             )}
 
             {/* Explore Cards */}
-            <ExploreCards />
+            {!hasNextPage && (
+              <ExploreCards />
+            )}
 
             {/* Footer */}
 

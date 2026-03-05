@@ -125,6 +125,7 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
     queryFn: () => getJoinCollective(currentUser?.id?.toString() || ''),
     enabled: !!currentUser?.id && !!token?.access_token && !!update.collective?.id,
   });
+  console.log('user in update', update.user, currentUser?.id);
 
   // Check if user has already joined this collective
   const hasJoinedCollective = joinedCollectivesData?.data?.some((item: any) =>
@@ -229,7 +230,6 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
       cleanActionText = actionText.replace(/\s*Supporting\s+\d+\s+nonprofit[s]?/i, '').trim();
     }
 
-    console.log('user in update', update.user);
 
 
     return (
@@ -354,7 +354,7 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
         </View>
 
         {/* Action Button - Follow for donation notifications */}
-        {isDonationNotification && update.user.id && currentUser?.id !== update.user.id && !isFollowing && (
+        {isDonationNotification && update.user.id && currentUser?.id != update.user.id && !isFollowing && (
           <TouchableOpacity
             onPress={handleFollowClick}
             disabled={followMutation.isPending || unfollowMutation.isPending || isLoadingProfile}

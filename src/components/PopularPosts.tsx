@@ -199,6 +199,7 @@ export default function PopularPosts({
             }));
             showToast('Post liked!', 2000);
             queryClient.invalidateQueries({ queryKey: ['posts'] });
+            queryClient.invalidateQueries({ queryKey: ['post', postId] });
         },
         onError: (error: any) => {
             console.error('Error liking post:', error);
@@ -221,6 +222,8 @@ export default function PopularPosts({
             }));
             showToast('Post unliked!', 2000);
             queryClient.invalidateQueries({ queryKey: ['posts'] });
+            queryClient.invalidateQueries({ queryKey: ['post', postId] });
+
         },
         onError: (error: any) => {
             console.error('Error unliking post:', error);

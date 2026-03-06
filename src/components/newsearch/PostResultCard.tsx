@@ -125,6 +125,12 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
   const [tooltipVisible, setTooltipVisible] = useState(false);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
 
+  // Sync local state when post prop changes (e.g. after query invalidation/refetch)
+  useEffect(() => {
+    setIsLiked(post.is_liked || false);
+    setLikesCount(post.likes_count || 0);
+  }, [post.is_liked, post.likes_count]);
+
   useEffect(() => {
     const imageUrl = post.fundraiser?.image || post.preview_details?.image || post.media;
     if (imageUrl) {

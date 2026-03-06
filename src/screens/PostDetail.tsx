@@ -59,6 +59,10 @@ interface Post {
     profile_picture: string;
     color: string;
   };
+  collective?: {
+    id: string;
+    name: string;
+  };
 }
 
 interface RouteParams {
@@ -135,6 +139,10 @@ export default function PostDetail() {
       username: postData.user?.username || postData.user?.full_name || 'Unknown User',
       profile_picture: postData.user?.profile_picture || '',
       color: postData.user?.color || stringToColor(postData.user?.username || postData.user?.full_name || 'Unknown User'),
+    },
+    collective: {
+      id: postData.collective?.id?.toString() || '',
+      name: postData.collective?.name || 'Unknown Collective',
     },
   } : (route.params as RouteParams)?.post;
 
@@ -290,6 +298,8 @@ export default function PostDetail() {
     mutationFn: () => likePost(postId || ''),
     onSuccess: () => {
       // showToast('Post liked!', 3000);
+      queryClient.invalidateQueries({ queryKey: ['posts', post.collective?.id] });
+      queryClient.invalidateQueries({ queryKey: ['communityUpdatesPosts'] });
       queryClient.invalidateQueries({ queryKey: ['post', postId] });
     },
     onError: () => {
@@ -301,6 +311,8 @@ export default function PostDetail() {
     mutationFn: () => unlikePost(postId || ''),
     onSuccess: () => {
       // showToast('Post unliked!', 3000);
+      queryClient.invalidateQueries({ queryKey: ['posts', post.collective?.id] });
+      queryClient.invalidateQueries({ queryKey: ['communityUpdatesPosts'] });
       queryClient.invalidateQueries({ queryKey: ['post', postId] });
     },
     onError: () => {

@@ -681,7 +681,11 @@ export default function OneTimeDonation({
                   const avatarBgColor = getConsistentColor(causeId, avatarColors);
                   const initials = getInitials(cause.name || '');
                   return (
-                    <View key={item.id} style={styles.selectedCauseItem}>
+                    <TouchableOpacity
+                      key={item.id}
+                      style={styles.selectedCauseItem}
+                      onPress={() => (navigation as any).navigate('CauseScreen', { id: cause.id })}
+                    >
                       <Avatar size={48} style={{ borderRadius: 8, overflow: 'hidden', marginRight: 4 }}>
                         <AvatarImage src={cause.image || cause.logo} />
                         <AvatarFallback
@@ -705,7 +709,7 @@ export default function OneTimeDonation({
                       >
                         <Trash2 size={16} color="#ef4444" />
                       </TouchableOpacity>
-                    </View>
+                    </TouchableOpacity>
                   );
                 })}
             </View>
@@ -775,7 +779,7 @@ export default function OneTimeDonation({
                       <TouchableOpacity
                         key={cause.id}
                         style={styles.causeItem}
-                        onPress={() => handleSelectItem({ id: String(cause.id), type: 'cause', data: cause })}
+                        onPress={() => (navigation as any).navigate('CauseScreen', { id: cause.id })}
                       >
                         <Avatar size={48} style={[styles.causeAvatar, { borderRadius: 8 }]}>
                           <AvatarImage src={cause.image || cause.logo} />
@@ -792,9 +796,12 @@ export default function OneTimeDonation({
                             {cause.description || cause.mission || 'Supporting this nonprofit\'s mission'}
                           </Text>
                         </View>
-                        <View style={styles.addCauseButton}>
+                        <TouchableOpacity
+                          onPress={() => handleSelectItem({ id: String(cause.id), type: 'cause', data: cause })}
+                          style={styles.addCauseButton}
+                        >
                           <Plus size={16} color="#ec4899" {...({ strokeWidth: 3 } as any)} />
-                        </View>
+                        </TouchableOpacity>
                       </TouchableOpacity>
                     );
                   })
@@ -817,7 +824,8 @@ export default function OneTimeDonation({
                       <TouchableOpacity
                         key={cause.id}
                         style={styles.causeItem}
-                        onPress={() => handleSelectItem({ id: String(cause.id), type: 'cause', data: cause })}
+                        // onPress={() => handleSelectItem({ id: String(cause.id), type: 'cause', data: cause })}
+                        onPress={() => (navigation as any).navigate('CauseScreen', { id: cause.id })}
                       >
                         <Avatar size={48} style={[styles.causeAvatar, { borderRadius: 8 }]}>
                           <AvatarImage src={cause.image || cause.logo} />
@@ -834,9 +842,12 @@ export default function OneTimeDonation({
                             {cause.description || cause.mission || 'Supporting this nonprofit\'s mission'}
                           </Text>
                         </View>
-                        <View style={styles.addCauseButton}>
+                        <TouchableOpacity
+                          onPress={() => handleSelectItem({ id: String(cause.id), type: 'cause', data: cause })}
+                          style={styles.addCauseButton}
+                        >
                           <Plus size={16} color="#ec4899" {...({ strokeWidth: 3 } as any)} />
-                        </View>
+                        </TouchableOpacity>
                       </TouchableOpacity>
                     );
                   })
@@ -1476,7 +1487,7 @@ const styles = StyleSheet.create({
   addCauseButton: {
     width: 32,
     height: 32,
-    borderRadius: 8,
+    borderRadius: 30,
     backgroundColor: '#FCE7F3',
     alignItems: 'center',
     justifyContent: 'center',

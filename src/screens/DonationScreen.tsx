@@ -966,7 +966,11 @@ export default function DonationScreen() {
                               const initials = getInitials(cause.name);
 
                               return (
-                                <View key={cause.id} style={styles.selectedCauseItem}>
+                                <TouchableOpacity
+                                  key={cause.id}
+                                  style={styles.selectedCauseItem}
+                                  onPress={() => (navigation as any).navigate('CauseScreen', { id: cause.id })}
+                                >
                                   <Avatar size={48} style={[styles.selectedCauseAvatar, { borderRadius: 8 }]}>
                                     <AvatarImage src={cause.image} />
                                     <AvatarFallback
@@ -991,7 +995,7 @@ export default function DonationScreen() {
                                   >
                                     <Trash2 size={16} color="#ef4444" />
                                   </TouchableOpacity>
-                                </View>
+                                </TouchableOpacity>
                               );
                             })}
                           </View>
@@ -1052,7 +1056,11 @@ export default function DonationScreen() {
                                 const initials = getInitials(cause.name);
 
                                 return (
-                                  <View key={cause.id} style={styles.causeItem}>
+                                  <TouchableOpacity
+                                    key={cause.id}
+                                    style={styles.causeItem}
+                                    onPress={() => (navigation as any).navigate('CauseScreen', { id: cause.id })}
+                                  >
                                     <Avatar size={48} style={[styles.causeAvatar, { borderRadius: 8 }]}>
                                       <AvatarImage src={cause.image} />
                                       <AvatarFallback
@@ -1108,7 +1116,7 @@ export default function DonationScreen() {
                                     >
                                       <Plus size={16} color="#ec4899" {...({ strokeWidth: 3 } as any)} />
                                     </TouchableOpacity>
-                                  </View>
+                                  </TouchableOpacity>
                                 );
                               })
                           ) : (
@@ -1302,7 +1310,11 @@ export default function DonationScreen() {
                                   const cause = boxCause.cause;
                                   if (!cause) return null;
                                   return (
-                                    <View key={cause.id} style={styles.causeItem}>
+                                    <TouchableOpacity
+                                      key={cause.id}
+                                      style={styles.causeItem}
+                                      onPress={() => (navigation as any).navigate('CauseScreen', { id: cause.id })}
+                                    >
                                       <Avatar size={48} style={styles.causeAvatar}>
                                         <AvatarImage src={cause.image || cause.logo} />
                                         <AvatarFallback
@@ -1342,7 +1354,7 @@ export default function DonationScreen() {
                                       >
                                         <Trash2 size={20} color="#EF4444" />
                                       </TouchableOpacity>
-                                    </View>
+                                    </TouchableOpacity>
                                   );
                                 })
                               ) : (
@@ -1387,7 +1399,11 @@ export default function DonationScreen() {
                                   .filter((cause: any) => !(donationBoxQuery.data?.box_causes || []).some((bc: any) => bc.cause?.id === cause.id))
                                   .slice(0, 5)
                                   .map((cause: any) => (
-                                    <View key={cause.id} style={styles.causeItem}>
+                                    <TouchableOpacity
+                                      key={cause.id}
+                                      style={styles.causeItem}
+                                      onPress={() => (navigation as any).navigate('CauseScreen', { id: cause.id })}
+                                    >
                                       <Avatar size={48} style={styles.causeAvatar}>
                                         <AvatarImage src={cause.image || cause.logo} />
                                         <AvatarFallback
@@ -1417,7 +1433,7 @@ export default function DonationScreen() {
                                           <Plus size={16} color="#db2777" {...({ strokeWidth: 3 } as any)} />
                                         )}
                                       </TouchableOpacity>
-                                    </View>
+                                    </TouchableOpacity>
                                   ))
                               ) : searchQuery ? (
                                 <Text style={styles.noCausesText}>No nonprofits found matching "{searchQuery}"</Text>

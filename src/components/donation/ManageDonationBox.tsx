@@ -885,7 +885,11 @@ export default function ManageDonationBoxScreen() {
                       const colors = getNonprofitColor(causeId || org.name);
                       const initials = org.name.charAt(0).toUpperCase();
                       return (
-                        <View key={org.id} style={styles.causeCard}>
+                        <TouchableOpacity
+                          key={org.id}
+                          style={styles.causeCard}
+                          onPress={() => (navigation as any).navigate('CauseScreen', { id: causeId })}
+                        >
                           <View style={styles.causeCardContent}>
                             <Avatar size={40} style={[styles.causeIcon, { borderRadius: 8 }]}>
                               <AvatarImage src={org.imageUrl} />
@@ -905,19 +909,18 @@ export default function ManageDonationBoxScreen() {
                               )}
                             </View>
                             <View style={styles.causeActions}>
-                              {/* <View style={styles.amountInfo}>
-                                <Text style={styles.amountPercentage}>{distributionPercentage.toFixed(1)}%</Text>
-                                <Text style={styles.amountPerMonth}>${amountPerItem.toFixed(2)}/mo</Text>
-                              </View> */}
                               <TouchableOpacity
                                 style={styles.removeButton}
-                                onPress={() => handleDeselectCause(causeId, org.isNewlySelected, org.name)}
+                                onPress={(e) => {
+                                  e.stopPropagation();
+                                  handleDeselectCause(causeId, org.isNewlySelected, org.name);
+                                }}
                               >
                                 <Trash2 size={18} color="#ef4444" />
                               </TouchableOpacity>
                             </View>
                           </View>
-                        </View>
+                        </TouchableOpacity>
                       );
                     })}
                   </View>
@@ -977,7 +980,7 @@ export default function ManageDonationBoxScreen() {
                         <TouchableOpacity
                           key={cause.id}
                           style={styles.causeCard}
-                          onPress={() => handleToggleCause(cause.id)}
+                          onPress={() => (navigation as any).navigate('CauseScreen', { id: cause.id })}
                         >
                           <View style={styles.causeCardContent}>
                             <Avatar size={40} style={[styles.causeIcon, { borderRadius: 8 }]}>
@@ -997,15 +1000,24 @@ export default function ManageDonationBoxScreen() {
                             </View>
                             {!isSelected ? (
                               <TouchableOpacity
-                                onPress={() => handleToggleCause(cause.id)}
+                                onPress={(e) => {
+                                  e.stopPropagation();
+                                  handleToggleCause(cause.id);
+                                }}
                                 style={styles.addButton}
                               >
                                 <Plus size={14} color="#ec4899" />
                               </TouchableOpacity>
                             ) : (
-                              <View style={styles.checkboxSelected}>
+                              <TouchableOpacity
+                                onPress={(e) => {
+                                  e.stopPropagation();
+                                  handleToggleCause(cause.id);
+                                }}
+                                style={styles.checkboxSelected}
+                              >
                                 <View style={styles.checkmarkWhite} />
-                              </View>
+                              </TouchableOpacity>
                             )}
                           </View>
                         </TouchableOpacity>
@@ -1040,7 +1052,7 @@ export default function ManageDonationBoxScreen() {
                           <TouchableOpacity
                             key={cause.id}
                             style={styles.causeCard}
-                            onPress={() => handleToggleCause(cause.id)}
+                            onPress={() => (navigation as any).navigate('CauseScreen', { id: cause.id })}
                           >
                             <View style={styles.causeCardContent}>
                               <Avatar size={40} style={[styles.causeIcon, { borderRadius: 8 }]}>
@@ -1060,15 +1072,24 @@ export default function ManageDonationBoxScreen() {
                               </View>
                               {!isSelected ? (
                                 <TouchableOpacity
-                                  onPress={() => handleToggleCause(cause.id)}
+                                  onPress={(e) => {
+                                    e.stopPropagation();
+                                    handleToggleCause(cause.id);
+                                  }}
                                   style={styles.addButton}
                                 >
                                   <Plus size={14} color="#ec4899" />
                                 </TouchableOpacity>
                               ) : (
-                                <View style={styles.checkboxSelected}>
+                                <TouchableOpacity
+                                  onPress={(e) => {
+                                    e.stopPropagation();
+                                    handleToggleCause(cause.id);
+                                  }}
+                                  style={styles.checkboxSelected}
+                                >
                                   <View style={styles.checkmarkWhite} />
-                                </View>
+                                </TouchableOpacity>
                               )}
                             </View>
                           </TouchableOpacity>

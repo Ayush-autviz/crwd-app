@@ -337,7 +337,11 @@ export default function CheckoutScreen({
                   const avatarBgColor = getConsistentColor(cause.id, avatarColors);
                   const initials = getInitials(cause.name || 'N');
                   return (
-                    <View key={cause.id} style={styles.causeCard}>
+                    <TouchableOpacity
+                      key={cause.id}
+                      style={styles.causeCard}
+                      onPress={() => (navigation as any).navigate('CauseScreen', { id: cause.id })}
+                    >
                       <View style={styles.causeCardContent}>
                         {/* Avatar */}
                         <Avatar size={48} style={{ ...styles.causeIcon, borderRadius: 8 }}>
@@ -383,7 +387,7 @@ export default function CheckoutScreen({
                           </TouchableOpacity>
                         </View>
                       </View>
-                    </View>
+                    </TouchableOpacity>
                   );
                 })}
               </View>

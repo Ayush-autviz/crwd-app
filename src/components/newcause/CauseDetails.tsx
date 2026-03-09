@@ -30,7 +30,7 @@ const getCategoryInfo = (categoryId: string) => {
 
 export default function CauseDetails({ causeData }: CauseDetailsProps) {
   const navigation = useNavigation();
-  const categoryInfo = getCategoryInfo(causeData?.category || '');
+  const categoryInfo = causeData?.categories || getCategoryInfo(causeData?.category || '');
   const category = categoryInfo[0]; // Use first category for related categories logic
 
   // Get related categories - show related categories based on the main category
@@ -200,6 +200,11 @@ const styles = StyleSheet.create({
     color: '#374151',
     fontFamily: 'Outfit-Regular',
     // marginTop: 4,
+  },
+  commaText: {
+    fontSize: 15,
+    fontFamily: 'Outfit-Bold',
+    color: '#1600ff',
   },
 });
 

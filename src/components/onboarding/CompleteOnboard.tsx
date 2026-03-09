@@ -23,6 +23,7 @@ import { categories } from '../../Constants/categories';
 import { useAuthStore } from '../../store/store';
 
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
+import CategoryBadges from '../newcause/CategoryBadges';
 
 
 type ViewType = 'initial' | 'surprise' | 'browse' | 'collectives' | 'success';
@@ -924,7 +925,7 @@ export default function CompleteOnboard() {
                                       <Text style={styles.causeName} numberOfLines={2}>
                                         {cause.name}
                                       </Text>
-                                      <View style={styles.causeCategoriesContainer}>
+                                      {/* <View style={styles.causeCategoriesContainer}>
                                         {categoryInfo.map((cat: any, index: number) => (
                                           <View
                                             key={index}
@@ -938,7 +939,10 @@ export default function CompleteOnboard() {
                                             </Text>
                                           </View>
                                         ))}
-                                      </View>
+                                      </View> */}
+                                      <CategoryBadges
+                                        categories={cause.categories}
+                                      />
                                     </View>
                                     {isSelected && (
                                       <Check size={20} color="#3b82f6" />
@@ -1182,7 +1186,7 @@ export default function CompleteOnboard() {
                                   <Text style={styles.causeName}>
                                     {cause.name}
                                   </Text>
-                                  <View style={styles.causeCategoriesContainer}>
+                                  {/* <View style={styles.causeCategoriesContainer}>
                                     {categoryInfo.map((cat: any, index: number) => (
                                       <View
                                         key={index}
@@ -1196,7 +1200,10 @@ export default function CompleteOnboard() {
                                         </Text>
                                       </View>
                                     ))}
-                                  </View>
+                                  </View> */}
+                                  <CategoryBadges
+                                    categories={cause.categories}
+                                  />
                                 </View>
                                 {isSelected && (
                                   <Check size={20} color="#3b82f6" />

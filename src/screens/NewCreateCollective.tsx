@@ -53,6 +53,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import { truncateAtFirstPeriod } from '../utils/truncateFirstPeriod';
 import DiscardBottomSheet from '../components/ui/DiscardBottomSheet';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import CategoryBadges from '../components/newcause/CategoryBadges';
 
 const getCategoryById = (categoryId: string | undefined) => {
   return categories.find(cat => cat.id === categoryId) || null;
@@ -952,7 +953,7 @@ export default function NewCreateCollective() {
                         </Avatar>
                         <View style={styles.reviewCauseInfo}>
                           <Text style={styles.reviewCauseName}>{causeData.name}</Text>
-                          <View style={styles.reviewCauseCategoriesContainer}>
+                          {/* <View style={styles.reviewCauseCategoriesContainer}>
                             {categoryNames.map((name, index) => {
                               const singleCategoryId = categoryIds[index];
                               const bgColor = getCategoryColor(singleCategoryId);
@@ -968,7 +969,10 @@ export default function NewCreateCollective() {
                                 </View>
                               );
                             })}
-                          </View>
+                          </View> */}
+                          <CategoryBadges
+                            categories={causeData.categories}
+                          />
                           <Text style={styles.reviewCauseDescription}>
                             {truncateAtFirstPeriod(causeData.mission || causeData.description)}
                           </Text>
@@ -1337,7 +1341,7 @@ export default function NewCreateCollective() {
                         <View style={styles.selectedCauseInfo}>
                           <View style={styles.selectedCauseHeader}>
                             <Text style={styles.selectedCauseName}>{causeData.name}</Text>
-                            <View style={styles.selectedCauseCategoriesContainer}>
+                            {/* <View style={styles.selectedCauseCategoriesContainer}>
                               {categoryNames.map((name, index) => {
                                 const singleCategoryId = categoryIds[index];
                                 const bgColor = getCategoryColor(singleCategoryId);
@@ -1353,7 +1357,10 @@ export default function NewCreateCollective() {
                                   </View>
                                 );
                               })}
-                            </View>
+                            </View> */}
+                            <CategoryBadges
+                              categories={causeData.categories}
+                            />
                           </View>
                           <Text style={styles.selectedCauseDescription} >
                             {truncateAtFirstPeriod(causeData.mission || causeData.description)}
@@ -1450,7 +1457,7 @@ export default function NewCreateCollective() {
                             <View style={styles.causeInfo}>
                               <View style={styles.causeHeader}>
                                 <Text style={styles.causeName}>{cause.name}</Text>
-                                <View style={styles.causeCategoriesContainer}>
+                                {/* <View style={styles.causeCategoriesContainer}>
                                   {categoryNames.map((name, index) => {
                                     const singleCategoryId = categoryIds[index];
                                     const bgColor = getCategoryColor(singleCategoryId);
@@ -1466,7 +1473,10 @@ export default function NewCreateCollective() {
                                       </View>
                                     );
                                   })}
-                                </View>
+                                </View> */}
+                                <CategoryBadges
+                                  categories={cause.categories}
+                                />
                               </View>
                               <Text style={styles.causeDescription}>
                                 {truncateAtFirstPeriod(cause.mission || cause.description)}
@@ -1590,7 +1600,7 @@ export default function NewCreateCollective() {
                           <View style={styles.causeInfo}>
                             <View style={styles.causeHeader}>
                               <Text style={styles.causeName}>{cause.name}</Text>
-                              <View style={styles.causeCategoriesContainer}>
+                              {/* <View style={styles.causeCategoriesContainer}>
                                 {categoryNames.map((name, index) => {
                                   const singleCategoryId = categoryIds[index];
                                   const bgColor = getCategoryColor(singleCategoryId);
@@ -1606,7 +1616,10 @@ export default function NewCreateCollective() {
                                     </View>
                                   );
                                 })}
-                              </View>
+                              </View> */}
+                              <CategoryBadges
+                                categories={cause.categories}
+                              />
                             </View>
                             <Text style={styles.causeDescription}>
                               {truncateAtFirstPeriod(cause.mission || cause.description)}

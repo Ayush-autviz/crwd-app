@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
+import CategoryBadges from './CategoryBadges';
 import { categories } from '../../Constants/categories';
 import { truncateAtFirstPeriod } from '../../utils/truncateFirstPeriod';
 
@@ -17,7 +18,7 @@ const getCategoryInfo = (categoryId: string) => {
     const categoryIds = categoryId.split('');
     const foundCategories = categoryIds
       .map((id) => categories.find((cat) => cat.id === id))
-      .filter((cat: any) => cat !== undefined);
+      .filter((cat): cat is typeof categories[0] => cat !== undefined);
 
     // If we found multiple categories, return them as an array
     if (foundCategories.length > 0) {
@@ -104,29 +105,18 @@ export default function CauseProfile({ causeData }: CauseProfileProps) {
         </Text>
 
         {/* Category Tags */}
-        {categoryInfo.length > 0 && (
-          <View style={styles.categoriesContainer}>
-            {categoryInfo.map((cat: any, index: number) => (
-              <TouchableOpacity
-                key={index}
-                onPress={() => {
-                  (navigation as any).navigate('SearchResults', {
-                    categoryId: cat.id,
-                    categoryName: cat.name,
-                    searchQuery: cat.name,
-                    tab: 'Causes'
-                  });
-                }}
-                style={[
-                  styles.categoryBadge,
-                  { backgroundColor: cat.background },
-                ]}
-              >
-                <Text style={styles.categoryText}>{cat.name}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
+        <CategoryBadges
+          categories={causeData.categories}
+          onCategoryClick={(cat) => {
+            (navigation as any).navigate('SearchResults', {
+              categoryId: cat.id,
+              categoryName: cat.name,
+              searchQuery: cat.name,
+              tab: 'Causes'
+            });
+          }}
+          containerStyle={styles.categoriesContainer}
+        />
       </View>
     </View>
   );

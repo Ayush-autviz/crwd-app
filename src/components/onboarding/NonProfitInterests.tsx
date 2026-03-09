@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -13,9 +13,9 @@ import { Heart, ArrowRight, Loader2, Plus, Minus } from 'lucide-react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
 
-import { categories } from '../../Constants/categories';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { postCauseInterests } from '../../services/api/social';
+import { getCategories } from '../../services/api/crwd';
 import { useToast } from '../../contexts/ToastContext';
 import { PrimaryGrey } from '../../Constants/Colors';
 
@@ -53,13 +53,28 @@ export default function NonProfitInterests() {
     "Women's Health",
   ];
 
-  const mainCategories = categories
-    .filter((cat) =>
-      cat.id !== "" &&
-      cat.name !== "All" &&
-      allowedCategoryNames.includes(cat.name)
-    )
-    .sort((a, b) => a.name.localeCompare(b.name));
+  // Fetch categories from API
+  const { data: categoriesData, isLoading: isLoadingCategories } = useQuery({
+    queryKey: ['categories'],
+    queryFn: getCategories,
+  });
+
+  const mainCategories = useMemo(() => {
+    if (!categoriesData?.data) return [];
+
+    return categoriesData.data
+      .filter((cat: any) =>
+        cat.name !== "All" &&
+        allowedCategoryNames.includes(cat.name)
+      )
+      .map((cat: any) => ({
+        id: cat.id.toString(),
+        name: cat.name,
+        background: cat.background_color || cat.background,
+        text: cat.text_color || cat.text
+      }))
+      .sort((a: any, b: any) => a.name.localeCompare(b.name));
+  }, [categoriesData]);
 
   const handleCategoryToggle = (categoryId: string) => {
     setSelectedCategories((prev) => {
@@ -187,31 +202,37 @@ export default function NonProfitInterests() {
           </Text>
 
           {/* Category Tags - Organic Layout */}
-          <View style={styles.categoriesContainer}>
-            {mainCategories.map((category) => {
-              const isSelected = selectedCategories.includes(category.id);
-              return (
-                <TouchableOpacity
-                  key={category.id}
-                  onPress={() => handleCategoryToggle(category.id)}
-                  style={[
-                    styles.categoryButton,
-                    {
-                      backgroundColor: category.background,
-                      opacity: isSelected ? 1 : 0.4,
-                    }
-                  ]}
-                  activeOpacity={0.8}
-                >
-                  <Text style={[
-                    styles.categoryButtonText,
-                    { color: category.text }
-                  ]}>
-                    {category.name}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
+          <View style={[styles.categoriesContainer, { minHeight: 100 }]}>
+            {isLoadingCategories ? (
+              <View style={{ paddingVertical: 40 }}>
+                <ActivityIndicator size="small" color="#6366f1" />
+              </View>
+            ) : (
+              mainCategories.map((category: any) => {
+                const isSelected = selectedCategories.includes(category.id);
+                return (
+                  <TouchableOpacity
+                    key={category.id}
+                    onPress={() => handleCategoryToggle(category.id)}
+                    style={[
+                      styles.categoryButton,
+                      {
+                        backgroundColor: category.background,
+                        opacity: isSelected ? 1 : 0.4,
+                      }
+                    ]}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={[
+                      styles.categoryButtonText,
+                      { color: category.text }
+                    ]}>
+                      {category.name}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })
+            )}
           </View>
 
           {/* Selected Count */}

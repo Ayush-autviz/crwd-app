@@ -212,3 +212,9 @@ export const putFundraiser = async (id: string, data: any) => {
     const response = await axiosClient.put(`/crwd/fundraisers/${id}/`, data);
     return response.data;
 };
+
+// Categories API endpoint
+export const getCategories = async () => {
+    const response = await axiosClient.get('/crwd/categories/');
+    return response.data;
+};

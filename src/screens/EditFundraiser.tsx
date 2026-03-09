@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -36,8 +36,7 @@ import * as ImagePicker from 'react-native-image-picker';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/Avatar';
 import { PrimaryBlue } from '../Constants/Colors';
-import { categories } from '../Constants/categories';
-import { getFundraiserById, getCollectiveById, getCausesBySearch, patchFundraiser } from '../services/api/crwd';
+import { getFundraiserById, getCollectiveById, getCausesBySearch, patchFundraiser, getCategories } from '../services/api/crwd';
 import { useToast } from '../contexts/ToastContext';
 import { differenceInDays } from 'date-fns';
 import { truncateAtFirstPeriod } from '../utils/truncateFirstPeriod';
@@ -69,10 +68,7 @@ const getInitials = (name: string) => {
 };
 
 // Filter categories for the fundraiser page
-const filterCategories = [
-  { id: '', name: 'All' },
-  ...categories.filter(cat => cat.id !== '').map(cat => ({ id: cat.id, name: cat.name })),
-];
+// Now dynamically fetched from API
 
 export default function EditFundraiser() {
   const navigation = useNavigation();
@@ -134,6 +130,30 @@ export default function EditFundraiser() {
     queryFn: () => getCollectiveById(fundraiserData?.collective?.toString() || ''),
     enabled: !!fundraiserData?.collective && typeof fundraiserData.collective === 'number',
   });
+
+  // Fetch categories
+  const { data: categoriesData } = useQuery({
+    queryKey: ['categories'],
+    queryFn: getCategories,
+  });
+
+  const categoriesList = useMemo(() => {
+    if (!categoriesData?.data) return [{ id: '', name: 'All' }];
+    // Ensure "All" is at the start if not returned by API or handle ID consistency
+    const results = categoriesData.data.map((cat: any) => ({
+      id: cat.id.toString(),
+      name: cat.name,
+      background_color: cat.background_color || cat.background,
+      text_color: cat.text_color || cat.text
+    }));
+
+    // Check if "All" is already there
+    if (results.some((cat: any) => cat.name.toLowerCase() === 'all')) {
+      return results;
+    }
+
+    return [{ id: '', name: 'All' }, ...results];
+  }, [categoriesData]);
 
   // Fetch causes/nonprofits for adding more
   const { data: causesData, isLoading: isLoadingCauses } = useQuery({
@@ -764,6 +784,9 @@ export default function EditFundraiser() {
                   {selectedNonprofitsData.map((cause: any) => {
                     const avatarBgColor = getConsistentColor(cause.id, cause.name);
                     const initials = getInitials(cause.name || 'Nonprofit');
+                    const category = categoriesList.find((cat: any) => cat.id === cause.category?.toString() || cat.id === cause.cause_category?.toString());
+                    const categoryName = cause?.categories?.[0]?.name || cause?.categories?.name || (typeof cause?.categories === 'string' ? cause?.categories : null) || category?.name || 'General';
+
                     return (
                       <View key={cause.id} style={styles.selectedNonprofitCard}>
                         <Avatar size={48}>
@@ -776,7 +799,12 @@ export default function EditFundraiser() {
                           </AvatarFallback>
                         </Avatar>
                         <View style={styles.nonprofitInfo}>
-                          <Text style={styles.nonprofitName}>{cause.name}</Text>
+                          <View style={styles.nonprofitNameContainer}>
+                            <Text style={styles.nonprofitName}>{cause.name}</Text>
+                            <View style={[styles.categoryBadgeTiny, { backgroundColor: '#DBEAFE', borderColor: '#BFDBFE' }]}>
+                              <Text style={[styles.categoryBadgeTextTiny, { color: '#1E40AF' }]}>{categoryName}</Text>
+                            </View>
+                          </View>
                         </View>
                         <View style={styles.nonprofitActions}>
                           <View style={styles.currentBadge}>
@@ -822,7 +850,7 @@ export default function EditFundraiser() {
                 style={styles.filterScroll}
                 contentContainerStyle={styles.filterContainer}
               >
-                {filterCategories.map((category) => {
+                {categoriesList.map((category: any) => {
                   const isSelected = selectedCategory === category.id;
                   return (
                     <TouchableOpacity
@@ -849,6 +877,9 @@ export default function EditFundraiser() {
                   {availableNonprofits.map((nonprofit: any) => {
                     const avatarBgColor = getConsistentColor(nonprofit.id, nonprofit.name);
                     const initials = getInitials(nonprofit.name);
+                    const category = categoriesList.find((cat: any) => cat.id === nonprofit.category?.toString() || cat.id === nonprofit.cause_category?.toString());
+                    const categoryName = nonprofit?.categories?.[0]?.name || nonprofit?.categories?.name || (typeof nonprofit?.categories === 'string' ? nonprofit?.categories : null) || category?.name || 'General';
+
                     return (
                       <View key={nonprofit.id} style={styles.availableNonprofitCard}>
                         <Avatar size={48}>
@@ -861,7 +892,12 @@ export default function EditFundraiser() {
                           </AvatarFallback>
                         </Avatar>
                         <View style={styles.nonprofitInfo}>
-                          <Text style={styles.nonprofitName}>{nonprofit.name}</Text>
+                          <View style={styles.nonprofitNameContainer}>
+                            <Text style={styles.nonprofitName}>{nonprofit.name}</Text>
+                            <View style={styles.categoryBadgeTiny}>
+                              <Text style={styles.categoryBadgeTextTiny}>{categoryName}</Text>
+                            </View>
+                          </View>
                           <Text style={styles.nonprofitDescription} >
                             {truncateAtFirstPeriod(nonprofit.mission || nonprofit.description || 'Nonprofit organization')}
                           </Text>
@@ -1392,6 +1428,26 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#6B7280',
     fontFamily: 'Outfit-Regular',
+  },
+  nonprofitNameContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 4,
+  },
+  categoryBadgeTiny: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  categoryBadgeTextTiny: {
+    fontSize: 9,
+    fontWeight: '600',
+    color: '#6B7280',
+    fontFamily: 'Outfit-Bold',
   },
   nonprofitActions: {
     flexDirection: 'row',

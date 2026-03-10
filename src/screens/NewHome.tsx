@@ -845,7 +845,7 @@ export default function NewHome() {
                           <Text style={styles.loadMoreText}>Loading...</Text>
                         </View>
                       ) : (
-                        <Text style={styles.loadMoreText}>Load More</Text>
+                        <Text style={styles.loadMoreText}>Show More Posts</Text>
                       )}
                     </TouchableOpacity>
                   </View>

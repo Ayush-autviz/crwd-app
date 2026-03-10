@@ -15,7 +15,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute, useNavigation, CommonActions } from '@react-navigation/native';
 import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Check, Share2, Loader2, X, Heart } from 'lucide-react-native';
+import { Check, Loader2, X, Heart } from 'lucide-react-native';
 import BottomSheet, { BottomSheetView, BottomSheetBackdrop, BottomSheetScrollView, BottomSheetModal } from '@gorhom/bottom-sheet';
 import {
   getCollectiveById,
@@ -54,11 +54,11 @@ export default function NewGroupCrwdPage() {
   const [showShareModal, setShowShareModal] = useState(false);
 
   const shareSheetRef = useRef<BottomSheetModal>(null);
+  const leaveCollectiveSheetRef = useRef<BottomSheetModal>(null);
   const [showStatisticsModal, setShowStatisticsModal] = useState(false);
   const [statisticsTab, setStatisticsTab] = useState<'Nonprofits' | 'Members' | 'Donations'>(
     'Nonprofits'
   );
-  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showCommentsSheet, setShowCommentsSheet] = useState(false);
   const [selectedPost, setSelectedPost] = useState<any>(null);
   const [showJoinModal, setShowJoinModal] = useState(false);
@@ -102,8 +102,8 @@ export default function NewGroupCrwdPage() {
   const statisticsBottomSheetRef = useRef<BottomSheetModal>(null);
   const statisticsSnapPoints = useMemo(() => ['75%'], []);
 
-  // Bottom sheet backdrop for statistics
-  const renderStatisticsBackdrop = useCallback(
+  // Bottom sheet backdrop for statistics/leave
+  const renderBackdrop = useCallback(
     (props: any) => (
       <BottomSheetBackdrop
         {...props}
@@ -267,7 +267,7 @@ export default function NewGroupCrwdPage() {
     mutationFn: leaveCollective,
     onSuccess: async (response: any) => {
       console.log('Leave collective successful:', response);
-      setShowConfirmDialog(false);
+      leaveCollectiveSheetRef.current?.dismiss();
       queryClient.invalidateQueries({ queryKey: ['crwd', crwdId] });
       queryClient.invalidateQueries({ queryKey: ['joined-collectives'] });
       queryClient.invalidateQueries({ queryKey: ['joined-collectives', currentUser?.id] });
@@ -361,7 +361,7 @@ export default function NewGroupCrwdPage() {
 
     if (crwdData.is_joined) {
       // If already joined, show unjoin confirmation
-      setShowConfirmDialog(true);
+      leaveCollectiveSheetRef.current?.present();
     } else {
       // Join immediately
       joinCollectiveMutation.mutate(crwdId);
@@ -855,7 +855,7 @@ export default function NewGroupCrwdPage() {
           setShowJoinModal(true);
         }}
         isJoined={crwdData.is_joined}
-        onLeave={() => setShowConfirmDialog(true)}
+        onLeave={() => leaveCollectiveSheetRef.current?.present()}
       />
 
       <ScrollView
@@ -912,6 +912,15 @@ export default function NewGroupCrwdPage() {
                   <Check size={14} color="#16a34a" />
                   <Text style={styles.joinedButtonText}>Joined</Text>
                 </TouchableOpacity>
+                {/* Donate Button */}
+                <TouchableOpacity
+                  onPress={() => setShowJoinModal(true)}
+                  style={[styles.button, styles.donateButtonFilled, { flex: 1 }]}
+                  activeOpacity={0.8}
+                >
+                  {/* <Heart size={14} color="#FFFFFF" /> */}
+                  <Text style={styles.donateButtonFilledText}>Donate</Text>
+                </TouchableOpacity>
               </>
             ) : crwdData.is_joined ? (
               <>
@@ -923,6 +932,7 @@ export default function NewGroupCrwdPage() {
                     styles.button,
                     styles.joinedButton,
                     leaveCollectiveMutation.isPending && styles.disabled,
+                    { flex: 1 }
                   ]}
                   activeOpacity={0.8}
                 >
@@ -937,6 +947,15 @@ export default function NewGroupCrwdPage() {
                       <Text style={styles.joinedButtonText}>Joined</Text>
                     </>
                   )}
+                </TouchableOpacity>
+                {/* Donate Button */}
+                <TouchableOpacity
+                  onPress={() => setShowJoinModal(true)}
+                  style={[styles.button, styles.donateButtonFilled, { flex: 1 }]}
+                  activeOpacity={0.8}
+                >
+                  {/* <Heart size={14} color="#FFFFFF" /> */}
+                  <Text style={styles.donateButtonFilledText}>Donate</Text>
                 </TouchableOpacity>
               </>
             ) : (
@@ -953,7 +972,7 @@ export default function NewGroupCrwdPage() {
                 >
                   {joinCollectiveMutation.isPending ? (
                     <>
-                      <Loader2 size={14} color="#FFFFFF" />
+                      <Loader2 size={14} color="#1600ff" />
                       <Text style={styles.joinButtonText}>Joining...</Text>
                     </>
                   ) : (
@@ -965,7 +984,7 @@ export default function NewGroupCrwdPage() {
                   style={[styles.button, styles.donationButton]}
                   activeOpacity={0.8}
                 >
-                  <Text style={{ fontSize: 13, fontWeight: '600', color: '#1600ff', textAlign: 'center' }}>One-Time Donation</Text>
+                  <Text style={styles.donationButtonText}>One-Time Donation</Text>
                 </TouchableOpacity>
               </>
             )}
@@ -1097,44 +1116,46 @@ export default function NewGroupCrwdPage() {
 
       </ScrollView>
 
-      {/* Unjoin Confirmation Dialog */}
-      <Modal
-        visible={showConfirmDialog}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowConfirmDialog(false)}
+      {/* Leave Collective Bottom Sheet */}
+      <BottomSheetModal
+        ref={leaveCollectiveSheetRef}
+        index={0}
+        snapPoints={['35%']}
+        backdropComponent={renderBackdrop}
+        enablePanDownToClose
+        backgroundStyle={styles.bottomSheetBackground}
+        handleIndicatorStyle={styles.modalHandle}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.dialog}>
-            <Text style={styles.dialogTitle}>Leave Collective</Text>
-            <Text style={styles.dialogDescription}>
-              Are you sure you want to leave this collective? You can always join back later.
-            </Text>
-            <View style={styles.dialogButtons}>
-              <TouchableOpacity
-                onPress={() => setShowConfirmDialog(false)}
-                style={[styles.dialogButton, styles.cancelButton]}
-                activeOpacity={0.7}
-                disabled={leaveCollectiveMutation.isPending}
-              >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={handleConfirmUnjoin}
-                style={[styles.dialogButton, styles.leaveButton]}
-                activeOpacity={0.7}
-                disabled={leaveCollectiveMutation.isPending}
-              >
-                {leaveCollectiveMutation.isPending ? (
-                  <ActivityIndicator size="small" color="#FFFFFF" />
-                ) : (
-                  <Text style={styles.leaveButtonText}>Leave Collective</Text>
-                )}
-              </TouchableOpacity>
-            </View>
+        <BottomSheetView style={styles.removeModalBody}>
+          <Text style={styles.removeModalTitle}>Leave Collective</Text>
+          <Text style={styles.removeModalDescription}>
+            Are you sure you want to leave <Text style={styles.removeModalBold}>{crwdData?.name}</Text>? You can always join back later.
+          </Text>
+
+          <View style={styles.removeModalFooter}>
+            <TouchableOpacity
+              onPress={() => leaveCollectiveSheetRef.current?.dismiss()}
+              style={[styles.removeModalButton, styles.removeModalCancelButton]}
+              activeOpacity={0.7}
+              disabled={leaveCollectiveMutation.isPending}
+            >
+              <Text style={styles.removeModalCancelText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={handleConfirmUnjoin}
+              style={[styles.removeModalButton, styles.removeModalConfirmButton]}
+              activeOpacity={0.7}
+              disabled={leaveCollectiveMutation.isPending}
+            >
+              {leaveCollectiveMutation.isPending ? (
+                <ActivityIndicator size="small" color="#FFFFFF" />
+              ) : (
+                <Text style={styles.removeModalConfirmText}>Leave</Text>
+              )}
+            </TouchableOpacity>
           </View>
-        </View>
-      </Modal>
+        </BottomSheetView>
+      </BottomSheetModal>
 
       {/* Comments Bottom Sheet - Always render to ensure ref is available */}
       {
@@ -1170,7 +1191,7 @@ export default function NewGroupCrwdPage() {
         ref={statisticsBottomSheetRef}
         snapPoints={statisticsSnapPoints}
         enablePanDownToClose
-        backdropComponent={renderStatisticsBackdrop}
+        backdropComponent={renderBackdrop}
         onDismiss={() => setShowStatisticsModal(false)}
         enableDynamicSizing={false}
         backgroundStyle={{ backgroundColor: 'white' }}
@@ -1292,14 +1313,16 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   joinButton: {
-    backgroundColor: '#1600ff',
+    backgroundColor: 'transparent',
+    borderWidth: 1.5,
+    borderColor: '#1600ff',
   },
   joinedButton: {
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#16a34a',
   },
-  shareButton: {
+  donateButtonFilled: {
     backgroundColor: '#1600ff',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
@@ -1308,9 +1331,12 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   donationButton: {
-    borderWidth: 1.5,
-    borderColor: '#1600ff',
-    backgroundColor: 'transparent',
+    backgroundColor: '#1600ff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
   disabled: {
     opacity: 0.6,
@@ -1324,14 +1350,14 @@ const styles = StyleSheet.create({
   joinButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: '#1600ff',
   },
   joinedButtonText: {
     fontSize: 14,
     fontWeight: '600',
     color: '#16a34a',
   },
-  shareButtonText: {
+  donateButtonFilledText: {
     fontSize: 14,
     fontWeight: '600',
     color: '#FFFFFF',
@@ -1339,7 +1365,8 @@ const styles = StyleSheet.create({
   donationButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#1600ff',
+    color: '#FFFFFF',
+    textAlign: 'center',
   },
   disclaimer: {
     paddingHorizontal: 12,
@@ -1689,6 +1716,78 @@ const styles = StyleSheet.create({
     top: 12,
     right: 12,
     padding: 4,
+  },
+  bottomSheetBackground: {
+    backgroundColor: '#ffffff',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+  },
+  modalHandle: {
+    width: 40,
+    height: 4,
+    backgroundColor: '#D1D5DB',
+    borderRadius: 2,
+    marginTop: 8,
+  },
+  removeModalBody: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingTop: 8,
+  },
+  removeModalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#111827',
+    marginBottom: 8,
+    fontFamily: 'Outfit-Bold',
+  },
+  removeModalDescription: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginBottom: 16,
+    lineHeight: 20,
+    fontFamily: 'Outfit-Regular',
+  },
+  removeModalBold: {
+    fontWeight: '600',
+    color: '#111827',
+    fontFamily: 'Outfit-SemiBold',
+  },
+  removeModalFooter: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+    backgroundColor: 'white',
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 'auto',
+  },
+  removeModalButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+  },
+  removeModalCancelButton: {
+    backgroundColor: '#E5E7EB',
+  },
+  removeModalCancelText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#111827',
+    fontFamily: 'Outfit-SemiBold',
+  },
+  removeModalConfirmButton: {
+    backgroundColor: '#EF4444',
+  },
+  removeModalConfirmText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    fontFamily: 'Outfit-SemiBold',
   },
 });
 

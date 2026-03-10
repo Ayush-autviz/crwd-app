@@ -27,6 +27,8 @@ import { getDonationHistory } from '../../services/api/donation';
 import { getNonprofitColor } from '../../lib/getNonprofitColor';
 import DonationBoxSummaryCard from './DonationBoxSummaryCard';
 import { useToast } from '../../contexts/ToastContext';
+import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
+import { useRef } from 'react';
 
 export default function ManageDonationBoxScreen() {
   const navigation = useNavigation();
@@ -115,18 +117,19 @@ export default function ManageDonationBoxScreen() {
   const [selectedCauses, setSelectedCauses] = useState<number[]>([]);
   const [selectedCollectives, setSelectedCollectives] = useState<number[]>([]);
   const [selectedCausesData, setSelectedCausesData] = useState<any[]>([]);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{
     id: number;
     name: string;
     type: 'cause' | 'collective';
     isNewlySelected: boolean
   } | null>(null);
-  const [showCancelModal, setShowCancelModal] = useState(false);
   const [expandedCollectives, setExpandedCollectives] = useState<Set<number>>(new Set());
   const [collectiveDetails, setCollectiveDetails] = useState<Record<number, any>>({});
   const [loadingCollectives, setLoadingCollectives] = useState<Set<number>>(new Set());
   const [showEditSplitSheet, setShowEditSplitSheet] = useState(false);
+
+  const deleteBottomSheetRef = useRef<BottomSheetModal>(null);
+  const cancelBottomSheetRef = useRef<BottomSheetModal>(null);
 
   // Get isActive from donationBox
   const isActive = donationBox?.is_active ?? true;
@@ -210,7 +213,7 @@ export default function ManageDonationBoxScreen() {
     mutationFn: () => cancelDonationBox(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['donationBox'] });
-      setShowCancelModal(false);
+      cancelBottomSheetRef.current?.dismiss();
       handleBack();
     },
     onError: (error: any) => {
@@ -278,12 +281,12 @@ export default function ManageDonationBoxScreen() {
 
   const handleDeselectCause = (causeId: number, isNewlySelected: boolean, causeName: string) => {
     setItemToDelete({ id: causeId, name: causeName, type: 'cause', isNewlySelected });
-    setShowDeleteModal(true);
+    deleteBottomSheetRef.current?.present();
   };
 
   const handleDeselectCollective = (collectiveId: number, isNewlySelected: boolean, collectiveName: string) => {
     setItemToDelete({ id: collectiveId, name: collectiveName, type: 'collective', isNewlySelected });
-    setShowDeleteModal(true);
+    deleteBottomSheetRef.current?.present();
   };
 
   const handleConfirmDelete = () => {
@@ -304,7 +307,7 @@ export default function ManageDonationBoxScreen() {
       }
     }
 
-    setShowDeleteModal(false);
+    deleteBottomSheetRef.current?.dismiss();
     setItemToDelete(null);
   };
 
@@ -1375,94 +1378,96 @@ export default function ManageDonationBoxScreen() {
           </View>
         </SafeAreaView>
 
-        {/* Delete Confirmation Modal */}
-        <Modal
-          visible={showDeleteModal}
-          transparent={true}
-          animationType="fade"
-          onRequestClose={() => {
-            setShowDeleteModal(false);
-            setItemToDelete(null);
-          }}
+        {/* Remove Cause Confirmation Bottom Sheet */}
+        <BottomSheetModal
+          ref={deleteBottomSheetRef}
+          index={0}
+          snapPoints={['35%']}
+          backdropComponent={(props) => (
+            <BottomSheetBackdrop
+              {...props}
+              disappearsOnIndex={-1}
+              appearsOnIndex={0}
+              opacity={0.5}
+            />
+          )}
+          enablePanDownToClose
+          backgroundStyle={styles.bottomSheetBackground}
+          handleIndicatorStyle={styles.modalHandle}
+          onDismiss={() => setItemToDelete(null)}
         >
-          <TouchableWithoutFeedback onPress={() => {
-            setShowDeleteModal(false);
-            setItemToDelete(null);
-          }}>
-            <View style={styles.modalOverlay}>
-              <TouchableWithoutFeedback onPress={() => { }}>
-                <View style={styles.modalContent}>
-                  <Text style={styles.modalTitle}>Confirm Removal</Text>
-                  <Text style={styles.modalDescription}>
-                    Are you sure you want to remove {itemToDelete?.name} from your donation box? This action cannot be undone.
-                  </Text>
-                  <View style={styles.modalActions}>
-                    <TouchableOpacity
-                      style={styles.modalCancelButton}
-                      onPress={() => {
-                        setShowDeleteModal(false);
-                        setItemToDelete(null);
-                      }}
-                    >
-                      <Text style={styles.modalCancelText}>Cancel</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={styles.modalRemoveButton}
-                      onPress={handleConfirmDelete}
-                    >
-                      <Text style={styles.modalRemoveText}>Remove</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </TouchableWithoutFeedback>
-            </View>
-          </TouchableWithoutFeedback>
-        </Modal>
+          <BottomSheetView style={styles.removeModalBody}>
+            <Text style={styles.removeModalTitle}>Remove Cause?</Text>
+            <Text style={styles.removeModalDescription}>
+              Are you sure you want to remove <Text style={styles.removeModalBold}>{itemToDelete?.name}</Text> from your donation box? This action cannot be undone.
+            </Text>
 
-        {/* Cancel/Deactivate Confirmation Modal */}
-        <Modal
-          visible={showCancelModal}
-          transparent={true}
-          animationType="fade"
-          onRequestClose={() => {
-            setShowCancelModal(false);
-          }}
-        >
-          <TouchableWithoutFeedback onPress={() => {
-            setShowCancelModal(false);
-          }}>
-            <View style={styles.modalOverlay}>
-              <TouchableWithoutFeedback onPress={() => { }}>
-                <View style={styles.modalContent}>
-                  <Text style={styles.modalTitle}>Deactivate Subscription</Text>
-                  <Text style={styles.modalDescription}>
-                    Are you sure you want to deactivate your donation box subscription? This will cancel all future monthly donations. You can reactivate it at any time.
-                  </Text>
-                  <View style={styles.modalActions}>
-                    <TouchableOpacity
-                      style={styles.modalCancelButton}
-                      onPress={() => {
-                        setShowCancelModal(false);
-                      }}
-                      disabled={cancelDonationBoxMutation.isPending}
-                    >
-                      <Text style={styles.modalCancelText}>Cancel</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[styles.modalRemoveButton, { backgroundColor: '#dc2626' }]}
-                      onPress={() => cancelDonationBoxMutation.mutate()}
-                      disabled={cancelDonationBoxMutation.isPending}
-                    >
-                      <Text style={styles.modalRemoveText}>
-                        {cancelDonationBoxMutation.isPending ? 'Deactivating...' : 'Deactivate Subscription'}
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </TouchableWithoutFeedback>
+            <View style={styles.removeModalFooter}>
+              <TouchableOpacity
+                onPress={() => deleteBottomSheetRef.current?.dismiss()}
+                style={[styles.removeModalButton, styles.removeModalCancelButton]}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.removeModalCancelText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleConfirmDelete}
+                style={[styles.removeModalButton, styles.removeModalConfirmButton]}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.removeModalConfirmText}>Remove</Text>
+              </TouchableOpacity>
             </View>
-          </TouchableWithoutFeedback>
-        </Modal>
+          </BottomSheetView>
+        </BottomSheetModal>
+
+        {/* Cancel/Deactivate Confirmation Bottom Sheet */}
+        <BottomSheetModal
+          ref={cancelBottomSheetRef}
+          index={0}
+          snapPoints={['35%']}
+          backdropComponent={(props) => (
+            <BottomSheetBackdrop
+              {...props}
+              disappearsOnIndex={-1}
+              appearsOnIndex={0}
+              opacity={0.5}
+            />
+          )}
+          enablePanDownToClose
+          backgroundStyle={styles.bottomSheetBackground}
+          handleIndicatorStyle={styles.modalHandle}
+        >
+          <BottomSheetView style={styles.removeModalBody}>
+            <Text style={styles.removeModalTitle}>Deactivate Subscription</Text>
+            <Text style={styles.removeModalDescription}>
+              Are you sure you want to deactivate your donation box subscription? This will cancel all future monthly donations. You can reactivate it at any time.
+            </Text>
+
+            <View style={styles.removeModalFooter}>
+              <TouchableOpacity
+                onPress={() => cancelBottomSheetRef.current?.dismiss()}
+                disabled={cancelDonationBoxMutation.isPending}
+                style={[styles.removeModalButton, styles.removeModalCancelButton]}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.removeModalCancelText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => cancelDonationBoxMutation.mutate()}
+                disabled={cancelDonationBoxMutation.isPending}
+                style={[styles.removeModalButton, { ...styles.removeModalConfirmButton, backgroundColor: '#dc2626' }]}
+                activeOpacity={0.7}
+              >
+                {cancelDonationBoxMutation.isPending ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.removeModalConfirmText}>Deactivate</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </BottomSheetView>
+        </BottomSheetModal>
 
         {/* Edit Donation Split Bottom Sheet */}
         {(() => {
@@ -2306,63 +2311,77 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
     fontFamily: 'Outfit-Regular',
   },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  modalContent: {
+  bottomSheetBackground: {
     backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 24,
-    width: '100%',
-    maxWidth: 400,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
   },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+  modalHandle: {
+    width: 40,
+    height: 4,
+    backgroundColor: '#D1D5DB',
+    borderRadius: 2,
+    marginTop: 8,
+  },
+  removeModalBody: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingTop: 8,
+  },
+  removeModalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
     color: '#111827',
-    marginBottom: 12,
-    fontFamily: 'Outfit-SemiBold',
+    marginBottom: 8,
+    fontFamily: 'Outfit-Bold',
   },
-  modalDescription: {
+  removeModalDescription: {
     fontSize: 14,
-    color: '#6b7280',
-    marginBottom: 24,
+    color: '#6B7280',
+    marginBottom: 16,
     lineHeight: 20,
     fontFamily: 'Outfit-Regular',
   },
-  modalActions: {
+  removeModalBold: {
+    fontWeight: '600',
+    color: '#111827',
+    fontFamily: 'Outfit-SemiBold',
+  },
+  removeModalFooter: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+    backgroundColor: 'white',
     flexDirection: 'row',
     gap: 12,
-    justifyContent: 'flex-end',
+    marginTop: 'auto',
   },
-  modalCancelButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
+  removeModalButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
   },
-  modalCancelText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#374151',
-    fontFamily: 'Outfit-Medium',
+  removeModalCancelButton: {
+    backgroundColor: '#E5E7EB',
   },
-  modalRemoveButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    backgroundColor: '#dc2626',
+  removeModalCancelText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#111827',
+    fontFamily: 'Outfit-SemiBold',
   },
-  modalRemoveText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#ffffff',
-    fontFamily: 'Outfit-Medium',
+  removeModalConfirmButton: {
+    backgroundColor: '#EF4444',
+  },
+  removeModalConfirmText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    fontFamily: 'Outfit-SemiBold',
   },
   editSplitButton: {
     flexDirection: 'row',

@@ -1,20 +1,19 @@
 import React, { useState, useMemo, useCallback } from 'react'
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator, Dimensions } from 'react-native'
-import BottomSheet, { BottomSheetBackdrop, BottomSheetScrollView } from '@gorhom/bottom-sheet'
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator, Dimensions, Platform } from 'react-native'
+import BottomSheet, { BottomSheetBackdrop, BottomSheetView, BottomSheetModal } from '@gorhom/bottom-sheet'
 import { Eye, EyeOff } from 'lucide-react-native'
-import { PrimaryGrey, PrimaryBlue, SecondaryGrey } from '../../Constants/Colors'
+import { PrimaryGrey, PrimaryBlue, SecondaryGrey, LightGrey } from '../../Constants/Colors'
 import { useMutation } from '@tanstack/react-query'
 import { changePassword } from '../../services/api/auth'
 import { useToast } from '../../contexts/ToastContext'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 
 interface ChangePasswordSheetProps {
-  bottomSheetRef: React.RefObject<any>
+  bottomSheetRef: React.RefObject<BottomSheetModal>
 }
 
 export default function ChangePasswordSheet({ bottomSheetRef }: ChangePasswordSheetProps) {
   const { showToast } = useToast()
-  const screenHeight = Dimensions.get('window').height
-  const snapPoints = useMemo(() => [screenHeight * 0.75], [screenHeight])
 
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
@@ -38,7 +37,7 @@ export default function ChangePasswordSheet({ bottomSheetRef }: ChangePasswordSh
       showToast('Password updated successfully!', 3000)
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' })
       setPasswordErrors({ currentPassword: '', newPassword: '', confirmPassword: '' })
-      bottomSheetRef.current?.close()
+      bottomSheetRef.current?.dismiss()
     },
     onError: (error: any) => {
       const errorMessage = error.response?.data?.message || error.message || 'Failed to change password'
@@ -52,6 +51,8 @@ export default function ChangePasswordSheet({ bottomSheetRef }: ChangePasswordSh
     if (!/[0-9]/.test(password)) return 'Password must contain at least one number'
     return ''
   }
+
+  const [focusedField, setFocusedField] = useState<string | null>(null)
 
   const handlePasswordSubmit = () => {
     setPasswordErrors({ currentPassword: '', newPassword: '', confirmPassword: '' })
@@ -91,135 +92,156 @@ export default function ChangePasswordSheet({ bottomSheetRef }: ChangePasswordSh
   )
 
   return (
-    <BottomSheet
+    <BottomSheetModal
       ref={bottomSheetRef}
-      index={-1}
-      snapPoints={snapPoints}
+      index={0}
+      enableDynamicSizing={true}
       enablePanDownToClose
       backdropComponent={renderBackdrop}
       backgroundStyle={{ backgroundColor: 'white' }}
+      keyboardBehavior="interactive"
+      keyboardBlurBehavior="restore"
+      android_keyboardInputMode="adjustResize"
     >
-      <BottomSheetScrollView contentContainerStyle={styles.bottomSheetContent}>
-        <View style={styles.bottomSheetHeader}>
-          <Text style={styles.bottomSheetTitle}>Change Password</Text>
-          <Text style={styles.bottomSheetSubtitle}>Update your password to keep your account secure.</Text>
-        </View>
+      <BottomSheetView style={styles.container}>
+        <KeyboardAwareScrollView
+          showsVerticalScrollIndicator={false}
+          enableOnAndroid={true}
+          extraScrollHeight={Platform.OS === 'ios' ? 20 : 0}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.bottomSheetContent}>
+            <View style={styles.bottomSheetHeader}>
+              <Text style={styles.bottomSheetTitle}>Change Password</Text>
+              <Text style={styles.bottomSheetSubtitle}>Update your password to keep your account secure.</Text>
+            </View>
 
-        {/* Current Password */}
-        <View style={styles.fieldContainer}>
-          <Text style={styles.fieldLabel}>Current Password</Text>
-          <View style={[styles.inputContainer, passwordErrors.currentPassword && styles.inputError]}>
-            <TextInput
-              style={styles.input}
-              secureTextEntry={!showPasswords.current}
-              value={passwordData.currentPassword}
-              onChangeText={(text) => setPasswordData(prev => ({ ...prev, currentPassword: text }))}
-              placeholder="Enter current password"
-              placeholderTextColor={PrimaryGrey}
-            />
-            <TouchableOpacity onPress={() => setShowPasswords(prev => ({ ...prev, current: !prev.current }))}>
-              {showPasswords.current ? <Eye size={20} color={PrimaryGrey} /> : <EyeOff size={20} color={PrimaryGrey} />}
-            </TouchableOpacity>
-          </View>
-          {passwordErrors.currentPassword && (
-            <Text style={styles.errorText}>{passwordErrors.currentPassword}</Text>
-          )}
-        </View>
+            {/* Current Password */}
+            <View style={styles.fieldContainer}>
+              <Text style={styles.fieldLabel}>Current Password</Text>
+              <View style={[styles.inputContainer, passwordErrors.currentPassword && styles.inputError]}>
+                <TextInput
+                  style={styles.input}
+                  secureTextEntry={!showPasswords.current}
+                  value={passwordData.currentPassword}
+                  onChangeText={(text) => setPasswordData(prev => ({ ...prev, currentPassword: text }))}
+                  onFocus={() => setFocusedField('currentPassword')}
+                  onBlur={() => setFocusedField(null)}
+                  placeholder={focusedField === 'currentPassword' ? '' : 'Enter current password'}
+                  placeholderTextColor={PrimaryGrey}
+                />
+                <TouchableOpacity onPress={() => setShowPasswords(prev => ({ ...prev, current: !prev.current }))}>
+                  {showPasswords.current ? <Eye size={20} color={PrimaryGrey} /> : <EyeOff size={20} color={PrimaryGrey} />}
+                </TouchableOpacity>
+              </View>
+              {passwordErrors.currentPassword && (
+                <Text style={styles.errorText}>{passwordErrors.currentPassword}</Text>
+              )}
+            </View>
 
-        {/* New Password */}
-        <View style={styles.fieldContainer}>
-          <Text style={styles.fieldLabel}>New Password</Text>
-          <View style={[styles.inputContainer, passwordErrors.newPassword && styles.inputError]}>
-            <TextInput
-              style={styles.input}
-              secureTextEntry={!showPasswords.new}
-              value={passwordData.newPassword}
-              onChangeText={(text) => setPasswordData(prev => ({ ...prev, newPassword: text }))}
-              placeholder="Enter new password"
-              placeholderTextColor={PrimaryGrey}
-            />
-            <TouchableOpacity onPress={() => setShowPasswords(prev => ({ ...prev, new: !prev.new }))}>
-              {showPasswords.new ? <Eye size={20} color={PrimaryGrey} /> : <EyeOff size={20} color={PrimaryGrey} />}
-            </TouchableOpacity>
-          </View>
-          {passwordErrors.newPassword && (
-            <Text style={styles.errorText}>{passwordErrors.newPassword}</Text>
-          )}
-        </View>
+            {/* New Password */}
+            <View style={styles.fieldContainer}>
+              <Text style={styles.fieldLabel}>New Password</Text>
+              <View style={[styles.inputContainer, passwordErrors.newPassword && styles.inputError]}>
+                <TextInput
+                  style={styles.input}
+                  secureTextEntry={!showPasswords.new}
+                  value={passwordData.newPassword}
+                  onChangeText={(text) => setPasswordData(prev => ({ ...prev, newPassword: text }))}
+                  onFocus={() => setFocusedField('newPassword')}
+                  onBlur={() => setFocusedField(null)}
+                  placeholder={focusedField === 'newPassword' ? '' : 'Enter new password'}
+                  placeholderTextColor={PrimaryGrey}
+                />
+                <TouchableOpacity onPress={() => setShowPasswords(prev => ({ ...prev, new: !prev.new }))}>
+                  {showPasswords.new ? <Eye size={20} color={PrimaryGrey} /> : <EyeOff size={20} color={PrimaryGrey} />}
+                </TouchableOpacity>
+              </View>
+              {passwordErrors.newPassword && (
+                <Text style={styles.errorText}>{passwordErrors.newPassword}</Text>
+              )}
+            </View>
 
-        {/* Confirm Password */}
-        <View style={styles.fieldContainer}>
-          <Text style={styles.fieldLabel}>Confirm New Password</Text>
-          <View style={[styles.inputContainer, passwordErrors.confirmPassword && styles.inputError]}>
-            <TextInput
-              style={styles.input}
-              secureTextEntry={!showPasswords.confirm}
-              value={passwordData.confirmPassword}
-              onChangeText={(text) => setPasswordData(prev => ({ ...prev, confirmPassword: text }))}
-              placeholder="Confirm new password"
-              placeholderTextColor={PrimaryGrey}
-            />
-            <TouchableOpacity onPress={() => setShowPasswords(prev => ({ ...prev, confirm: !prev.confirm }))}>
-              {showPasswords.confirm ? <Eye size={20} color={PrimaryGrey} /> : <EyeOff size={20} color={PrimaryGrey} />}
-            </TouchableOpacity>
-          </View>
-          {passwordErrors.confirmPassword && (
-            <Text style={styles.errorText}>{passwordErrors.confirmPassword}</Text>
-          )}
-        </View>
+            {/* Confirm Password */}
+            <View style={styles.fieldContainer}>
+              <Text style={styles.fieldLabel}>Confirm New Password</Text>
+              <View style={[styles.inputContainer, passwordErrors.confirmPassword && styles.inputError]}>
+                <TextInput
+                  style={styles.input}
+                  secureTextEntry={!showPasswords.confirm}
+                  value={passwordData.confirmPassword}
+                  onChangeText={(text) => setPasswordData(prev => ({ ...prev, confirmPassword: text }))}
+                  onFocus={() => setFocusedField('confirmPassword')}
+                  onBlur={() => setFocusedField(null)}
+                  placeholder={focusedField === 'confirmPassword' ? '' : 'Confirm new password'}
+                  placeholderTextColor={PrimaryGrey}
+                />
+                <TouchableOpacity onPress={() => setShowPasswords(prev => ({ ...prev, confirm: !prev.confirm }))}>
+                  {showPasswords.confirm ? <Eye size={20} color={PrimaryGrey} /> : <EyeOff size={20} color={PrimaryGrey} />}
+                </TouchableOpacity>
+              </View>
+              {passwordErrors.confirmPassword && (
+                <Text style={styles.errorText}>{passwordErrors.confirmPassword}</Text>
+              )}
+            </View>
 
-        {/* Password Requirements */}
-        <View style={styles.requirementsContainer}>
-          <Text style={styles.requirementsTitle}>Password Requirements:</Text>
-          <View style={styles.requirementItem}>
-            <Text style={styles.checkmark}>✓</Text>
-            <Text style={styles.requirementText}>At least 8 characters</Text>
-          </View>
-          <View style={styles.requirementItem}>
-            <Text style={styles.checkmark}>✓</Text>
-            <Text style={styles.requirementText}>One uppercase letter</Text>
-          </View>
-          <View style={styles.requirementItem}>
-            <Text style={styles.checkmark}>✓</Text>
-            <Text style={styles.requirementText}>One number</Text>
-          </View>
-        </View>
+            {/* Password Requirements */}
+            <View style={styles.requirementsContainer}>
+              <Text style={styles.requirementsTitle}>Password Requirements:</Text>
+              <View style={styles.requirementItem}>
+                <Text style={styles.checkmark}>✓</Text>
+                <Text style={styles.requirementText}>At least 8 characters</Text>
+              </View>
+              <View style={styles.requirementItem}>
+                <Text style={styles.checkmark}>✓</Text>
+                <Text style={styles.requirementText}>One uppercase letter</Text>
+              </View>
+              <View style={styles.requirementItem}>
+                <Text style={styles.checkmark}>✓</Text>
+                <Text style={styles.requirementText}>One number</Text>
+              </View>
+            </View>
 
-        {/* Action Buttons */}
-        <View style={styles.actionButtonsContainer}>
-          <TouchableOpacity
-            style={[styles.updateButton, changePasswordMutation.isPending && styles.buttonDisabled]}
-            onPress={handlePasswordSubmit}
-            disabled={changePasswordMutation.isPending}
-          >
-            {changePasswordMutation.isPending ? (
-              <ActivityIndicator size="small" color="#FFFFFF" />
-            ) : (
-              <Text style={styles.updateButtonText}>Update Password</Text>
-            )}
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.cancelButton}
-            onPress={() => bottomSheetRef.current?.close()}
-          >
-            <Text style={styles.cancelButtonText}>Cancel</Text>
-          </TouchableOpacity>
-        </View>
-      </BottomSheetScrollView>
-    </BottomSheet>
+            {/* Action Buttons */}
+            <View style={styles.actionButtonsContainer}>
+              <TouchableOpacity
+                style={[styles.updateButton, changePasswordMutation.isPending && styles.buttonDisabled]}
+                onPress={handlePasswordSubmit}
+                disabled={changePasswordMutation.isPending}
+              >
+                {changePasswordMutation.isPending ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.updateButtonText}>Update Password</Text>
+                )}
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => bottomSheetRef.current?.dismiss()}
+              >
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </KeyboardAwareScrollView>
+      </BottomSheetView>
+    </BottomSheetModal>
   )
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   bottomSheetContent: {
     paddingHorizontal: 20,
-    paddingBottom: 30,
+    paddingBottom: Platform.OS === 'ios' ? 40 : 30,
+    paddingTop: 8,
   },
   bottomSheetHeader: {
     marginBottom: 24,
   },
   bottomSheetTitle: {
-    fontSize: 24,
     fontSize: 24,
     fontFamily: 'Outfit-Bold',
     color: '#111827',
@@ -267,7 +289,6 @@ const styles = StyleSheet.create({
   },
   requirementsTitle: {
     fontSize: 14,
-    fontSize: 14,
     fontFamily: 'Outfit-SemiBold',
     color: '#111827',
     marginBottom: 12,
@@ -298,8 +319,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   updateButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
     color: '#FFFFFF',
     fontSize: 16,
     fontFamily: 'Outfit-Bold',

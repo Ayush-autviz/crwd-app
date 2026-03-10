@@ -55,6 +55,7 @@ export default function Account({ isEditMode, setIsEditMode }: AccountProps) {
     profile_picture_file: ''
   })
   const [selectedImageUri, setSelectedImageUri] = useState<string | null>(null)
+  const [focusedField, setFocusedField] = useState<string | null>(null)
   const discardSheetRef = React.useRef<BottomSheetModal>(null)
 
   const hasUnsavedChanges = React.useMemo(() => {
@@ -280,9 +281,11 @@ export default function Account({ isEditMode, setIsEditMode }: AccountProps) {
                 style={[styles.input, isEditMode && styles.inputEditMode]}
                 value={formData.first_name}
                 onChangeText={(text) => setFormData(prev => ({ ...prev, first_name: text }))}
+                onFocus={() => setFocusedField('first_name')}
+                onBlur={() => setFocusedField(null)}
                 editable={isEditMode}
                 placeholderTextColor={PrimaryGrey}
-                placeholder='First Name'
+                placeholder={focusedField === 'first_name' ? '' : 'First Name'}
               />
             </View>
 
@@ -293,9 +296,11 @@ export default function Account({ isEditMode, setIsEditMode }: AccountProps) {
                 style={[styles.input, isEditMode && styles.inputEditMode]}
                 value={formData.last_name}
                 onChangeText={(text) => setFormData(prev => ({ ...prev, last_name: text }))}
+                onFocus={() => setFocusedField('last_name')}
+                onBlur={() => setFocusedField(null)}
                 editable={isEditMode}
                 placeholderTextColor={PrimaryGrey}
-                placeholder='Last Name'
+                placeholder={focusedField === 'last_name' ? '' : 'Last Name'}
               />
             </View>
 
@@ -340,9 +345,11 @@ export default function Account({ isEditMode, setIsEditMode }: AccountProps) {
                   style={[styles.input, styles.locationInput, isEditMode && styles.inputEditMode]}
                   value={formData.location}
                   onChangeText={(text) => setFormData(prev => ({ ...prev, location: text }))}
+                  onFocus={() => setFocusedField('location')}
+                  onBlur={() => setFocusedField(null)}
                   editable={isEditMode}
                   placeholderTextColor={PrimaryGrey}
-                  placeholder='Location'
+                  placeholder={focusedField === 'location' ? '' : 'Location'}
                 />
               </View>
             </View>
@@ -358,12 +365,14 @@ export default function Account({ isEditMode, setIsEditMode }: AccountProps) {
                     setFormData(prev => ({ ...prev, bio: text }))
                   }
                 }}
+                onFocus={() => setFocusedField('bio')}
+                onBlur={() => setFocusedField(null)}
                 editable={isEditMode}
                 multiline
                 numberOfLines={4}
                 placeholderTextColor={'#9CA3AF'}
                 textAlignVertical="top"
-                placeholder='Passionate about making a difference through strategic giving.'
+                placeholder={focusedField === 'bio' ? '' : 'Say something about yourself.'}
               />
               <View style={styles.characterCount}>
                 <Text style={styles.characterCountText}>
@@ -543,7 +552,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 12,
     paddingHorizontal: 20,
-    paddingTop: 24,
+    // paddingTop: 24,
     paddingBottom: 32,
   },
   actionButton: {

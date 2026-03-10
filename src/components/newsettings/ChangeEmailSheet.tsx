@@ -1,24 +1,25 @@
 import React, { useState, useMemo, useCallback } from 'react'
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator, Dimensions } from 'react-native'
-import BottomSheet, { BottomSheetBackdrop, BottomSheetScrollView } from '@gorhom/bottom-sheet'
+import BottomSheet, { BottomSheetBackdrop, BottomSheetView, BottomSheetModal } from '@gorhom/bottom-sheet'
 import { PrimaryGrey, PrimaryBlue, SecondaryGrey } from '../../Constants/Colors'
 import { useMutation } from '@tanstack/react-query'
 import { updateEmail, updateEmailVerification } from '../../services/api/auth'
 import { useToast } from '../../contexts/ToastContext'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
+import { Platform } from 'react-native'
 
 interface ChangeEmailSheetProps {
-  bottomSheetRef: React.RefObject<any>
+  bottomSheetRef: React.RefObject<BottomSheetModal>
 }
 
 export default function ChangeEmailSheet({ bottomSheetRef }: ChangeEmailSheetProps) {
   const { showToast } = useToast()
-  const screenHeight = Dimensions.get('window').height
-  const snapPoints = useMemo(() => [screenHeight * 0.75], [screenHeight])
 
   const [emailData, setEmailData] = useState({
     newEmail: '',
     confirmEmail: '',
   })
+  const [focusedField, setFocusedField] = useState<string | null>(null)
   const [emailErrors, setEmailErrors] = useState({
     newEmail: '',
     confirmEmail: '',
@@ -45,7 +46,7 @@ export default function ChangeEmailSheet({ bottomSheetRef }: ChangeEmailSheetPro
       setShowOTPModal(false)
       setOtp('')
       setEmailData({ newEmail: '', confirmEmail: '' })
-      bottomSheetRef.current?.close()
+      bottomSheetRef.current?.dismiss()
     },
     onError: (error: any) => {
       const errorMessage = error.response?.data?.message || error.message || 'Verification failed'
@@ -98,127 +99,146 @@ export default function ChangeEmailSheet({ bottomSheetRef }: ChangeEmailSheetPro
   )
 
   return (
-    <BottomSheet
+    <BottomSheetModal
       ref={bottomSheetRef}
-      index={-1}
-      snapPoints={snapPoints}
+      index={0}
+      enableDynamicSizing={true}
       enablePanDownToClose
       backdropComponent={renderBackdrop}
       backgroundStyle={{ backgroundColor: 'white' }}
+      keyboardBehavior="interactive"
+      keyboardBlurBehavior="restore"
+      android_keyboardInputMode="adjustResize"
     >
-      <BottomSheetScrollView contentContainerStyle={styles.bottomSheetContent}>
-        <View style={styles.bottomSheetHeader}>
-          <Text style={styles.bottomSheetTitle}>Change Email</Text>
-          <Text style={styles.bottomSheetSubtitle}>Update your email address. You'll need to verify your new email address after the change.</Text>
-        </View>
-
-        {/* New Email */}
-        <View style={styles.fieldContainer}>
-          <Text style={styles.fieldLabel}>New Email</Text>
-          <TextInput
-            style={[styles.input, styles.emailInput, emailErrors.newEmail && styles.inputError]}
-            value={emailData.newEmail}
-            onChangeText={(text) => setEmailData(prev => ({ ...prev, newEmail: text }))}
-            placeholder="Enter new email address"
-            placeholderTextColor={PrimaryGrey}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-          {emailErrors.newEmail && (
-            <Text style={styles.errorText}>{emailErrors.newEmail}</Text>
-          )}
-        </View>
-
-        {/* Confirm Email */}
-        <View style={styles.fieldContainer}>
-          <Text style={styles.fieldLabel}>Confirm New Email</Text>
-          <TextInput
-            style={[styles.input, styles.emailInput, emailErrors.confirmEmail && styles.inputError]}
-            value={emailData.confirmEmail}
-            onChangeText={(text) => setEmailData(prev => ({ ...prev, confirmEmail: text }))}
-            placeholder="Confirm new email address"
-            placeholderTextColor={PrimaryGrey}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-          {emailErrors.confirmEmail && (
-            <Text style={styles.errorText}>{emailErrors.confirmEmail}</Text>
-          )}
-        </View>
-
-        {/* Action Buttons */}
-        {!showOTPModal && (
-          <View style={styles.actionButtonsContainer}>
-            <TouchableOpacity
-              style={[styles.updateButton, updateEmailMutation.isPending && styles.buttonDisabled]}
-              onPress={handleEmailSubmit}
-              disabled={updateEmailMutation.isPending}
-            >
-              {updateEmailMutation.isPending ? (
-                <ActivityIndicator size="small" color="#FFFFFF" />
-              ) : (
-                <Text style={styles.updateButtonText}>Update Email</Text>
-              )}
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.cancelButton}
-              onPress={() => bottomSheetRef.current?.close()}
-            >
-              <Text style={styles.cancelButtonText}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
-        {/* OTP Verification */}
-        {showOTPModal && (
-          <View style={styles.otpModal}>
-            <Text style={styles.otpTitle}>Verify Email</Text>
-            <Text style={styles.otpSubtitle}>Enter the 6-digit verification code sent to {emailData.newEmail}</Text>
-            <TextInput
-              style={styles.otpInput}
-              placeholder="000000"
-              placeholderTextColor={PrimaryGrey}
-              value={otp}
-              onChangeText={(text) => setOtp(text.replace(/[^0-9]/g, '').slice(0, 6))}
-              keyboardType="numeric"
-              maxLength={6}
-            />
-            <View style={styles.otpButtons}>
-              <TouchableOpacity
-                style={[styles.updateButton, (updateEmailVerificationMutation.isPending || otp.length !== 6) && styles.buttonDisabled]}
-                onPress={handleOTPVerification}
-                disabled={updateEmailVerificationMutation.isPending || otp.length !== 6}
-              >
-                {updateEmailVerificationMutation.isPending ? (
-                  <ActivityIndicator size="small" color="#FFFFFF" />
-                ) : (
-                  <Text style={styles.updateButtonText}>Verify</Text>
-                )}
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.cancelButton}
-                onPress={() => setShowOTPModal(false)}
-              >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
-              </TouchableOpacity>
+      <BottomSheetView style={styles.container}>
+        <KeyboardAwareScrollView
+          showsVerticalScrollIndicator={false}
+          enableOnAndroid={true}
+          extraScrollHeight={Platform.OS === 'ios' ? 20 : 0}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.bottomSheetContent}>
+            <View style={styles.bottomSheetHeader}>
+              <Text style={styles.bottomSheetTitle}>Change Email</Text>
+              <Text style={styles.bottomSheetSubtitle}>Update your email address. You'll need to verify your new email address after the change.</Text>
             </View>
+
+            {/* New Email */}
+            <View style={styles.fieldContainer}>
+              <Text style={styles.fieldLabel}>New Email</Text>
+              <TextInput
+                style={[styles.input, styles.emailInput, emailErrors.newEmail && styles.inputError]}
+                value={emailData.newEmail}
+                onChangeText={(text) => setEmailData(prev => ({ ...prev, newEmail: text }))}
+                onFocus={() => setFocusedField('newEmail')}
+                onBlur={() => setFocusedField(null)}
+                placeholder={focusedField === 'newEmail' ? '' : "Enter new email address"}
+                placeholderTextColor={PrimaryGrey}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+              {emailErrors.newEmail && (
+                <Text style={styles.errorText}>{emailErrors.newEmail}</Text>
+              )}
+            </View>
+
+            {/* Confirm Email */}
+            <View style={styles.fieldContainer}>
+              <Text style={styles.fieldLabel}>Confirm New Email</Text>
+              <TextInput
+                style={[styles.input, styles.emailInput, emailErrors.confirmEmail && styles.inputError]}
+                value={emailData.confirmEmail}
+                onChangeText={(text) => setEmailData(prev => ({ ...prev, confirmEmail: text }))}
+                onFocus={() => setFocusedField('confirmEmail')}
+                onBlur={() => setFocusedField(null)}
+                placeholder={focusedField === 'confirmEmail' ? '' : "Confirm new email address"}
+                placeholderTextColor={PrimaryGrey}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+              {emailErrors.confirmEmail && (
+                <Text style={styles.errorText}>{emailErrors.confirmEmail}</Text>
+              )}
+            </View>
+
+            {/* Action Buttons */}
+            {!showOTPModal && (
+              <View style={styles.actionButtonsContainer}>
+                <TouchableOpacity
+                  style={[styles.updateButton, updateEmailMutation.isPending && styles.buttonDisabled]}
+                  onPress={handleEmailSubmit}
+                  disabled={updateEmailMutation.isPending}
+                >
+                  {updateEmailMutation.isPending ? (
+                    <ActivityIndicator size="small" color="#FFFFFF" />
+                  ) : (
+                    <Text style={styles.updateButtonText}>Update Email</Text>
+                  )}
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.cancelButton}
+                  onPress={() => bottomSheetRef.current?.dismiss()}
+                >
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {/* OTP Verification */}
+            {showOTPModal && (
+              <View style={styles.otpModal}>
+                <Text style={styles.otpTitle}>Verify Email</Text>
+                <Text style={styles.otpSubtitle}>Enter the 6-digit verification code sent to {emailData.newEmail}</Text>
+                <TextInput
+                  style={styles.otpInput}
+                  placeholder="000000"
+                  placeholderTextColor={PrimaryGrey}
+                  value={otp}
+                  onChangeText={(text) => setOtp(text.replace(/[^0-9]/g, '').slice(0, 6))}
+                  keyboardType="numeric"
+                  maxLength={6}
+                />
+                <View style={styles.otpButtons}>
+                  <TouchableOpacity
+                    style={[styles.updateButton, (updateEmailVerificationMutation.isPending || otp.length !== 6) && styles.buttonDisabled]}
+                    onPress={handleOTPVerification}
+                    disabled={updateEmailVerificationMutation.isPending || otp.length !== 6}
+                  >
+                    {updateEmailVerificationMutation.isPending ? (
+                      <ActivityIndicator size="small" color="#FFFFFF" />
+                    ) : (
+                      <Text style={styles.updateButtonText}>Verify</Text>
+                    )}
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.cancelButton}
+                    onPress={() => setShowOTPModal(false)}
+                  >
+                    <Text style={styles.cancelButtonText}>Cancel</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
           </View>
-        )}
-      </BottomSheetScrollView>
-    </BottomSheet>
+        </KeyboardAwareScrollView>
+      </BottomSheetView>
+    </BottomSheetModal>
   )
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   bottomSheetContent: {
     paddingHorizontal: 20,
-    paddingBottom: 30,
+    paddingBottom: Platform.OS === 'ios' ? 40 : 30,
+    paddingTop: 8,
   },
   bottomSheetHeader: {
     marginBottom: 24,
   },
   bottomSheetTitle: {
-    fontSize: 24,
     fontSize: 24,
     fontFamily: 'Outfit-Bold',
     color: '#111827',
@@ -233,7 +253,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   fieldLabel: {
-    fontSize: 14,
     fontSize: 14,
     fontFamily: 'Outfit-Medium',
     color: '#111827',
@@ -272,8 +291,6 @@ const styles = StyleSheet.create({
   updateButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
-    color: '#FFFFFF',
-    fontSize: 16,
     fontFamily: 'Outfit-Bold',
   },
   cancelButton: {
@@ -295,7 +312,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   otpTitle: {
-    fontSize: 18,
     fontSize: 18,
     fontFamily: 'Outfit-SemiBold',
     color: '#111827',

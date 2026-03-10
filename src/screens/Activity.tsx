@@ -160,6 +160,10 @@ export default function Activity() {
 
         return personalNotifications.map((notification: any) => {
             // Determine notification type and extract data
+            const isLike = notification.title?.toLowerCase().includes('like') ||
+                notification.body?.toLowerCase().includes('liked');
+            const isComment = notification.title?.toLowerCase().includes('comment') ||
+                notification.body?.toLowerCase().includes('commented');
             const isDonation = notification.title?.toLowerCase().includes('donation') ||
                 notification.body?.toLowerCase().includes('donation') ||
                 notification.data?.donor_id;
@@ -171,61 +175,69 @@ export default function Activity() {
                 notification.body?.toLowerCase().includes('following') ||
                 notification.data?.follower_id;
 
-            // Extract collective name from body or title
+            // Extract recipient name from body or title
             let collectiveName = '';
+            let recipientName = '';
             if (notification.body) {
                 // Pattern 1: "received donation to [collective]"
                 const receivedMatch = notification.body.match(/received.*?donation.*?to (.+)/i);
-                // Pattern 1.1: "[Name] donated $X to [Recipient]"
-                const donatedMatch = notification.body.match(/^(.+?)\s+donated\s+\$[\d.]+?\s+to\s+(.+)$/i);
-                // Pattern 1.2: "Your collective [collective] received"
-                const collectiveReceivedMatch = notification.body.match(/Your collective (.*?) received/i);
-
                 if (receivedMatch) {
                     collectiveName = receivedMatch[1].trim();
-                } else if (donatedMatch) {
-                    collectiveName = donatedMatch[2].trim();
-                } else if (collectiveReceivedMatch) {
-                    collectiveName = collectiveReceivedMatch[1].trim();
+                    recipientName = collectiveName;
                 } else {
                     // Pattern 2: "joined [collective]" or "@username joined [collective]"
                     const joinedMatch = notification.body.match(/joined\s+(.+?)(?:\.|Supporting)/i);
                     if (joinedMatch) {
                         collectiveName = joinedMatch[1].trim();
+                        recipientName = collectiveName;
                     } else {
                         // Pattern 3: "posted in [collective]"
                         const postedMatch = notification.body.match(/posted\s+in\s+(.+)/i);
                         if (postedMatch) {
                             collectiveName = postedMatch[1].trim();
+                            recipientName = collectiveName;
                         } else {
                             // Pattern 4: Just "joined [collective]" without period
                             const simpleJoinedMatch = notification.body.match(/joined\s+(.+)/i);
                             if (simpleJoinedMatch) {
                                 collectiveName = simpleJoinedMatch[1].trim();
+                                recipientName = collectiveName;
+                            } else {
+                                // Pattern 5: "commented on your post in [collective]"
+                                const commentMatch = notification.body.match(/commented on your post in (.+)/i);
+                                if (commentMatch) {
+                                    collectiveName = commentMatch[1].trim();
+                                    recipientName = collectiveName;
+                                } else {
+                                    // Pattern 6: "donated $X to [Recipient]"
+                                    const donatedMatch = notification.body.match(/donated\s+.*?to\s+(.+)/i);
+                                    if (donatedMatch) {
+                                        recipientName = donatedMatch[1].trim();
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }
 
-            // Check if collective name is available in data or already correctly assigned
+            // Extract recipient name from data if still missing
             if (!collectiveName && notification.data?.collective_name) {
                 collectiveName = notification.data.collective_name;
+                recipientName = collectiveName;
             } else if (!collectiveName && notification.data?.collective?.name) {
                 collectiveName = notification.data.collective.name;
+                recipientName = collectiveName;
+            } else if (collectiveName && !recipientName) {
+                recipientName = collectiveName;
             }
 
             // Extract user name for new member notifications
             let memberName = '';
             if (isNewMember && notification.body) {
-                // Try to extract name before "joined"
                 const nameMatch = notification.body.match(/^([^ ]+ [^ ]+)/);
                 if (nameMatch) {
                     memberName = nameMatch[1].trim();
-                }
-                // Remove "joined [collective]" from description to avoid duplication
-                if (collectiveName && notification.body.includes(collectiveName)) {
-                    // The description will be parsed to show names clickable, so we don't need to reconstruct it
                 }
             }
 
@@ -239,7 +251,6 @@ export default function Activity() {
             }
 
             // Extract user info for avatar - get the user who triggered the notification
-            // For likes, comments, mentions, etc., check liker_id, commenter_id, mentioner_id, etc.
             const userId =
                 notification.data?.liker_id ||
                 notification.data?.commenter_id ||
@@ -250,8 +261,7 @@ export default function Activity() {
                 notification.user?.id ||
                 notification.data?.user_id;
 
-            // Extract username from body if it contains @username pattern (e.g., "@jake_long liked your post")
-            // Also check data.follower_username for follower notifications
+            // Extract username from body
             let username = '';
             if (notification.body) {
                 const usernameMatch = notification.body.match(/@(\w+)/);
@@ -259,21 +269,18 @@ export default function Activity() {
                     username = usernameMatch[1];
                 }
             }
-            // Use follower_username from data if available
             if (!username && notification.data?.follower_username) {
                 username = notification.data.follower_username;
             }
 
-            // Get user profile from fetched profiles map if available
+            // Get user profile
             const userProfile = userId ? userProfilesMap.get(userId.toString()) : null;
             const profileUser = userProfile?.user || userProfile;
 
-            // Extract full name from body text if it appears (e.g., "Aayush Bajaj commented", "Jake Smith joined", "Chad F has started")
+            // Extract names
             let extractedFirstName = '';
             let extractedLastName = '';
             if (notification.body && !username) {
-                // Try to extract full name pattern: "First Last" or "First L" at the start
-                // Matches: "Aayush Bajaj", "Jake Smith", "Chad F", etc.
                 const fullNameMatch = notification.body.match(/^([A-Z][a-z]+(?:\s+[A-Z][a-z]*)?)\s/);
                 if (fullNameMatch) {
                     const nameParts = fullNameMatch[1].split(/\s+/);
@@ -286,23 +293,37 @@ export default function Activity() {
                 }
             }
 
-            // Get user info from fetched profile, notification.user, notification.data, or extracted from body
-            const firstName =
-                profileUser?.first_name ||
-                notification.user?.first_name ||
-                notification.data?.first_name ||
-                extractedFirstName || '';
-            const lastName =
-                profileUser?.last_name ||
-                notification.user?.last_name ||
-                notification.data?.last_name ||
-                extractedLastName || '';
-            const extractedUsername =
-                username ||
-                profileUser?.username ||
-                notification.user?.username ||
-                notification.data?.username ||
-                notification.data?.follower_username || '';
+            const firstName = profileUser?.first_name || notification.user?.first_name || notification.data?.first_name || extractedFirstName || '';
+            const lastName = profileUser?.last_name || notification.user?.last_name || notification.data?.last_name || extractedLastName || '';
+            const extractedUsername = username || profileUser?.username || notification.user?.username || notification.data?.username || notification.data?.follower_username || '';
+
+            const userFullName = firstName && lastName ? `${firstName} ${lastName}` : firstName || extractedUsername || "";
+
+            let displayTitle = notification.title || 'Notification';
+            let displayDescription = notification.body || notification.title || '';
+
+            if (isLike) {
+                displayTitle = userFullName;
+                displayDescription = 'liked your post';
+            } else if (isComment) {
+                displayTitle = userFullName;
+                displayDescription = collectiveName ? `commented on your post in ${collectiveName}` : 'commented on your post';
+            } else if (isFollower) {
+                displayTitle = userFullName;
+                displayDescription = 'has started following you';
+            } else if (isNewMember) {
+                displayTitle = userFullName || memberName || 'New Member';
+                displayDescription = `joined ${collectiveName || 'the collective'}`;
+            } else if (isDonation) {
+                displayTitle = userFullName || 'Donation Received';
+                if (donationAmount && recipientName) {
+                    displayDescription = `donated ${donationAmount} to ${recipientName}`;
+                } else if (donationAmount) {
+                    displayDescription = `donated ${donationAmount}`;
+                } else {
+                    displayDescription = 'made a donation';
+                }
+            }
 
             const postId = notification.data?.post_id || notification.data?.post?.id || notification.post_id;
             const collectiveId = notification.data?.collective_id || notification.data?.collective?.id;
@@ -310,10 +331,11 @@ export default function Activity() {
 
             return {
                 id: notification.id,
-                type: isDonation ? 'donation' : isNewMember ? 'new_member' : isFollower ? 'follower' : 'other',
-                title: isDonation ? 'Donation Received' : isNewMember ? 'New Member' : isFollower ? 'New Follower' : notification.title || 'Notification',
-                description: notification.body || notification.title || '',
+                type: isDonation ? 'donation' : isNewMember ? 'new_member' : isFollower ? 'follower' : isLike ? 'like' : isComment ? 'comment' : 'other',
+                title: displayTitle,
+                description: displayDescription,
                 collectiveName: collectiveName,
+                recipientName: recipientName,
                 memberName: memberName,
                 donationAmount: donationAmount,
                 time: formatTimeAgo(notification.created_at || notification.updated_at),
@@ -519,10 +541,12 @@ export default function Activity() {
         const handleItemPress = () => {
             if (item.postId) {
                 (navigation as any).navigate('PostDetail', { postId: item.postId });
+            } else if (item.collectiveId) {
+                (navigation as any).navigate('GroupCRWD', { collectiveId: item.collectiveId.toString() });
+            } else if (item.nonprofitId) {
+                (navigation as any).navigate('CauseDetail', { causeId: item.nonprofitId });
             } else if (item.userId) {
                 (navigation as any).navigate('UserProfile', { userId: item.userId.toString() });
-            } else if (item.collectiveId) {
-                (navigation as any).navigate('GroupCRWD', { crwdId: item.collectiveId.toString() });
             }
         };
 
@@ -534,48 +558,53 @@ export default function Activity() {
             // Handle donation type with parsing (matching Vite RegularNotifications)
             if (item.type === 'donation') {
                 const description = item.description || '';
-                const donatedMatch = description.match(/^(.+?)\s+donated\s+(\$[\d.]+?)\s+to\s+(.+)$/i);
+                // Pattern 1: "John Doe donated $50 to Collective"
+                const donatedMatchWithDonor = description.match(/^(.+?)\s+donated\s+(\$[\d.]+?)\s+to\s+(.+)$/i);
+                // Pattern 2: "donated $50 to Collective" (when donor is in title)
+                const donatedMatchWithoutDonor = description.match(/^donated\s+(\$[\d.]+?)\s+to\s+(.+)$/i);
 
-                if (donatedMatch) {
-                    const donorPart = donatedMatch[1].trim();
-                    const amount = donatedMatch[2];
-                    const recipientPart = donatedMatch[3].trim();
+                if (donatedMatchWithDonor || donatedMatchWithoutDonor) {
+                    const donorPart = donatedMatchWithDonor ? donatedMatchWithDonor[1].trim() : '';
+                    const amount = donatedMatchWithDonor ? donatedMatchWithDonor[2] : donatedMatchWithoutDonor![1];
+                    const recipientPart = donatedMatchWithDonor ? donatedMatchWithDonor[3].trim() : donatedMatchWithoutDonor![2].trim();
                     const parts: React.ReactElement[] = [];
 
-                    // 1. Donor
-                    if (item.userId) {
-                        parts.push(
-                            <Text
-                                key="donor"
-                                style={{ fontFamily: 'Outfit-SemiBold', color: '#374151', fontSize: 14 }}
-                                onPress={() => {
-                                    (navigation as any).navigate('UserProfile', { userId: item.userId.toString() });
-                                }}
-                            >
-                                {donorPart}
-                            </Text>
-                        );
+                    // 1. Donor (if present in description)
+                    if (donorPart) {
+                        if (item.userId) {
+                            parts.push(
+                                <Text
+                                    key="donor"
+                                    style={{ fontFamily: 'Outfit-SemiBold', color: '#374151', fontSize: 14 }}
+                                    onPress={() => {
+                                        (navigation as any).navigate('UserProfile', { userId: item.userId.toString() });
+                                    }}
+                                >
+                                    {donorPart}
+                                </Text>
+                            );
+                        } else {
+                            parts.push(<Text key="donor-text" style={{ color: '#374151', fontSize: 14 }}>{donorPart}</Text>);
+                        }
+                        parts.push(<Text key="donated" style={{ color: '#374151', fontSize: 14 }}> donated </Text>);
                     } else {
-                        parts.push(<Text key="donor-text" style={{ color: '#374151', fontSize: 14 }}>{donorPart}</Text>);
+                        parts.push(<Text key="donated" style={{ color: '#374151', fontSize: 14 }}>donated </Text>);
                     }
 
-                    // 2. " donated "
-                    parts.push(<Text key="donated" style={{ color: '#374151', fontSize: 14 }}> donated </Text>);
+                    // 2. Amount
+                    parts.push(<Text key="amount" style={{ fontFamily: 'Outfit-Regular', color: '#374151', fontSize: 14 }}>{amount}</Text>);
 
-                    // 3. Amount
-                    parts.push(<Text key="amount" style={{ fontFamily: 'Outfit-SemiBold', color: '#374151', fontSize: 14 }}>{amount}</Text>);
-
-                    // 4. " to "
+                    // 3. " to "
                     parts.push(<Text key="to" style={{ color: '#374151', fontSize: 14 }}> to </Text>);
 
-                    // 5. Recipient (Collective or Nonprofit)
+                    // 4. Recipient (Collective or Nonprofit)
                     if (item.collectiveId) {
                         parts.push(
                             <Text
                                 key="collective"
                                 style={{ fontFamily: 'Outfit-SemiBold', color: '#374151', fontSize: 14 }}
                                 onPress={() => {
-                                    (navigation as any).navigate('GroupCRWD', { crwdId: item.collectiveId.toString() });
+                                    (navigation as any).navigate('GroupCRWD', { collectiveId: item.collectiveId.toString() });
                                 }}
                             >
                                 {recipientPart}
@@ -609,7 +638,7 @@ export default function Activity() {
                                 style={{ fontFamily: 'Outfit-SemiBold', color: '#374151', fontSize: 14 }}
                                 onPress={() => {
                                     if (item.collectiveId) {
-                                        (navigation as any).navigate('GroupCRWD', { crwdId: item.collectiveId.toString() });
+                                        (navigation as any).navigate('GroupCRWD', { collectiveId: item.collectiveId.toString() });
                                     }
                                 }}
                             >
@@ -855,7 +884,7 @@ export default function Activity() {
                                 key={`collective-${matchItem.index}`}
                                 style={{ fontFamily: 'Outfit-SemiBold', color: '#374151', fontSize: 14 }}
                                 onPress={() => {
-                                    (navigation as any).navigate('GroupCRWD', { crwdId: matchItem.collectiveId });
+                                    (navigation as any).navigate('GroupCRWD', { collectiveId: matchItem.collectiveId });
                                 }}
                             >
                                 {description.substring(matchItem.index, matchItem.index + matchItem.length)}
@@ -930,13 +959,20 @@ export default function Activity() {
                     {/* Content - matching vite layout */}
                     <View style={{ flex: 1, minWidth: 0 }}>
                         {/* Title - matching vite font size */}
-                        <Text style={{
-                            fontFamily: 'Outfit-Bold',
-                            color: '#111827',
-                            fontSize: 15,
-                            fontWeight: '700',
-                            marginBottom: 4
-                        }}>
+                        <Text
+                            style={{
+                                fontFamily: 'Outfit-Bold',
+                                color: '#111827',
+                                fontSize: 15,
+                                fontWeight: '700',
+                                marginBottom: 4
+                            }}
+                            onPress={() => {
+                                if (item.userId) {
+                                    (navigation as any).navigate('UserProfile', { userId: item.userId.toString() });
+                                }
+                            }}
+                        >
                             {item.title}
                         </Text>
                         {/* Description - matching vite font size and color */}
@@ -1004,7 +1040,13 @@ export default function Activity() {
                             {!item.isDonation && (
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                                        <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 15, fontWeight: '700', color: '#111' }}>{item.username}</Text>
+                                        <TouchableOpacity onPress={() => {
+                                            if (item.userId) {
+                                                (navigation as any).navigate('UserProfile', { userId: item.userId.toString() });
+                                            }
+                                        }}>
+                                            <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 15, fontWeight: '700', color: '#111' }}>{item.username}</Text>
+                                        </TouchableOpacity>
                                         <Text style={{ fontSize: 14, fontFamily: 'Outfit-Regular', color: PrimaryGrey }}>• {item.time}</Text>
                                     </View>
                                     {/* <MoreHorizontal size={16} color={PrimaryGrey} /> */}

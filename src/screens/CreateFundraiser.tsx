@@ -42,7 +42,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/Avatar';
 import { PrimaryBlue } from '../Constants/Colors';
 import ConfettiCannon from 'react-native-confetti-cannon';
-import { getCollectiveById, getCausesBySearch, createFundraiser, getCategories } from '../services/api/crwd';
+import { getCollectiveById, getCausesBySearch, createFundraiser, getCategories, getCollectiveCauses } from '../services/api/crwd';
 import { useToast } from '../contexts/ToastContext';
 import CrwdAnimation from '../components/ui/CrwdAnimation';
 import { truncateAtFirstPeriod } from '../utils/truncateFirstPeriod';
@@ -155,6 +155,19 @@ export default function CreateFundraiser() {
     queryFn: () => getCausesBySearch(searchQuery || '', selectedCategory || '', 1),
     enabled: (step === 2 && (searchTrigger > 0 || searchQuery.trim().length > 0)),
   });
+
+  // Fetch collective causes
+  const { data: collectiveCausesData, isLoading: isLoadingCollectiveCauses } = useQuery({
+    queryKey: ['collective-causes', collectiveId],
+    queryFn: () => getCollectiveCauses(collectiveId || ''),
+    enabled: !!collectiveId && step === 2,
+  });
+
+  const collectiveCauses = useMemo(() => {
+    if (!collectiveCausesData) return [];
+    const causes = collectiveCausesData.results || collectiveCausesData || [];
+    return causes.map((item: any) => item.cause || item);
+  }, [collectiveCausesData]);
 
   // Initial load for step 2
   useEffect(() => {
@@ -482,6 +495,42 @@ export default function CreateFundraiser() {
         return [...prev, nonprofitData];
       }
     });
+  };
+
+  const renderNonprofitItem = (nonprofit: any) => {
+    const isSelected = selectedNonprofits.includes(nonprofit.id);
+    const avatarBgColor = getConsistentColor(nonprofit.id, nonprofit.name);
+    const initials = getInitials(nonprofit.name || 'N');
+    const category = categoriesList.find((cat: any) => cat.id === nonprofit.category?.toString() || cat.id === nonprofit.cause_category?.toString());
+    const categoryName = (nonprofit?.categories?.[0]?.name || nonprofit?.categories?.name || (typeof nonprofit?.categories === 'string' ? nonprofit?.categories : null) || category?.name || 'General');
+
+    return (
+      <TouchableOpacity
+        key={nonprofit.id}
+        onPress={() => handleNonprofitToggle(nonprofit.id, nonprofit)}
+        style={styles.nonprofitItem}
+      >
+        <Avatar style={styles.nonprofitAvatar}>
+          <AvatarImage src={nonprofit.image || undefined} />
+          <AvatarFallback
+            style={{ backgroundColor: avatarBgColor }}
+          >
+            <Text style={styles.avatarText}>{initials}</Text>
+          </AvatarFallback>
+        </Avatar>
+        <View style={styles.nonprofitInfo}>
+          <Text style={styles.nonprofitName}>{nonprofit.name}</Text>
+          <Text style={styles.nonprofitMission}>
+            {truncateAtFirstPeriod(nonprofit.mission || nonprofit.description || categoryName, 50)}
+          </Text>
+        </View>
+        <View style={styles.checkboxContainer}>
+          <View style={[styles.checkbox, isSelected && styles.checkboxChecked]}>
+            {isSelected && <Check size={16} color="#FFFFFF" />}
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
   };
 
   // Loading Animation Step (during API call or while animation completes)
@@ -920,7 +969,7 @@ export default function CreateFundraiser() {
               </View>
 
               {/* Selected Count */}
-              <View style={styles.section}>
+              <View style={[styles.section, { marginBottom: 10 }]}>
                 <Text style={styles.selectedCount}>
                   {selectedNonprofits.length} nonprofit{selectedNonprofits.length !== 1 ? 's' : ''} selected
                 </Text>
@@ -928,50 +977,61 @@ export default function CreateFundraiser() {
 
               {/* Nonprofits List */}
               <View style={styles.nonprofitsList}>
-                {isLoadingCauses ? (
+                {isLoadingCauses || isLoadingCollectiveCauses ? (
                   <View style={styles.emptyState}>
                     <ActivityIndicator size="large" color={PrimaryBlue} />
                   </View>
-                ) : displayedNonprofits.length === 0 ? (
-                  <View style={styles.emptyState}>
-                    <Text style={styles.emptyStateText}>No nonprofits found</Text>
-                  </View>
                 ) : (
-                  displayedNonprofits.map((nonprofit: any) => {
-                    const isSelected = selectedNonprofits.includes(nonprofit.id);
-                    const avatarBgColor = getConsistentColor(nonprofit.id, nonprofit.name);
-                    const initials = getInitials(nonprofit.name || 'N');
-                    const category = categoriesList.find((cat: any) => cat.id === nonprofit.category?.toString() || cat.id === nonprofit.cause_category?.toString());
-                    const categoryName = (nonprofit?.categories?.[0]?.name || nonprofit?.categories?.name || (typeof nonprofit?.categories === 'string' ? nonprofit?.categories : null) || category?.name || 'General');
-
-                    return (
-                      <TouchableOpacity
-                        key={nonprofit.id}
-                        onPress={() => handleNonprofitToggle(nonprofit.id, nonprofit)}
-                        style={styles.nonprofitItem}
-                      >
-                        <Avatar style={styles.nonprofitAvatar}>
-                          <AvatarImage src={nonprofit.image || undefined} />
-                          <AvatarFallback
-                            style={{ backgroundColor: avatarBgColor }}
-                          >
-                            <Text style={styles.avatarText}>{initials}</Text>
-                          </AvatarFallback>
-                        </Avatar>
-                        <View style={styles.nonprofitInfo}>
-                          <Text style={styles.nonprofitName}>{nonprofit.name}</Text>
-                          <Text style={styles.nonprofitMission}>
-                            {truncateAtFirstPeriod(nonprofit.mission || nonprofit.description || categoryName, 50)}
+                  <>
+                    {/* Supported by Collective Section */}
+                    {collectiveCauses.length > 0 && (
+                      <View style={{ marginBottom: 0 }}>
+                        <View style={[styles.sectionHeader, { paddingHorizontal: 0 }]}>
+                          <Text style={styles.sectionTitle}>
+                            SUPPORTED BY {collectiveName.toUpperCase()}
                           </Text>
                         </View>
-                        <View style={styles.checkboxContainer}>
-                          <View style={[styles.checkbox, isSelected && styles.checkboxChecked]}>
-                            {isSelected && <Check size={16} color="#FFFFFF" />}
-                          </View>
+                        <View style={{ gap: 12 }}>
+                          {collectiveCauses.map((nonprofit: any) => renderNonprofitItem(nonprofit))}
                         </View>
-                      </TouchableOpacity>
-                    );
-                  })
+
+                        {/* Section Divider if there are more causes */}
+                        {displayedNonprofits.length > 0 && (
+                          <View style={styles.sectionDivider}>
+                            <Text style={styles.sectionTitle}>OTHER NONPROFITS</Text>
+                          </View>
+                        )}
+                      </View>
+                    )}
+
+                    {/* Regular List or Search Results */}
+                    <View style={{ gap: 12 }}>
+                      {(() => {
+                        const regularCauses = searchQuery.trim().length > 0 || selectedCategory !== ''
+                          ? displayedNonprofits
+                          : displayedNonprofits.filter((c: any) => !collectiveCauses.some((cc: any) => cc.id === c.id));
+
+                        if (regularCauses.length === 0) {
+                          if (searchQuery.trim().length > 0 || selectedCategory !== '') {
+                            return (
+                              <View style={styles.emptyState}>
+                                <Text style={styles.emptyStateText}>No nonprofits found matching "{searchQuery}"</Text>
+                              </View>
+                            );
+                          } else if (collectiveCauses.length === 0) {
+                            return (
+                              <View style={styles.emptyState}>
+                                <Text style={styles.emptyStateText}>No nonprofits found</Text>
+                              </View>
+                            );
+                          }
+                          return null;
+                        }
+
+                        return regularCauses.map((nonprofit: any) => renderNonprofitItem(nonprofit));
+                      })()}
+                    </View>
+                  </>
                 )}
               </View>
             </>
@@ -1973,6 +2033,30 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: PrimaryBlue,
     fontFamily: 'Outfit-SemiBold',
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 4,
+    marginBottom: 12,
+    marginTop: 8,
+  },
+  sectionTitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#6B7280',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    fontFamily: 'Outfit-Bold',
+  },
+  sectionDivider: {
+    paddingTop: 16,
+    paddingBottom: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#F3F4F6',
+    marginTop: 8,
+    marginBottom: 4,
   },
 });
 

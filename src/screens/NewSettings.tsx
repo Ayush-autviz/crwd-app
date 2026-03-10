@@ -28,8 +28,8 @@ export default function NewSettings() {
   const queryClient = useQueryClient()
 
   // Bottom sheet refs
-  const passwordBottomSheetRef = useRef<BottomSheet>(null)
-  const emailBottomSheetRef = useRef<BottomSheet>(null)
+  const passwordBottomSheetRef = useRef<BottomSheetModal>(null)
+  const emailBottomSheetRef = useRef<BottomSheetModal>(null)
   const discardBottomSheetRef = useRef<BottomSheetModal>(null)
 
   // State
@@ -146,11 +146,11 @@ export default function NewSettings() {
 
 
   const openPasswordSheet = () => {
-    passwordBottomSheetRef.current?.expand()
+    passwordBottomSheetRef.current?.present()
   }
 
   const openEmailSheet = () => {
-    emailBottomSheetRef.current?.expand()
+    emailBottomSheetRef.current?.present()
   }
 
   const renderBackdrop = useCallback(

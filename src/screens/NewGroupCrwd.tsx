@@ -42,6 +42,7 @@ import CommentsBottomSheet from '../components/post/CommentsBottomSheet';
 
 import JoinCollectiveBottomSheet from '../components/newgroupcrwd/JoinCollectiveBottomSheet';
 import SharePost from '../components/SharePost';
+import AddToDonationBoxBottomSheet from '../components/newcause/AddToDonationBoxBottomSheet';
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/Avatar';
 import { truncateAtFirstPeriod } from '../utils/truncateFirstPeriod';
 
@@ -63,6 +64,7 @@ export default function NewGroupCrwdPage() {
   const [selectedPost, setSelectedPost] = useState<any>(null);
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [showFounderPerk, setShowFounderPerk] = useState(true);
+  const [showDonationChoiceModal, setShowDonationChoiceModal] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
   const handleBack = () => {
@@ -852,7 +854,7 @@ export default function NewGroupCrwdPage() {
             });
             return;
           }
-          setShowJoinModal(true);
+          setShowDonationChoiceModal(true);
         }}
         isJoined={crwdData.is_joined}
         onLeave={() => leaveCollectiveSheetRef.current?.present()}
@@ -914,7 +916,7 @@ export default function NewGroupCrwdPage() {
                 </TouchableOpacity>
                 {/* Donate Button */}
                 <TouchableOpacity
-                  onPress={() => setShowJoinModal(true)}
+                  onPress={() => setShowDonationChoiceModal(true)}
                   style={[styles.button, styles.donateButtonFilled, { flex: 1 }]}
                   activeOpacity={0.8}
                 >
@@ -950,7 +952,7 @@ export default function NewGroupCrwdPage() {
                 </TouchableOpacity>
                 {/* Donate Button */}
                 <TouchableOpacity
-                  onPress={() => setShowJoinModal(true)}
+                  onPress={() => setShowDonationChoiceModal(true)}
                   style={[styles.button, styles.donateButtonFilled, { flex: 1 }]}
                   activeOpacity={0.8}
                 >
@@ -1184,6 +1186,20 @@ export default function NewGroupCrwdPage() {
         isJoining={false}
         donationBox={donationBoxData}
         founderName={founderName}
+      />
+
+      <AddToDonationBoxBottomSheet
+        isOpen={showDonationChoiceModal}
+        onClose={() => setShowDonationChoiceModal(false)}
+        hasDonationBox={!!donationBoxData?.id}
+        onConfirm={() => {
+          setShowDonationChoiceModal(false);
+          setShowJoinModal(true);
+        }}
+        onOneTimeDonation={() => {
+          setShowDonationChoiceModal(false);
+          handleOneTimeDonation();
+        }}
       />
 
       {/* Statistics Bottom Sheet */}

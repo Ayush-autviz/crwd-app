@@ -21,7 +21,7 @@ export default function HelloGreeting() {
   return (
     <View style={styles.container}>
       <Text style={styles.greeting}>
-        Hi {userName}!, You're making a difference.
+        Hi {userName}! You're making a difference.
       </Text>
     </View>
   );

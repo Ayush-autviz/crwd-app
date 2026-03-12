@@ -99,6 +99,7 @@ interface Post {
     comments: number;
     shares: number;
     isLiked?: boolean;
+    mentions?: any[];
     fundraiser?: {
         id: number;
         name: string;
@@ -379,6 +380,104 @@ export default function PopularPosts({
             shareSheetRef.current?.present();
             setTooltipVisible(false);
         }
+    };
+
+    const renderHighlightedText = (content: string, mentions: any[] = []) => {
+        if (!content) return null;
+        const mentionMap = new Map();
+        const triggers: string[] = [];
+
+        (mentions || []).forEach((m: any) => {
+            if (!m) return;
+            const details = m.mention_details || m;
+
+            if (details?.name) {
+                const nameKey = `@${details.name}`.toLowerCase();
+                mentionMap.set(nameKey, m);
+                if (!triggers.includes(`@${details.name}`)) triggers.push(`@${details.name}`);
+            }
+
+            if (details?.username) {
+                const userKey = `@${details.username}`.toLowerCase();
+                mentionMap.set(userKey, m);
+                if (!triggers.includes(`@${details.username}`)) triggers.push(`@${details.username}`);
+            }
+
+            if (m.trigger_name) {
+                const triggerStr = m.trigger_name.startsWith('@') ? m.trigger_name : `@${m.trigger_name}`;
+                const triggerKey = triggerStr.toLowerCase();
+                mentionMap.set(triggerKey, m);
+                if (!triggers.includes(triggerStr)) triggers.push(triggerStr);
+            }
+        });
+
+        triggers.sort((a, b) => b.length - a.length);
+
+        const pattern = triggers.length > 0
+            ? `(${triggers.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')}|@\\w+)`
+            : '(@\\w+)';
+        const regex = new RegExp(pattern, 'gi');
+
+        return content.split(regex).map((part, index) => {
+            if (part.startsWith('@')) {
+                const mention = mentionMap.get(part.toLowerCase());
+                const handlePress = () => {
+                    if (mention) {
+                        const mDetails = mention.mention_details || mention;
+                        const type = (mention.mention_type || mDetails?.mention_type || mDetails?.type || '').toLowerCase();
+                        const targetId = mDetails?.target_id || mDetails?.id || mention.target_id || mention.id || part.substring(1);
+
+                        if (type === 'collective' || type === 'group') {
+                            (navigation as any).navigate('GroupCRWD', { id: targetId.toString() });
+                        } else if (type === 'cause' || type === 'nonprofit' || type === 'organization') {
+                            (navigation as any).navigate('CauseScreen', { id: targetId.toString() });
+                        } else {
+                            // User
+                            if (user?.id && targetId && user.id.toString() === targetId.toString()) {
+                                navigation.dispatch(
+                                    CommonActions.reset({
+                                        index: 0,
+                                        routes: [
+                                            {
+                                                name: 'DrawerNav' as never,
+                                                state: {
+                                                    routes: [
+                                                        {
+                                                            name: 'MainTabs' as never,
+                                                            state: {
+                                                                routes: [{ name: 'Profile' as never }],
+                                                                index: 0,
+                                                            },
+                                                        },
+                                                    ],
+                                                    index: 0,
+                                                },
+                                            },
+                                        ],
+                                    })
+                                );
+                            } else {
+                                (navigation as any).navigate('UserProfile', { userId: targetId.toString() });
+                            }
+                        }
+                    } else {
+                        // Fallback
+                        (navigation as any).navigate('UserProfile', { userId: part.substring(1) });
+                    }
+                };
+
+                return (
+                    <Text
+                        key={index}
+                        style={{ color: PrimaryBlue, fontFamily: 'Outfit-Medium' }}
+                        onPress={handlePress}
+                    >
+                        {part}
+                    </Text>
+                );
+            }
+            return part;
+        });
     };
 
     const renderFooter = () => {
@@ -673,7 +772,7 @@ export default function PopularPosts({
                                                                             {
                                                                                 name: 'MainTabs',
                                                                                 state: {
-                                                                                    routes: [{ name: 'Me' }],
+                                                                                    routes: [{ name: 'Profile' }],
                                                                                     index: 0,
                                                                                 },
                                                                             },
@@ -932,7 +1031,7 @@ export default function PopularPosts({
                                             </>
                                         ) : (
                                             <>
-                                                <Text style={styles.postText}>{item.text}</Text>
+                                                <Text style={styles.postText}>{renderHighlightedText(item.text, item.mentions)}</Text>
                                             </>
                                         )}
 

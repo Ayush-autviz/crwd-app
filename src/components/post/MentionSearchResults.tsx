@@ -1,0 +1,116 @@
+import React, { memo } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Platform } from 'react-native';
+import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
+
+interface MentionSearchResultsProps {
+    results: any[];
+    onSelect: (user: any) => void;
+    position?: 'above' | 'below';
+}
+
+function MentionSearchResultsComponent({ results, onSelect, position = 'above' }: MentionSearchResultsProps) {
+    if (!results || results.length === 0) return null;
+
+    const containerStyle = [
+        styles.container,
+        position === 'above'
+            ? { bottom: '100%' as any, marginBottom: 8 }
+            : { top: '100%' as any, marginTop: 8 }
+    ];
+
+    return (
+        <View style={containerStyle}>
+            <ScrollView
+                horizontal={false}
+                showsVerticalScrollIndicator={true}
+                keyboardShouldPersistTaps="handled"
+                style={styles.scrollView}
+            >
+                {results.map((user: any) => (
+                    <TouchableOpacity
+                        key={`${user.type}-${user.id}`}
+                        style={styles.item}
+                        onPress={() => onSelect(user)}
+                    >
+                        <Avatar size={32} style={styles.avatar}>
+                            <AvatarImage src={user.logo} alt={user.name} />
+                            <AvatarFallback
+                                style={{ backgroundColor: user.color || '#3B82F6' }}
+                                textStyle={styles.avatarText}
+                            >
+                                {user.name?.charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                        </Avatar>
+                        <View style={styles.content}>
+                            <Text style={styles.name} numberOfLines={1}>{user.name}</Text>
+                            {user.username && (
+                                <Text style={styles.username} numberOfLines={1}>@{user.username}</Text>
+                            )}
+                        </View>
+                    </TouchableOpacity>
+                ))}
+            </ScrollView>
+        </View>
+    );
+}
+
+export const MentionSearchResults = memo(MentionSearchResultsComponent);
+
+const styles = StyleSheet.create({
+    container: {
+        position: 'absolute',
+        bottom: '100%',
+        left: 0,
+        right: 0,
+        backgroundColor: 'white',
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
+        borderRadius: 8,
+        maxHeight: 200,
+        zIndex: 1000,
+        ...Platform.select({
+            ios: {
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: -2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 4,
+            },
+            android: {
+                elevation: 4,
+            },
+        }),
+    },
+    scrollView: {
+        width: '100%',
+    },
+    item: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: '#F3F4F6',
+        gap: 12,
+    },
+    avatar: {
+        borderRadius: 16,
+    },
+    avatarText: {
+        fontSize: 14,
+        color: 'white',
+        fontWeight: 'bold',
+    },
+    content: {
+        flex: 1,
+    },
+    name: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#111827',
+        fontFamily: 'Outfit-SemiBold',
+    },
+    username: {
+        fontSize: 12,
+        color: '#6B7280',
+        fontFamily: 'Outfit-Regular',
+    },
+});

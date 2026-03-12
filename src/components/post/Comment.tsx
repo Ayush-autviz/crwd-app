@@ -6,6 +6,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { deleteComment, likeComment, unlikeComment } from '../../services/api/social';
 import { useAuthStore } from '../../store/store';
+import { useNavigation, CommonActions } from '@react-navigation/native';
 
 export interface CommentData {
   id: number;
@@ -22,6 +23,7 @@ export interface CommentData {
   parentComment?: any;
   isLiked?: boolean;
   userId?: string | number;
+  mentions?: any[];
 }
 
 interface CommentProps extends CommentData {
@@ -32,6 +34,7 @@ interface CommentProps extends CommentData {
   isLoadingReplies?: boolean;
   showReplyButton?: boolean;
   onDelete?: (commentId: number) => void;
+  onClose?: () => void;
 }
 
 export const Comment: React.FC<CommentProps> = ({
@@ -55,7 +58,10 @@ export const Comment: React.FC<CommentProps> = ({
   isLiked = false,
   userId,
   onDelete,
+  mentions = [],
+  onClose,
 }) => {
+  const navigation = useNavigation<any>();
   const displayName = firstName && lastName
     ? `${firstName} ${lastName}`
     : firstName || username;
@@ -129,6 +135,109 @@ export const Comment: React.FC<CommentProps> = ({
 
   const avatarColor = color || getConsistentColor(userId || id || username || 'U', avatarColors);
 
+  const renderContent = (content: string) => {
+    if (!content) return null;
+    const mentionMap = new Map();
+    const triggers: string[] = [];
+
+    (mentions || []).forEach((m: any) => {
+      if (!m) return;
+      const details = m.mention_details || m;
+
+      if (details?.name) {
+        const nameKey = `@${details.name}`.toLowerCase();
+        mentionMap.set(nameKey, m);
+        if (!triggers.includes(`@${details.name}`)) triggers.push(`@${details.name}`);
+      }
+
+      if (details?.username) {
+        const userKey = `@${details.username}`.toLowerCase();
+        mentionMap.set(userKey, m);
+        if (!triggers.includes(`@${details.username}`)) triggers.push(`@${details.username}`);
+      }
+
+      if (m.trigger_name) {
+        const triggerStr = m.trigger_name.startsWith('@') ? m.trigger_name : `@${m.trigger_name}`;
+        const triggerKey = triggerStr.toLowerCase();
+        mentionMap.set(triggerKey, m);
+        if (!triggers.includes(triggerStr)) triggers.push(triggerStr);
+      }
+    });
+
+    triggers.sort((a, b) => b.length - a.length);
+
+    const pattern = triggers.length > 0
+      ? `(${triggers.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')}|@\\w+)`
+      : '(@\\w+)';
+    const regex = new RegExp(pattern, 'gi');
+
+    return content.split(regex).map((part, index) => {
+      if (part.startsWith('@')) {
+        const mention = mentionMap.get(part.toLowerCase());
+        const handlePress = () => {
+          console.log('mention', mention);
+          if (onClose) {
+            onClose();
+          }
+          if (mention) {
+            const mDetails = mention.mention_details || mention;
+            const type = (mention.mention_type || mDetails?.mention_type || mDetails?.type || '').toLowerCase();
+            const targetId = mDetails?.target_id || mDetails?.id || mention.target_id || mention.id || part.substring(1);
+
+            if (type === 'collective' || type === 'group') {
+              navigation.navigate('GroupCRWD', { id: targetId.toString() });
+            } else if (type === 'cause' || type === 'nonprofit' || type === 'organization') {
+              console.log('targetId', targetId);
+              navigation.navigate('CauseScreen', { id: targetId.toString() });
+            } else {
+              // User
+              if (user?.id && targetId && user.id.toString() === targetId.toString()) {
+                navigation.dispatch(
+                  CommonActions.reset({
+                    index: 0,
+                    routes: [
+                      {
+                        name: 'DrawerNav',
+                        state: {
+                          routes: [
+                            {
+                              name: 'MainTabs',
+                              state: {
+                                routes: [{ name: 'Profile' }],
+                                index: 0,
+                              },
+                            },
+                          ],
+                          index: 0,
+                        },
+                      },
+                    ],
+                  })
+                );
+              } else {
+                navigation.navigate('UserProfile', { userId: targetId.toString() });
+              }
+            }
+          } else {
+            // Fallback
+            navigation.navigate('UserProfile', { userId: part.substring(1) });
+          }
+        };
+
+        return (
+          <Text
+            key={index}
+            style={{ color: '#1600ff', fontFamily: 'Outfit-Medium' }}
+            onPress={handlePress}
+          >
+            {part}
+          </Text>
+        );
+      }
+      return part;
+    });
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.commentContent}>
@@ -158,7 +267,7 @@ export const Comment: React.FC<CommentProps> = ({
                 </View>
               )}
             </View>
-            <Text style={styles.content}>{content}</Text>
+            <Text style={styles.content}>{renderContent(content)}</Text>
           </View>
           <View style={styles.actions}>
             <Text style={styles.timestamp}>
@@ -205,6 +314,7 @@ export const Comment: React.FC<CommentProps> = ({
               onLike={onLike}
               showReplyButton={false}
               onDelete={onDelete}
+              onClose={onClose}
             />
           ))}
         </View>

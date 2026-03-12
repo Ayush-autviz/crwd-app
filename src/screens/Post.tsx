@@ -1,17 +1,18 @@
 import { View, Text, TouchableOpacity, TextInput, Image, ScrollView, StyleSheet, ActivityIndicator, Keyboard, BackHandler, Platform, Dimensions } from 'react-native'
-import React, { useState, useEffect, useMemo, useCallback } from 'react'
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { PrimaryGrey, PrimaryBlue, LightGrey } from '../Constants/Colors'
 import { ImageIcon, X, ArrowLeft, Paperclip, Lightbulb } from 'lucide-react-native'
 import * as ImagePicker from 'react-native-image-picker'
 import { useNavigation, useRoute, usePreventRemove, CommonActions } from '@react-navigation/native'
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query'
-import { createPost, getLinkPreview } from '../services/api/social'
+import { createPost, getLinkPreview, mentionSearch } from '../services/api/social'
 import { useAuthStore } from '../store/store'
 import { Toast } from '../components/Toast'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { BottomSheetModal } from '@gorhom/bottom-sheet'
 import DiscardBottomSheet from '../components/ui/DiscardBottomSheet'
+import { MentionSearchResults } from '../components/post/MentionSearchResults'
 
 export default function Post() {
   const navigation = useNavigation<any>();
@@ -39,6 +40,11 @@ export default function Post() {
   const [isConfirmedDiscard, setIsConfirmedDiscard] = useState(false);
   const discardSheetRef = React.useRef<BottomSheetModal>(null);
   const [pendingAction, setPendingAction] = useState<any>(null);
+  const [mentionSearchQuery, setMentionSearchQuery] = useState<string | null>(null);
+  const [mentionResults, setMentionResults] = useState<any[]>([]);
+  const [selectedMentions, setSelectedMentions] = useState<{ type: string; id: number | string; name: string }[]>([]);
+  const [selection, setSelection] = useState({ start: 0, end: 0 });
+  const textareaRef = useRef<TextInput>(null);
 
   // Track link preview
   const [showPreview, setShowPreview] = useState(false)
@@ -180,6 +186,67 @@ export default function Post() {
     }
   }
 
+  useEffect(() => {
+    const cursorPosition = selection.start;
+    const textBeforeCursor = form.content.substring(0, cursorPosition);
+    const lastAtSymbolIndex = textBeforeCursor.lastIndexOf('@');
+
+    if (lastAtSymbolIndex !== -1) {
+      const charBeforeAt = lastAtSymbolIndex > 0 ? textBeforeCursor[lastAtSymbolIndex - 1] : null;
+      const isStartOfWord = !charBeforeAt || charBeforeAt === ' ' || charBeforeAt === '\n';
+
+      if (isStartOfWord) {
+        const query = textBeforeCursor.substring(lastAtSymbolIndex + 1);
+        if (query.split(' ').length <= 3 && !query.includes('\n')) {
+          setMentionSearchQuery(query);
+          return;
+        }
+      }
+    }
+    setMentionSearchQuery(null);
+  }, [form.content, selection]);
+
+  useEffect(() => {
+    const fetchMentions = async () => {
+      if (mentionSearchQuery !== null) {
+        try {
+          const data = await mentionSearch(mentionSearchQuery);
+          setMentionResults(data.results || (Array.isArray(data) ? data : []));
+        } catch (error) {
+          console.error('Mention search error:', error);
+          setMentionResults([]);
+        }
+      } else {
+        setMentionResults([]);
+      }
+    };
+
+    const timer = setTimeout(fetchMentions, 300);
+    return () => clearTimeout(timer);
+  }, [mentionSearchQuery]);
+
+  const handleMentionSelect = (user: any) => {
+    const cursorPosition = selection.start;
+    const textBeforeCursor = form.content.substring(0, cursorPosition);
+    const textAfterCursor = form.content.substring(cursorPosition);
+
+    const lastAtSymbolIndex = textBeforeCursor.lastIndexOf('@');
+    const newTextBeforeCursor = textBeforeCursor.substring(0, lastAtSymbolIndex) + `@${user.name} `;
+    
+    setForm(prev => ({ ...prev, content: newTextBeforeCursor + textAfterCursor }));
+    setSelectedMentions(prev => [
+      ...prev.filter(m => m.name !== user.name),
+      { type: user.type, id: user.id, name: user.name }
+    ]);
+    
+    setMentionSearchQuery(null);
+    setMentionResults([]);
+
+    setTimeout(() => {
+      textareaRef.current?.focus();
+    }, 100);
+  };
+
   // Handle URL validation
   const handleUrlBlur = () => {
     if (form.url && !validateUrl(form.url)) {
@@ -273,6 +340,14 @@ export default function Post() {
     // Add media_url if URL is provided (for link posts or when URL is filled)
     if (form.url.trim() && validateUrl(form.url)) {
       formData.append('media_url', form.url);
+    }
+
+    const finalMentions = selectedMentions
+      .filter(m => form.content.includes(`@${m.name}`))
+      .map(({ type, id }) => ({ type, id }));
+
+    if (finalMentions.length > 0) {
+      formData.append('mentions', JSON.stringify(finalMentions));
     }
 
     createPostMutation.mutate(formData);
@@ -385,13 +460,20 @@ export default function Post() {
         {/* Main Content Input */}
         <View style={styles.contentSection}>
           <View style={styles.textInputContainer}>
+            <MentionSearchResults 
+              results={mentionResults} 
+              onSelect={handleMentionSelect}
+              position="below"
+            />
             <TextInput
+              ref={textareaRef}
               style={styles.textInput}
               multiline
               placeholder="What's on your mind?"
               placeholderTextColor={PrimaryGrey}
               value={form.content}
               onChangeText={(value) => handleInputChange('content', value)}
+              onSelectionChange={(e) => setSelection(e.nativeEvent.selection)}
               maxLength={maxCharacters}
             />
           </View>
@@ -658,6 +740,7 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: '#F9FAFB',
     borderColor: '#D1D5DB',
+    position: 'relative',
   },
   textInput: {
     minHeight: 200,

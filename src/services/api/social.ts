@@ -106,7 +106,7 @@ export const getPostComments = async (postId: string) => {
     return response.data;
 };
 
-export const createPostComment = async (postId: string, data: { content: string; parent_comment_id?: number }) => {
+export const createPostComment = async (postId: string, data: { content: string; parent_comment_id?: number; mentions?: any[] }) => {
     const response = await axiosClient.post(`/social/posts/${postId}/comments/`, data);
     return response.data;
 };
@@ -274,3 +274,9 @@ export const getCollectivesByCauseCategory = async (categories?: string | string
     const response = await axiosClient.get(`/social/collectives/by-cause-category/${categoryParam}`);
     return response.data;
 }
+
+// Mention Search API endpoint
+export const mentionSearch = async (query: string) => {
+    const response = await axiosClient.get(`/social/mention-search/?query=${query}`);
+    return response.data;
+};

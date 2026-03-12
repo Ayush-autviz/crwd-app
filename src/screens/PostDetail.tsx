@@ -10,9 +10,10 @@ import { useNavigation, useRoute, useFocusEffect, NavigationProp, CommonActions,
 import { useToast } from '../contexts/ToastContext'
 import { formatDistanceToNow } from 'date-fns'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getPostById, getPostComments, createPostComment, getCommentReplies, likePost, unlikePost, likeComment, unlikeComment, deleteComment } from '../services/api/social'
+import { getPostById, getPostComments, createPostComment, getCommentReplies, likePost, unlikePost, likeComment, unlikeComment, deleteComment, mentionSearch } from '../services/api/social'
 import { useAuthStore } from '../store/store'
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/Avatar'
+import { MentionInput } from '../components/post/MentionInput'
 
 interface CommentData {
   id: number;
@@ -27,6 +28,7 @@ interface CommentData {
   isLiked?: boolean;
   userId?: string | number; // User ID to check if comment belongs to current user
   color?: string;
+  mentions?: any[];
 }
 
 interface PreviewDetails {
@@ -108,8 +110,8 @@ export default function PostDetail() {
   const [pendingAction, setPendingAction] = useState<any>(null)
   const [imageWidth, setImageWidth] = useState<number | null>(null)
   const [previewImageWidth, setPreviewImageWidth] = useState<number | null>(null)
-  const [isImageModalVisible, setIsImageModalVisible] = useState(false)
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
+  const [isImageModalVisible, setIsImageModalVisible] = useState(false)
 
   // Fetch post data using API
   const { data: postData, isLoading: isLoadingPost, error: postError } = useQuery({
@@ -197,13 +199,13 @@ export default function PostDetail() {
       parentComment: comment.parent_comment,
       isLiked: comment.is_liked || false,
       userId: comment.user?.id?.toString(),
+      mentions: comment.mentions,
     }));
   }, [commentsData]);
 
   // Use API comments only
   const [comments, setComments] = useState<CommentData[]>(apiComments);
   const [replyingTo, setReplyingTo] = useState<CommentData | null>(null);
-  const inputRef = React.useRef<TextInput>(null);
 
   // Update comments when API data changes
   React.useEffect(() => {
@@ -214,9 +216,8 @@ export default function PostDetail() {
 
   // Create comment mutation
   const createCommentMutation = useMutation({
-    mutationFn: (data: { content: string }) => createPostComment(postId || '', { content: data.content }),
+    mutationFn: (data: { content: string; mentions?: any[] }) => createPostComment(postId || '', { content: data.content, mentions: data.mentions }),
     onSuccess: () => {
-      setComment("");
       setReplyingTo(null);
       // showToast('Comment added successfully!', 3000);
       queryClient.invalidateQueries({ queryKey: ['postComments', postId] });
@@ -228,8 +229,8 @@ export default function PostDetail() {
 
   // Create reply mutation
   const createReplyMutation = useMutation({
-    mutationFn: ({ commentId, data }: { commentId: number; data: { content: string } }) =>
-      createPostComment(postId || '', { content: data.content, parent_comment_id: commentId }),
+    mutationFn: ({ commentId, data }: { commentId: number; data: { content: string; mentions?: any[] } }) =>
+      createPostComment(postId || '', { content: data.content, parent_comment_id: commentId, mentions: data.mentions }),
     onSuccess: () => {
       // showToast('Reply added successfully!', 3000);
       queryClient.invalidateQueries({ queryKey: ['postComments', postId] });
@@ -237,7 +238,6 @@ export default function PostDetail() {
       // We need to find the top-level parent if this was a nested reply, or just the parent
       // For simplicity, we just invalidate queries which should refresh the list
       // But we might want to expand the parent
-      setComment("");
       setReplyingTo(null);
     },
     onError: () => {
@@ -259,12 +259,22 @@ export default function PostDetail() {
     },
   });
 
-  const handleAddComment = (content: string) => {
+  const handleAddComment = (content: string, mentions: any[]) => {
     if (content.trim()) {
+      // Create a set for easy lookup
+      const mentionIds = new Set(mentions.map(m => m.id));
+      
+      let finalMentions = [...mentions];
+
+      // Implicitly add reply target
       if (replyingTo) {
-        createReplyMutation.mutate({ commentId: replyingTo.id, data: { content: content.trim() } });
+        const targetId = replyingTo.userId || replyingTo.id;
+        if (!mentionIds.has(targetId)) {
+          finalMentions.push({ type: 'user', id: targetId });
+        }
+        createReplyMutation.mutate({ commentId: replyingTo.id, data: { content: content.trim(), mentions: finalMentions } });
       } else {
-        createCommentMutation.mutate({ content: content.trim() });
+        createCommentMutation.mutate({ content: content.trim(), mentions: finalMentions });
       }
     }
   };
@@ -285,11 +295,7 @@ export default function PostDetail() {
     const targetComment = findComment(comments);
 
     if (targetComment) {
-      // Set the comment we are replying to and prefill the bottom input,
-      // so replies always go through the same bottom input box.
       setReplyingTo(targetComment);
-      setComment(`@${targetComment.username} `);
-      inputRef.current?.focus();
     }
   };
 
@@ -399,6 +405,104 @@ export default function PostDetail() {
       if (onToggleReplies) {
         onToggleReplies(comment.id);
       }
+    };
+
+    const renderCommentContent = (content: string, mentions: any[] = []) => {
+      if (!content) return null;
+      const mentionMap = new Map();
+      const triggers: string[] = [];
+
+      (mentions || []).forEach((m: any) => {
+        if (!m) return;
+        const details = m.mention_details || m;
+
+        if (details?.name) {
+          const nameKey = `@${details.name}`.toLowerCase();
+          mentionMap.set(nameKey, m);
+          if (!triggers.includes(`@${details.name}`)) triggers.push(`@${details.name}`);
+        }
+
+        if (details?.username) {
+          const userKey = `@${details.username}`.toLowerCase();
+          mentionMap.set(userKey, m);
+          if (!triggers.includes(`@${details.username}`)) triggers.push(`@${details.username}`);
+        }
+
+        if (m.trigger_name) {
+          const triggerStr = m.trigger_name.startsWith('@') ? m.trigger_name : `@${m.trigger_name}`;
+          const triggerKey = triggerStr.toLowerCase();
+          mentionMap.set(triggerKey, m);
+          if (!triggers.includes(triggerStr)) triggers.push(triggerStr);
+        }
+      });
+
+      triggers.sort((a, b) => b.length - a.length);
+
+      const pattern = triggers.length > 0
+        ? `(${triggers.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')}|@\\w+)`
+        : '(@\\w+)';
+      const regex = new RegExp(pattern, 'gi');
+
+      return content.split(regex).map((part, index) => {
+        if (part.startsWith('@')) {
+          const mention = mentionMap.get(part.toLowerCase());
+          const handlePress = () => {
+            if (mention) {
+              const mDetails = mention.mention_details || mention;
+              const type = (mention.mention_type || mDetails?.mention_type || mDetails?.type || '').toLowerCase();
+              const targetId = mDetails?.target_id || mDetails?.id || mention.target_id || mention.id || part.substring(1);
+
+              if (type === 'collective' || type === 'group') {
+                navigation.navigate('GroupCRWD', { id: targetId.toString() });
+              } else if (type === 'cause' || type === 'nonprofit' || type === 'organization') {
+                navigation.navigate('CauseScreen', { id: targetId.toString() });
+              } else {
+                // User
+                if (currentUser?.id && targetId && currentUser.id.toString() === targetId.toString()) {
+                  navigation.dispatch(
+                    CommonActions.reset({
+                      index: 0,
+                      routes: [
+                        {
+                          name: 'DrawerNav' as never,
+                          state: {
+                            routes: [
+                              {
+                                name: 'MainTabs' as never,
+                                state: {
+                                  routes: [{ name: 'Profile' as never }],
+                                  index: 0,
+                                },
+                              },
+                            ],
+                            index: 0,
+                          },
+                        },
+                      ],
+                    })
+                  );
+                } else {
+                  (navigation as any).navigate('UserProfile', { userId: targetId.toString() });
+                }
+              }
+            } else {
+              // Fallback
+              (navigation as any).navigate('UserProfile', { userId: part.substring(1) });
+            }
+          };
+
+          return (
+            <Text
+              key={index}
+              style={{ color: PrimaryBlue, fontFamily: 'Outfit-Medium' }}
+              onPress={handlePress}
+            >
+              {part}
+            </Text>
+          );
+        }
+        return part;
+      });
     };
 
     return (
@@ -530,7 +634,9 @@ export default function PostDetail() {
                   </View>
                 )}
               </View>
-              <Text style={{ fontSize: 15, fontFamily: 'Outfit-Regular', color: '#111827', lineHeight: 20 }}>{comment.content}</Text>
+              <Text style={{ fontSize: 15, fontFamily: 'Outfit-Regular', color: '#111827', lineHeight: 20 }}>
+                {renderCommentContent(comment.content, comment.mentions)}
+              </Text>
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, marginTop: 8 }}>
               <Text style={{ fontSize: 14, color: PrimaryGrey, fontFamily: 'Outfit-Regular' }}>
@@ -733,6 +839,7 @@ export default function PostDetail() {
         parentComment: commentId,
         isLiked: reply.is_liked || false,
         userId: reply.user?.id?.toString(),
+        mentions: reply.mentions,
       })) || [];
 
       setComments(prev => prev.map(comment =>
@@ -824,11 +931,7 @@ export default function PostDetail() {
     }
   };
 
-  const handleAddCommentSubmit = () => {
-    if (comment.trim()) {
-      handleAddComment(comment);
-    }
-  };
+
 
 
 
@@ -1082,7 +1185,7 @@ export default function PostDetail() {
                   disabled={likePostMutation.isPending || unlikePostMutation.isPending}
                   style={{ flexDirection: 'row', alignItems: 'center', gap: 4, opacity: (likePostMutation.isPending || unlikePostMutation.isPending) ? 0.5 : 1 }}
                 >
-                  <Heart size={18} fill={post.isLiked ? 'red' : 'none'} color={post.isLiked ? 'red' : PrimaryGrey} />
+                  <Heart size={18} color={post.isLiked ? 'red' : PrimaryGrey} />
                   <Text style={{ fontSize: 12, color: post.isLiked ? 'red' : PrimaryGrey }}>
                     {likePostMutation.isPending || unlikePostMutation.isPending ? '' : post.likes}
                   </Text>
@@ -1156,89 +1259,12 @@ export default function PostDetail() {
         </ScrollView>
 
         {/* Join Conversation Input */}
-        {currentUser?.id && (
-          <View style={{
-            borderTopWidth: 1,
-            borderTopColor: '#E5E5E5',
-            paddingHorizontal: 16,
-            backgroundColor: 'white',
-            paddingTop: 8
-          }}>
-            {replyingTo && (
-              <View style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                backgroundColor: '#F3F4F6',
-                padding: 12,
-                marginBottom: 12,
-                borderRadius: 8,
-                borderLeftWidth: 4,
-                borderLeftColor: PrimaryBlue
-              }}>
-                <View style={{ flex: 1, marginRight: 8 }}>
-                  <Text style={{ fontSize: 12, fontWeight: '600', color: PrimaryBlue, marginBottom: 2 }}>
-                    Replying to @{replyingTo.username}
-                  </Text>
-                  <Text numberOfLines={1} style={{ fontSize: 12, color: PrimaryGrey }}>
-                    {replyingTo.content}
-                  </Text>
-                </View>
-                <TouchableOpacity onPress={() => setReplyingTo(null)}>
-                  <X size={16} color={PrimaryGrey} />
-                </TouchableOpacity>
-              </View>
-            )}
-
-            <View style={{
-              flexDirection: 'row',
-              backgroundColor: '#F9FAFB',
-              borderRadius: 8,
-              overflow: 'hidden',
-              marginBottom: 4
-            }}>
-              <View style={{ width: 4, backgroundColor: PrimaryBlue }} />
-              <TextInput
-                ref={inputRef}
-                placeholder={replyingTo ? `Reply to @${replyingTo.username}...` : "Share your thoughts..."}
-                placeholderTextColor={PrimaryGrey}
-                value={comment}
-                onChangeText={setComment}
-                multiline
-                style={{
-                  flex: 1,
-                  fontSize: 14,
-                  color: '#111827',
-                  paddingHorizontal: 12,
-                  paddingVertical: Platform.OS === 'ios' ? 12 : 8,
-                  maxHeight: 100,
-                  backgroundColor: '#F9FAFB'
-                }}
-              />
-            </View>
-
-            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center' }}>
-              <TouchableOpacity
-                onPress={handleAddCommentSubmit}
-                disabled={!comment.trim()}
-                style={{
-                  backgroundColor: comment.trim() ? PrimaryBlue : '#F3F4F6',
-                  borderRadius: 20,
-                  paddingHorizontal: 24,
-                  paddingVertical: 8,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Text style={{
-                  fontSize: 14,
-                  fontWeight: '600',
-                  color: comment.trim() ? 'white' : '#9CA3AF'
-                }}>Reply</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
+            <MentionInput
+              replyingTo={replyingTo}
+              onCancelReply={() => setReplyingTo(null)}
+              onSubmit={handleAddComment}
+              disabled={createCommentMutation.isPending || createReplyMutation.isPending}
+            />
 
         {/* Full Image Modal */}
         <Modal

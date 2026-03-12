@@ -650,7 +650,7 @@ export default function Profile() {
     if (profileError) {
         return (
             <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }} edges={['top', 'left', 'right']}>
-                <MainHeaderNav title={'Me'} show menu={false} />
+                <MainHeaderNav title={'Me'} menu={false} />
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                     <Text style={{ fontSize: 16, color: '#ef4444' }}>
                         Error loading profile

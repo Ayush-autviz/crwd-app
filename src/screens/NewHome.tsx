@@ -617,9 +617,9 @@ export default function NewHome() {
     }
   }, [communityUpdatesPostsData, userProfilesMap]);
 
-  const feedPart1 = transformedFeedItems.slice(0, 2);
-  const feedPart2 = transformedFeedItems.slice(2, 4);
-  const feedPart3 = transformedFeedItems.slice(4);
+  const feedPart1 = transformedFeedItems.slice(0, 4);
+  const feedPart2 = transformedFeedItems.slice(4, 8);
+  const feedPart3 = transformedFeedItems.slice(8);
 
   const renderFeedItem = (item: any) => {
     if (item.type === 'post') {

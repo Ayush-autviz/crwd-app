@@ -3,11 +3,13 @@ import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, Platform, 
 import { BottomSheetModal, BottomSheetBackdrop, BottomSheetScrollView, BottomSheetTextInput, BottomSheetFooter } from '@gorhom/bottom-sheet';
 import { X, MessageCircle } from 'lucide-react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getPostComments, createPostComment, getCommentReplies, likeComment, unlikeComment, deleteComment } from '../../services/api/social';
+import { getPostComments, createPostComment, getCommentReplies, likeComment, unlikeComment, deleteComment, mentionSearch } from '../../services/api/social';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
 import { useAuthStore } from '../../store/store';
 import { Comment, CommentData } from './Comment';
 import { PrimaryBlue, PrimaryGrey } from '../../Constants/Colors';
+import { useNavigation, CommonActions } from '@react-navigation/native';
+import { MentionSearchResults } from './MentionSearchResults';
 
 interface CommentsBottomSheetProps {
   isOpen: boolean;
@@ -20,6 +22,7 @@ interface CommentsBottomSheetProps {
     firstName?: string;
     lastName?: string;
     color?: string;
+    mentions?: any[];
   };
 }
 
@@ -31,13 +34,14 @@ interface CommentInputFooterHandle {
   focus: () => void;
   clear: () => void;
   setText: (text: string) => void;
+  addMention: (mention: { type: string; id: number | string; name: string }) => void;
 }
 
 interface CommentInputFooterProps {
   footerProps: any;
   replyingTo: CommentData | null;
   onCancelReply: () => void;
-  onSubmit: (text: string) => void;
+  onSubmit: (text: string, mentions: any[]) => void;
   isPending: boolean;
 }
 
@@ -49,21 +53,136 @@ const CommentInputFooter = memo(React.forwardRef<CommentInputFooterHandle, Comme
   isPending
 }, ref) => {
   const [text, setText] = useState('');
+  const [mentionSearchQuery, setMentionSearchQuery] = useState<string | null>(null);
+  const [mentionResults, setMentionResults] = useState<any[]>([]);
+  const [selectedMentions, setSelectedMentions] = useState<{ type: string; id: number | string; name: string }[]>([]);
+  const [selection, setSelection] = useState({ start: 0, end: 0 });
+  const selectionLockRef = useRef(false);
+
   const inputRef = useRef<TextInput>(null);
 
   // Expose methods to parent
   React.useImperativeHandle(ref, () => ({
     focus: () => {
-      // Small delay to ensure component is ready/visible
       setTimeout(() => inputRef.current?.focus(), 100);
     },
-    clear: () => setText(''),
-    setText: (newText: string) => setText(newText)
+    clear: () => {
+      setText('');
+      setSelectedMentions([]);
+      setMentionSearchQuery(null);
+      setMentionResults([]);
+    },
+    setText: (newText: string) => setText(newText),
+    addMention: (mention: { type: string; id: number | string; name: string }) => {
+      setSelectedMentions(prev => [
+        ...prev.filter(m => m.name !== mention.name),
+        mention
+      ]);
+    }
   }));
+
+  useEffect(() => {
+    const fetchMentions = async () => {
+      if (mentionSearchQuery !== null) {
+        try {
+          const data = await mentionSearch(mentionSearchQuery);
+          setMentionResults(data.results || (Array.isArray(data) ? data : []));
+        } catch (error) {
+          console.error('Mention search error:', error);
+          setMentionResults([]);
+        }
+      } else {
+        setMentionResults([]);
+      }
+    };
+
+    const timer = setTimeout(fetchMentions, 150);
+    return () => clearTimeout(timer);
+  }, [mentionSearchQuery]);
+
+  useEffect(() => {
+    if (selectionLockRef.current) return;
+    const cursorPosition = selection.start;
+    const textBeforeCursor = text.substring(0, cursorPosition);
+    const lastAtSymbolIndex = textBeforeCursor.lastIndexOf('@');
+
+    if (lastAtSymbolIndex !== -1) {
+      const charBeforeAt = lastAtSymbolIndex > 0 ? textBeforeCursor[lastAtSymbolIndex - 1] : null;
+      const isStartOfWord = !charBeforeAt || charBeforeAt === ' ' || charBeforeAt === '\n';
+
+      if (isStartOfWord) {
+        const query = textBeforeCursor.substring(lastAtSymbolIndex + 1);
+        // Only trigger search if query doesn't end with a space (meaning selection or finishing word)
+        if (query.split(' ').length <= 3 && !query.includes('\n') && !query.endsWith(' ')) {
+          setMentionSearchQuery(query);
+          return;
+        }
+      }
+    }
+    setMentionSearchQuery(null);
+  }, [text, selection]);
+
+  const handleTextChange = (value: string) => {
+    setText(value);
+  };
+
+  const handleMentionSelect = (user: any) => {
+    const cursorPosition = selection.start;
+    const textBeforeCursor = text.substring(0, cursorPosition);
+    const textAfterCursor = text.substring(cursorPosition);
+
+    const lastAtSymbolIndex = textBeforeCursor.lastIndexOf('@');
+    const mentionText = `@${user.name} `;
+    const newTextBeforeCursor = textBeforeCursor.substring(0, lastAtSymbolIndex) + mentionText;
+
+    const newText = newTextBeforeCursor + textAfterCursor;
+    
+    // Lock mentions during selection update
+    selectionLockRef.current = true;
+
+    // Explicitly update selection to the end of the new mention
+    const newPos = newTextBeforeCursor.length;
+    setSelection({ start: newPos, end: newPos });
+    setText(newText);
+
+    setSelectedMentions(prev => [
+      ...prev.filter(m => m.name !== user.name),
+      { type: user.type, id: user.id, name: user.name }
+    ]);
+
+    setMentionSearchQuery(null);
+    setMentionResults([]);
+
+    // Focus and unlock
+    setTimeout(() => {
+      inputRef.current?.focus();
+      // Small delay to ensure all state/selection updates are processed
+      setTimeout(() => {
+        selectionLockRef.current = false;
+      }, 100);
+    }, 100);
+  };
+
+  const renderHighlightedText = (text: string) => {
+    if (!text) return null;
+
+    // Split text by mentions (starting with @)
+    const parts = text.split(/(@\w+(?:\s\w+)?)/g);
+    return parts.map((part, i) => {
+      if (part.startsWith('@')) {
+        return <Text key={i} style={{ color: PrimaryBlue }}>{part}</Text>;
+      }
+      return <Text key={i}>{part}</Text>;
+    });
+  };
 
   const handleSend = () => {
     if (text.trim()) {
-      onSubmit(text.trim());
+      const finalMentions = selectedMentions
+        .filter(m => text.includes(`@${m.name}`))
+        .map(({ type, id }) => ({ type, id }));
+
+      onSubmit(text.trim(), finalMentions);
     }
   };
 
@@ -83,15 +202,21 @@ const CommentInputFooter = memo(React.forwardRef<CommentInputFooterHandle, Comme
         )}
         <View style={styles.inputWrapper}>
           <View style={styles.blueAccentBar} />
+          <MentionSearchResults
+            results={mentionResults}
+            onSelect={handleMentionSelect}
+          />
           <BottomSheetTextInput
             ref={inputRef as any}
             placeholder={replyingTo ? `Reply to @${replyingTo.username}...` : "Share your thoughts..."}
             placeholderTextColor={PrimaryGrey}
-            value={text}
-            onChangeText={setText}
+            onChangeText={handleTextChange}
+            onSelectionChange={(e) => setSelection(e.nativeEvent.selection)}
             multiline
             style={styles.commentInput}
-          />
+          >
+            {renderHighlightedText(text)}
+          </BottomSheetTextInput>
         </View>
         <View style={styles.footerRow}>
           <TouchableOpacity
@@ -125,6 +250,7 @@ export default function CommentsBottomSheet({
   const [replyingTo, setReplyingTo] = useState<CommentData | null>(null);
   const { user: currentUser } = useAuthStore();
   const queryClient = useQueryClient();
+  const navigation = useNavigation<any>();
 
   const snapPoints = useMemo(() => ['90%'], []);
 
@@ -206,6 +332,7 @@ export default function CommentsBottomSheet({
       parentComment: comment.parent_comment,
       isLiked: comment.is_liked || false,
       userId: comment.user?.id,
+      mentions: comment.mentions,
     })) || [];
   }, [commentsData?.results]);
 
@@ -230,7 +357,7 @@ export default function CommentsBottomSheet({
 
   // Create comment mutation
   const createCommentMutation = useMutation({
-    mutationFn: (data: { content: string }) => createPostComment(post.id.toString(), { content: data.content }),
+    mutationFn: (data: { content: string; mentions?: any[] }) => createPostComment(post.id.toString(), { content: data.content, mentions: data.mentions }),
     onSuccess: () => {
       footerRef.current?.clear();
       setReplyingTo(null);
@@ -244,8 +371,8 @@ export default function CommentsBottomSheet({
 
   // Create reply mutation
   const createReplyMutation = useMutation({
-    mutationFn: ({ commentId, data }: { commentId: number; data: { content: string } }) =>
-      createPostComment(post.id.toString(), { content: data.content, parent_comment_id: commentId }),
+    mutationFn: ({ commentId, data }: { commentId: number; data: { content: string; mentions?: any[] } }) =>
+      createPostComment(post.id.toString(), { content: data.content, parent_comment_id: commentId, mentions: data.mentions }),
     onSuccess: (_: any, variables: any) => {
       footerRef.current?.clear();
       setReplyingTo(null);
@@ -257,6 +384,107 @@ export default function CommentsBottomSheet({
       console.error('Failed to add reply');
     },
   });
+
+  const renderMentionText = (content: string, mentions: any[] = []) => {
+    if (!content) return null;
+    const mentionMap = new Map();
+    const triggers: string[] = [];
+
+    (mentions || []).forEach((m: any) => {
+      if (!m) return;
+      const details = m.mention_details || m;
+
+      if (details?.name) {
+        const nameKey = `@${details.name}`.toLowerCase();
+        mentionMap.set(nameKey, m);
+        if (!triggers.includes(`@${details.name}`)) triggers.push(`@${details.name}`);
+      }
+
+      if (details?.username) {
+        const userKey = `@${details.username}`.toLowerCase();
+        mentionMap.set(userKey, m);
+        if (!triggers.includes(`@${details.username}`)) triggers.push(`@${details.username}`);
+      }
+
+      if (m.trigger_name) {
+        const triggerStr = m.trigger_name.startsWith('@') ? m.trigger_name : `@${m.trigger_name}`;
+        const triggerKey = triggerStr.toLowerCase();
+        mentionMap.set(triggerKey, m);
+        if (!triggers.includes(triggerStr)) triggers.push(triggerStr);
+      }
+    });
+
+    triggers.sort((a, b) => b.length - a.length);
+
+    const pattern = triggers.length > 0
+      ? `(${triggers.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')}|@\\w+)`
+      : '(@\\w+)';
+    const regex = new RegExp(pattern, 'gi');
+
+    return content.split(regex).map((part, index) => {
+      if (part.startsWith('@')) {
+        const mention = mentionMap.get(part.toLowerCase());
+
+        const handlePress = () => {
+          console.log('mention', mention);
+          handleClose();
+          if (mention) {
+            const mDetails = mention.mention_details || mention;
+            const type = (mention.mention_type || mDetails?.mention_type || mDetails?.type || '').toLowerCase();
+            const targetId = mDetails?.target_id || mDetails?.id || mention.target_id || mention.id || part.substring(1);
+
+            if (type === 'collective' || type === 'group') {
+              navigation.navigate('GroupCRWD', { id: targetId.toString() });
+            } else if (type === 'cause' || type === 'nonprofit' || type === 'organization') {
+              navigation.navigate('CauseScreen', { id: targetId.toString() });
+            } else {
+              // User
+              if (currentUser?.id && targetId && currentUser.id.toString() === targetId.toString()) {
+                navigation.dispatch(
+                  CommonActions.reset({
+                    index: 0,
+                    routes: [
+                      {
+                        name: 'DrawerNav',
+                        state: {
+                          routes: [
+                            {
+                              name: 'MainTabs',
+                              state: {
+                                routes: [{ name: 'Profile' }],
+                                index: 0,
+                              },
+                            },
+                          ],
+                          index: 0,
+                        },
+                      },
+                    ],
+                  })
+                );
+              } else {
+                navigation.navigate('UserProfile', { userId: targetId.toString() });
+              }
+            }
+          } else {
+            // Fallback
+            navigation.navigate('UserProfile', { userId: part.substring(1) });
+          }
+        };
+
+        return (
+          <Text
+            key={index}
+            style={{ color: PrimaryBlue, fontFamily: 'Outfit-Medium' }}
+            onPress={handlePress}
+          >
+            {part}
+          </Text>
+        );
+      }
+      return part;
+    });
+  };
 
   // Like/Unlike comment mutations
   const likeCommentMutation = useMutation({
@@ -295,9 +523,14 @@ export default function CommentsBottomSheet({
     const targetComment = findComment(comments);
 
     if (targetComment) {
-      // Set replyingTo to show the "Replying to" banner, but don't prefill the input
+      // Set replyingTo to show the "Replying to" banner
       setReplyingTo(targetComment);
-      footerRef.current?.setText(''); // Clear any existing text
+      footerRef.current?.setText(''); // Don't pre-fill with @username
+      footerRef.current?.addMention({
+        type: 'user',
+        id: targetComment.userId || targetComment.id,
+        name: targetComment.username
+      });
       // Focus the input after a short delay to ensure the bottom sheet is ready
       footerRef.current?.focus();
     }
@@ -337,6 +570,7 @@ export default function CommentsBottomSheet({
         parentComment: reply.parent_comment || commentId,
         isLiked: reply.is_liked || false,
         userId: reply.user?.id,
+        mentions: reply.mentions,
       }));
 
       setComments(prev => {
@@ -394,13 +628,20 @@ export default function CommentsBottomSheet({
     queryClient.invalidateQueries({ queryKey: ['postComments', post.id] });
   };
 
-  const handleSubmit = useCallback((text: string) => {
+  const handleSubmit = useCallback((text: string, mentions: any[]) => {
     if (!text.trim()) return;
 
+    let finalMentions = [...mentions];
+    
+    // If it's a reply, ensure the person we are replying to is mentioned
     if (replyingTo) {
-      createReplyMutation.mutate({ commentId: replyingTo.id, data: { content: text.trim() } });
+      const targetId = replyingTo.userId || replyingTo.id;
+      if (!finalMentions.some(m => m.id === targetId)) {
+        finalMentions.push({ type: 'user', id: targetId });
+      }
+      createReplyMutation.mutate({ commentId: replyingTo.id, data: { content: text.trim(), mentions: finalMentions } });
     } else if (!createCommentMutation.isPending) {
-      createCommentMutation.mutate({ content: text.trim() });
+      createCommentMutation.mutate({ content: text.trim(), mentions: finalMentions });
     }
   }, [replyingTo, createCommentMutation.isPending, createReplyMutation.isPending]);
 
@@ -481,7 +722,9 @@ export default function CommentsBottomSheet({
           </Avatar>
           <View style={styles.originalPostContent}>
             <Text style={styles.originalPostDisplayName}>{postDisplayName}</Text>
-            <Text style={styles.originalPostText} numberOfLines={2}>{post.text}</Text>
+            <Text style={styles.originalPostText} numberOfLines={2}>
+              {renderMentionText(post.text, post.mentions)}
+            </Text>
           </View>
         </View>
 
@@ -513,6 +756,7 @@ export default function CommentsBottomSheet({
                   isLoadingReplies={loadingReplies.has(comment.id)}
                   showReplyButton={true}
                   onDelete={handleDeleteComment}
+                  onClose={handleClose}
                 />
               ))}
             </>
@@ -673,12 +917,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: '#F9FAFB',
     borderRadius: 8,
-    overflow: 'hidden',
-    marginBottom: 8,
+    marginBottom: 4,
+    position: 'relative',
+    zIndex: 1000
   },
   blueAccentBar: {
     width: 4,
     backgroundColor: PrimaryBlue,
+    borderTopLeftRadius: 8,
+    borderBottomLeftRadius: 8,
   },
   commentInput: {
     flex: 1,

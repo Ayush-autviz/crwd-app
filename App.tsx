@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import 'react-native-gesture-handler'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { NavigationContainer } from '@react-navigation/native'
-import { navigationRef } from './src/navigation/navigationRef'
+import { navigationRef, navigate } from './src/navigation/navigationRef'
 import { createDrawerNavigator } from '@react-navigation/drawer'
 import Home from './src/screens/Home'
 import NewHome from './src/screens/NewHome'
@@ -77,7 +77,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { StripeProvider } from '@stripe/stripe-react-native'
 import { STRIPE_PUBLISHABLE_KEY } from './src/config/stripe'
 import messaging from '@react-native-firebase/messaging'
-import notifee, { AndroidImportance } from '@notifee/react-native';
+import notifee, { AndroidImportance, EventType } from '@notifee/react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { useAuthStore } from './src/store/store';
@@ -101,8 +101,21 @@ const queryClient = new QueryClient({
 // Initialize PostHog outside the component
 export const posthog = new PostHog('phc_H8FvO89VZLDakgosw6EbwV9LPl7u2Mvjz9Iu7rPDpQF', {
   host: 'https://us.i.posthog.com',
-  debug: true,
 })
+
+const linking = {
+  prefixes: ['crwd-app://', 'https://crwdfund.org'],
+  config: {
+    screens: {
+      DrawerNav: {
+        screens: {
+          Activity: 'activity',
+        },
+      },
+      Activity: 'activity',
+    },
+  },
+};
 
 export default function App() {
   const { user: currentUser } = useAuthStore();
@@ -185,6 +198,7 @@ export default function App() {
       await notifee.displayNotification({
         title: remoteMessage.notification?.title,
         body: remoteMessage.notification?.body,
+        data: remoteMessage.data,
         ios: {
           sound: 'default',
         },
@@ -198,8 +212,42 @@ export default function App() {
       });
     });
 
-    return unsubscribe;
+    // Handle notification click when app is in background but not quit
+    const onNotificationOpenedApp = messaging().onNotificationOpenedApp(remoteMessage => {
+      console.log('Notification caused app to open from background state:', remoteMessage);
+      navigate('Activity');
+    });
+
+    // Check if the app was opened from a quit state via a notification
+    messaging()
+      .getInitialNotification()
+      .then(remoteMessage => {
+        if (remoteMessage) {
+          console.log('Notification caused app to open from quit state:', remoteMessage);
+          // Small delay to ensure navigation is ready
+          setTimeout(() => {
+            navigate('Activity');
+          }, 1000);
+        }
+      });
+
+    return () => {
+      unsubscribe();
+      onNotificationOpenedApp();
+    };
   }, [queryClient]);
+
+  // Handle Notifee events (foreground clicks)
+  useEffect(() => {
+    const unsubscribe = notifee.onForegroundEvent(({ type, detail }) => {
+      if (type === EventType.PRESS) {
+        console.log('User pressed notification in foreground', detail.notification);
+        navigate('Activity');
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   function BottomTabs() {
     return (
@@ -364,6 +412,7 @@ export default function App() {
       <GestureHandlerRootView style={{ flex: 1 }}>
         <NavigationContainer
           ref={navigationRef}
+          linking={linking}
           onStateChange={() => {
             const currentRouteName = navigationRef.getCurrentRoute()?.name;
             if (currentRouteName) {

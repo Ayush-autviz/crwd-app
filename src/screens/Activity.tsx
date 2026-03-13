@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, TouchableOpacity, Image, FlatList, ActivityIndicator } from 'react-native'
+import { View, Text, ScrollView, TouchableOpacity, Image, FlatList, ActivityIndicator, RefreshControl } from 'react-native'
 import React, { useState, useMemo, useEffect, useCallback } from 'react'
 import MainHeaderNav from '../components/MainHeaderNav'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -70,6 +70,21 @@ export default function Activity() {
     const navigation = useNavigation()
     const { user: currentUser } = useAuthStore();
     const queryClient = useQueryClient();
+    const [refreshing, setRefreshing] = useState(false);
+
+    const onRefresh = useCallback(async () => {
+        setRefreshing(true);
+        try {
+            await Promise.all([
+                queryClient.refetchQueries({ queryKey: ['notifications'] }),
+                queryClient.refetchQueries({ queryKey: ['unreadCount'] }),
+            ]);
+        } catch (error) {
+            console.error('Error refreshing notifications:', error);
+        } finally {
+            setRefreshing(false);
+        }
+    }, [queryClient]);
 
     // Fetch notifications from API
     const { data: notificationsData, isLoading: isLoadingNotifications } = useQuery({
@@ -1283,6 +1298,9 @@ export default function Activity() {
                             renderItem={renderNotificationItem}
                             keyExtractor={(item) => `notification-${item.id}`}
                             showsVerticalScrollIndicator={false}
+                            refreshControl={
+                                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[PrimaryBlue]} tintColor={PrimaryBlue} />
+                            }
                         />
                     )
                 )}
@@ -1332,6 +1350,9 @@ export default function Activity() {
                             renderItem={renderCommunityPost}
                             keyExtractor={(item) => `community-${item.id}`}
                             showsVerticalScrollIndicator={false}
+                            refreshControl={
+                                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[PrimaryBlue]} tintColor={PrimaryBlue} />
+                            }
                         />
                     )
                 )}

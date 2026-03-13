@@ -32,6 +32,8 @@
           <category android:name="android.intent.category.DEFAULT" />
           <category android:name="android.intent.category.BROWSABLE" />
           <data android:scheme="crwd-app" android:host="googleCallback" />
+          <data android:scheme="crwd-app" android:host="Activity" />
+          <data android:scheme="crwd-app" android:host="activity" />
         </intent-filter>
       </activity>
     </application>

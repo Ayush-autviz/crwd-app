@@ -46,6 +46,7 @@ export default function NewHome() {
   const [showCommentsSheet, setShowCommentsSheet] = useState(false);
   const [selectedPost, setSelectedPost] = useState<any>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [isManualRefresh, setIsManualRefresh] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
   const scrollYRef = useRef(0);
   const animateScrollToTop = (duration = 200) => {
@@ -59,7 +60,7 @@ export default function NewHome() {
     Animated.timing(anim, {
       toValue: 0,
       duration,
-      easing: Easing.out(Easing.quad),
+      easing: Easing.bezier(0.19, 1, 0.22, 1), // Smooth Expo out
       useNativeDriver: false,
     }).start(() => {
       anim.removeListener(listenerId);
@@ -74,13 +75,14 @@ export default function NewHome() {
         queryClient.refetchQueries({ queryKey: ['nonprofitts'], type: 'active' }),
         queryClient.refetchQueries({ queryKey: ['donationBox', user?.id], type: 'active' }),
         queryClient.refetchQueries({ queryKey: ['joined-collectives', user?.id], type: 'active' }),
-        queryClient.resetQueries({ queryKey: ['communityUpdatesPosts'] }),
+        queryClient.refetchQueries({ queryKey: ['communityUpdatesPosts'] }),
         queryClient.invalidateQueries({ queryKey: ['userProfile'] }),
       ]);
     } catch (error) {
       console.error('Error refreshing data:', error);
     } finally {
       setRefreshing(false);
+      setIsManualRefresh(false);
     }
   }, [user?.id, queryClient]);
 
@@ -145,6 +147,20 @@ export default function NewHome() {
   useEffect(() => {
     getFcmTokenAndSendToBackend();
   }, [user?.id, token?.access_token]);
+
+  useEffect(() => {
+    const unsubscribe = (navigation as any).addListener('tabPress', (e: any) => {
+      if (navigation.isFocused()) {
+        animateScrollToTop(800);
+        setTimeout(() => {
+          setIsManualRefresh(true);
+          onRefresh();
+        }, 100);
+      }
+    });
+
+    return unsubscribe;
+  }, [navigation, onRefresh]);
 
   // Fetch collectives data using React Query
   const { data: collectivesData, isLoading: collectivesLoading } = useQuery({
@@ -658,8 +674,11 @@ export default function NewHome() {
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <HomeHeader
         onLogoPress={() => {
-          animateScrollToTop(200);
-          queryClient.invalidateQueries();
+          animateScrollToTop(800);
+          setTimeout(() => {
+            setIsManualRefresh(true);
+            onRefresh();
+          }, 100);
         }}
       />
 
@@ -672,13 +691,18 @@ export default function NewHome() {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#1600ff"]} tintColor={'#1600ff'} />
           }
           onScroll={(e) => {
             scrollYRef.current = e.nativeEvent.contentOffset.y;
           }}
           scrollEventThrottle={16}
         >
+          {isManualRefresh && refreshing && (
+            <View style={styles.topRefreshLoader}>
+              <ActivityIndicator size="small" color="#1600ff" />
+            </View>
+          )}
           {/* Main Content */}
           <View style={styles.mainContent}>
             {/* Personalized Greeting */}
@@ -953,5 +977,11 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     fontFamily: 'Outfit-Medium',
   },
+  topRefreshLoader: {
+    paddingVertical: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
+  }
 });
 

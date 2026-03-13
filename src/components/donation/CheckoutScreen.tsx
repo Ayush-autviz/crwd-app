@@ -23,7 +23,9 @@ import {
   getDonationHistory,
   removeCauseFromBox,
   cancelDonationBox,
+  addCausesToBox,
 } from '../../services/api/donation';
+import { PreviouslySupportedCauses } from './PreviouslySupportedCauses';
 import { getNonprofitColor } from '../../lib/getNonprofitColor';
 import RequestNonprofitModal from '../newsearch/RequestNonprofitModal';
 import { Alert } from 'react-native';
@@ -82,6 +84,7 @@ export default function CheckoutScreen({
   // Also get manual_causes for backward compatibility
   const manualCauses = donationBox?.manual_causes || [];
   const attributingCollectives = donationBox?.attributing_collectives || [];
+  const previouslySupportedCauses = donationBox?.previously_supported_causes || [];
   const actualDonationAmount = parseFloat(donationBox?.monthly_amount || donationAmount.toString());
 
   // Use API data if available, otherwise fall back to selectedOrganizations
@@ -140,6 +143,18 @@ export default function CheckoutScreen({
     onError: (error: any) => {
       console.error('Error removing cause:', error);
       Alert.alert('Error', error?.response?.data?.message || 'Failed to remove cause');
+    },
+  });
+
+  // Mutation to add cause back to box
+  const addCauseMutation = useMutation({
+    mutationFn: (causeId: number) => addCausesToBox({ causes: [{ cause_id: causeId }] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['donationBox'] });
+    },
+    onError: (error: any) => {
+      console.error('Error adding cause:', error);
+      Alert.alert('Error', error?.response?.data?.message || "Failed to add cause");
     },
   });
 
@@ -434,6 +449,12 @@ export default function CheckoutScreen({
               </View>
             </View>
           )}
+
+          {/* Previously Supported Section */}
+          <PreviouslySupportedCauses
+            causes={previouslySupportedCauses}
+            onAdd={(causeId) => addCauseMutation.mutate(causeId)}
+          />
 
           {/* Request Nonprofit Section */}
           <View style={styles.requestSection}>

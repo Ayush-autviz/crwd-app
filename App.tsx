@@ -101,6 +101,8 @@ const queryClient = new QueryClient({
 // Initialize PostHog outside the component
 export const posthog = new PostHog('phc_H8FvO89VZLDakgosw6EbwV9LPl7u2Mvjz9Iu7rPDpQF', {
   host: 'https://us.i.posthog.com',
+  captureAppLifecycleEvents: true,
+  enableSessionReplay: true,
 })
 
 const linking = {

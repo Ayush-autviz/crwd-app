@@ -734,7 +734,15 @@ export default function NewHome() {
           />
         }
         onScroll={(e) => {
-          scrollYRef.current = e.nativeEvent.contentOffset.y;
+          const { layoutMeasurement, contentOffset, contentSize } = e.nativeEvent;
+          scrollYRef.current = contentOffset.y;
+          
+          // Check if we're near the bottom (within 300px)
+          const isCloseToBottom = layoutMeasurement.height + contentOffset.y >= contentSize.height - 300;
+          
+          if (isCloseToBottom && hasNextPage && !isFetchingNextPage) {
+            fetchNextPage();
+          }
         }}
         scrollEventThrottle={16}
       >
@@ -862,22 +870,9 @@ export default function NewHome() {
                       {feedPart3.map(renderFeedItem)}
                     </View>
                   )}
-                  {hasNextPage && (
+                  {(hasNextPage || isFetchingNextPage) && (
                     <View style={styles.loadMoreContainer}>
-                      <TouchableOpacity
-                        style={styles.loadMoreButton}
-                        onPress={() => fetchNextPage()}
-                        disabled={isFetchingNextPage}
-                      >
-                        {isFetchingNextPage ? (
-                          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                            <ActivityIndicator size="small" color="#6B7280" style={{ marginRight: 8 }} />
-                            <Text style={styles.loadMoreText}>Loading...</Text>
-                          </View>
-                        ) : (
-                          <Text style={styles.loadMoreText}>Show More Posts</Text>
-                        )}
-                      </TouchableOpacity>
+                      <ActivityIndicator size="small" color="#1600ff" />
                     </View>
                   )}
                 </View>

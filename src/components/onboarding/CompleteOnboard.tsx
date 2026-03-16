@@ -75,14 +75,22 @@ export default function CompleteOnboard() {
 
   // Get selected categories from route params
   const selectedCategoryIds = (route.params as any)?.selectedCategories || [];
-  const selectedCategoryObjects = selectedCategoryIds
-    .map((id: string) => categories.find((cat) => cat.id === id))
-    .filter((cat: any) => cat !== undefined);
+  const selectedCategoryNames = (route.params as any)?.selectedCategoryNames || [];
+
+  // Map by name first for better reliability between API and local constants
+  const selectedCategoryObjects = selectedCategoryNames.length > 0
+    ? selectedCategoryNames.map((name: string) => categories.find((cat) => cat.name === name)).filter(Boolean)
+    : selectedCategoryIds.map((id: string) => categories.find((cat) => cat.id === id)).filter((cat: any) => cat !== undefined);
+
+  // Use the internal character IDs for queries if we have the objects
+  const internalCategoryIds = selectedCategoryObjects.length > 0
+    ? selectedCategoryObjects.map(cat => (cat as any).id)
+    : selectedCategoryIds;
 
   // Fetch surprise me causes
   const { data: surpriseData, isLoading: isLoadingSurprise, refetch: refetchSurprise } = useQuery({
-    queryKey: ['surprise-me-onboard', selectedCategoryIds],
-    queryFn: () => getSurpriseMe(selectedCategoryIds.length > 0 ? selectedCategoryIds : undefined),
+    queryKey: ['surprise-me-onboard', internalCategoryIds],
+    queryFn: () => getSurpriseMe(internalCategoryIds.length > 0 ? internalCategoryIds : undefined),
     enabled: view === 'surprise',
   });
 

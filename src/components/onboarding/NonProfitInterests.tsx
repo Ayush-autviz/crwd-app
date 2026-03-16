@@ -113,10 +113,15 @@ export default function NonProfitInterests() {
           routes: [{ name: redirectTo as never, params: { ...redirectParams, from: 'NewNonprofitInterests' } }],
         });
       } else {
+        const selectedCategoryNames = mainCategories
+          .filter((cat: any) => selectedCategories.includes(cat.id))
+          .map((cat: any) => cat.name);
+
         navigation.navigate('CompleteOnboard', {
           redirectTo,
           redirectParams,
-          selectedCategories
+          selectedCategories,
+          selectedCategoryNames
         });
       }
     },

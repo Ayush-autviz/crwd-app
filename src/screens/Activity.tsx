@@ -140,7 +140,8 @@ export default function Activity() {
                             notification.data?.donor_id ||
                             notification.data?.new_member_id ||
                             notification.user?.id ||
-                            notification.data?.user_id;
+                            notification.data?.user_id ||
+                            (notification.data?.user_username && !isNaN(Number(notification.data.user_username)) ? notification.data.user_username : null);
                         return userId;
                     })
                     .filter((id: any) => id !== null && id !== undefined)
@@ -189,6 +190,8 @@ export default function Activity() {
                 notification.body?.toLowerCase().includes('followed') ||
                 notification.body?.toLowerCase().includes('following') ||
                 notification.data?.follower_id;
+            const isMention = notification.title?.toLowerCase().includes('mentioned') ||
+                notification.body?.toLowerCase().includes('mentioned');
 
             // Extract recipient name from body or title
             let collectiveName = '';
@@ -322,7 +325,10 @@ export default function Activity() {
                 displayDescription = 'liked your post';
             } else if (isComment) {
                 displayTitle = userFullName;
-                displayDescription = collectiveName ? `commented on your post in ${collectiveName}` : 'commented on your post';
+                displayDescription = 'commented on your post';
+            } else if (isMention) {
+                displayTitle = userFullName;
+                displayDescription = 'mentioned you in a comment';
             } else if (isFollower) {
                 displayTitle = userFullName;
                 displayDescription = 'has started following you';
@@ -330,14 +336,8 @@ export default function Activity() {
                 displayTitle = userFullName || memberName || 'New Member';
                 displayDescription = `joined ${collectiveName || 'the collective'}`;
             } else if (isDonation) {
-                displayTitle = userFullName || 'Donation Received';
-                if (donationAmount && recipientName) {
-                    displayDescription = `donated ${donationAmount} to ${recipientName}`;
-                } else if (donationAmount) {
-                    displayDescription = `donated ${donationAmount}`;
-                } else {
-                    displayDescription = 'made a donation';
-                }
+                displayTitle = 'Donation Received';
+                displayDescription = notification.body || notification.title || '';
             }
 
             const postId = notification.data?.post_id || notification.data?.post?.id || notification.post_id;
@@ -606,9 +606,6 @@ export default function Activity() {
                         parts.push(<Text key="donated" style={{ color: '#374151', fontSize: 14 }}>donated </Text>);
                     }
 
-                    // 2. Amount
-                    parts.push(<Text key="amount" style={{ fontFamily: 'Outfit-Regular', color: '#374151', fontSize: 14 }}>{amount}</Text>);
-
                     // 3. " to "
                     parts.push(<Text key="to" style={{ color: '#374151', fontSize: 14 }}> to </Text>);
 
@@ -664,7 +661,7 @@ export default function Activity() {
                                 {item.collectiveName || 'Collective'}
                             </Text>
                         )}
-                        {' '}received a {item.donationAmount || '$50'} donation
+                        {' '}received a donation
                     </Text>
                 );
             }

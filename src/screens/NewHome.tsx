@@ -37,7 +37,14 @@ import CommentsBottomSheet from '../components/post/CommentsBottomSheet';
 import PostResultCard from '../components/newsearch/PostResultCard';
 
 import GuestHome from '../components/GuestHome';
-import { NewHomeSkeleton } from '../components/newHome/NewHomeSkeleton';
+import { 
+  NewHomeSkeleton, 
+  DonationBoxSkeleton, 
+  CollectiveCarouselSkeleton, 
+  CommunityPostsSkeleton, 
+  FeaturedNonprofitsSkeleton, 
+  SuggestedCollectivesSkeleton 
+} from '../components/newHome/NewHomeSkeleton';
 
 export default function NewHome() {
   const { user, token } = useAuthStore();
@@ -220,7 +227,7 @@ export default function NewHome() {
     return communityUpdatesPostsData?.pages.flatMap((page: any) => page.results) || [];
   }, [communityUpdatesPostsData]);
 
-  const isLoading = collectivesLoading || nonprofitsLoading || donationBoxLoading || joinedCollectivesLoading;
+  const isLoading = collectivesLoading || nonprofitsLoading || donationBoxLoading || joinedCollectivesLoading || communityUpdatesLoading;
 
   // Extract unique user IDs from community updates in the feed
   const uniqueUserIds = useMemo(() => {
@@ -507,7 +514,9 @@ export default function NewHome() {
             if (usernameMatch) {
               username = usernameMatch[1];
             } else {
-              username = notification.data?.follower_username ||
+              username = notification.data?.user_username ||
+                notification.data?.follower_username ||
+                notification.data?.commenter_id ||
                 notification.data?.donor_id ||
                 notification.data?.creator_id ||
                 notification.data?.new_member_id ||
@@ -548,11 +557,13 @@ export default function NewHome() {
                 collectiveName = titleMatch[1].trim();
               }
             }
-
             const userId = notification.data?.donor_id ||
               notification.data?.follower_id ||
               notification.data?.creator_id ||
               notification.data?.new_member_id ||
+              notification.data?.commenter_id ||
+              notification.data?.mentioner_id ||
+              notification.data?.liker_id ||
               username;
 
             const userProfile = userId ? userProfilesMap.get(userId.toString()) : null;
@@ -568,12 +579,39 @@ export default function NewHome() {
             } else {
               fullName = username || 'Unknown User';
             }
+            const isMention = notification.title?.toLowerCase().includes('mentioned') ||
+                              notification.body?.toLowerCase().includes('mentioned');
+
+            const isDonation = notification.title?.toLowerCase().includes('donation') ||
+              notification.body?.toLowerCase().includes('donated') ||
+              notification.data?.donor_id !== undefined;
 
             const avatar = profileUser?.profile_picture || '';
             let actionText = notification.body || notification.message || '';
+
+            // Remove dollar amounts from donation notifications
+            if (isDonation && actionText) {
+              actionText = actionText.replace(/\$[\d,.]+/g, '').replace(/\s{2,}/g, ' ').trim();
+            }
+
             if (actionText && username) {
               actionText = actionText.replace(`@${username} `, '').trim();
               actionText = actionText.charAt(0).toUpperCase() + actionText.slice(1);
+            }
+
+            // If it's a mention, use the person's name as the title instead of "You were mentioned"
+            let displayTitle = notification.title;
+            if (isMention && fullName && fullName !== 'Unknown User') {
+              displayTitle = fullName;
+            } else if (isDonation) {
+              displayTitle = 'Donation Received';
+            }
+
+            // Update actionText for mentions and comments
+            if (isMention) {
+              actionText = 'Mentioned you in a comment';
+            } else if (notification.body?.toLowerCase().includes('commented')) {
+              actionText = 'Commented on your post';
             }
 
             const isJoinNotification =
@@ -589,6 +627,7 @@ export default function NewHome() {
             return {
               uniqueKey: `notification-${notification.id}`,
               type: 'notification',
+              title: displayTitle,
               data: {
                 id: notification.id,
                 user: {
@@ -681,214 +720,177 @@ export default function NewHome() {
           }, 100);
         }}
       />
-
-      {isLoading ? (
-        <NewHomeSkeleton />
-      ) : (
-        <ScrollView
-          ref={scrollRef}
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#1600ff"]} tintColor={'#1600ff'} />
-          }
-          onScroll={(e) => {
-            scrollYRef.current = e.nativeEvent.contentOffset.y;
-          }}
-          scrollEventThrottle={16}
-        >
-          {isManualRefresh && refreshing && (
-            <View style={styles.topRefreshLoader}>
-              <ActivityIndicator size="small" color="#1600ff" />
-            </View>
-          )}
-          {/* Main Content */}
-          <View style={styles.mainContent}>
-            {/* Personalized Greeting */}
-
-            {/* My Donation Box Card or Prompt */}
-            <LinearGradient
-              colors={['#EFF6FF', '#FAF5FF', '#FDF2F8']}
-              start={{ x: 0, y: 0.5 }}
-              end={{ x: 1, y: 0.5 }}
-              style={styles.gradientContainer}
-            >
-              <View style={styles.gradientContent}>
-                {token?.access_token ? (
-                  <>
-                    {donationBoxLoading ? (
-                      <View style={styles.loadingCard}>
-                        <ActivityIndicator size="large" color="#1600ff" />
-                      </View>
-                    ) : donationBoxInfo ? (
-                      <>
-                        <HelloGreeting />
-                        <MyDonationBoxCard
-                          monthlyAmount={donationBoxInfo.monthlyAmount || 10}
-                          causeCount={donationBoxInfo.causeCount || 0}
-                        />
-                      </>
-                    ) : donationBoxData &&
-                      !isDonationBoxNotFound &&
-                      !isDonationBoxActive &&
-                      inactiveBoxCauseCount > 0 ? (
-                      // Donation box exists but is not active - show prompt with cause count
-                      <DonationBoxPrompt
-                        causeCount={inactiveBoxCauseCount}
-                        hasJoinedCollectives={(transformedAttributingCollectives?.length || 0) > 0}
-                      />
-                    ) : (
-                      <DonationBoxPrompt
-                        hasJoinedCollectives={(transformedAttributingCollectives?.length || 0) > 0}
-                      />
-                    )}
-
-                    {/* Collective Carousel Card - Show joined collectives or Create Collective Card */}
-                    <View style={{ width: '100%' }} collapsable={false}>
-                      {/* Loading */}
-                      <View
-                        style={[
-                          { width: '100%' },
-                          !joinedCollectivesLoading && { display: 'none' },
-                        ]}
-                      >
-                        <View style={styles.loadingCard}>
-                          <ActivityIndicator size="large" color="#1600ff" />
-                        </View>
-                      </View>
-
-                      {/* Carousel */}
-                      <View
-                        style={[
-                          { width: '100%' },
-                          (joinedCollectivesLoading ||
-                            !transformedAttributingCollectives ||
-                            transformedAttributingCollectives.length === 0) &&
-                          { display: 'none' },
-                        ]}
-                      >
-                        <CollectiveCarouselCard
-                          collectives={transformedAttributingCollectives ?? []}
-                        />
-                      </View>
-
-                      {/* Create */}
-                      <View
-                        style={[
-                          { width: '100%' },
-                          (joinedCollectivesLoading ||
-                            (transformedAttributingCollectives &&
-                              transformedAttributingCollectives.length > 0)) &&
-                          { display: 'none' },
-                        ]}
-                      >
-                        <CreateCollectiveCard />
-                      </View>
-                    </View>
-
-
-                  </>
-                ) : null}
-              </View>
-            </LinearGradient>
-
-
-
-            {/* Feed Part 1 - 2 Items */}
-            {token?.access_token && feedPart1.length > 0 && (
-              <View style={styles.feedSection}>
-                <View style={styles.feedHeading}>
-                  <Text style={styles.feedTitle}>Community Updates</Text>
-                  <Text style={styles.feedSubtitle}>
-                    Updates and discoveries from your community
-                  </Text>
-                </View>
-                <View style={styles.feedList}>
-                  {communityUpdatesLoading && (
-                    <ActivityIndicator size="small" color="#1600ff" />
-                  )}
-                  {feedPart1.map(renderFeedItem)}
-                </View>
-              </View>
-            )}
-
-            {/* Featured Nonprofits Section */}
-            {nonprofitsLoading ? (
-              <View style={styles.loadingCard}>
-                <ActivityIndicator size="large" color="#1600ff" />
-              </View>
-            ) : (
-              <NewFeaturedNonprofits
-                nonprofits={filteredFeaturedNonprofits}
-                seeAllLink="/search"
-              />
-            )}
-
-            {/* Feed Part 2 - 2 Items */}
-            {token?.access_token && feedPart2.length > 0 && (
-              <View style={styles.feedSection}>
-                <View style={styles.feedList}>
-                  {feedPart2.map(renderFeedItem)}
-                </View>
-              </View>
-            )}
-
-            {/* Suggested Collectives Section */}
-            {collectivesLoading ? (
-              <View style={styles.loadingCard}>
-                <ActivityIndicator size="large" color="#1600ff" />
-              </View>
-            ) : (
-              <NewSuggestedCollectives
-                collectives={filteredSuggestedCollectives}
-                seeAllLink="/search"
-              />
-            )}
-
-            {/* Feed Part 3 - Rest of Items */}
-            {token?.access_token && (hasNextPage || feedPart3.length > 0) && (
-              <View style={styles.feedSection}>
-                {feedPart3.length > 0 && (
-                  <View style={styles.feedList}>
-                    {feedPart3.map(renderFeedItem)}
-                  </View>
-                )}
-
-                {/* Load More Button */}
-                {hasNextPage && (
-                  <View style={styles.loadMoreContainer}>
-                    <TouchableOpacity
-                      style={styles.loadMoreButton}
-                      onPress={() => fetchNextPage()}
-                      disabled={isFetchingNextPage}
-                    >
-                      {isFetchingNextPage ? (
-                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                          <ActivityIndicator size="small" color="#6B7280" style={{ marginRight: 8 }} />
-                          <Text style={styles.loadMoreText}>Loading...</Text>
-                        </View>
-                      ) : (
-                        <Text style={styles.loadMoreText}>Show More Posts</Text>
-                      )}
-                    </TouchableOpacity>
-                  </View>
-                )}
-              </View>
-            )}
-
-            {/* Explore Cards */}
-            {!hasNextPage && (
-              <ExploreCards />
-            )}
-
-            {/* Footer */}
-
-            <View />
-
+      <ScrollView
+        ref={scrollRef}
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing && !isManualRefresh}
+            onRefresh={onRefresh}
+            colors={["#1600ff"]}
+            tintColor={'#1600ff'}
+          />
+        }
+        onScroll={(e) => {
+          scrollYRef.current = e.nativeEvent.contentOffset.y;
+        }}
+        scrollEventThrottle={16}
+      >
+        {isManualRefresh && refreshing && (
+          <View style={styles.topRefreshLoader}>
+            <ActivityIndicator size="small" color="#1600ff" />
           </View>
-        </ScrollView>
-      )}
+        )}
+        {/* Main Content */}
+        <View style={styles.mainContent}>
+          {/* My Donation Box Card or Prompt */}
+          <LinearGradient
+            colors={['#EFF6FF', '#FAF5FF', '#FDF2F8']}
+            start={{ x: 0, y: 0.5 }}
+            end={{ x: 1, y: 0.5 }}
+            style={styles.gradientContainer}
+          >
+            <View style={styles.gradientContent}>
+              {token?.access_token ? (
+                <>
+                  {donationBoxLoading ? (
+                    <DonationBoxSkeleton />
+                  ) : (
+                    <>
+                      {donationBoxInfo ? (
+                        <>
+                          <HelloGreeting />
+                          <MyDonationBoxCard
+                            monthlyAmount={donationBoxInfo.monthlyAmount || 10}
+                            causeCount={donationBoxInfo.causeCount || 0}
+                          />
+                        </>
+                      ) : donationBoxData &&
+                        !isDonationBoxNotFound &&
+                        !isDonationBoxActive &&
+                        inactiveBoxCauseCount > 0 ? (
+                        <DonationBoxPrompt
+                          causeCount={inactiveBoxCauseCount}
+                          hasJoinedCollectives={(transformedAttributingCollectives?.length || 0) > 0}
+                        />
+                      ) : (
+                        <DonationBoxPrompt
+                          hasJoinedCollectives={(transformedAttributingCollectives?.length || 0) > 0}
+                        />
+                      )}
+                    </>
+                  )}
+
+                  {/* Collective Carousel Card */}
+                  <View style={{ width: '100%' }} collapsable={false}>
+                    {joinedCollectivesLoading ? (
+                      <CollectiveCarouselSkeleton />
+                    ) : (
+                      <>
+                        {transformedAttributingCollectives && transformedAttributingCollectives.length > 0 ? (
+                          <CollectiveCarouselCard collectives={transformedAttributingCollectives} />
+                        ) : (
+                          <CreateCollectiveCard />
+                        )}
+                      </>
+                    )}
+                  </View>
+                </>
+              ) : null}
+            </View>
+          </LinearGradient>
+
+          {/* Community Updates Feed Section */}
+          {communityUpdatesLoading && transformedFeedItems.length === 0 ? (
+            <View style={styles.feedSection}>
+              <CommunityPostsSkeleton />
+              <CommunityPostsSkeleton showTitle={false} />
+            </View>
+          ) : (
+            <>
+              {/* Feed Part 1 */}
+              {feedPart1.length > 0 && (
+                <View style={styles.feedSection}>
+                  <View style={styles.feedHeading}>
+                    <Text style={styles.feedTitle}>Community Updates</Text>
+                    <Text style={styles.feedSubtitle}>
+                      Updates and discoveries from your community
+                    </Text>
+                  </View>
+                  <View style={styles.feedList}>
+                    {feedPart1.map(renderFeedItem)}
+                  </View>
+                </View>
+              )}
+
+              {/* Featured Nonprofits Section */}
+              {nonprofitsLoading ? (
+                <FeaturedNonprofitsSkeleton />
+              ) : (
+                <NewFeaturedNonprofits
+                  nonprofits={filteredFeaturedNonprofits}
+                  seeAllLink="/search"
+                />
+              )}
+
+              {/* Feed Part 2 */}
+              {feedPart2.length > 0 && (
+                <View style={styles.feedSection}>
+                  <View style={styles.feedList}>
+                    {feedPart2.map(renderFeedItem)}
+                  </View>
+                </View>
+              )}
+
+              {/* Suggested Collectives Section */}
+              {collectivesLoading ? (
+                <SuggestedCollectivesSkeleton />
+              ) : (
+                <NewSuggestedCollectives
+                  collectives={filteredSuggestedCollectives}
+                  seeAllLink="/search"
+                />
+              )}
+
+              {/* Feed Part 3 */}
+              {token?.access_token && (hasNextPage || feedPart3.length > 0) && (
+                <View style={styles.feedSection}>
+                  {feedPart3.length > 0 && (
+                    <View style={styles.feedList}>
+                      {feedPart3.map(renderFeedItem)}
+                    </View>
+                  )}
+                  {hasNextPage && (
+                    <View style={styles.loadMoreContainer}>
+                      <TouchableOpacity
+                        style={styles.loadMoreButton}
+                        onPress={() => fetchNextPage()}
+                        disabled={isFetchingNextPage}
+                      >
+                        {isFetchingNextPage ? (
+                          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <ActivityIndicator size="small" color="#6B7280" style={{ marginRight: 8 }} />
+                            <Text style={styles.loadMoreText}>Loading...</Text>
+                          </View>
+                        ) : (
+                          <Text style={styles.loadMoreText}>Show More Posts</Text>
+                        )}
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </View>
+              )}
+              {!hasNextPage && <ExploreCards />}
+            </>
+          )}
+        </View>
+      </ScrollView>
+
+      {/* Footer */}
+
+      <View />
 
       {/* Comments Bottom Sheet */}
       {selectedPost && (

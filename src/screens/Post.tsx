@@ -266,6 +266,7 @@ export default function Post() {
         fontFamily: 'Outfit-Regular'
       }}>
         {parts.map((part, i) => {
+          if (!part) return null;
           if (part.startsWith('@')) {
             return <Text key={i} style={{ color: PrimaryBlue, fontWeight: '500', fontFamily: 'Outfit-SemiBold' }}>{part}</Text>;
           }
@@ -502,8 +503,10 @@ export default function Post() {
               placeholderTextColor={PrimaryGrey}
               value={form.content}
               onChangeText={(value) => handleInputChange('content', value)}
+              selection={selection}
               onSelectionChange={(e) => setSelection(e.nativeEvent.selection)}
               maxLength={maxCharacters}
+              autoCapitalize="none"
               autoCorrect={false}
               spellCheck={false}
               selectionColor={PrimaryBlue}
@@ -786,7 +789,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: 'transparent',
     padding: 0,
+    paddingTop: 0,
+    paddingBottom: 0,
+    paddingLeft: 0,
+    paddingRight: 0,
     lineHeight: 22,
+    fontFamily: 'Outfit-Regular',
+    textAlignVertical: 'top',
   },
   highlightOverlay: {
     position: 'absolute',

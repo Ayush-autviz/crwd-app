@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { Plus } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
@@ -21,6 +21,9 @@ interface PreviouslySupportedItem {
 interface PreviouslySupportedCausesProps {
   causes: PreviouslySupportedItem[];
   onAdd: (causeId: number) => void;
+  hasNextPage: boolean;
+  fetchNextPage: () => void;
+  isFetchingNextPage: boolean;
 }
 
 const avatarColors = [
@@ -42,10 +45,16 @@ const getInitials = (name: string) => {
   return name.charAt(0).toUpperCase();
 };
 
-export const PreviouslySupportedCauses = ({ causes, onAdd }: PreviouslySupportedCausesProps) => {
+export const PreviouslySupportedCauses = ({ 
+  causes, 
+  onAdd,
+  hasNextPage,
+  fetchNextPage,
+  isFetchingNextPage
+}: PreviouslySupportedCausesProps) => {
   const navigation = useNavigation();
 
-  if (!causes || causes.length === 0) return null;
+  if (!causes || !Array.isArray(causes) || causes.length === 0) return null;
 
   return (
     <View style={styles.container}>
@@ -56,7 +65,9 @@ export const PreviouslySupportedCauses = ({ causes, onAdd }: PreviouslySupported
 
       <View style={styles.list}>
         {causes.map((item) => {
-          const { cause } = item;
+          const cause = (item as any).cause || item;
+          if (!cause || !cause.id) return null;
+
           const avatarBgColor = getConsistentColor(cause.id, avatarColors);
           const initials = getInitials(cause.name || 'N');
 
@@ -96,13 +107,28 @@ export const PreviouslySupportedCauses = ({ causes, onAdd }: PreviouslySupported
                     style={styles.addButton}
                     activeOpacity={0.7}
                   >
-                    <Plus size={20} color="#DB2777" strokeWidth={3} />
+                    <Plus size={20} color="#DB2777" />
                   </TouchableOpacity>
                 </View>
               </View>
             </TouchableOpacity>
           );
         })}
+
+        {hasNextPage && (
+          <TouchableOpacity 
+            style={styles.loadMoreButton} 
+            onPress={fetchNextPage} 
+            disabled={isFetchingNextPage}
+            activeOpacity={0.7}
+          >
+            {isFetchingNextPage ? (
+              <ActivityIndicator size="small" color="#6B7280" />
+            ) : (
+              <Text style={styles.loadMoreText}>Load More</Text>
+            )}
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
@@ -167,5 +193,15 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  loadMoreButton: {
+    paddingVertical: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadMoreText: {
+    fontSize: 14,
+    color: '#6B7280',
+    fontWeight: '600',
   },
 });

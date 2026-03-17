@@ -107,4 +107,8 @@ export const getTransactionReceipt = async (donationId: string) => {
     const response = await axiosClient.get(`/donations/receipt/${donationId}/`);
     return response.data;
 };
-
+export const getPreviouslySupportedCauses = async (page: number = 1) => {
+    const pageParam = page ? `?page=${page}` : '';
+    const response = await axiosClient.get(`/donations/previously-supported-causes/${pageParam}`);
+    return response.data;
+};

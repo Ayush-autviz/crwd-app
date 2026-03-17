@@ -711,6 +711,23 @@ export default function NewHome() {
     return <GuestHome />;
   }
 
+  if (isLoading) {
+    return (
+      <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+        <HomeHeader
+          onLogoPress={() => {
+            animateScrollToTop(800);
+            setTimeout(() => {
+              setIsManualRefresh(true);
+              onRefresh();
+            }, 100);
+          }}
+        />
+        <NewHomeSkeleton />
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <HomeHeader

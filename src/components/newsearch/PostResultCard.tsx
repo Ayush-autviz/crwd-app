@@ -392,6 +392,9 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
     });
   };
 
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [canExpand, setCanExpand] = useState(false);
+
   return (
     <>
       <TouchableOpacity
@@ -573,9 +576,38 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
 
         {/* Post Content - Only show if not fundraiser */}
         {post.content && !post.fundraiser ? (
-          <Text style={styles.postContent} numberOfLines={3}>
-            {renderContentWithMentions(post.content, post.mentions)}
-          </Text>
+          <View>
+            {/* Hidden text for measurement - only on home feed */}
+            {isHomeFeed && !canExpand && (
+              <Text
+                style={[styles.postContent, { position: 'absolute', opacity: 0 }]}
+                onTextLayout={(e) => {
+                  if (e.nativeEvent.lines.length > 3) {
+                    setCanExpand(true);
+                  }
+                }}
+              >
+                {renderContentWithMentions(post.content, post.mentions)}
+              </Text>
+            )}
+            <Text
+              style={styles.postContent}
+              numberOfLines={isHomeFeed ? (isExpanded ? undefined : 3) : undefined}
+            >
+              {renderContentWithMentions(post.content, post.mentions)}
+            </Text>
+            {isHomeFeed && canExpand && (
+              <TouchableOpacity
+                onPress={() => setIsExpanded(!isExpanded)}
+                activeOpacity={0.7}
+                style={{ alignSelf: 'flex-start', marginBottom: 8 }}
+              >
+                <Text style={{ color: '#1600ff', fontFamily: 'Outfit-Medium', fontSize: 15 }}>
+                  {isExpanded ? 'Less' : 'Read More'}
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
         ) : null}
 
         {/* Media Section - Only show if no fundraiser */}
@@ -1054,7 +1086,7 @@ const styles = StyleSheet.create({
   postContent: {
     fontSize: 15,
     color: '#111827',
-    marginBottom: 10,
+    marginBottom: 5,
     marginTop: 5,
     lineHeight: 20,
     fontFamily: 'Outfit-Regular',

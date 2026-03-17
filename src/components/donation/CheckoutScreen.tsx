@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   View,
   Text,
@@ -17,13 +17,14 @@ import { useNavigation } from '@react-navigation/native';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import { getCollectiveById } from '../../services/api/crwd';
 import { PrimaryBlue, SecondaryGrey } from '../../Constants/Colors';
-import { useQueryClient, useQuery, useMutation } from '@tanstack/react-query';
+import { useQueryClient, useQuery, useMutation, useInfiniteQuery } from '@tanstack/react-query';
 import DonationBoxSummaryCard from './DonationBoxSummaryCard';
 import {
   getDonationHistory,
   removeCauseFromBox,
   cancelDonationBox,
   addCausesToBox,
+  getPreviouslySupportedCauses,
 } from '../../services/api/donation';
 import { PreviouslySupportedCauses } from './PreviouslySupportedCauses';
 import { getNonprofitColor } from '../../lib/getNonprofitColor';
@@ -131,12 +132,37 @@ export default function CheckoutScreen({
     return sum + parseFloat(transaction.gross_amount || '0');
   }, 0) || 0;
 
+  // Fetch previously supported causes
+  const {
+      data: previouslySupportedInfiniteData,
+      fetchNextPage: fetchNextPreviouslySupported,
+      hasNextPage: hasMorePreviouslySupported,
+      isFetchingNextPage: isFetchingMorePreviouslySupported,
+  } = useInfiniteQuery({
+      queryKey: ['previouslySupportedCauses'],
+      queryFn: ({ pageParam = 1 }) => getPreviouslySupportedCauses(pageParam as number),
+      getNextPageParam: (lastPage: any) => {
+          if (lastPage.next) {
+              const url = new URL(lastPage.next);
+              const page = url.searchParams.get('page');
+              return page ? parseInt(page) : undefined;
+          }
+          return undefined;
+      },
+      initialPageParam: 1,
+  });
+
+  const displayPreviouslySupported = useMemo(() => {
+      return previouslySupportedInfiniteData?.pages.flatMap((page: any) => page.results) || [];
+  }, [previouslySupportedInfiniteData]);
+
   // Mutation to remove cause from box
   const removeCauseMutation = useMutation({
     mutationFn: (causeId: string) => removeCauseFromBox(causeId),
     onSuccess: () => {
       console.log('Cause removed successfully');
       queryClient.invalidateQueries({ queryKey: ['donationBox'] });
+      queryClient.invalidateQueries({ queryKey: ['previouslySupportedCauses'] });
       setShowRemoveModal(false);
       setCauseToRemove(null);
     },
@@ -151,6 +177,7 @@ export default function CheckoutScreen({
     mutationFn: (causeId: number) => addCausesToBox({ causes: [{ cause_id: causeId }] }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['donationBox'] });
+      queryClient.invalidateQueries({ queryKey: ['previouslySupportedCauses'] });
     },
     onError: (error: any) => {
       console.error('Error adding cause:', error);
@@ -452,8 +479,11 @@ export default function CheckoutScreen({
 
           {/* Previously Supported Section */}
           <PreviouslySupportedCauses
-            causes={previouslySupportedCauses}
+            causes={displayPreviouslySupported}
             onAdd={(causeId) => addCauseMutation.mutate(causeId)}
+            hasNextPage={hasMorePreviouslySupported}
+            fetchNextPage={fetchNextPreviouslySupported}
+            isFetchingNextPage={isFetchingMorePreviouslySupported}
           />
 
           {/* Request Nonprofit Section */}

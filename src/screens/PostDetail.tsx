@@ -65,6 +65,7 @@ interface Post {
     id: string;
     name: string;
   };
+  mentions?: any[];
 }
 
 interface RouteParams {
@@ -146,6 +147,7 @@ export default function PostDetail() {
       id: postData.collective?.id?.toString() || '',
       name: postData.collective?.name || 'Unknown Collective',
     },
+    mentions: postData.mentions || [],
   } : (route.params as RouteParams)?.post;
 
   // Fetch comments for the post
@@ -366,6 +368,104 @@ export default function PostDetail() {
     }
   };
 
+  const renderCommentContent = (content: string, mentions: any[] = []) => {
+    if (!content) return null;
+    const mentionMap = new Map();
+    const triggers: string[] = [];
+
+    (mentions || []).forEach((m: any) => {
+      if (!m) return;
+      const details = m.mention_details || m;
+
+      if (details?.name) {
+        const nameKey = `@${details.name}`.toLowerCase();
+        mentionMap.set(nameKey, m);
+        if (!triggers.includes(`@${details.name}`)) triggers.push(`@${details.name}`);
+      }
+
+      if (details?.username) {
+        const userKey = `@${details.username}`.toLowerCase();
+        mentionMap.set(userKey, m);
+        if (!triggers.includes(`@${details.username}`)) triggers.push(`@${details.username}`);
+      }
+
+      if (m.trigger_name) {
+        const triggerStr = m.trigger_name.startsWith('@') ? m.trigger_name : `@${m.trigger_name}`;
+        const triggerKey = triggerStr.toLowerCase();
+        mentionMap.set(triggerKey, m);
+        if (!triggers.includes(triggerStr)) triggers.push(triggerStr);
+      }
+    });
+
+    triggers.sort((a, b) => b.length - a.length);
+
+    const pattern = triggers.length > 0
+      ? `(${triggers.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')}|@\\w+)`
+      : '(@\\w+)';
+    const regex = new RegExp(pattern, 'gi');
+
+    return content.split(regex).map((part, index) => {
+      if (part.startsWith('@')) {
+        const mention = mentionMap.get(part.toLowerCase());
+        const handlePress = () => {
+          if (mention) {
+            const mDetails = mention.mention_details || mention;
+            const type = (mention.mention_type || mDetails?.mention_type || mDetails?.type || '').toLowerCase();
+            const targetId = mDetails?.id || mDetails?.target_id || mention.id || mention.target_id || mDetails?.sort_name || mDetails?.username || part.substring(1);
+
+            if (type === 'collective' || type === 'group') {
+              (navigation as any).navigate('GroupCRWD', { id: targetId.toString() });
+            } else if (type === 'cause' || type === 'nonprofit' || type === 'organization') {
+              (navigation as any).navigate('CauseScreen', { id: targetId.toString() });
+            } else {
+              // User
+              if (currentUser?.id && targetId && currentUser.id.toString() === targetId.toString()) {
+                navigation.dispatch(
+                  CommonActions.reset({
+                    index: 0,
+                    routes: [
+                      {
+                        name: 'DrawerNav' as never,
+                        state: {
+                          routes: [
+                            {
+                              name: 'MainTabs' as never,
+                              state: {
+                                routes: [{ name: 'Profile' as never }],
+                                index: 0,
+                              },
+                            },
+                          ],
+                          index: 0,
+                        },
+                      },
+                    ],
+                  })
+                );
+              } else {
+                (navigation as any).navigate('UserProfile', { userId: targetId.toString() });
+              }
+            }
+          } else {
+            // Fallback
+            (navigation as any).navigate('UserProfile', { userId: part.substring(1) });
+          }
+        };
+
+        return (
+          <Text
+            key={index}
+            style={{ color: PrimaryBlue, fontFamily: 'Outfit-Medium' }}
+            onPress={handlePress}
+          >
+            {part}
+          </Text>
+        );
+      }
+      return part;
+    });
+  };
+
   // Comment component definition
   const Comment = ({
     comment,
@@ -405,104 +505,6 @@ export default function PostDetail() {
       if (onToggleReplies) {
         onToggleReplies(comment.id);
       }
-    };
-
-    const renderCommentContent = (content: string, mentions: any[] = []) => {
-      if (!content) return null;
-      const mentionMap = new Map();
-      const triggers: string[] = [];
-
-      (mentions || []).forEach((m: any) => {
-        if (!m) return;
-        const details = m.mention_details || m;
-
-        if (details?.name) {
-          const nameKey = `@${details.name}`.toLowerCase();
-          mentionMap.set(nameKey, m);
-          if (!triggers.includes(`@${details.name}`)) triggers.push(`@${details.name}`);
-        }
-
-        if (details?.username) {
-          const userKey = `@${details.username}`.toLowerCase();
-          mentionMap.set(userKey, m);
-          if (!triggers.includes(`@${details.username}`)) triggers.push(`@${details.username}`);
-        }
-
-        if (m.trigger_name) {
-          const triggerStr = m.trigger_name.startsWith('@') ? m.trigger_name : `@${m.trigger_name}`;
-          const triggerKey = triggerStr.toLowerCase();
-          mentionMap.set(triggerKey, m);
-          if (!triggers.includes(triggerStr)) triggers.push(triggerStr);
-        }
-      });
-
-      triggers.sort((a, b) => b.length - a.length);
-
-      const pattern = triggers.length > 0
-        ? `(${triggers.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')}|@\\w+)`
-        : '(@\\w+)';
-      const regex = new RegExp(pattern, 'gi');
-
-      return content.split(regex).map((part, index) => {
-        if (part.startsWith('@')) {
-          const mention = mentionMap.get(part.toLowerCase());
-          const handlePress = () => {
-            if (mention) {
-              const mDetails = mention.mention_details || mention;
-              const type = (mention.mention_type || mDetails?.mention_type || mDetails?.type || '').toLowerCase();
-              const targetId = mDetails?.target_id || mDetails?.id || mention.target_id || mention.id || part.substring(1);
-
-              if (type === 'collective' || type === 'group') {
-                navigation.navigate('GroupCRWD', { id: targetId.toString() });
-              } else if (type === 'cause' || type === 'nonprofit' || type === 'organization') {
-                navigation.navigate('CauseScreen', { id: targetId.toString() });
-              } else {
-                // User
-                if (currentUser?.id && targetId && currentUser.id.toString() === targetId.toString()) {
-                  navigation.dispatch(
-                    CommonActions.reset({
-                      index: 0,
-                      routes: [
-                        {
-                          name: 'DrawerNav' as never,
-                          state: {
-                            routes: [
-                              {
-                                name: 'MainTabs' as never,
-                                state: {
-                                  routes: [{ name: 'Profile' as never }],
-                                  index: 0,
-                                },
-                              },
-                            ],
-                            index: 0,
-                          },
-                        },
-                      ],
-                    })
-                  );
-                } else {
-                  (navigation as any).navigate('UserProfile', { userId: targetId.toString() });
-                }
-              }
-            } else {
-              // Fallback
-              (navigation as any).navigate('UserProfile', { userId: part.substring(1) });
-            }
-          };
-
-          return (
-            <Text
-              key={index}
-              style={{ color: PrimaryBlue, fontFamily: 'Outfit-Medium' }}
-              onPress={handlePress}
-            >
-              {part}
-            </Text>
-          );
-        }
-        return part;
-      });
     };
 
     return (
@@ -1090,7 +1092,9 @@ export default function PostDetail() {
               </View>
             </View>
 
-            <Text style={{ fontSize: 15, marginTop: 12, lineHeight: 22, color: '#111827', fontFamily: 'Outfit-Regular' }}>{post.text}</Text>
+            <Text style={{ fontSize: 15, marginTop: 12, lineHeight: 22, color: '#111827', fontFamily: 'Outfit-Regular' }}>
+              {renderCommentContent(post.text, post.mentions)}
+            </Text>
 
             {/* Show preview card if previewDetails exists, otherwise show image */}
             {post.previewDetails ? (

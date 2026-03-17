@@ -117,6 +117,7 @@ export default function CommunityPosts({
               total_donors: post.fundraiser.total_donors,
               end_date: post.fundraiser.end_date,
             } : undefined,
+            mentions: post.mentions || [],
           };
 
           return (

@@ -44,6 +44,7 @@ export default function Post() {
   const [mentionResults, setMentionResults] = useState<any[]>([]);
   const [selectedMentions, setSelectedMentions] = useState<{ type: string; id: number | string; name: string }[]>([]);
   const [selection, setSelection] = useState({ start: 0, end: 0 });
+  const selectionLockRef = useRef(false);
   const textareaRef = useRef<TextInput>(null);
 
   // Track link preview
@@ -187,6 +188,7 @@ export default function Post() {
   }
 
   useEffect(() => {
+    if (selectionLockRef.current) return;
     const cursorPosition = selection.start;
     const textBeforeCursor = form.content.substring(0, cursorPosition);
     const lastAtSymbolIndex = textBeforeCursor.lastIndexOf('@');
@@ -197,7 +199,7 @@ export default function Post() {
 
       if (isStartOfWord) {
         const query = textBeforeCursor.substring(lastAtSymbolIndex + 1);
-        if (query.split(' ').length <= 3 && !query.includes('\n')) {
+        if (query.split(' ').length <= 3 && !query.includes('\n') && !query.endsWith(' ')) {
           setMentionSearchQuery(query);
           return;
         }
@@ -233,6 +235,9 @@ export default function Post() {
     const lastAtSymbolIndex = textBeforeCursor.lastIndexOf('@');
     const newTextBeforeCursor = textBeforeCursor.substring(0, lastAtSymbolIndex) + `@${user.name} `;
     
+    selectionLockRef.current = true;
+    const newPos = newTextBeforeCursor.length;
+    setSelection({ start: newPos, end: newPos });
     setForm(prev => ({ ...prev, content: newTextBeforeCursor + textAfterCursor }));
     setSelectedMentions(prev => [
       ...prev.filter(m => m.name !== user.name),
@@ -244,7 +249,30 @@ export default function Post() {
 
     setTimeout(() => {
       textareaRef.current?.focus();
+      setTimeout(() => {
+        selectionLockRef.current = false;
+      }, 100);
     }, 100);
+  };
+
+  const renderHighlightedText = (text: string) => {
+    if (!text) return null;
+    const parts = text.split(/(@\w*(?:\s\w+)?)/g);
+    return (
+      <Text style={{
+        fontSize: 16,
+        color: '#111827',
+        lineHeight: 22,
+        fontFamily: 'Outfit-Regular'
+      }}>
+        {parts.map((part, i) => {
+          if (part.startsWith('@')) {
+            return <Text key={i} style={{ color: PrimaryBlue, fontWeight: '500', fontFamily: 'Outfit-SemiBold' }}>{part}</Text>;
+          }
+          return <Text key={i}>{part}</Text>;
+        })}
+      </Text>
+    );
   };
 
   // Handle URL validation
@@ -460,14 +488,15 @@ export default function Post() {
         {/* Main Content Input */}
         <View style={styles.contentSection}>
           <View style={styles.textInputContainer}>
-            <MentionSearchResults 
-              results={mentionResults} 
-              onSelect={handleMentionSelect}
-              position="below"
-            />
+            <View 
+              pointerEvents="none" 
+              style={styles.highlightOverlay}
+            >
+              {renderHighlightedText(form.content)}
+            </View>
             <TextInput
               ref={textareaRef}
-              style={styles.textInput}
+              style={[styles.textInput, { zIndex: 2 }]}
               multiline
               placeholder="What's on your mind?"
               placeholderTextColor={PrimaryGrey}
@@ -475,6 +504,14 @@ export default function Post() {
               onChangeText={(value) => handleInputChange('content', value)}
               onSelectionChange={(e) => setSelection(e.nativeEvent.selection)}
               maxLength={maxCharacters}
+              autoCorrect={false}
+              spellCheck={false}
+              selectionColor={PrimaryBlue}
+            />
+            <MentionSearchResults 
+              results={mentionResults} 
+              onSelect={handleMentionSelect}
+              position="below"
             />
           </View>
           {/* Character Count */}
@@ -741,12 +778,22 @@ const styles = StyleSheet.create({
     backgroundColor: '#F9FAFB',
     borderColor: '#D1D5DB',
     position: 'relative',
+    zIndex: 1000,
+    elevation: 5,
   },
   textInput: {
     minHeight: 200,
     fontSize: 16,
-    color: '#111827',
+    color: 'transparent',
     padding: 0,
+    lineHeight: 22,
+  },
+  highlightOverlay: {
+    position: 'absolute',
+    top: 16,
+    left: 16,
+    right: 16,
+    zIndex: 1,
   },
   characterCountContainer: {
     flexDirection: 'row',

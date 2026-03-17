@@ -127,6 +127,7 @@ interface PopularPostsProps {
     subheading?: boolean;
     collectiveId?: string | number;
     isLoading?: boolean;
+    isLoadingMore?: boolean;
     error?: any;
     onCommentPress?: (post: Post) => void;
     showSimplifiedHeader?: boolean; // When true, hide collective name (for collective view)
@@ -425,7 +426,7 @@ export default function PopularPosts({
                     if (mention) {
                         const mDetails = mention.mention_details || mention;
                         const type = (mention.mention_type || mDetails?.mention_type || mDetails?.type || '').toLowerCase();
-                        const targetId = mDetails?.target_id || mDetails?.id || mention.target_id || mention.id || part.substring(1);
+                        const targetId = mDetails?.id || mDetails?.target_id || mention.id || mention.target_id || mDetails?.sort_name || mDetails?.username || part.substring(1);
 
                         if (type === 'collective' || type === 'group') {
                             (navigation as any).navigate('GroupCRWD', { id: targetId.toString() });

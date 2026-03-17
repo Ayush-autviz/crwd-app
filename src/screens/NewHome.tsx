@@ -505,6 +505,7 @@ export default function NewHome() {
                   total_donors: item.fundraiser.total_donors,
                   end_date: item.fundraiser.end_date,
                 } : undefined,
+                mentions: item.mentions || [],
               }
             };
           } else if (item.item_type === 'notification') {
@@ -691,6 +692,7 @@ export default function NewHome() {
               firstName: post.user?.first_name,
               lastName: post.user?.last_name,
               color: post.user?.color || '',
+              mentions: post.mentions || [],
             });
             setShowCommentsSheet(true);
           }}

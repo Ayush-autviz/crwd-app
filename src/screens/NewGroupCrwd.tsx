@@ -1064,6 +1064,7 @@ export default function NewGroupCrwdPage() {
               comments: post.comments_count || 0,
               shares: 0,
               isLiked: post.is_liked || false,
+              mentions: post.mentions || [],
               fundraiser: post.fundraiser ? {
                 id: post.fundraiser.id,
                 name: post.fundraiser.name,
@@ -1095,6 +1096,7 @@ export default function NewGroupCrwdPage() {
                 avatarUrl: post.avatarUrl,
                 firstName: originalPost?.user?.first_name || post.username?.split(' ')[0],
                 lastName: originalPost?.user?.last_name || post.username?.split(' ').slice(1).join(' ') || '',
+                mentions: post.mentions || [],
               };
               console.log('Setting selectedPost:', postData);
               setSelectedPost(postData);

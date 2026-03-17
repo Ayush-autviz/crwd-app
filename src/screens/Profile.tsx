@@ -304,6 +304,7 @@ export default function Profile() {
         shares: 0, // API doesn't provide shares count
         isLiked: post.is_liked || false,
         color: post.user?.color,
+        mentions: post.mentions || [],
     })) || [];
 
     const handleShare = () => {

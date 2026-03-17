@@ -1,20 +1,20 @@
 import React, { useState } from 'react'
-import { 
-  View, 
-  Text, 
-  TouchableOpacity, 
-  ScrollView, 
-  StyleSheet, 
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  StyleSheet,
   Linking,
   Alert
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { 
-  ChevronLeft, 
-  ChevronDown, 
-  ChevronRight, 
-  Mail, 
-  Phone, 
+import {
+  ChevronLeft,
+  ChevronDown,
+  ChevronRight,
+  Mail,
+  Phone,
   MessageCircle,
   Users,
   Heart,
@@ -202,7 +202,7 @@ export default function HelpCenter() {
           <Text style={styles.contactSubtitle}>
             Can't find what you're looking for? Our support team is here to help.
           </Text>
-          
+
           <View style={styles.contactGrid}>
             <TouchableOpacity style={styles.contactCard} onPress={handleEmailPress}>
               <View style={styles.contactIcon}>
@@ -210,11 +210,11 @@ export default function HelpCenter() {
               </View>
               <View style={styles.contactContent}>
                 <Text style={styles.contactTitle}>Email Support</Text>
-                <Text style={styles.contactDescription}>support@crwd.app</Text>
+                <Text style={styles.contactDescription}>info@crwdfund.org</Text>
               </View>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.contactCard} onPress={handlePhonePress}>
+            {/* <TouchableOpacity style={styles.contactCard} onPress={handlePhonePress}>
               <View style={styles.contactIcon}>
                 <Phone size={20} color={PrimaryBlue} />
               </View>
@@ -222,7 +222,7 @@ export default function HelpCenter() {
                 <Text style={styles.contactTitle}>Phone Support</Text>
                 <Text style={styles.contactDescription}>Mon-Fri, 9am-6pm EST</Text>
               </View>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
 
           {/* Quick Tip */}

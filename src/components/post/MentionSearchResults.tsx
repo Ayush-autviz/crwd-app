@@ -1,21 +1,22 @@
 import React, { memo } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Platform, ActivityIndicator } from 'react-native';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
 
 interface MentionSearchResultsProps {
     results: any[];
     onSelect: (user: any) => void;
     position?: 'above' | 'below';
+    isLoading?: boolean;
 }
 
-function MentionSearchResultsComponent({ results, onSelect, position = 'above' }: MentionSearchResultsProps) {
-    if (!results || results.length === 0) return null;
+function MentionSearchResultsComponent({ results, onSelect, position = 'above', isLoading }: MentionSearchResultsProps) {
+    if (!isLoading && (!results || results.length === 0)) return null;
 
     const containerStyle = [
         styles.container,
         position === 'above'
-            ? { bottom: '100%' as any, marginBottom: 8 }
-            : { top: '100%' as any, marginTop: 8 }
+            ? { bottom: '100%' as any, top: undefined as any, marginBottom: 8 }
+            : { top: '100%' as any, bottom: undefined as any, marginTop: 8 }
     ];
 
     return (
@@ -26,7 +27,13 @@ function MentionSearchResultsComponent({ results, onSelect, position = 'above' }
                 keyboardShouldPersistTaps="handled"
                 style={styles.scrollView}
             >
-                {results.map((user: any) => (
+                {isLoading ? (
+                    <View style={styles.loaderContainer}>
+                        <ActivityIndicator size="small" color="#1600ff" />
+                        <Text style={styles.loaderText}>Searching...</Text>
+                    </View>
+                ) : (
+                    results.map((user: any) => (
                     <TouchableOpacity
                         key={`${user.type}-${user.id}`}
                         style={styles.item}
@@ -48,9 +55,10 @@ function MentionSearchResultsComponent({ results, onSelect, position = 'above' }
                             )}
                         </View>
                     </TouchableOpacity>
-                ))}
-            </ScrollView>
-        </View>
+                ))
+            )}
+        </ScrollView>
+    </View>
     );
 }
 
@@ -59,7 +67,6 @@ export const MentionSearchResults = memo(MentionSearchResultsComponent);
 const styles = StyleSheet.create({
     container: {
         position: 'absolute',
-        bottom: '100%',
         left: 0,
         right: 0,
         backgroundColor: 'white',
@@ -67,7 +74,8 @@ const styles = StyleSheet.create({
         borderColor: '#E5E7EB',
         borderRadius: 8,
         maxHeight: 200,
-        zIndex: 1000,
+        zIndex: 9999,
+        elevation: 10,
         ...Platform.select({
             ios: {
                 shadowColor: '#000',
@@ -110,6 +118,18 @@ const styles = StyleSheet.create({
     },
     username: {
         fontSize: 12,
+        color: '#6B7280',
+        fontFamily: 'Outfit-Regular',
+    },
+    loaderContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 16,
+        gap: 8,
+    },
+    loaderText: {
+        fontSize: 14,
         color: '#6B7280',
         fontFamily: 'Outfit-Regular',
     },

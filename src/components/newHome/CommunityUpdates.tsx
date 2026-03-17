@@ -104,6 +104,7 @@ function PostWithData({ update }: { update: CommunityUpdate }) {
       name: update.collective.name,
       description: undefined,
     } : undefined,
+    mentions: postData.mentions || [],
   };
 
   return <PostResultCard post={post} />;

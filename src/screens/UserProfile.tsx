@@ -87,7 +87,7 @@ export default function UserProfile() {
     } = useInfiniteQuery({
         queryKey: ['posts', targetUserId],
         queryFn: ({ pageParam = 1 }) => getPosts(targetUserId, '', pageParam),
-        getNextPageParam: (lastPage) => {
+        getNextPageParam: (lastPage: any) => {
             // Extract page number from next URL if available
             if (lastPage.next) {
                 try {
@@ -106,7 +106,7 @@ export default function UserProfile() {
 
     // Flatten pages into a single array
     const posts = postsData ? {
-        results: postsData.pages.flatMap(page => page.results || []),
+        results: postsData.pages.flatMap((page: any) => page.results || []),
         next: postsData.pages[postsData.pages.length - 1]?.next || null,
         count: postsData.pages[0]?.count || 0,
     } : undefined;
@@ -325,7 +325,8 @@ export default function UserProfile() {
         comments: post.comments_count || 0,
         shares: 0, // API doesn't provide shares count
         isLiked: post.is_liked || false,
-        color: post.user?.color
+        color: post.user?.color,
+        mentions: post.mentions || [],
     })) || [];
 
     // Redirect to own profile if viewing own profile
@@ -338,7 +339,7 @@ export default function UserProfile() {
     // Handle click outside menu
     useEffect(() => {
         const handleClickOutside = (event: any) => {
-            if (menuRef.current && !menuRef.current.contains(event.target)) {
+            if (menuRef.current && (menuRef.current as any).contains && (menuRef.current as any).contains(event.target)) {
                 setShowMenu(false);
             }
         };
@@ -658,7 +659,7 @@ export default function UserProfile() {
                         style={styles.menuButton}
                         activeOpacity={0.7}
                     >
-                        <Ellipsis size={24} color="#374151" strokeWidth={3} />
+                        <Ellipsis size={24} color="#374151" />
                     </TouchableOpacity>
 
                     {showMenu && (

@@ -61,6 +61,7 @@ interface PostResultCardProps {
       total_donors?: number;
       end_date?: string;
     };
+    mentions?: any[];
   };
   onCommentPress?: (post: PostResultCardProps['post']) => void;
   showSimplifiedHeader?: boolean; // When true, only show name and timestamp (for collective view)
@@ -292,6 +293,105 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
     setTooltipVisible(true);
   };
 
+  const renderContentWithMentions = (content: string, mentions: any[] = []) => {
+    if (!content) return null;
+    const mentionMap = new Map();
+    const triggers: string[] = [];
+
+    (mentions || []).forEach((m: any) => {
+      if (!m) return;
+      const details = m.mention_details || m;
+
+      if (details?.name) {
+        const nameKey = `@${details.name}`.toLowerCase();
+        mentionMap.set(nameKey, m);
+        if (!triggers.includes(`@${details.name}`)) triggers.push(`@${details.name}`);
+      }
+
+      if (details?.username) {
+        const userKey = `@${details.username}`.toLowerCase();
+        mentionMap.set(userKey, m);
+        if (!triggers.includes(`@${details.username}`)) triggers.push(`@${details.username}`);
+      }
+
+      if (m.trigger_name) {
+        const triggerStr = m.trigger_name.startsWith('@') ? m.trigger_name : `@${m.trigger_name}`;
+        const triggerKey = triggerStr.toLowerCase();
+        mentionMap.set(triggerKey, m);
+        if (!triggers.includes(triggerStr)) triggers.push(triggerStr);
+      }
+    });
+
+    triggers.sort((a, b) => b.length - a.length);
+
+    const pattern = triggers.length > 0
+      ? `(${triggers.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')}|@\\w+)`
+      : '(@\\w+)';
+    const regex = new RegExp(pattern, 'gi');
+
+    return content.split(regex).map((part, index) => {
+      if (part.startsWith('@')) {
+        const mention = mentionMap.get(part.toLowerCase());
+
+        const handlePress = () => {
+          if (mention) {
+            const mDetails = mention.mention_details || mention;
+            const type = (mention.mention_type || mDetails?.mention_type || mDetails?.type || '').toLowerCase();
+            const targetId = mDetails?.id || mDetails?.target_id || mention.id || mention.target_id || mDetails?.sort_name || mDetails?.username || part.substring(1);
+
+            if (type === 'collective' || type === 'group') {
+              (navigation as any).navigate('GroupCRWD', { id: targetId.toString() });
+            } else if (type === 'cause' || type === 'nonprofit' || type === 'organization') {
+              (navigation as any).navigate('CauseScreen', { id: targetId.toString() });
+            } else {
+              // User
+              if (currentUser?.id && targetId && currentUser.id.toString() === targetId.toString()) {
+                navigation.dispatch(
+                  CommonActions.reset({
+                    index: 0,
+                    routes: [
+                      {
+                        name: 'DrawerNav' as never,
+                        state: {
+                          routes: [
+                            {
+                              name: 'MainTabs' as never,
+                              state: {
+                                routes: [{ name: 'Profile' }],
+                                index: 0,
+                              },
+                            },
+                          ],
+                          index: 0,
+                        },
+                      },
+                    ],
+                  })
+                );
+              } else {
+                (navigation as any).navigate('UserProfile', { userId: targetId.toString() });
+              }
+            }
+          } else {
+            // Fallback
+            (navigation as any).navigate('UserProfile', { userId: part.substring(1) });
+          }
+        };
+
+        return (
+          <Text
+            key={index}
+            style={{ color: '#1600ff', fontFamily: 'Outfit-Medium' }}
+            onPress={handlePress}
+          >
+            {part}
+          </Text>
+        );
+      }
+      return part;
+    });
+  };
+
   return (
     <>
       <TouchableOpacity
@@ -474,7 +574,7 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
         {/* Post Content - Only show if not fundraiser */}
         {post.content && !post.fundraiser ? (
           <Text style={styles.postContent} numberOfLines={3}>
-            {post.content}
+            {renderContentWithMentions(post.content, post.mentions)}
           </Text>
         ) : null}
 

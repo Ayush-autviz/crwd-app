@@ -33,7 +33,7 @@ export default function Home() {
     // fcm token send to backend
     const sendFcmTokenToBackend = useMutation({
         mutationFn: registerNotificationToken,
-        onSuccess: (data) => {
+        onSuccess: (data: any) => {
             console.log('FCM token sent to backend successfully:', data);
         },
         onError: (error: any) => {

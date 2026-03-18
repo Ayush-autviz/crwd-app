@@ -132,7 +132,7 @@ export default function PostDetail() {
     time: postData.created_at || new Date().toISOString(), // Pass raw timestamp for proper relative time calculation
     created_at: postData.created_at, // Also include created_at for ProfileActivityCard to use
     timestamp: postData.created_at, // Include timestamp as well
-    org: postData.collective?.name || 'Unknown Collective',
+    org: postData.collective?.name || 'Feed',
     likes: postData.likes_count || 0,
     comments: postData.comments_count || 0,
     shares: 0,
@@ -265,7 +265,7 @@ export default function PostDetail() {
     if (content.trim()) {
       // Create a set for easy lookup
       const mentionIds = new Set(mentions.map(m => m.id));
-      
+
       let finalMentions = [...mentions];
 
       // Implicitly add reply target
@@ -1263,12 +1263,12 @@ export default function PostDetail() {
         </ScrollView>
 
         {/* Join Conversation Input */}
-            <MentionInput
-              replyingTo={replyingTo}
-              onCancelReply={() => setReplyingTo(null)}
-              onSubmit={handleAddComment}
-              disabled={createCommentMutation.isPending || createReplyMutation.isPending}
-            />
+        <MentionInput
+          replyingTo={replyingTo}
+          onCancelReply={() => setReplyingTo(null)}
+          onSubmit={handleAddComment}
+          disabled={createCommentMutation.isPending || createReplyMutation.isPending}
+        />
 
         {/* Full Image Modal */}
         <Modal

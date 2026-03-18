@@ -316,7 +316,7 @@ export default function UserProfile() {
         time: post.created_at || new Date().toISOString(), // Pass raw timestamp for proper relative time calculation
         created_at: post.created_at, // Also include created_at for ProfileActivityCard to use
         timestamp: post.created_at, // Include timestamp as well
-        org: post.collective?.name || 'Unknown Collective',
+        org: post.collective?.name,
         orgUrl: post.collective?.id,
         text: post.content || '',
         imageUrl: post.media || undefined,

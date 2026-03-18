@@ -815,12 +815,13 @@ export default function PopularPosts({
                                                     <Text style={[styles.startedFundraiserText, { marginTop: -2, marginBottom: 2 }]}>started a fundraiser</Text>
                                                 )}
                                                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                                                    {showSimplifiedHeader ? (
+                                                    {/* {showSimplifiedHeader ? (
                                                         <></>
                                                         // <Text style={styles.date}>
                                                         //     {formatPostTime((item as any).created_at || (item as any).timestamp || item.time)}
                                                         // </Text>
-                                                    ) : (
+                                                    ) : ( */}
+                                                    {item.org && (
                                                         <TouchableOpacity
                                                             onPress={() => {
                                                                 if (item.orgUrl) {

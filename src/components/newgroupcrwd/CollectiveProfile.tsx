@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
@@ -39,7 +39,7 @@ export default function CollectiveProfile({
 
   const handleFounderClick = () => {
     if (founder?.id) {
-      navigation.navigate('UserProfile' as never, { userId: founder.id } as never);
+      (navigation as any).navigate('UserProfile', { userId: founder.id });
     }
   };
 
@@ -156,21 +156,19 @@ export default function CollectiveProfile({
               {description}
             </Text>
           )}
-          <Text
-            style={styles.description}
-            numberOfLines={isExpanded ? undefined : 3}
-          >
-            {description}
+          <Text style={styles.description}>
+            {isExpanded || !canExpand
+              ? description
+              : (description.length > 150 ? description.substring(0, 150) : description)}
+            {canExpand && (
+              <Text
+                onPress={() => setIsExpanded(!isExpanded)}
+                style={styles.readMoreText}
+              >
+                {isExpanded ? ' Read Less' : ' ... more'}
+              </Text>
+            )}
           </Text>
-          {canExpand && (
-            <TouchableOpacity
-              onPress={() => setIsExpanded(!isExpanded)}
-              activeOpacity={0.7}
-              style={{ alignSelf: 'flex-start' }}
-            >
-              <Text style={styles.readMoreText}>{isExpanded ? 'Less' : 'More...'}</Text>
-            </TouchableOpacity>
-          )}
         </View>
       )}
     </View>
@@ -261,10 +259,9 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   readMoreText: {
-    color: '#1600ff',
+    color: '#4B5563',
     fontSize: 14,
-    fontFamily: 'Outfit-Medium',
-    marginTop: 4,
+    fontFamily: 'Outfit-Bold',
   },
 });
 

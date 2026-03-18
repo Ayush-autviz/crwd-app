@@ -34,31 +34,31 @@ function MentionSearchResultsComponent({ results, onSelect, position = 'above', 
                     </View>
                 ) : (
                     results.map((user: any) => (
-                    <TouchableOpacity
-                        key={`${user.type}-${user.id}`}
-                        style={styles.item}
-                        onPress={() => onSelect(user)}
-                    >
-                        <Avatar size={32} style={styles.avatar}>
-                            <AvatarImage src={user.logo} alt={user.name} />
-                            <AvatarFallback
-                                style={{ backgroundColor: user.color || '#3B82F6' }}
-                                textStyle={styles.avatarText}
-                            >
-                                {user.name?.charAt(0).toUpperCase()}
-                            </AvatarFallback>
-                        </Avatar>
-                        <View style={styles.content}>
-                            <Text style={styles.name} numberOfLines={1}>{user.name}</Text>
-                            {user.username && (
-                                <Text style={styles.username} numberOfLines={1}>@{user.username}</Text>
-                            )}
-                        </View>
-                    </TouchableOpacity>
-                ))
-            )}
-        </ScrollView>
-    </View>
+                        <TouchableOpacity
+                            key={`${user.type}-${user.id}`}
+                            style={styles.item}
+                            onPress={() => onSelect(user)}
+                        >
+                            <Avatar size={32} style={styles.avatar}>
+                                <AvatarImage src={user.logo} alt={user.name} />
+                                <AvatarFallback
+                                    style={{ backgroundColor: user.color || '#3B82F6' }}
+                                    textStyle={styles.avatarText}
+                                >
+                                    {user.name?.charAt(0).toUpperCase()}
+                                </AvatarFallback>
+                            </Avatar>
+                            <View style={styles.content}>
+                                <Text style={styles.name} numberOfLines={1}>{user.name}</Text>
+                                {user.type && (
+                                    <Text style={styles.username} numberOfLines={1}>{user.type}</Text>
+                                )}
+                            </View>
+                        </TouchableOpacity>
+                    ))
+                )}
+            </ScrollView>
+        </View>
     );
 }
 
@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
         fontFamily: 'Outfit-SemiBold',
     },
     username: {
-        fontSize: 12,
+        fontSize: 13,
         color: '#6B7280',
         fontFamily: 'Outfit-Regular',
     },

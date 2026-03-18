@@ -35,15 +35,16 @@ import CommunityPosts from '../components/newHome/CommunityPosts';
 import ExploreCards from '../components/newHome/ExploreCards';
 import CommentsBottomSheet from '../components/post/CommentsBottomSheet';
 import PostResultCard from '../components/newsearch/PostResultCard';
+import { Plus } from 'lucide-react-native';
 
 import GuestHome from '../components/GuestHome';
-import { 
-  NewHomeSkeleton, 
-  DonationBoxSkeleton, 
-  CollectiveCarouselSkeleton, 
-  CommunityPostsSkeleton, 
-  FeaturedNonprofitsSkeleton, 
-  SuggestedCollectivesSkeleton 
+import {
+  NewHomeSkeleton,
+  DonationBoxSkeleton,
+  CollectiveCarouselSkeleton,
+  CommunityPostsSkeleton,
+  FeaturedNonprofitsSkeleton,
+  SuggestedCollectivesSkeleton
 } from '../components/newHome/NewHomeSkeleton';
 
 export default function NewHome() {
@@ -581,7 +582,7 @@ export default function NewHome() {
               fullName = username || 'Unknown User';
             }
             const isMention = notification.title?.toLowerCase().includes('mentioned') ||
-                              notification.body?.toLowerCase().includes('mentioned');
+              notification.body?.toLowerCase().includes('mentioned');
 
             const isDonation = notification.title?.toLowerCase().includes('donation') ||
               notification.body?.toLowerCase().includes('donated') ||
@@ -755,10 +756,10 @@ export default function NewHome() {
         onScroll={(e) => {
           const { layoutMeasurement, contentOffset, contentSize } = e.nativeEvent;
           scrollYRef.current = contentOffset.y;
-          
+
           // Check if we're near the bottom (within 300px)
           const isCloseToBottom = layoutMeasurement.height + contentOffset.y >= contentSize.height - 300;
-          
+
           if (isCloseToBottom && hasNextPage && !isFetchingNextPage) {
             fetchNextPage();
           }
@@ -917,6 +918,14 @@ export default function NewHome() {
           post={selectedPost}
         />
       )}
+
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => (navigation as any).navigate('Post')}
+        activeOpacity={0.8}
+      >
+        <Plus size={32} color="white" />
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
@@ -998,6 +1007,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#FFFFFF',
-  }
+  },
+  fab: {
+    position: 'absolute',
+    bottom: 90,
+    right: 20,
+    backgroundColor: '#1600ff',
+    width: 50,
+    height: 50,
+    borderRadius: 32.5,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 4.65,
+    zIndex: 1000,
+  },
 });
 

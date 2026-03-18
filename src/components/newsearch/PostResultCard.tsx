@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
+import * as React from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, Linking, ActivityIndicator, Share, Clipboard, Dimensions } from 'react-native';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import SharePost from '../SharePost';
@@ -293,8 +294,12 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
     setTooltipVisible(true);
   };
 
-  const renderContentWithMentions = (content: string, mentions: any[] = []) => {
+  const renderContentWithMentions = (content: string, mentions: any[] = [], limit?: number) => {
     if (!content) return null;
+    let displayContent = content;
+    if (limit && content.length > limit) {
+      displayContent = content.substring(0, limit);
+    }
     const mentionMap = new Map();
     const triggers: string[] = [];
 
@@ -329,7 +334,7 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
       : '(@\\w+)';
     const regex = new RegExp(pattern, 'gi');
 
-    return content.split(regex).map((part, index) => {
+    return displayContent.split(regex).map((part, index) => {
       if (part.startsWith('@')) {
         const mention = mentionMap.get(part.toLowerCase());
 
@@ -380,7 +385,7 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
 
         return (
           <Text
-            key={index}
+            key={`${index}-${part}`}
             style={{ color: '#1600ff', fontFamily: 'Outfit-Medium' }}
             onPress={handlePress}
           >
@@ -590,23 +595,46 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
                 {renderContentWithMentions(post.content, post.mentions)}
               </Text>
             )}
-            <Text
-              style={styles.postContent}
-              numberOfLines={isHomeFeed ? (isExpanded ? undefined : 3) : undefined}
-            >
-              {renderContentWithMentions(post.content, post.mentions)}
+            <Text style={styles.postContent}>
+              {(() => {
+                const limit = 150;
+                const isTruncatedView = isHomeFeed && !isExpanded && canExpand;
+                const contentToRender = renderContentWithMentions(
+                  post.content,
+                  post.mentions,
+                  isTruncatedView ? limit : undefined
+                );
+
+                if (!isHomeFeed || isExpanded || !canExpand) {
+                  return (
+                    <>
+                      {contentToRender}
+                      {isHomeFeed && canExpand && (
+                        <Text
+                          onPress={() => setIsExpanded(!isExpanded)}
+                          style={styles.readMoreText}
+                        >
+                          {' Read Less'}
+                        </Text>
+                      )}
+                    </>
+                  );
+                }
+
+                // For truncated view on home feed
+                return (
+                  <>
+                    {contentToRender}
+                    <Text
+                      onPress={() => setIsExpanded(!isExpanded)}
+                      style={styles.readMoreText}
+                    >
+                      {'... more'}
+                    </Text>
+                  </>
+                );
+              })()}
             </Text>
-            {isHomeFeed && canExpand && (
-              <TouchableOpacity
-                onPress={() => setIsExpanded(!isExpanded)}
-                activeOpacity={0.7}
-                style={{ alignSelf: 'flex-start', marginBottom: 8 }}
-              >
-                <Text style={{ color: '#1600ff', fontFamily: 'Outfit-Medium', fontSize: 15 }}>
-                  {isExpanded ? 'Less' : 'Read More'}
-                </Text>
-              </TouchableOpacity>
-            )}
           </View>
         ) : null}
 
@@ -1227,6 +1255,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#111',
     fontFamily: 'Outfit-Medium',
+  },
+  readMoreText: {
+    color: '#4B5563',
+    fontSize: 14,
+    fontFamily: 'Outfit-Bold',
   },
 });
 

@@ -1,18 +1,20 @@
-import { View, Text, TouchableOpacity, TextInput, Image, ScrollView, StyleSheet, ActivityIndicator, Keyboard, BackHandler, Platform, Dimensions } from 'react-native'
+import { View, Text, TouchableOpacity, TextInput, Image, ScrollView, StyleSheet, ActivityIndicator, Keyboard, BackHandler, Platform, Dimensions, LayoutAnimation } from 'react-native'
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { PrimaryGrey, PrimaryBlue, LightGrey } from '../Constants/Colors'
-import { ImageIcon, X, ArrowLeft, Paperclip, Lightbulb } from 'lucide-react-native'
+import { ImageIcon, X, ArrowLeft, Paperclip, Lightbulb, Globe, ChevronDown, Check, Heart } from 'lucide-react-native'
 import * as ImagePicker from 'react-native-image-picker'
-import { useNavigation, useRoute, usePreventRemove, CommonActions } from '@react-navigation/native'
+import { useNavigation, useRoute, usePreventRemove } from '@react-navigation/native'
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query'
 import { createPost, getLinkPreview, mentionSearch } from '../services/api/social'
+import { getJoinCollective } from '../services/api/crwd'
 import { useAuthStore } from '../store/store'
 import { Toast } from '../components/Toast'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { BottomSheetModal } from '@gorhom/bottom-sheet'
 import DiscardBottomSheet from '../components/ui/DiscardBottomSheet'
 import { MentionSearchResults } from '../components/post/MentionSearchResults'
+import { Modal, FlatList, Pressable } from 'react-native'
 
 export default function Post() {
   const navigation = useNavigation<any>();
@@ -21,8 +23,21 @@ export default function Post() {
   const { user: currentUser } = useAuthStore();
   const screenWidth = Dimensions.get('window').width;
 
-  // Get collectiveData from route params (similar to location.state in Vite)
-  const collectiveData = route.params?.collectiveData || (route.params?.collectiveId ? { id: route.params.collectiveId } : null);
+  // Get collectiveData from route params
+  const initialCollective = route.params?.collectiveData || (route.params?.collectiveId ? { id: route.params.collectiveId } : null);
+  const isFromSpecificCollective = !!initialCollective;
+
+  const [selectedCollective, setSelectedCollective] = useState<any>(initialCollective);
+  const [showCollectiveModal, setShowCollectiveModal] = useState(false);
+
+  // Fetch joined collectives
+  const { data: joinedCollectivesData } = useQuery({
+    queryKey: ['joined-collectives', currentUser?.id],
+    queryFn: () => getJoinCollective(currentUser?.id?.toString() || ''),
+    enabled: !!currentUser?.id,
+  });
+
+  const userCollectives = joinedCollectivesData?.data || [];
 
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
@@ -156,12 +171,14 @@ export default function Post() {
       setShowPreview(false);
 
       // Invalidate posts queries to refresh the list
-      if (collectiveData?.id) {
+      const collectiveIdValue = selectedCollective?.collective?.id || selectedCollective?.id;
+      if (collectiveIdValue) {
         // Invalidate posts for the specific collective
-        queryClient.invalidateQueries({ queryKey: ['posts', collectiveData.id.toString()] });
+        queryClient.invalidateQueries({ queryKey: ['posts', collectiveIdValue.toString()] });
       }
       // Also invalidate all posts query to refresh home page and other places
       queryClient.invalidateQueries({ queryKey: ['posts'] });
+      queryClient.invalidateQueries({ queryKey: ['communityUpdatesPosts'] });
 
       // Navigate back to the collective page or home
       setTimeout(() => {
@@ -234,7 +251,7 @@ export default function Post() {
 
     const lastAtSymbolIndex = textBeforeCursor.lastIndexOf('@');
     const newTextBeforeCursor = textBeforeCursor.substring(0, lastAtSymbolIndex) + `@${user.name} `;
-    
+
     selectionLockRef.current = true;
     const newPos = newTextBeforeCursor.length;
     setSelection({ start: newPos, end: newPos });
@@ -243,7 +260,7 @@ export default function Post() {
       ...prev.filter(m => m.name !== user.name),
       { type: user.type, id: user.id, name: user.name }
     ]);
-    
+
     setMentionSearchQuery(null);
     setMentionResults([]);
 
@@ -354,8 +371,12 @@ export default function Post() {
     if (!canSubmitPost() || createPostMutation.isPending) return;
 
     const formData = new FormData();
-    formData.append('collective_id', collectiveData.id.toString());
+    const collectiveId = selectedCollective?.collective?.id || selectedCollective?.id;
+    if (collectiveId) {
+      formData.append('collective_id', collectiveId.toString());
+    }
     formData.append('content', form.content);
+    formData.append('post_type', selectedCollective ? 'collective' : 'feed');
 
     // Add media file if it's an image post
     if (postType === 'image' && selectedImage) {
@@ -415,36 +436,21 @@ export default function Post() {
     );
   }
 
-  // Check if collectiveData is provided
-  if (!collectiveData) {
-    return (
-      <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }} edges={['top', 'left', 'right']}>
-        <View style={styles.header}>
-          <TouchableOpacity
-            onPress={() => handleBack()}
-            style={styles.backButton}
-          >
-            <ArrowLeft size={20} color="#374151" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Create Post</Text>
-        </View>
-        <View style={styles.centeredContent}>
-          <Text style={styles.centeredTitle}>
-            No Collective Selected
-          </Text>
-          <Text style={styles.centeredDescription}>
-            Please select a collective to create a post.
-          </Text>
-          <TouchableOpacity
-            onPress={() => handleBack()}
-            style={styles.signInButton}
-          >
-            <Text style={styles.signInButtonText}>Go Back</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    );
-  }
+  const getIconColor = (index: number): string => {
+    const colors = [
+      "#1600ff", // Blue
+      "#10B981", // Green
+      "#EC4899", // Pink
+      "#F59E0B", // Amber
+      "#8B5CF6", // Purple
+      "#EF4444", // Red
+    ];
+    return colors[index % colors.length];
+  };
+
+  const getIconLetter = (name: string): string => {
+    return name?.charAt(0).toUpperCase() || "C";
+  };
 
   // Main create post form
   const characterCount = form.content.length;
@@ -463,7 +469,7 @@ export default function Post() {
           </TouchableOpacity>
           <View>
             <Text style={styles.headerTitle}>Create Post</Text>
-            <Text style={styles.headerSubtitle}>{collectiveData?.name || "Your Collective"}</Text>
+            {/* <Text style={styles.headerSubtitle}>{selectedCollective ? (selectedCollective.collective || selectedCollective).name : "Your Feed"}</Text> */}
           </View>
         </View>
         <TouchableOpacity
@@ -486,11 +492,155 @@ export default function Post() {
       </View>
 
       <KeyboardAwareScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} enableOnAndroid={true} extraScrollHeight={100}>
+        {/* Collective Selector */}
+        <View style={{ marginBottom: 24, zIndex: 1000, elevation: 10 }}>
+          <TouchableOpacity
+            onPress={() => {
+              LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+              setShowCollectiveModal(!showCollectiveModal);
+            }}
+            activeOpacity={0.7}
+            disabled={isFromSpecificCollective}
+            style={[
+              {
+                width: '100%',
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                paddingHorizontal: 12,
+                paddingVertical: 10,
+                backgroundColor: '#f0f7ff',
+                borderWidth: 1,
+                borderColor: '#cce3ff',
+                borderRadius: 12,
+              },
+              isFromSpecificCollective && { opacity: 0.8 }
+            ]}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <View
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 8,
+                  overflow: 'hidden',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: selectedCollective
+                    ? ((selectedCollective.collective || selectedCollective).color || getIconColor(0))
+                    : '#f0f7ff'
+                }}
+              >
+                {selectedCollective ? (
+                  (() => {
+                    const circle = selectedCollective.collective || selectedCollective;
+                    const hasColor = circle.color;
+                    const hasLogo = circle.logo && (circle.logo.indexOf("http") === 0 || circle.logo.indexOf("/") === 0 || circle.logo.indexOf("data:") === 0);
+                    const showImage = !hasColor && hasLogo;
+
+                    if (showImage) {
+                      return <Image source={{ uri: circle.logo }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />;
+                    }
+                    return <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 12 }}>{getIconLetter(circle.name)}</Text>;
+                  })()
+                ) : (
+                  <Globe size={20} color="#0066ff" />
+                )}
+              </View>
+              <Text style={{ fontSize: 14, fontWeight: '600', color: '#0066ff' }}>
+                Posting to <Text style={{ fontWeight: 'bold' }}>{selectedCollective ? (selectedCollective.collective || selectedCollective).name : "Your Feed"}</Text>
+              </Text>
+            </View>
+            {!isFromSpecificCollective && (
+              <ChevronDown size={16} color="#0066ff" />
+            )}
+          </TouchableOpacity>
+
+          {/* Inline Dropdown - Absolute Positioned */}
+          {showCollectiveModal && !isFromSpecificCollective && (
+            <View style={{
+              position: 'absolute',
+              top: 56, // Adjust based on toggle button height + space
+              left: 0,
+              right: 0,
+              backgroundColor: 'white',
+              borderRadius: 12,
+              borderWidth: 1,
+              borderColor: '#E5E7EB',
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.1,
+              shadowRadius: 12,
+              maxHeight: 250,
+              overflow: 'hidden',
+              zIndex: 2000,
+              elevation: 15,
+            }}>
+              <ScrollView bounces={false} nestedScrollEnabled={true}>
+                {[null, ...userCollectives].map((item, index) => {
+                  const isFeed = item === null;
+                  const circle = isFeed ? null : (item.collective || item);
+                  const isSelected = isFeed ? !selectedCollective : (selectedCollective?.collective?.id || selectedCollective?.id) === circle.id;
+
+                  return (
+                    <TouchableOpacity
+                      key={isFeed ? 'feed' : circle.id.toString()}
+                      onPress={() => {
+                        setSelectedCollective(item);
+                        setShowCollectiveModal(false);
+                      }}
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        padding: 12,
+                        backgroundColor: isSelected ? '#f0f7ff' : 'white',
+                        borderBottomWidth: index === userCollectives.length ? 0 : 1,
+                        borderBottomColor: '#F3F4F6',
+                        gap: 12
+                      }}
+                    >
+                      <View
+                        style={{
+                          width: 32,
+                          height: 32,
+                          borderRadius: 8,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          backgroundColor: isFeed ? '#EBF5FF' : (circle.color || getIconColor(index - 1))
+                        }}
+                      >
+                        {isFeed ? (
+                          <Globe size={18} color="#2563EB" />
+                        ) : (
+                          (() => {
+                            const hasColor = circle.color;
+                            const hasLogo = circle.logo && (circle.logo.indexOf("http") === 0 || circle.logo.indexOf("/") === 0 || circle.logo.indexOf("data:") === 0);
+                            if (!hasColor && hasLogo) {
+                              return <Image source={{ uri: circle.logo }} style={{ width: '100%', height: '100%', borderRadius: 8 }} />;
+                            }
+                            return <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 14 }}>{getIconLetter(circle.name)}</Text>;
+                          })()
+                        )}
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ fontSize: 14, fontWeight: '600', color: isSelected ? '#2563EB' : '#111827' }}>
+                          {isFeed ? "Your Feed" : circle.name}
+                        </Text>
+                      </View>
+                      {isSelected && <Check size={16} color="#2563EB" />}
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+            </View>
+          )}
+        </View>
+
         {/* Main Content Input */}
         <View style={styles.contentSection}>
           <View style={styles.textInputContainer}>
-            <View 
-              pointerEvents="none" 
+            <View
+              pointerEvents="none"
               style={styles.highlightOverlay}
             >
               {renderHighlightedText(form.content)}
@@ -511,8 +661,8 @@ export default function Post() {
               spellCheck={false}
               selectionColor={PrimaryBlue}
             />
-            <MentionSearchResults 
-              results={mentionResults} 
+            <MentionSearchResults
+              results={mentionResults}
               onSelect={handleMentionSelect}
               position="below"
             />
@@ -525,11 +675,11 @@ export default function Post() {
           </View>
         </View>
 
-        {/* Add Image and Add Link Buttons */}
         <View style={styles.actionButtonsContainer}>
           <TouchableOpacity
             onPress={() => handlePostTypeSelect('image')}
             style={styles.actionButton}
+            activeOpacity={0.7}
           >
             <ImageIcon size={20} color="#374151" />
             <Text style={styles.actionButtonText}>Add Image</Text>
@@ -537,10 +687,22 @@ export default function Post() {
           <TouchableOpacity
             onPress={() => handlePostTypeSelect('link')}
             style={styles.actionButton}
+            activeOpacity={0.7}
           >
             <Paperclip size={20} color="#374151" />
             <Text style={styles.actionButtonText}>Add Link</Text>
           </TouchableOpacity>
+
+          {selectedCollective && (selectedCollective.role === "admin" || selectedCollective.role === "Admin") && (
+            <TouchableOpacity
+              onPress={() => navigation.navigate('CreateFundraiser', { collectiveId: (selectedCollective.collective || selectedCollective).id } as any)}
+              style={styles.actionButton}
+              activeOpacity={0.7}
+            >
+              <Heart size={20} color="#374151" />
+              <Text style={styles.actionButtonText}>Create Fundraiser</Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* Link Input Field - Show when link is selected or URL is entered */}
@@ -664,29 +826,30 @@ export default function Post() {
         {/* Posting Tips Box */}
         <View style={styles.tipsContainer}>
           <View style={styles.tipsHeader}>
-            <Lightbulb size={20} color="#2563EB" />
+            <Text style={{ fontSize: 18 }}>💡</Text>
             <Text style={styles.tipsTitle}>Posting Tips</Text>
           </View>
           <View style={styles.tipsList}>
             <View style={styles.tipItem}>
-              <Text style={styles.tipBullet}>•</Text>
+              <View style={styles.tipBulletCircle} />
               <Text style={styles.tipText}>Share inspiring stories about the causes you support</Text>
             </View>
             <View style={styles.tipItem}>
-              <Text style={styles.tipBullet}>•</Text>
+              <View style={styles.tipBulletCircle} />
               <Text style={styles.tipText}>Post updates about your collective's impact</Text>
             </View>
             <View style={styles.tipItem}>
-              <Text style={styles.tipBullet}>•</Text>
+              <View style={styles.tipBulletCircle} />
               <Text style={styles.tipText}>Include relevant articles or resources to engage members</Text>
             </View>
             <View style={styles.tipItem}>
-              <Text style={styles.tipBullet}>•</Text>
-              <Text style={styles.tipText}>Text-only posts are perfect for quick updates!</Text>
+              <View style={styles.tipBulletCircle} />
+              <Text style={styles.tipText}>Use "Create Event" or "Create Fundraiser" to organize your community</Text>
             </View>
           </View>
         </View>
       </KeyboardAwareScrollView>
+
 
       {/* Toast notification */}
       <Toast
@@ -711,7 +874,7 @@ export default function Post() {
         }}
         onCancel={() => discardSheetRef.current?.dismiss()}
       />
-    </SafeAreaView>
+    </SafeAreaView >
   )
 }
 
@@ -748,7 +911,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#1600ff',
     paddingHorizontal: 24,
     paddingVertical: 8,
-    borderRadius: 8,
+    borderRadius: 40,
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -781,8 +944,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#F9FAFB',
     borderColor: '#D1D5DB',
     position: 'relative',
-    zIndex: 1000,
-    elevation: 5,
+    zIndex: 1,
+    elevation: 2,
   },
   textInput: {
     minHeight: 200,
@@ -815,23 +978,25 @@ const styles = StyleSheet.create({
   },
   actionButtonsContainer: {
     flexDirection: 'row',
-    gap: 12,
-    marginBottom: 16,
+    flexWrap: 'wrap',
+    gap: 10,
+    marginBottom: 5,
   },
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 10,
     borderWidth: 1,
-    borderColor: '#D1D5DB',
-    borderRadius: 8,
+    borderColor: '#E5E7EB',
+    borderRadius: 99,
   },
   actionButtonText: {
     fontSize: 14,
-    fontWeight: '500',
-    color: '#374151',
+    fontWeight: '700',
+    color: '#1F2937',
+    fontFamily: 'Outfit-Bold',
   },
   linkInputSection: {
     marginBottom: 16,
@@ -960,12 +1125,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   tipsContainer: {
-    marginTop: 'auto',
-    backgroundColor: '#DBEAFE',
-    borderRadius: 8,
-    padding: 16,
+    marginTop: 20,
+    backgroundColor: '#f0f7ff',
+    borderRadius: 16,
+    padding: 20,
     borderWidth: 1,
-    borderColor: '#BFDBFE',
+    borderColor: '#e0efff',
   },
   tipsHeader: {
     flexDirection: 'row',
@@ -974,28 +1139,34 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   tipsTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1E3A8A',
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#0047cc',
+    fontFamily: 'Outfit-Bold',
   },
   tipsList: {
-    gap: 8,
+    gap: 12,
   },
   tipItem: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 8,
+    gap: 12,
   },
-  tipBullet: {
-    fontSize: 14,
-    color: '#2563EB',
-    marginTop: 2,
+  tipBulletCircle: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#0066ff',
+    marginTop: 7,
+    flexShrink: 0,
   },
   tipText: {
     flex: 1,
     fontSize: 14,
-    color: '#1E40AF',
-    lineHeight: 20,
+    color: '#0047cc',
+    fontWeight: '500',
+    lineHeight: 18,
+    fontFamily: 'Outfit-Medium',
   },
   centeredContent: {
     flex: 1,

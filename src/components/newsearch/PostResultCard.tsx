@@ -204,7 +204,7 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
   const deletePostMutation = useMutation({
     mutationFn: () => deletePost(post.id.toString()),
     onSuccess: () => {
-      showToast('Post deleted successfully!');
+      // showToast('Post deleted successfully!');
       deleteBottomSheetRef.current?.dismiss();
       queryClient.invalidateQueries({ queryKey: ['posts'] });
       queryClient.invalidateQueries({ queryKey: ['search'] });
@@ -230,7 +230,7 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
   const followMutation = useMutation({
     mutationFn: (userId: string) => followUserById(userId),
     onSuccess: () => {
-      showToast('Following user');
+      // showToast('Following user');
       queryClient.invalidateQueries({ queryKey: ['userProfile', String(user?.id)] });
     },
     onError: (error: any) => {

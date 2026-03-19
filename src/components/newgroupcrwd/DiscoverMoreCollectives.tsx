@@ -142,7 +142,7 @@ export default function DiscoverMoreCollectives({ collectiveId }: DiscoverMoreCo
                         .map((n: string) => n.charAt(0))
                         .join('')
                         .toUpperCase()
-                        .slice(0, 2)}
+                        .slice(0, 1)}
                     </AvatarFallback>
                   </Avatar>
                   <Text style={styles.founderText}>

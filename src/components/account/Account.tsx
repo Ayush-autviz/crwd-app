@@ -372,7 +372,7 @@ export default function Account({ isEditMode, setIsEditMode }: AccountProps) {
                 numberOfLines={4}
                 placeholderTextColor={'#9CA3AF'}
                 textAlignVertical="top"
-                placeholder={focusedField === 'bio' ? '' : 'Say something about yourself.'}
+                placeholder={focusedField === 'bio' ? '' : 'Tell us about you'}
               />
               <View style={styles.characterCount}>
                 <Text style={styles.characterCountText}>

@@ -160,8 +160,8 @@ export default function Post() {
     mutationFn: createPost,
     onSuccess: (response: any) => {
       console.log('Post created successfully:', response);
-      setToastMessage("Post created successfully!");
-      setShowToast(true);
+      // setToastMessage("Post created successfully!");
+      // setShowToast(true);
 
       // Clear form data on success to prevent discard sheet
       setForm({ content: '', url: '' });
@@ -216,7 +216,7 @@ export default function Post() {
 
       if (isStartOfWord) {
         const query = textBeforeCursor.substring(lastAtSymbolIndex + 1);
-        if (query.split(' ').length <= 3 && !query.includes('\n') && !query.endsWith(' ')) {
+        if (query.trim().split(/\s+/).length <= 3 && !query.includes('\n') && query.length <= 30) {
           setMentionSearchQuery(query);
           return;
         }
@@ -274,20 +274,51 @@ export default function Post() {
 
   const renderHighlightedText = (text: string) => {
     if (!text) return null;
-    const parts = text.split(/(@\w*(?:\s\w+)?)/g);
+
+    const mentionNames = selectedMentions.map(m => `@${m.name}`);
+    const mentionNamesLower = mentionNames.map(n => n.toLowerCase());
+    mentionNames.sort((a, b) => b.length - a.length);
+
+    const highlightStyle = {
+      fontSize: 16,
+      color: '#111827',
+      lineHeight: 22,
+      fontFamily: 'Outfit-Regular'
+    };
+
+    const renderPart = (part: string, key: string | number) => {
+      if (part.startsWith('@')) {
+        return <Text key={key} style={{ color: PrimaryBlue, fontWeight: '500', fontFamily: 'Outfit-SemiBold' }}>{part}</Text>;
+      }
+      return <Text key={key}>{part}</Text>;
+    };
+
+    // Fallback: simple highlighter if no selected mentions
+    if (mentionNames.length === 0) {
+      const parts = text.split(/(@[\w\s]{1,30}(?=\s|$)|@\w+)/g);
+      return (
+        <Text style={highlightStyle}>
+          {parts.map((part, i) => renderPart(part, i))}
+        </Text>
+      );
+    }
+
+    const pattern = mentionNames.map(name => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+    const regex = new RegExp(`(${pattern})`, 'gi');
+
+    const mainParts = text.split(regex);
     return (
-      <Text style={{
-        fontSize: 16,
-        color: '#111827',
-        lineHeight: 22,
-        fontFamily: 'Outfit-Regular'
-      }}>
-        {parts.map((part, i) => {
+      <Text style={highlightStyle}>
+        {mainParts.map((part, i) => {
           if (!part) return null;
-          if (part.startsWith('@')) {
-            return <Text key={i} style={{ color: PrimaryBlue, fontWeight: '500', fontFamily: 'Outfit-SemiBold' }}>{part}</Text>;
+          if (mentionNamesLower.includes(part.toLowerCase())) {
+            return renderPart(part, i);
           }
-          return <Text key={i}>{part}</Text>;
+          const subParts = part.split(/(@[\w\s]{1,30}(?=\s|$)|@\w+)/g);
+          return subParts.map((subPart, j) => {
+            if (!subPart) return null;
+            return renderPart(subPart, `${i}-${j}`);
+          });
         })}
       </Text>
     );

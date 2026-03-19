@@ -199,7 +199,7 @@ export default function PopularPosts({
                 ...prev,
                 [postId]: (prev[postId] || 0) + 1
             }));
-            showToast('Post liked!', 2000);
+            // showToast('Post liked!', 2000);
             queryClient.invalidateQueries({ queryKey: ['posts'] });
             queryClient.invalidateQueries({ queryKey: ['post', postId] });
         },
@@ -222,7 +222,7 @@ export default function PopularPosts({
                 ...prev,
                 [postId]: Math.max((prev[postId] || 1) - 1, 0)
             }));
-            showToast('Post unliked!', 2000);
+            // showToast('Post unliked!', 2000);
             queryClient.invalidateQueries({ queryKey: ['posts'] });
             queryClient.invalidateQueries({ queryKey: ['post', postId] });
 
@@ -237,7 +237,7 @@ export default function PopularPosts({
     const deletePostMutation = useMutation({
         mutationFn: deletePost,
         onSuccess: () => {
-            showToast('Post deleted successfully!', 2000);
+            // showToast('Post deleted successfully!', 2000);
             deleteBottomSheetRef.current?.dismiss();
             setTooltipVisible(false);
             setSelectedPost(null);
@@ -254,7 +254,7 @@ export default function PopularPosts({
     const endFundraiserMutation = useMutation({
         mutationFn: (fundraiserId: number) => patchFundraiser(fundraiserId.toString(), { is_active: false }),
         onSuccess: () => {
-            showToast('Fundraiser ended successfully', 2000);
+            // showToast('Fundraiser ended successfully', 2000);
             queryClient.invalidateQueries({ queryKey: ['posts'] });
             setShowFundraiserMenu(null);
         },
@@ -415,8 +415,8 @@ export default function PopularPosts({
         triggers.sort((a, b) => b.length - a.length);
 
         const pattern = triggers.length > 0
-            ? `(${triggers.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')}|@\\w+)`
-            : '(@\\w+)';
+            ? `(${triggers.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')}|@[\\w\\s]{1,30}(?=\\s|$)|@\\w+)`
+            : '(@[\\w\\s]{1,30}(?=\\s|$)|@\\w+)';
         const regex = new RegExp(pattern, 'gi');
 
         return content.split(regex).map((part, index) => {

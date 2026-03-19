@@ -104,7 +104,7 @@ export default function NewSettings() {
     },
     {
       question: "Can I cancel a recurring donation?",
-      answer: "Yes, you can cancel or modify your recurring donations at any time from the Payment & Receipts section in your settings."
+      answer: "Yes — you can cancel your recurring donation from your Donation Box. Go to your profile, open your Donation Box, and remove the nonprofit you'd like to stop supporting."
     }
   ]
 

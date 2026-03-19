@@ -69,12 +69,11 @@ const MentionInputComponent = ({
 
     const query = value.substring(lastAtIndex + 1);
 
-    if (query.includes(' ') || query.includes('\n') || query.length > 30) {
+    if (query.trim().split(/\s+/).length <= 3 && !query.includes('\n') && query.length <= 30) {
+      setMentionSearchQuery(query);
+    } else {
       setMentionSearchQuery(null);
-      return;
     }
-
-    setMentionSearchQuery(query);
   };
 
   const handleMentionSelect = (user: any) => {
@@ -111,19 +110,51 @@ const MentionInputComponent = ({
 
   const renderHighlightedText = (text: string) => {
     if (!text) return null;
-    const parts = text.split(/(@\w*(?:\s\w+)?)/g);
+
+    const mentionNames = selectedMentions.map(m => `@${m.name}`);
+    const mentionNamesLower = mentionNames.map(n => n.toLowerCase());
+    mentionNames.sort((a, b) => b.length - a.length);
+
+    const highlightStyle = {
+      fontSize: 15,
+      color: '#111827',
+      lineHeight: 20,
+      fontFamily: 'Outfit-Regular'
+    };
+
+    const renderPart = (part: string, key: string | number) => {
+      if (part.startsWith('@')) {
+        return <Text key={key} style={{ color: PrimaryBlue, fontWeight: '500', fontFamily: 'Outfit-SemiBold' }}>{part}</Text>;
+      }
+      return <Text key={key}>{part}</Text>;
+    };
+
+    // Fallback: simple highlighter if no selected mentions
+    if (mentionNames.length === 0) {
+      const parts = text.split(/(@[\w\s]{1,30}(?=\s|$)|@\w+)/g);
+      return (
+        <Text style={highlightStyle}>
+          {parts.map((part, i) => renderPart(part, i))}
+        </Text>
+      );
+    }
+
+    const pattern = mentionNames.map(name => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+    const regex = new RegExp(`(${pattern})`, 'gi');
+
+    const mainParts = text.split(regex);
     return (
-      <Text style={{
-        fontSize: 15,
-        color: '#111827',
-        lineHeight: 20,
-        fontFamily: 'Outfit-Regular'
-      }}>
-        {parts.map((part, i) => {
-          if (part.startsWith('@')) {
-            return <Text key={i} style={{ color: PrimaryBlue, fontWeight: '500', fontFamily: 'Outfit-SemiBold' }}>{part}</Text>;
+      <Text style={highlightStyle}>
+        {mainParts.map((part, i) => {
+          if (!part) return null;
+          if (mentionNamesLower.includes(part.toLowerCase())) {
+            return renderPart(part, i);
           }
-          return <Text key={i}>{part}</Text>;
+          const subParts = part.split(/(@[\w\s]{1,30}(?=\s|$)|@\w+)/g);
+          return subParts.map((subPart, j) => {
+            if (!subPart) return null;
+            return renderPart(subPart, `${i}-${j}`);
+          });
         })}
       </Text>
     );

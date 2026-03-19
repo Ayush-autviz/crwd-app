@@ -113,7 +113,7 @@ const CommentInputFooter = memo(React.forwardRef<CommentInputFooterHandle, Comme
       if (isStartOfWord) {
         const query = textBeforeCursor.substring(lastAtSymbolIndex + 1);
         // Only trigger search if query doesn't end with a space (meaning selection or finishing word)
-        if (query.split(' ').length <= 3 && !query.includes('\n') && !query.endsWith(' ')) {
+        if (query.trim().split(/\s+/).length <= 3 && !query.includes('\n') && query.length <= 30) {
           setMentionSearchQuery(query);
           return;
         }
@@ -166,13 +166,37 @@ const CommentInputFooter = memo(React.forwardRef<CommentInputFooterHandle, Comme
   const renderHighlightedText = (text: string) => {
     if (!text) return null;
 
-    // Split text by mentions (starting with @)
-    const parts = text.split(/(@\w+(?:\s\w+)?)/g);
-    return parts.map((part, i) => {
+    const mentionNames = selectedMentions.map(m => `@${m.name}`);
+    const mentionNamesLower = mentionNames.map(n => n.toLowerCase());
+    mentionNames.sort((a, b) => b.length - a.length);
+
+    const renderPart = (part: string, key: string | number) => {
       if (part.startsWith('@')) {
-        return <Text key={i} style={{ color: PrimaryBlue }}>{part}</Text>;
+        return <Text key={key} style={{ color: PrimaryBlue, fontFamily: 'Outfit-Medium' }}>{part}</Text>;
       }
-      return <Text key={i}>{part}</Text>;
+      return <Text key={key}>{part}</Text>;
+    };
+
+    // Fallback: simple highlighter if no selected mentions
+    if (mentionNames.length === 0) {
+      const parts = text.split(/(@[\w\s]{1,30}(?=\s|$)|@\w+)/g);
+      return parts.map((part, i) => renderPart(part, i));
+    }
+
+    const pattern = mentionNames.map(name => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+    const regex = new RegExp(`(${pattern})`, 'gi');
+
+    const mainParts = text.split(regex);
+    return mainParts.map((part, i) => {
+      if (!part) return null;
+      if (mentionNamesLower.includes(part.toLowerCase())) {
+        return renderPart(part, i);
+      }
+      const subParts = part.split(/(@[\w\s]{1,30}(?=\s|$)|@\w+)/g);
+      return subParts.map((subPart, j) => {
+        if (!subPart) return null;
+        return renderPart(subPart, `${i}-${j}`);
+      });
     });
   };
 

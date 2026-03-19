@@ -54,7 +54,7 @@ export default function NewSuggestedCollectives({
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Suggested Collectives</Text>
+        <Text style={styles.title}>Give Together</Text>
         <TouchableOpacity
           onPress={() => {
             // Navigate to bottom tabs "Collectives" tab

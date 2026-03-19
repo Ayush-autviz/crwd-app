@@ -277,6 +277,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6B7280',
     fontFamily: 'Outfit-Regular',
+    flex: 1,
+    flexShrink: 1,
   },
   founderName: {
     fontWeight: '600',

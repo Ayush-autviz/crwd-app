@@ -10,7 +10,7 @@ import PopularPosts from '../components/PopularPosts'
 import ProfileInterests from '../components/ProfileInterests'
 import { PrimaryBlue, PrimaryGrey, LightGrey } from '../Constants/Colors'
 import { useNavigation, NavigationProp } from '@react-navigation/native'
-import { Share2, Flag, ChevronRight, Ellipsis, MessageCircle, MessageSquare, ArrowLeft, X, Users } from 'lucide-react-native'
+import { Share2, Flag, ChevronRight, Ellipsis, MessageCircle, MessageSquare, ArrowLeft, X, Users, Plus } from 'lucide-react-native'
 import SharePost from '../components/SharePost'
 import { getPosts, getUserProfileById, getUserFollowers, getUserFollowing, getFavoriteCauses, getSupportedCausesByUserId, followUser, unfollowUser } from '../services/api/social'
 import { getUserCollectives, getJoinCollective } from '../services/api/crwd'
@@ -1374,6 +1374,14 @@ export default function Profile() {
                 message={''}
                 onClose={() => setShowMenu(false)}
             />
+
+            <TouchableOpacity
+                style={styles.fab}
+                onPress={() => (navigation as any).navigate('Post')}
+                activeOpacity={0.8}
+            >
+                <Plus size={32} color="white" />
+            </TouchableOpacity>
         </SafeAreaView>
     )
 }
@@ -1631,5 +1639,25 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         maxWidth: 300,
         fontFamily: 'Outfit-Regular',
+    },
+    fab: {
+        position: 'absolute',
+        bottom: 90,
+        right: 20,
+        backgroundColor: '#1600ff',
+        width: 50,
+        height: 50,
+        borderRadius: 32.5,
+        justifyContent: 'center',
+        alignItems: 'center',
+        elevation: 8,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 4,
+        },
+        shadowOpacity: 0.3,
+        shadowRadius: 4.65,
+        zIndex: 1000,
     },
 });

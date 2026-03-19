@@ -15,7 +15,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute, useNavigation, CommonActions } from '@react-navigation/native';
 import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Check, Loader2, X, Heart } from 'lucide-react-native';
+import { Check, Loader2, X, Heart, Plus } from 'lucide-react-native';
 import BottomSheet, { BottomSheetView, BottomSheetBackdrop, BottomSheetScrollView, BottomSheetModal } from '@gorhom/bottom-sheet';
 import {
   getCollectiveById,
@@ -1262,6 +1262,16 @@ export default function NewGroupCrwdPage() {
         title={''}
         message={''}
       />
+
+      {crwdData?.is_joined && (
+        <TouchableOpacity
+          style={styles.fab}
+          onPress={() => (navigation as any).navigate('Post', { collectiveData: crwdData })}
+          activeOpacity={0.8}
+        >
+          <Plus size={32} color="white" />
+        </TouchableOpacity>
+      )}
     </SafeAreaView>
   );
 }
@@ -1300,6 +1310,26 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#E5E7EB',
+  },
+  fab: {
+    position: 'absolute',
+    bottom: 50,
+    right: 20,
+    backgroundColor: '#1600ff',
+    width: 50,
+    height: 50,
+    borderRadius: 32.5,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 4.65,
+    zIndex: 1000,
   },
   errorButtonText: {
     fontSize: 14,

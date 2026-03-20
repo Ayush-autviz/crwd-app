@@ -390,41 +390,38 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
           {(() => {
             if (isDonationNotification) {
               const match = actionText.match(/^(.*?) (donated) (\$[\d,.]+) (to) (.*)$/i);
-              if (match) {
-                return (
-                  <>
-                    {/* <Text
-                      style={styles.boldText}
-                      onPress={() => handleUserNavigation(update.user.id)}
-                    >
-                      {match[1]}
-                    </Text> */}
-                    <Text> {match[2].charAt(0).toUpperCase() + match[2].slice(1)} </Text>
-                    {/* <Text style={styles.boldText}>{match[3]}</Text> */}
-                    <Text>{match[4]} {match[5]}</Text>
-                  </>
-                );
+                if (match) {
+                  return (
+                    <>
+                      <Text> {match[2].charAt(0).toUpperCase() + match[2].slice(1)} </Text>
+                      <Text>{match[4]} {match[5]}</Text>
+                    </>
+                  );
+                }
+
+                // Fallback for "Name donated to Nonprofit"
+                const simpleMatch = actionText.match(/^(.*?) (donated.*?to) (.*)$/i);
+                if (simpleMatch) {
+                  return (
+                    <Text>
+                      {simpleMatch[2].charAt(0).toUpperCase() + simpleMatch[2].slice(1)} {simpleMatch[3]}
+                    </Text>
+                  );
+                }
               }
 
-              // Fallback for "Name donated to Nonprofit"
-              const simpleMatch = actionText.match(/^(.*?) (donated.*?to) (.*)$/i);
-              if (simpleMatch) {
-                return (
-                  <>
-                    <Text
-                      style={styles.boldText}
-                      onPress={() => handleUserNavigation(update.user.id)}
-                    >
-                      {simpleMatch[1]}
-                    </Text>
-                    <Text> {simpleMatch[2]} {simpleMatch[3]}</Text>
-                  </>
-                );
+              // If it's a donation notification, clean the text as a fallback
+              if (isDonationNotification) {
+                // Remove name at start (if it looks like Name donated...) and amount
+                return actionText
+                  .replace(/^(.*?) (donated)/i, '$2') // Keep "donated" and everything after
+                  .replace(/\$[\d,.]+\s*/, '') // Remove amount
+                  .replace(/^\w/, (c) => c.toUpperCase()); // Capitalize first letter
               }
-            }
-            return actionText;
-          })()}
-        </Text>
+
+              return actionText;
+            })()}
+          </Text>
       </View>
     </View>
   );

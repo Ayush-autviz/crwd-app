@@ -119,7 +119,7 @@ const Circles = () => {
     ];
     const colorIndex = (circle.name?.charCodeAt(0) || 0) % colors.length;
     const circleBgColor = hasColor || (!hasLogo ? colors[colorIndex] : undefined);
-    const showImage = hasLogo && !hasColor;
+    const showImage = hasLogo
     const iconLetter = circle.name?.charAt(0)?.toUpperCase() || 'C';
     const founderName = circle.created_by
       ? `${circle.created_by.first_name || ''} ${circle.created_by.last_name || ''}`.trim() || circle.created_by.username
@@ -133,7 +133,7 @@ const Circles = () => {
       >
         {/* Collective Icon */}
         <View
-          style={[styles.collectiveIcon, circleBgColor ? { backgroundColor: circleBgColor } : {}]}
+          style={[styles.collectiveIcon, !showImage && circleBgColor ? { backgroundColor: circleBgColor } : {}]}
         >
           {showImage ? (
             <Image
@@ -198,7 +198,7 @@ const Circles = () => {
     ];
     const colorIndex = (item.name?.charCodeAt(0) || 0) % colors.length;
     const circleBgColor = hasColor || (!hasLogo ? colors[colorIndex] : undefined);
-    const showImage = hasLogo && !hasColor;
+    const showImage = hasLogo
     const iconLetter = item.name?.charAt(0)?.toUpperCase() || 'C';
     const founderName = item.created_by
       ? `${item.created_by.first_name || ''} ${item.created_by.last_name || ''}`.trim() || item.created_by.username
@@ -212,7 +212,7 @@ const Circles = () => {
       >
         {/* Collective Icon */}
         <View
-          style={[styles.collectiveIcon, circleBgColor ? { backgroundColor: circleBgColor } : {}]}
+          style={[styles.collectiveIcon, !showImage && circleBgColor ? { backgroundColor: circleBgColor } : {}]}
         >
           {showImage ? (
             <Image
@@ -459,7 +459,7 @@ const styles = StyleSheet.create({
   collectiveIcon: {
     width: 48,
     height: 48,
-    borderRadius: 12,
+    borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 6,
@@ -468,7 +468,8 @@ const styles = StyleSheet.create({
   collectiveIconImage: {
     width: '100%',
     height: '100%',
-    borderRadius: 12,
+    borderRadius: 8,
+    objectFit: 'contain'
   },
   collectiveIconText: {
     fontSize: 20,

@@ -253,7 +253,7 @@ export default function NewGroupCrwdPage() {
       await refetchDonationBox();
 
       // Show success toast
-      showToast("You've joined the collective!", 3000);
+      // showToast("You've joined the collective!", 3000);
 
       // Always show the drawer sheet after joining
       setShowJoinModal(true);
@@ -275,7 +275,7 @@ export default function NewGroupCrwdPage() {
       queryClient.invalidateQueries({ queryKey: ['joined-collectives', currentUser?.id] });
       await queryClient.invalidateQueries({ queryKey: ['donationBox', currentUser?.id] });
       await queryClient.refetchQueries({ queryKey: ['donationBox', currentUser?.id] });
-      showToast('Left the collective', 3000);
+      // showToast('Left the collective', 3000);
     },
     onError: (error: any) => {
       console.error('Leave collective error:', error);
@@ -815,9 +815,9 @@ export default function NewGroupCrwdPage() {
                         </View>
                       )} */}
                     </View>
-                    <Text style={styles.donationTime}>
+                    {/* <Text style={styles.donationTime}>
                       {donation.charged_at ? formatTimeAgo(donation.charged_at) : 'Recently'}
-                    </Text>
+                    </Text> */}
                   </View>
                 </View>
               );

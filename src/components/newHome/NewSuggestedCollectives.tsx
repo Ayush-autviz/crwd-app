@@ -101,7 +101,7 @@ export default function NewSuggestedCollectives({
               collective.icon.startsWith('data:'));
           const iconColor = hasColor ? collective.iconColor : (!hasLogo ? getIconColor(index) : undefined);
           const iconLetter = getIconLetter(collective.name);
-          const showImage = !hasColor && hasLogo;
+          const showImage = hasLogo;
 
           // Generate vibrant color for founder avatar
           const avatarColors = [
@@ -139,7 +139,7 @@ export default function NewSuggestedCollectives({
                 <View
                   style={[
                     styles.iconContainer,
-                    iconColor ? { backgroundColor: iconColor } : {},
+                    !showImage && iconColor ? { backgroundColor: iconColor } : {},
                   ]}
                 >
                   {showImage ? (
@@ -242,7 +242,7 @@ const styles = StyleSheet.create({
   iconContainer: {
     width: 40,
     height: 40,
-    borderRadius: 12,
+    borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
     flexShrink: 0,
@@ -250,7 +250,8 @@ const styles = StyleSheet.create({
   iconImage: {
     width: '100%',
     height: '100%',
-    borderRadius: 12,
+    borderRadius: 8,
+    objectFit: 'contain'
   },
   iconLetter: {
     color: '#FFFFFF',

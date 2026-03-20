@@ -712,22 +712,6 @@ export default function NewHome() {
     return <GuestHome />;
   }
 
-  if (isLoading) {
-    return (
-      <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
-        <HomeHeader
-          onLogoPress={() => {
-            animateScrollToTop(800);
-            setTimeout(() => {
-              setIsManualRefresh(true);
-              onRefresh();
-            }, 100);
-          }}
-        />
-        <NewHomeSkeleton />
-      </SafeAreaView>
-    );
-  }
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
@@ -854,14 +838,12 @@ export default function NewHome() {
               )}
 
               {/* Featured Nonprofits Section */}
-              {nonprofitsLoading ? (
-                <FeaturedNonprofitsSkeleton />
-              ) : (
+              {(!nonprofitsLoading && !communityUpdatesLoading) ? (
                 <NewFeaturedNonprofits
                   nonprofits={filteredFeaturedNonprofits}
                   seeAllLink="/search"
                 />
-              )}
+              ) : (nonprofitsLoading && <FeaturedNonprofitsSkeleton />)}
 
               {/* Feed Part 2 */}
               {feedPart2.length > 0 && (
@@ -873,14 +855,12 @@ export default function NewHome() {
               )}
 
               {/* Suggested Collectives Section */}
-              {collectivesLoading ? (
-                <SuggestedCollectivesSkeleton />
-              ) : (
+              {(!collectivesLoading && !communityUpdatesLoading) ? (
                 <NewSuggestedCollectives
                   collectives={filteredSuggestedCollectives}
                   seeAllLink="/search"
                 />
-              )}
+              ) : (collectivesLoading && <SuggestedCollectivesSkeleton />)}
 
               {/* Feed Part 3 */}
               {token?.access_token && (hasNextPage || feedPart3.length > 0) && (

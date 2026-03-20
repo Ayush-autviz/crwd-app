@@ -196,7 +196,7 @@ export default function NewSavedScreen() {
               const hasLogo = collective.logo && (collective.logo.startsWith("http") || collective.logo.startsWith("/") || collective.logo.startsWith("data:"));
               const iconColor = hasColor ? collective.color : (!hasLogo ? getIconColor(index) : undefined);
               const iconLetter = getIconLetter(collective.name || 'C');
-              const showImage = !hasColor && hasLogo;
+              const showImage = hasLogo;
 
               const founder = collective.created_by;
               const memberCount = collective.member_count || 0;
@@ -358,7 +358,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   collectiveAvatar: {
-    borderRadius: 12,
+    borderRadius: 8,
   },
   avatarText: {
     fontSize: 14,

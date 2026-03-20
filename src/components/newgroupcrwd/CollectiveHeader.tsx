@@ -57,7 +57,7 @@ export default function CollectiveHeader({
       setIsFavorite(true);
       queryClient.invalidateQueries({ queryKey: ['crwd', collectiveId] });
       queryClient.invalidateQueries({ queryKey: ['favoriteCollectives'] });
-      showToast('Added to favorites!', 2000);
+      // showToast('Added to favorites!', 2000);
     },
     onError: (error: any) => {
       console.error('Favorite error:', error);
@@ -72,7 +72,7 @@ export default function CollectiveHeader({
       setIsFavorite(false);
       queryClient.invalidateQueries({ queryKey: ['crwd', collectiveId] });
       queryClient.invalidateQueries({ queryKey: ['favoriteCollectives'] });
-      showToast('Removed from favorites!', 2000);
+      // showToast('Removed from favorites!', 2000);
     },
     onError: (error: any) => {
       console.error('Unfavorite error:', error);

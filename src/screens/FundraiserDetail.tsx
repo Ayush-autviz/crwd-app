@@ -23,6 +23,7 @@ import { Share } from 'react-native';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import SharePost from '../components/SharePost';
 import { WEB_BASE_URL } from '../Constants/url';
+import { encodePostId } from '../utils/truncateFirstPeriod';
 
 // Avatar colors for consistent fallback styling
 const avatarColors = [
@@ -498,7 +499,7 @@ export default function FundraiserDetail() {
       </View>
       <SharePost
         ref={shareSheetRef}
-        url={`${WEB_BASE_URL}/fundraiser/${fundraiserId}`}
+        url={`${WEB_BASE_URL}/fundraiser/${encodePostId(fundraiserId)}`}
         title={''}
         message={''}
       />

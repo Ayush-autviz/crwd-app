@@ -45,7 +45,7 @@ import ConfettiCannon from 'react-native-confetti-cannon';
 import { getCollectiveById, getCausesBySearch, createFundraiser, getCategories, getCollectiveCauses } from '../services/api/crwd';
 import { useToast } from '../contexts/ToastContext';
 import CrwdAnimation from '../components/ui/CrwdAnimation';
-import { truncateAtFirstPeriod } from '../utils/truncateFirstPeriod';
+import { encodePostId, truncateAtFirstPeriod } from '../utils/truncateFirstPeriod';
 import SharePost from '../components/SharePost';
 import { WEB_BASE_URL } from '../Constants/url';
 
@@ -629,7 +629,7 @@ export default function CreateFundraiser() {
         )}
         <SharePost
           ref={shareSheetRef}
-          url={`${WEB_BASE_URL}/fundraiser/${createdFundraiser?.id}`}
+          url={`${WEB_BASE_URL}/fundraiser/${encodePostId(createdFundraiser?.id)}`}
           title={''}
           message={''}
         />

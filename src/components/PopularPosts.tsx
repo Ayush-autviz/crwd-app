@@ -14,6 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/Avatar'
 import { useAuthStore } from '../store/store'
 import DeletePostBottomSheet from './post/DeletePostBottomSheet'
 import { WEB_BASE_URL } from '../Constants/url'
+import { encodePostId } from '../utils/truncateFirstPeriod'
 
 // Format date to relative time or full date
 const formatPostTime = (timeString: string | undefined): string => {
@@ -355,14 +356,19 @@ export default function PopularPosts({
         }
     };
 
-    const handleShare = async (postId?: string) => {
+    const handleShare = async (post?: Post) => {
         let webUrl = '';
         let shareMessage = '';
         let shareTitle = '';
 
-        if (postId) {
-            // Share post
-            webUrl = `${WEB_BASE_URL}/post/${postId}`;
+        if (post) {
+            if (post.fundraiser) {
+                // Share fundraiser
+                webUrl = `${WEB_BASE_URL}/fundraiser/${encodePostId(post.fundraiser.id)}`;
+            } else {
+                // Share post
+                webUrl = `${WEB_BASE_URL}/post/${encodePostId(post.id)}`;
+            }
             shareMessage = ``;
             shareTitle = '';
         } else if (user?.id) {
@@ -1141,7 +1147,7 @@ export default function PopularPosts({
                                             <TouchableOpacity
                                                 onPress={() => {
                                                     setSelectedPost(item);
-                                                    handleShare(item.id);
+                                                    handleShare(item);
                                                 }}
                                                 style={styles.shareButton}
                                             >

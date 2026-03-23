@@ -14,6 +14,7 @@ import DeletePostBottomSheet from '../post/DeletePostBottomSheet';
 import { useToast } from '../../contexts/ToastContext';
 import { LightGrey, PrimaryBlue, PrimaryGrey } from '../../Constants/Colors';
 import { Modal, TouchableWithoutFeedback, Pressable } from 'react-native';
+import { encodePostId } from '../../utils/truncateFirstPeriod';
 
 interface PreviewDetails {
   title?: string | null;
@@ -899,8 +900,8 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
       <SharePost
         ref={shareSheetRef}
         url={post.fundraiser
-          ? `${WEB_BASE_URL}/fundraiser/${post.fundraiser.id}`
-          : `${WEB_BASE_URL}/post/${post.id}`}
+          ? `${WEB_BASE_URL}/fundraiser/${encodePostId(post.fundraiser.id)}`
+          : `${WEB_BASE_URL}/post/${encodePostId(post.id)}`}
         title={''}
         message={''}
       />

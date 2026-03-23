@@ -168,7 +168,7 @@ export default function DonationBoxPrompt({ causeCount, hasJoinedCollectives = f
               <View style={styles.content}>
                 <Text style={styles.cardTitle}>Create a Donation Box</Text>
                 <Text style={styles.cardSubtitle}>
-                  Support multiple causes with one donation
+                  Support multiple nonprofits with one donation
                 </Text>
                 <TouchableOpacity
                   style={styles.linkContainer}

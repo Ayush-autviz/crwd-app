@@ -12,7 +12,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { ArrowLeft } from 'lucide-react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getSurpriseMe } from '../services/api/crwd';
-import { addCausesToBox, getDonationBox } from '../services/api/donation';
+import { addCausesToBox, getDonationBox, createDonationBox } from '../services/api/donation';
 import { useToast } from '../contexts/ToastContext';
 import { useAuthStore } from '../store/store';
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/Avatar';
@@ -95,29 +95,7 @@ export default function SurpriseMePage() {
     onSuccess: () => {
       showToast('All nonprofits added to donation box!');
       queryClient.invalidateQueries({ queryKey: ['donationBox'] });
-    },
-    onError: (error: any) => {
-      showToast(
-        error?.response?.data?.message || 'Failed to add nonprofits to donation box'
-      );
-    },
-  });
-
-  const handleSurpriseAgain = () => {
-    refetch();
-  };
-
-  const handleAddAllToBox = () => {
-    if (surpriseCauses.length === 0) return;
-
-    // Check if donation box exists
-    const isDonationBoxNotFound = donationBoxData?.message === 'Donation box not found';
-    const hasDonationBox = donationBoxData && !isDonationBoxNotFound && donationBoxData.id;
-
-    if (!hasDonationBox) {
-      // Donation box not set up - navigate to donation box setup with preselected causes
-      const causeIds = surpriseCauses.map((cause) => cause.id);
-      // Navigate to bottom tab "Donate" with preselected causes
+      // Navigate to bottom tab "Donate" with setup tab
       (navigation as any).reset({
         index: 0,
         routes: [
@@ -133,16 +111,12 @@ export default function SurpriseMePage() {
                       { name: 'Search' as never },
                       {
                         name: 'Donate' as never,
-                        params: {
-                          initialTab: 'setup',
-                          preselectedCauses: causeIds, // IDs
-                          preselectedCausesData: surpriseCauses, // Full cause objects
-                        },
+                        params: { initialTab: 'setup' },
                       },
                       { name: 'Collectives' as never },
                       { name: 'Profile' as never },
                     ],
-                    index: 2, // Donate tab index
+                    index: 2,
                   },
                 },
               ],
@@ -150,6 +124,76 @@ export default function SurpriseMePage() {
           },
         ],
       });
+    },
+    onError: (error: any) => {
+      showToast(
+        error?.response?.data?.message || 'Failed to add nonprofits to donation box'
+      );
+    },
+  });
+
+  // Create donation box mutation
+  const createDonationBoxMutation = useMutation({
+    mutationFn: async (causes: Array<{ cause_id: number }>) => {
+      return await createDonationBox({
+        monthly_amount: "10",
+        causes: causes
+      });
+    },
+    onSuccess: () => {
+      showToast('Donation box created with these nonprofits!');
+      queryClient.invalidateQueries({ queryKey: ['donationBox'] });
+      (navigation as any).reset({
+        index: 0,
+        routes: [
+          {
+            name: 'DrawerNav' as never,
+            state: {
+              routes: [
+                {
+                  name: 'MainTabs' as never,
+                  state: {
+                    routes: [
+                      { name: 'Home' as never },
+                      { name: 'Search' as never },
+                      {
+                        name: 'Donate' as never,
+                        params: { initialTab: 'setup' },
+                      },
+                      { name: 'Collectives' as never },
+                      { name: 'Profile' as never },
+                    ],
+                    index: 2,
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      });
+    },
+    onError: (error: any) => {
+      showToast(error?.response?.data?.message || 'Failed to create donation box');
+    },
+  });
+
+  const handleSurpriseAgain = () => {
+    refetch();
+  };
+
+  const handleAddAllToBox = () => {
+    if (surpriseCauses.length === 0) return;
+
+    // Check if donation box exists
+    const isDonationBoxNotFound = donationBoxData?.message === 'Donation box not found';
+    const hasDonationBox = donationBoxData && !isDonationBoxNotFound && donationBoxData.id;
+
+    if (!hasDonationBox) {
+      // Donation box not set up - create it directly
+      const causes = surpriseCauses.map((cause) => ({
+        cause_id: cause.id,
+      }));
+      createDonationBoxMutation.mutate(causes);
     } else {
       // Donation box is set up - check capacity before adding causes
       // Calculate fees and capacity
@@ -313,18 +357,18 @@ export default function SurpriseMePage() {
         {/* Add All Button */}
         <TouchableOpacity
           onPress={handleAddAllToBox}
-          disabled={addToBoxMutation.isPending || surpriseCauses.length === 0}
+          disabled={addToBoxMutation.isPending || createDonationBoxMutation.isPending || surpriseCauses.length === 0}
           style={[
             styles.addAllButton,
-            (addToBoxMutation.isPending || surpriseCauses.length === 0) &&
+            (addToBoxMutation.isPending || createDonationBoxMutation.isPending || surpriseCauses.length === 0) &&
             styles.addAllButtonDisabled,
           ]}
           activeOpacity={0.7}
         >
-          {addToBoxMutation.isPending ? (
+          {addToBoxMutation.isPending || createDonationBoxMutation.isPending ? (
             <View style={styles.buttonLoading}>
               <ActivityIndicator size="small" color="#FFFFFF" />
-              <Text style={styles.addAllButtonText}>Adding...</Text>
+              <Text style={styles.addAllButtonText}>Processing...</Text>
             </View>
           ) : (
             <Text style={styles.addAllButtonText}>

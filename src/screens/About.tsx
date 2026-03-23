@@ -130,7 +130,7 @@ export default function About() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>About CRWD</Text>
           <Text style={styles.paragraphText}>
-            CRWD is a collective giving platform that makes it easy to support multiple causes you care about with a single monthly donation. Our mission is to transform how people give by removing barriers and creating communities of changemakers who show up consistently for the causes that matter.
+            CRWD is a collective giving platform that makes it easy to support multiple nonprofits you care about with a single monthly donation. Our mission is to transform how people give by removing barriers and creating communities of changemakers who show up consistently for the causes that matter.
           </Text>
           <Text style={styles.paragraphText}>
             CRWD operates through two entities:

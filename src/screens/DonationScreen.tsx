@@ -827,7 +827,7 @@ export default function DonationScreen() {
                           {(route.params as any)?.collectiveName ? `Supporting ${(route.params as any).collectiveName}` : 'Set your monthly gift'}
                         </Text>
                         <Text style={styles.step1Subtitle}>
-                          Support multiple causes with one donation, split evenly. Change anytime.
+                          Support multiple nonprofits with one donation, split evenly. Change anytime.
                         </Text>
                       </View>
 
@@ -1220,7 +1220,7 @@ export default function DonationScreen() {
                           <View style={styles.step1Header}>
                             <Text style={styles.step1Title}>Set your monthly gift</Text>
                             <Text style={styles.step1Subtitle}>
-                              Support multiple causes with one donation, split evenly. Change anytime.
+                              Support multiple nonprofits with one donation, split evenly. Change anytime.
                             </Text>
                           </View>
 

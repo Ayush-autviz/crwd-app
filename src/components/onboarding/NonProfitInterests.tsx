@@ -192,13 +192,13 @@ export default function NonProfitInterests() {
           {/* Heart Icon */}
           <View style={styles.iconContainer}>
             <View style={styles.iconCircle}>
-              <Heart size={32} color="#9333ea" />
+              <Heart size={32} color="#9333ea" fill="#9333ea" />
             </View>
           </View>
 
           {/* Title */}
           <Text style={styles.title}>
-            What causes do you care about?
+            What do you care about?
           </Text>
 
           {/* Subtitle */}

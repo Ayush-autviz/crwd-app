@@ -99,7 +99,7 @@ export default function AddToDonationBoxBottomSheet({
                   <Text style={styles.optionTitlePrimary}>
                     {hasDonationBox ? 'Add to Donation Box' : 'Create a Donation Box'}
                   </Text>
-                  <Text style={styles.optionSubtitlePrimary}>Support multiple causes monthly</Text>
+                  <Text style={styles.optionSubtitlePrimary}>Support multiple nonprofits monthly</Text>
                 </View>
               </View>
               <View style={styles.arrowContainerPrimary}>

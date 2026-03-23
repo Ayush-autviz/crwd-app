@@ -15,8 +15,7 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react-native';
 import { getCauseById } from '../services/api/crwd';
-import { addCausesToBox } from '../services/api/donation';
-import { getDonationBox } from '../services/api/donation';
+import { addCausesToBox, getDonationBox, createDonationBox } from '../services/api/donation';
 import { useAuthStore } from '../store/store';
 import { useToast } from '../contexts/ToastContext';
 import CauseHeader from '../components/newcause/CauseHeader';
@@ -154,6 +153,55 @@ export default function NewCausePage() {
     },
   });
 
+  // Create donation box mutation
+  const createDonationBoxMutation = useMutation({
+    mutationFn: async () => {
+      if (!causeId) throw new Error('Cause ID is missing');
+      return createDonationBox({
+        monthly_amount: "10",
+        causes: [{ cause_id: parseInt(causeId) }],
+      });
+    },
+    onSuccess: async () => {
+      setShowAddToBoxModal(false);
+      await queryClient.invalidateQueries({ queryKey: ['donationBox', currentUser?.id] });
+      showToast('Donation box created with this cause!', 3000);
+      (navigation as any).reset({
+        index: 0,
+        routes: [
+          {
+            name: 'DrawerNav' as never,
+            state: {
+              routes: [
+                {
+                  name: 'MainTabs' as never,
+                  state: {
+                    routes: [
+                      { name: 'Home' as never },
+                      { name: 'Search' as never },
+                      {
+                        name: 'Donate' as never,
+                        params: { initialTab: 'setup' },
+                      },
+                      { name: 'Collectives' as never },
+                      { name: 'Profile' as never },
+                    ],
+                    index: 2,
+                  },
+                },
+              ],
+              index: 0,
+            },
+          },
+        ],
+      });
+    },
+    onError: (error: any) => {
+      console.error('Error creating donation box:', error);
+      showToast('Failed to create donation box.', 3000);
+    },
+  });
+
   // Loading state
   if (isLoadingCause) {
     return (
@@ -201,53 +249,7 @@ export default function NewCausePage() {
 
       // If donation box is not set up, navigate to donation page with cause preselected
       if (!donationBox || !donationBox.id || donationBox.message === "Donation box not found") {
-        setShowAddToBoxModal(false);
-        // Navigate to bottom tab "Donate" with preselected cause
-        (navigation as any).reset({
-          index: 0,
-          routes: [
-            {
-              name: 'DrawerNav' as never,
-              state: {
-                routes: [
-                  {
-                    name: 'MainTabs' as never,
-                    state: {
-                      routes: [
-                        { name: 'Home' as never },
-                        { name: 'Search' as never },
-                        {
-                          name: 'Donate' as never,
-                          params: {
-                            initialTab: 'setup',
-                            preselectedItem: {
-                              id: causeId || '',
-                              type: 'cause',
-                              data: causeData,
-                            },
-                            preselectedCauses: causeId ? [parseInt(causeId)] : [],
-                            preselectedCausesData: causeData ? [{
-                              id: causeData.id,
-                              name: causeData.name,
-                              description: causeData.description || causeData.mission || '',
-                              mission: causeData.mission || '',
-                              logo: causeData.image || causeData.logo || '',
-                              image: causeData.image || causeData.logo || '',
-                            }] : [],
-                          },
-                        },
-                        { name: 'Collectives' as never },
-                        { name: 'Profile' as never },
-                      ],
-                      index: 2, // Donate tab index
-                    },
-                  },
-                ],
-                index: 0,
-              },
-            },
-          ],
-        });
+        createDonationBoxMutation.mutate();
         return;
       }
 
@@ -292,53 +294,8 @@ export default function NewCausePage() {
       addToDonationBoxMutation.mutate();
     } catch (error) {
       console.error('Error checking donation box:', error);
-      // If there's an error (might be "Donation box not found"), navigate to setup with preselected cause
-      setShowAddToBoxModal(false);
-      // Navigate to bottom tab "Donate" with preselected cause
-      (navigation as any).reset({
-        index: 0,
-        routes: [
-          {
-            name: 'DrawerNav' as never,
-            state: {
-              routes: [
-                {
-                  name: 'MainTabs' as never,
-                  state: {
-                    routes: [
-                      { name: 'Home' as never },
-                      { name: 'Search' as never },
-                      {
-                        name: 'Donate' as never,
-                        params: {
-                          initialTab: 'setup',
-                          preselectedItem: {
-                            id: causeId || '',
-                            type: 'cause',
-                            data: causeData,
-                          },
-                          preselectedCauses: causeId ? [parseInt(causeId)] : [],
-                          preselectedCausesData: causeData ? [{
-                            id: causeData.id,
-                            name: causeData.name,
-                            description: causeData.description || causeData.mission || '',
-                            mission: causeData.mission || '',
-                            logo: causeData.image || causeData.logo || '',
-                          }] : [],
-                        },
-                      },
-                      { name: 'Collectives' as never },
-                      { name: 'Profile' as never },
-                    ],
-                    index: 2, // Donate tab index
-                  },
-                },
-              ],
-              index: 0,
-            },
-          },
-        ],
-      });
+      // If there's an error (might be "Donation box not found"), try creating it
+      createDonationBoxMutation.mutate();
     }
   };
 
@@ -412,7 +369,7 @@ export default function NewCausePage() {
           onClose={() => setShowAddToBoxModal(false)}
           onConfirm={handleConfirmAddToBox}
           onOneTimeDonation={handleDonate}
-          isPending={addToDonationBoxMutation.isPending}
+          isPending={addToDonationBoxMutation.isPending || createDonationBoxMutation.isPending}
           hasDonationBox={!!donationBoxData?.id || !!donationBoxData?.box_id}
         />
       )}

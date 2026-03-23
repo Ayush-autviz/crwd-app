@@ -18,7 +18,7 @@ export default function TermsOfUse() {
             Thank you for using CRWD! These Terms of Service govern your use of the CRWD platform and services. By creating an account or making a donation through CRWD, you agree to these Terms and our Privacy Policy.
           </Text>
           <Text style={styles.paragraph}>
-            CRWD is a collective giving platform that makes it easy to support multiple causes you care about with a single monthly donation. Our mission is to transform how people give by removing barriers and creating communities of changemakers who show up consistently for the causes that matter.
+            CRWD is a collective giving platform that makes it easy to support multiple nonprofits you care about with a single monthly donation. Our mission is to transform how people give by removing barriers and creating communities of changemakers who show up consistently for the causes that matter.
           </Text>
         </View>
 

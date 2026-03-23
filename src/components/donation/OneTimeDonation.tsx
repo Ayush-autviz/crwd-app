@@ -611,7 +611,7 @@ export default function OneTimeDonation({
               ? `Supporting ${preselectedItem?.data?.name || preselectedCausesData?.[0]?.name}`
               : 'Set your one-time gift'}
           </Text>
-          <Text style={styles.headerSubtitle}>Support multiple causes with one donation, split evenly. Change anytime.</Text>
+          <Text style={styles.headerSubtitle}>Support multiple nonprofits with one donation, split evenly. Change anytime.</Text>
         </View>
 
         {/* Donation Box Card */}

@@ -10,7 +10,7 @@ import {
   Platform,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { Heart, Search, Users, Check, ArrowRight, ChevronDown, ArrowLeft } from 'lucide-react-native';
+import { Heart, Search, Users, Check, ArrowRight, ChevronDown, ArrowLeft, ChevronLeft } from 'lucide-react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -24,6 +24,7 @@ import { useAuthStore } from '../../store/store';
 
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
 import CategoryBadges from '../newcause/CategoryBadges';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 
 type ViewType = 'initial' | 'surprise' | 'browse' | 'collectives' | 'success';
@@ -372,7 +373,7 @@ export default function CompleteOnboard() {
     setView('success');
   };
 
-  const handleFinalContinue = () => {
+  const handleFinalContinue = (home: boolean) => {
     if (addedNonprofitsCount === 0) {
       handleRedirect();
       return;
@@ -385,7 +386,43 @@ export default function CompleteOnboard() {
     createBoxMutation.mutate({
       monthly_amount: "10",
       causes: causesBody
-    });
+    }, {
+      onSuccess: () => {
+        // showToast('Donation box created!');
+        queryClient.invalidateQueries({ queryKey: ['donationBox'] });
+        if (home) {
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'DrawerNav' as never }],
+          });
+        }
+        else {
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'DrawerNav' as never }],
+          });
+          setTimeout(() => {
+            (navigation as any).navigate('DrawerNav', {
+              screen: 'MainTabs',
+              params: {
+                screen: 'Donate',
+                params: { initialTab: 'setup' }
+              }
+            });
+          }, 10);
+        }
+      }
+    },
+      {
+        onError: (error: any) => {
+          console.error("Mutation Error:", error);
+          const errorMessage = error?.response?.data?.message ||
+            error?.response?.data?.error ||
+            error?.message ||
+            'Failed to create donation box';
+          showToast(errorMessage);
+        }
+      },);
   };
 
   const getCategoryInfo = (categoryId: string) => {
@@ -438,22 +475,16 @@ export default function CompleteOnboard() {
                 <View style={[styles.stepDot, styles.stepDotActive]} />
               </View>
             </View>
-
-            {/* Heart Icon with Gradient */}
+            {/* Heart Icon */}
             <View style={styles.iconContainer}>
-              <LinearGradient
-                colors={['#A855F7', '#EC4899', '#3B82F6']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.gradientIconCircle}
-              >
-                <Heart size={32} color="white" />
-              </LinearGradient>
+              <View style={styles.iconCircle}>
+                <Heart size={32} color="#9333ea" fill="#9333ea" />
+              </View>
             </View>
 
             {/* Title */}
             <Text style={styles.title}>
-              Start Supporting Causes
+              Start Supporting Nonprofits
             </Text>
 
             {/* Description */}
@@ -497,10 +528,12 @@ export default function CompleteOnboard() {
                     <Users size={20} color="white" />
                   </View>
                 </View>
-                <Text style={styles.optionTitle}>Join a Collective</Text>
-                <Text style={styles.optionDescription}>
-                  Join crwd giving communities
-                </Text>
+                <View>
+                  <Text style={styles.optionTitle}>Join a Collective</Text>
+                  <Text style={styles.optionDescription}>
+                    Join crwd giving communities
+                  </Text>
+                </View>
               </TouchableOpacity>
 
               {/* Choose My Own Card */}
@@ -514,10 +547,12 @@ export default function CompleteOnboard() {
                     <Search size={20} color="white" />
                   </View>
                 </View>
-                <Text style={styles.optionTitle}>I'll Choose My Own</Text>
-                <Text style={styles.optionDescription}>
-                  Select nonprofits to add to your box
-                </Text>
+                <View>
+                  <Text style={styles.optionTitle}>I'll Choose My Own</Text>
+                  <Text style={styles.optionDescription}>
+                    Select nonprofits to add to your box
+                  </Text>
+                </View>
               </TouchableOpacity>
 
               {/* Surprise Me Card */}
@@ -532,10 +567,12 @@ export default function CompleteOnboard() {
                     <Heart size={20} color="white" />
                   </View>
                 </View>
-                <Text style={styles.optionTitle}>Surprise Me</Text>
-                <Text style={styles.optionDescription}>
-                  We'll pick nonprofits based on your interests
-                </Text>
+                <View>
+                  <Text style={styles.optionTitle}>Surprise Me</Text>
+                  <Text style={styles.optionDescription}>
+                    We'll pick nonprofits based on your interests
+                  </Text>
+                </View>
               </TouchableOpacity>
 
 
@@ -1026,7 +1063,10 @@ export default function CompleteOnboard() {
   // Success view
   if (view === 'success') {
     return (
-      <View style={styles.successContainer}>
+      <SafeAreaView style={styles.successContainer}>
+        <TouchableOpacity onPress={() => setView(previousView)} style={{ position: 'absolute', top: 50, left: 20 }}>
+          <ChevronLeft />
+        </TouchableOpacity>
         <View style={styles.successContent}>
           <View style={styles.successIconWrapper}>
             <View style={styles.successIconOuter} />
@@ -1045,8 +1085,12 @@ export default function CompleteOnboard() {
               : "You haven't selected any nonprofits yet. You can always browse and add causes to your donation box later from your profile."}
           </Text>
 
+          <Text style={styles.successDescription}>
+            Even $5 makes you a donor.
+          </Text>
+
           <TouchableOpacity
-            onPress={handleFinalContinue}
+            onPress={() => handleFinalContinue(false)}
             disabled={createBoxMutation.isPending}
             style={[
               styles.finalContinueButton,
@@ -1058,23 +1102,23 @@ export default function CompleteOnboard() {
               <ActivityIndicator size="small" color="white" />
             ) : null}
             <Text style={styles.finalContinueButtonText}>
-              {createBoxMutation.isPending ? 'Setting up Box...' : 'Continue to CRWD'}
+              {/* {createBoxMutation.isPending ? 'Setting up Box...' : 'Continue to CRWD'} */}
+              Set my monthly amount
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => setView(previousView)}
+            onPress={() => handleFinalContinue(true)}
             disabled={createBoxMutation.isPending}
             style={styles.changeSelectionButton}
             activeOpacity={0.8}
           >
-            <ArrowLeft size={20} color="#6b7280" />
             <Text style={styles.changeSelectionText}>
-              {addedNonprofitsCount > 0 ? "Change My Selection" : "Go Back and Choose"}
+              Skip for now
             </Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 
@@ -1285,7 +1329,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'white',
     borderRadius: 12,
-    paddingHorizontal: 18,
+    // paddingHorizontal: 16,
     paddingVertical: 12,
     width: '100%',
     maxWidth: 768,
@@ -1298,7 +1342,7 @@ const styles = StyleSheet.create({
   },
   stepIndicator: {
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 20,
   },
   stepBar: {
     flexDirection: 'row',
@@ -1319,6 +1363,15 @@ const styles = StyleSheet.create({
   iconContainer: {
     alignItems: 'center',
     marginBottom: 5,
+  },
+  iconCircle: {
+    width: 60,
+    height: 60,
+    borderRadius: 32,
+    backgroundColor: '#f3e8ff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10
   },
   gradientIconCircle: {
     width: 60,
@@ -1375,15 +1428,18 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e5e7eb',
     borderRadius: 12,
-    padding: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 15,
     alignItems: 'center',
     marginBottom: 0,
+    flexDirection: 'row',
+    gap: 10
   },
   optionsScroll: {
     paddingVertical: 10,
   },
   optionIconContainer: {
-    marginBottom: 10,
+    // marginBottom: 10,
   },
   surpriseIconCircle: {
     width: 44,
@@ -1410,16 +1466,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   optionTitle: {
-    fontSize: 18,
+    fontSize: 17,
     fontFamily: 'Outfit-Bold',
     color: '#111827',
-    marginBottom: 4,
+    // marginBottom: 2,
   },
   // optionsScroll: {
   //   flex: 1,
   // },
   optionDescription: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#6b7280',
     textAlign: 'center',
     fontFamily: 'Outfit-Regular',
@@ -1889,7 +1945,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Regular',
     color: '#4B5563',
     textAlign: 'center',
-    marginBottom: 40,
+    marginBottom: 20,
     lineHeight: 24,
   },
   finalContinueButton: {
@@ -1901,7 +1957,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flexDirection: 'row',
     gap: 8,
-    marginBottom: 32,
+    marginBottom: 20,
     shadowColor: '#1600ff',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,

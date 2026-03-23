@@ -73,6 +73,7 @@ export default function CompleteOnboard() {
   const [leavingCollectiveId, setLeavingCollectiveId] = useState<number | null>(null);
   const [expandedCollectiveIds, setExpandedCollectiveIds] = useState<Set<number>>(new Set());
   const [joinedCollectiveIds, setJoinedCollectiveIds] = useState<Set<number>>(new Set());
+  const [homeNavigation, setHomeNavigation] = useState(true);
 
   // Get selected categories from route params
   const selectedCategoryIds = (route.params as any)?.selectedCategories || [];
@@ -285,7 +286,30 @@ export default function CompleteOnboard() {
       // showToast('Donation box created!');
       queryClient.invalidateQueries({ queryKey: ['donationBox'] });
 
-      handleRedirect();
+      // handleRedirect();
+      console.log('home', homeNavigation)
+      if (homeNavigation) {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'DrawerNav' as never }],
+        });
+      }
+      else {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'DrawerNav' as never }],
+        });
+        setTimeout(() => {
+          (navigation as any).navigate('DrawerNav', {
+            screen: 'MainTabs',
+            params: {
+              screen: 'Donate',
+              params: { initialTab: 'setup' }
+            }
+          });
+        }, 100);
+      }
+
     },
     onError: (error: any) => {
       console.error("Mutation Error:", error);
@@ -374,6 +398,7 @@ export default function CompleteOnboard() {
   };
 
   const handleFinalContinue = (home: boolean) => {
+    setHomeNavigation(home);
     if (addedNonprofitsCount === 0) {
       handleRedirect();
       return;
@@ -386,43 +411,7 @@ export default function CompleteOnboard() {
     createBoxMutation.mutate({
       monthly_amount: "10",
       causes: causesBody
-    }, {
-      onSuccess: () => {
-        // showToast('Donation box created!');
-        queryClient.invalidateQueries({ queryKey: ['donationBox'] });
-        if (home) {
-          navigation.reset({
-            index: 0,
-            routes: [{ name: 'DrawerNav' as never }],
-          });
-        }
-        else {
-          navigation.reset({
-            index: 0,
-            routes: [{ name: 'DrawerNav' as never }],
-          });
-          setTimeout(() => {
-            (navigation as any).navigate('DrawerNav', {
-              screen: 'MainTabs',
-              params: {
-                screen: 'Donate',
-                params: { initialTab: 'setup' }
-              }
-            });
-          }, 10);
-        }
-      }
-    },
-      {
-        onError: (error: any) => {
-          console.error("Mutation Error:", error);
-          const errorMessage = error?.response?.data?.message ||
-            error?.response?.data?.error ||
-            error?.message ||
-            'Failed to create donation box';
-          showToast(errorMessage);
-        }
-      },);
+    });
   };
 
   const getCategoryInfo = (categoryId: string) => {

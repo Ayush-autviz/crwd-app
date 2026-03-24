@@ -10,7 +10,7 @@ import {
   Platform,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { Heart, Search, Users, Check, ArrowRight, ChevronDown, ArrowLeft, ChevronLeft } from 'lucide-react-native';
+import { Heart, Search, Users, Check, ArrowRight, ChevronDown, ArrowLeft, ChevronLeft, Sparkles } from 'lucide-react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -86,7 +86,7 @@ export default function CompleteOnboard() {
 
   // Use the internal character IDs for queries if we have the objects
   const internalCategoryIds = selectedCategoryObjects.length > 0
-    ? selectedCategoryObjects.map(cat => (cat as any).id)
+    ? selectedCategoryObjects.map((cat: any) => (cat as any).id)
     : selectedCategoryIds;
 
   // Fetch surprise me causes
@@ -467,7 +467,7 @@ export default function CompleteOnboard() {
             {/* Heart Icon */}
             <View style={styles.iconContainer}>
               <View style={styles.iconCircle}>
-                <Heart size={32} color="#9333ea" fill="#9333ea" />
+                <Heart size={34} color="#9333ea" fill="#9333ea" {...({ fill: "#9333ea" } as any)} />
               </View>
             </View>
 
@@ -489,10 +489,10 @@ export default function CompleteOnboard() {
                     key={category.id}
                     style={[
                       styles.categoryTag,
-                      { backgroundColor: category.background }
+                      { backgroundColor: '#F9C9B6' }
                     ]}
                   >
-                    <Text style={styles.categoryTagText}>{category.name}</Text>
+                    <Text style={[styles.categoryTagText, { color: '#824C38' }]}>{category.name}</Text>
                   </View>
                 ))}
               </View>
@@ -514,10 +514,10 @@ export default function CompleteOnboard() {
               >
                 <View style={styles.optionIconContainer}>
                   <View style={styles.joinIconCircle}>
-                    <Users size={20} color="white" />
+                    <Users size={20} color="#9333ea" />
                   </View>
                 </View>
-                <View>
+                <View style={{ flex: 1, alignItems: 'flex-start' }}>
                   <Text style={styles.optionTitle}>Join a Collective</Text>
                   <Text style={styles.optionDescription}>
                     Join crwd giving communities
@@ -533,10 +533,10 @@ export default function CompleteOnboard() {
               >
                 <View style={styles.optionIconContainer}>
                   <View style={styles.browseIconCircle}>
-                    <Search size={20} color="white" />
+                    <Search size={20} color="#9333ea" />
                   </View>
                 </View>
-                <View>
+                <View style={{ flex: 1, alignItems: 'flex-start' }}>
                   <Text style={styles.optionTitle}>I'll Choose My Own</Text>
                   <Text style={styles.optionDescription}>
                     Select nonprofits to add to your box
@@ -552,8 +552,7 @@ export default function CompleteOnboard() {
               >
                 <View style={styles.optionIconContainer}>
                   <View style={styles.surpriseIconCircle}>
-                    {/* <Text style={{ fontSize: 24, color: 'white' }}>✨</Text> */}
-                    <Heart size={20} color="white" />
+                    <Sparkles size={20} color="#E91E63" {...({} as any)} />
                   </View>
                 </View>
                 <View>
@@ -1357,7 +1356,7 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 32,
-    backgroundColor: '#f3e8ff',
+    backgroundColor: '#EDE0F5',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 10
@@ -1404,7 +1403,6 @@ const styles = StyleSheet.create({
   categoryTagText: {
     fontSize: 13,
     fontFamily: 'Outfit-Medium',
-    color: 'white',
   },
   optionsContainer: {
     gap: 12,
@@ -1434,7 +1432,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 32,
-    backgroundColor: '#ec4899',
+    backgroundColor: '#F5D6D6',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -1442,7 +1440,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 32,
-    backgroundColor: '#9333ea',
+    backgroundColor: '#D6D6F5',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -1450,7 +1448,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 32,
-    backgroundColor: '#ec4899',
+    backgroundColor: '#F0D6F5',
     alignItems: 'center',
     justifyContent: 'center',
   },

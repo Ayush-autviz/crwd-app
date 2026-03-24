@@ -39,7 +39,7 @@ export default function SearchResults() {
 
     const mapTabToApiValue = (tab: string) => {
         switch (tab) {
-            case 'Causes': return 'cause';
+            case 'Nonprofits': return 'cause';
             case 'Collectives': return 'collective';
             case 'Users': return 'user';
             case 'Posts': return 'post';
@@ -81,7 +81,7 @@ export default function SearchResults() {
     const getResults = () => {
         if (!data?.pages) return [];
         return data.pages.flatMap((page: any) => {
-            if (activeTab === 'Causes') {
+            if (activeTab === 'Nonprofits') {
                 return page.results || page.causes || page.cause || [];
             }
             switch (activeTab) {
@@ -105,7 +105,7 @@ export default function SearchResults() {
 
     const renderItem = ({ item }: { item: any }) => {
         switch (activeTab) {
-            case 'Causes':
+            case 'Nonprofits':
                 return <CauseResultCard cause={item} />;
             case 'Collectives':
                 return <CollectiveResultCard collective={item} />;
@@ -127,7 +127,7 @@ export default function SearchResults() {
             );
         }
 
-        if (activeTab === 'Causes') {
+        if (activeTab === 'Nonprofits') {
             return (
                 <View style={styles.emptyContainer}>
                     <Text style={styles.emptyTitle}>No organizations found matching your search.</Text>

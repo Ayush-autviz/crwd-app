@@ -2,13 +2,13 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
 interface SearchTabsProps {
-  activeTab: 'Causes' | 'Collectives' | 'Users' | 'Posts';
-  onTabChange: (tab: 'Causes' | 'Collectives' | 'Users' | 'Posts') => void;
+  activeTab: 'Nonprofits' | 'Collectives' | 'Users' | 'Posts';
+  onTabChange: (tab: 'Nonprofits' | 'Collectives' | 'Users' | 'Posts') => void;
 }
 
 export default function SearchTabs({ activeTab, onTabChange }: SearchTabsProps) {
-  const tabs: Array<'Causes' | 'Collectives' | 'Users' | 'Posts'> = [
-    'Causes',
+  const tabs: Array<'Nonprofits' | 'Collectives' | 'Users' | 'Posts'> = [
+    'Nonprofits',
     'Collectives',
     'Users',
     'Posts',

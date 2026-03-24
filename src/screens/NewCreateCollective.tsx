@@ -800,7 +800,7 @@ export default function NewCreateCollective() {
           </View>
           <Text style={styles.promptTitle}>Lead a Giving Community</Text>
           <Text style={styles.promptDescription}>
-            Pick your causes. Name your collective. Invite your people. CRWD handles the donations, you rally the movement.
+            Pick your nonprofits. Name your collective. Invite your people. CRWD handles the donations, you rally the movement.
           </Text>
           <View style={styles.promptButtons}>
             <TouchableOpacity
@@ -838,9 +838,9 @@ export default function NewCreateCollective() {
           <View style={styles.promptIconContainer}>
             <Users size={32} color="#A855F7" />
           </View>
-          <Text style={styles.promptTitle}>Bring people together around causes</Text>
+          <Text style={styles.promptTitle}>Bring people together around nonprofits</Text>
           <Text style={styles.promptDescription}>
-            You choose the causes. You invite the people.{'\n\n'}Start conversations and share why you support the nonprofits you care about.{'\n\n'}No money touches your hands.
+            You choose the nonprofits. You invite the people.{'\n\n'}Start conversations and share why you support the nonprofits you care about.{'\n\n'}No money touches your hands.
           </Text>
           <TouchableOpacity
             onPress={() => {
@@ -1383,14 +1383,14 @@ export default function NewCreateCollective() {
           {/* Add or Remove Causes */}
           <View style={styles.addCausesCard}>
             <Text style={styles.addCausesTitle}>
-              Add or Remove Causes <Text style={styles.required}>*</Text>
+              Add or Remove Nonprofits <Text style={styles.required}>*</Text>
             </Text>
 
             {/* Search Bar */}
             <View style={styles.searchContainer}>
               <Search size={20} color="#9CA3AF" style={styles.searchIcon} />
               <TextInput
-                placeholder={isSearchFocused ? "" : "Search causes or nonprofits"}
+                placeholder={isSearchFocused ? "" : "Search nonprofits"}
                 placeholderTextColor="#9CA3AF"
                 value={searchQuery}
                 onChangeText={setSearchQuery}

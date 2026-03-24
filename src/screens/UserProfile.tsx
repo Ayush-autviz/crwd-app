@@ -372,13 +372,13 @@ export default function UserProfile() {
     const getTabInfo = () => {
         switch (activeStatsTab) {
             case 'causes':
-                return { title: 'Causes', subtitle: 'Causes they support' };
+                return { title: 'Nonprofits', subtitle: `All nonprofits that ${fullName} support` };
             case 'crwds':
-                return { title: 'Collectives', subtitle: "Collectives they're part of" };
+                return { title: 'Collectives', subtitle: `Collectives ${fullName} is part of` };
             case 'followers':
-                return { title: 'Followers', subtitle: 'People following them' };
+                return { title: 'Followers', subtitle: `People following ${fullName}` };
             case 'following':
-                return { title: 'Following', subtitle: 'People they follow' };
+                return { title: 'Following', subtitle: `People ${fullName} is following` };
             default:
                 return { title: 'Statistics', subtitle: '' };
         }
@@ -488,7 +488,7 @@ export default function UserProfile() {
                         );
                     }) : (
                         <View style={styles.statsEmptyContainer}>
-                            <Text style={styles.statsEmptyText}>No causes found</Text>
+                            <Text style={styles.statsEmptyText}>No nonprofits found</Text>
                         </View>
                     )}
                 </View>
@@ -1020,7 +1020,7 @@ export default function UserProfile() {
                 {/* Tabs */}
                 <View style={styles.tabsContainer}>
                     {[
-                        { label: 'Causes', value: 'causes' },
+                        { label: 'Nonprofits', value: 'causes' },
                         { label: 'Collectives', value: 'crwds' },
                         { label: 'Followers', value: 'followers' },
                         { label: 'Following', value: 'following' },

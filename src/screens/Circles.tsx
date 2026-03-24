@@ -266,7 +266,7 @@ const Circles = () => {
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Discover Collectives</Text>
         <Text style={styles.headerSubtitle}>
-          Join Communities of people supporting cause together or start your own.
+          Join Communities of people supporting nonprofits together or start your own.
         </Text>
         <TouchableOpacity
           style={styles.createButton}

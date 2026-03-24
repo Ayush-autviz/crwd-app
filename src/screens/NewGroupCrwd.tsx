@@ -906,14 +906,14 @@ export default function NewGroupCrwdPage() {
             {isAdmin ? (
               <>
                 {/* Joined Button - Non-clickable for admin */}
-                <TouchableOpacity
+                {/* <TouchableOpacity
                   style={[styles.button, styles.joinedButton, styles.disabledButton, { flex: 1 }]}
                   disabled
                   activeOpacity={1}
                 >
                   <Check size={14} color="#16a34a" />
                   <Text style={styles.joinedButtonText}>Joined</Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
                 {/* Donate Button */}
                 <TouchableOpacity
                   onPress={() => setShowDonationChoiceModal(true)}
@@ -927,7 +927,7 @@ export default function NewGroupCrwdPage() {
             ) : crwdData.is_joined ? (
               <>
                 {/* Joined Button - Clickable for non-admin, prompts to unjoin */}
-                <TouchableOpacity
+                {/* <TouchableOpacity
                   onPress={handleJoinCollective}
                   disabled={leaveCollectiveMutation.isPending}
                   style={[
@@ -949,7 +949,7 @@ export default function NewGroupCrwdPage() {
                       <Text style={styles.joinedButtonText}>Joined</Text>
                     </>
                   )}
-                </TouchableOpacity>
+                </TouchableOpacity> */}
                 {/* Donate Button */}
                 <TouchableOpacity
                   onPress={() => setShowDonationChoiceModal(true)}
@@ -981,13 +981,13 @@ export default function NewGroupCrwdPage() {
                     <Text style={styles.joinButtonText}>Join Collective</Text>
                   )}
                 </TouchableOpacity>
-                <TouchableOpacity
+                {/* <TouchableOpacity
                   onPress={handleOneTimeDonation}
                   style={[styles.button, styles.donationButton]}
                   activeOpacity={0.8}
                 >
                   <Text style={styles.donationButtonText}>One-Time Donation</Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
               </>
             )}
           </View>
@@ -1357,7 +1357,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 6,
     paddingVertical: 10,
-    borderRadius: 8,
+    borderRadius: 20,
     fontWeight: '600',
   },
   joinButton: {

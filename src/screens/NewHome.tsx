@@ -796,7 +796,7 @@ export default function NewHome() {
                   )}
 
                   {/* Collective Carousel Card */}
-                  <View style={{ width: '100%' }} collapsable={false}>
+                  {/* <View style={{ width: '100%' }} collapsable={false}>
                     {joinedCollectivesLoading ? (
                       <CollectiveCarouselSkeleton />
                     ) : (
@@ -808,7 +808,7 @@ export default function NewHome() {
                         )}
                       </>
                     )}
-                  </View>
+                  </View> */}
                 </>
               ) : null}
             </View>

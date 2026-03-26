@@ -330,7 +330,7 @@ const DonationReviewBottomSheet = forwardRef<any, DonationReviewBottomSheetProps
             {/* Selected Causes */}
             <View style={styles.causesSection}>
               <View style={styles.causesHeaderRow}>
-                <Text style={styles.causesTitle}>Your Selected Causes ({totalCauses})</Text>
+                <Text style={styles.causesTitle}>Your Selected Nonprofits ({totalCauses})</Text>
                 {showEditButton && onEditCauses && (
                   <TouchableOpacity
                     onPress={onEditCauses}

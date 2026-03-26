@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     aspectRatio: 1,
-    objectFit: 'contain',
+    objectFit: 'cover',
     backgroundColor: 'white'
   },
   avatarFallback: {

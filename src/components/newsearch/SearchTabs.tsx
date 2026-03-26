@@ -2,14 +2,14 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
 interface SearchTabsProps {
-  activeTab: 'Nonprofits' | 'Collectives' | 'Users' | 'Posts';
-  onTabChange: (tab: 'Nonprofits' | 'Collectives' | 'Users' | 'Posts') => void;
+  activeTab: 'Nonprofits' | 'Giving Groups' | 'Users' | 'Posts';
+  onTabChange: (tab: 'Nonprofits' | 'Giving Groups' | 'Users' | 'Posts') => void;
 }
 
 export default function SearchTabs({ activeTab, onTabChange }: SearchTabsProps) {
-  const tabs: Array<'Nonprofits' | 'Collectives' | 'Users' | 'Posts'> = [
+  const tabs: Array<'Nonprofits' | 'Giving Groups' | 'Users' | 'Posts'> = [
     'Nonprofits',
-    'Collectives',
+    'Giving Groups',
     'Users',
     'Posts',
   ];

@@ -395,7 +395,7 @@ export default function Profile() {
             case 'causes':
                 return { title: 'All Nonprofits', subtitle: 'All nonprofits that you support' };
             case 'crwds':
-                return { title: 'Collectives', subtitle: "Collectives you're part of" };
+                return { title: 'Giving Groups', subtitle: "Giving Groups you're part of" };
             case 'followers':
                 return { title: 'Followers', subtitle: 'People following you' };
             case 'following':
@@ -1195,7 +1195,7 @@ export default function Profile() {
                 <View style={styles.tabsContainer}>
                     {[
                         { label: 'Nonprofits', value: 'causes' },
-                        { label: 'Collectives', value: 'crwds' },
+                        { label: 'Groups', value: 'crwds' },
                         { label: 'Followers', value: 'followers' },
                         { label: 'Following', value: 'following' },
                     ].map((tab) => (
@@ -1270,7 +1270,7 @@ export default function Profile() {
                                     if (!collective || !collective.id) return null;
 
                                     const avatarBgColor = collective.color || getConsistentColor(collective.id, avatarColors);
-                                    const collectiveName = collective.name || 'Unknown Collective';
+                                    const collectiveName = collective.name || 'Unknown Giving Group';
                                     const initials = getInitials(collectiveName, '', collectiveName);
 
                                     return (
@@ -1316,7 +1316,7 @@ export default function Profile() {
                         ) : (
                             <View style={{ padding: 32, alignItems: 'center' }}>
                                 <Text style={{ fontSize: 15, color: '#6B7280', fontFamily: 'Outfit-Regular' }}>
-                                    No collectives found
+                                    No Giving Groups found
                                 </Text>
                             </View>
                         )}

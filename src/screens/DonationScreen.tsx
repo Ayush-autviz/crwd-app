@@ -842,7 +842,7 @@ export default function DonationScreen() {
                             <TouchableOpacity
                               onPress={() => {
                                 if (donationAmount > 5) {
-                                  const newAmount = Math.max(5, donationAmount - 5);
+                                  const newAmount = Math.max(5, donationAmount - 1);
                                   setDonationAmount(newAmount);
                                   setInputValue(newAmount.toString());
                                 }
@@ -869,7 +869,7 @@ export default function DonationScreen() {
 
                             <TouchableOpacity
                               onPress={() => {
-                                const newAmount = donationAmount + 5;
+                                const newAmount = donationAmount + 1;
                                 setDonationAmount(newAmount);
                                 setInputValue(newAmount.toString());
                               }}
@@ -940,7 +940,7 @@ export default function DonationScreen() {
                         <View style={styles.selectedCausesSection}>
                           <View style={styles.selectedCausesHeader}>
                             <View>
-                              <Text style={styles.selectedCausesTitle}>Your Selected Causes</Text>
+                              <Text style={styles.selectedCausesTitle}>Your Selected Nonprofits</Text>
                               <Text style={styles.selectedCausesSubtitle}>Your Donation Box. Add or remove anytime.</Text>
                             </View>
                             <View style={styles.selectedCausesBadge}>
@@ -1004,7 +1004,7 @@ export default function DonationScreen() {
 
                       {/* Add More Causes Section */}
                       <View style={styles.addMoreSection}>
-                        <Text style={styles.addMoreTitle}>Add More Causes</Text>
+                        <Text style={styles.addMoreTitle}>Add More Nonprofits</Text>
 
                         {/* Search Bar */}
                         <View style={styles.searchBarContainer}>
@@ -1233,7 +1233,7 @@ export default function DonationScreen() {
                                   onPress={() => {
                                     if (!isEditingAmount) setIsEditingAmount(true);
                                     if (editableAmount > 5) {
-                                      setEditableAmount(prev => Math.max(5, prev - 5));
+                                      setEditableAmount(prev => Math.max(5, prev - 1));
                                     }
                                   }}
                                   style={[
@@ -1256,7 +1256,7 @@ export default function DonationScreen() {
                                 <TouchableOpacity
                                   onPress={() => {
                                     if (!isEditingAmount) setIsEditingAmount(true);
-                                    setEditableAmount(prev => prev + 5);
+                                    setEditableAmount(prev => prev + 1);
                                   }}
                                   style={styles.amountButton}
                                 >
@@ -1294,7 +1294,7 @@ export default function DonationScreen() {
                           <View style={styles.selectedCausesSection}>
                             <View style={styles.selectedCausesHeader}>
                               <View>
-                                <Text style={styles.selectedCausesTitle}>Your Selected Causes</Text>
+                                <Text style={styles.selectedCausesTitle}>Your Selected Nonprofits</Text>
                                 <Text style={styles.selectedCausesSubtitle}>Your Donation Box. Add or remove anytime.</Text>
                               </View>
                               <View style={styles.selectedCausesBadge}>
@@ -1367,7 +1367,7 @@ export default function DonationScreen() {
 
                           {/* Add More Causes */}
                           <View style={styles.addMoreSection}>
-                            <Text style={styles.addMoreTitle}>Add More Causes</Text>
+                            <Text style={styles.addMoreTitle}>Add More Nonprofits</Text>
 
                             <View style={styles.searchBarContainer}>
                               <View style={styles.searchInputWrapper}>

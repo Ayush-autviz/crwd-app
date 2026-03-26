@@ -329,7 +329,7 @@ export default function ManageDonationBoxScreen() {
       const currentCapacity = totalCauseIds.length;
 
       if (currentCapacity >= newMaxCapacity) {
-        showToast(`You've reached the maximum capacity of ${newMaxCapacity} cause${newMaxCapacity !== 1 ? 's' : ''} for this donation amount. Please increase your donation amount to add more causes.`, 4000);
+        showToast(`You've reached the maximum capacity of ${newMaxCapacity} cause${newMaxCapacity !== 1 ? 's' : ''} for this donation amount. Please increase your donation amount to add more nonprofits.`, 4000);
         return;
       }
 
@@ -783,7 +783,7 @@ export default function ManageDonationBoxScreen() {
                 {/* Supported Entities */}
                 <View style={styles.entitiesContainer}>
                   <Text style={styles.entitiesText}>
-                    {totalCausesCount} Cause{totalCausesCount !== 1 ? 's' : ''} • {totalCollectivesCount} Collective{totalCollectivesCount !== 1 ? 's' : ''}
+                    {totalCausesCount} Cause{totalCausesCount !== 1 ? 's' : ''} • {totalCollectivesCount} Giving Group{totalCollectivesCount !== 1 ? 's' : ''}
                   </Text>
                 </View>
 
@@ -869,7 +869,7 @@ export default function ManageDonationBoxScreen() {
                 <View style={styles.selectedSection}>
                   <View style={{ marginBottom: 8, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <View style={{ flex: 1 }}>
-                      <Text style={styles.sectionTitleLarge}>Your Selected Causes</Text>
+                      <Text style={styles.sectionTitleLarge}>Your Selected Nonprofits</Text>
                       <Text style={styles.sectionSubtitle}>Your Donation Box. Add or remove anytime.</Text>
                     </View>
                     {/* {selectedCausesForDisplay.length > 1 && (
@@ -933,7 +933,7 @@ export default function ManageDonationBoxScreen() {
 
             {/* Search Section */}
             <View style={styles.searchSection}>
-              <Text style={styles.sectionTitleLarge}>Add More Causes</Text>
+              <Text style={styles.sectionTitleLarge}>Add More Nonprofits</Text>
               <View style={styles.searchContainer}>
                 <Search size={20} color="#9ca3af" style={styles.searchIcon} />
                 <TextInput

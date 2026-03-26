@@ -1067,7 +1067,7 @@ export default function NewCreateCollective() {
                 style={styles.successSecondaryButton}
               >
                 <Eye size={20} color="#111827" />
-                <Text style={styles.successSecondaryButtonText}>View My Collective</Text>
+                <Text style={styles.successSecondaryButtonText}>View My Giving Group</Text>
               </TouchableOpacity>
 
               <TouchableOpacity

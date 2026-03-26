@@ -262,9 +262,9 @@ const Circles = () => {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'right', 'left']}>
-      <MainHeaderNav title={'Collectives'} menu={false} postButton={false} />
+      <MainHeaderNav title={'Giving Groups'} menu={false} postButton={false} />
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Discover Collectives</Text>
+        <Text style={styles.headerTitle}>Give Together</Text>
         <Text style={styles.headerSubtitle}>
           Join Communities of people supporting nonprofits together or start your own.
         </Text>
@@ -274,7 +274,7 @@ const Circles = () => {
           activeOpacity={0.8}
         >
           <Plus color='#ffffff' size={18} />
-          <Text style={styles.createButtonText}>Start a Collective</Text>
+          <Text style={styles.createButtonText}>Start a Giving Group</Text>
         </TouchableOpacity>
       </View>
 
@@ -286,7 +286,7 @@ const Circles = () => {
         >
           <Users size={16} color={activeTab === 'my-crwds' ? '#000' : '#6B7280'} />
           <Text style={[styles.tabText, activeTab === 'my-crwds' && styles.tabTextActive]}>
-            My Collectives ({joinCollectiveData?.data?.length || 0})
+            My Giving Groups ({joinCollectiveData?.data?.length || 0})
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -330,8 +330,8 @@ const Circles = () => {
                     <View style={styles.emptyStateIcon}>
                       <Users size={48} color={PrimaryGrey} />
                     </View>
-                    <Text style={styles.emptyStateTitle}>you haven't joined any collectives yet</Text>
-                    <Text style={styles.emptyStateText}>Check out the discover tab to join a collective</Text>
+                    <Text style={styles.emptyStateTitle}>you haven't joined any Giving Groups yet</Text>
+                    <Text style={styles.emptyStateText}>Check out the discover tab to join a Giving Group</Text>
                   </View>
                 )}
               </>

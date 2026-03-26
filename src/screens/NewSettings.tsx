@@ -95,8 +95,8 @@ export default function NewSettings() {
       answer: "Donations are split equally among all the causes you've selected in your donation box. You can adjust the distribution or remove causes at any time."
     },
     {
-      question: "What is a Collective?",
-      answer: "A Collective is a group of users who come together to support specific causes or nonprofits. You can join existing Collectives or create your own to amplify your impact."
+      question: "What is a Giving Group?",
+      answer: "A Giving Group is a group of users who come together to support specific causes or nonprofits. You can join existing Collectives or create your own to amplify your impact."
     },
     {
       question: "Are donations tax-deductible?",

@@ -306,14 +306,14 @@ export default function OneTimeDonation({
   };
 
   const incrementDonation = () => {
-    const newAmount = donationAmount + 5;
+    const newAmount = donationAmount + 1;
     setDonationAmount(newAmount);
     setInputValue(newAmount.toString());
   };
 
   const decrementDonation = () => {
     if (donationAmount > 5) {
-      const newAmount = donationAmount - 5;
+      const newAmount = donationAmount - 1;
 
       // Calculate max capacity for new amount
       const fees = calculateFees(newAmount);
@@ -664,7 +664,7 @@ export default function OneTimeDonation({
           <View style={styles.selectedCausesSection}>
             <View style={styles.selectedCausesHeader}>
               <View>
-                <Text style={styles.selectedCausesTitle}>Your Selected Causes</Text>
+                <Text style={styles.selectedCausesTitle}>Your Selected Nonprofits</Text>
                 <Text style={styles.selectedCausesSubtitle}>Your One-Time Donation. Add or remove anytime.</Text>
               </View>
               <View style={styles.selectedCausesBadge}>
@@ -719,7 +719,7 @@ export default function OneTimeDonation({
         {/* Add More Causes Section - Hide for fundraiser donations */}
         {!fundraiserId && (
           <View style={styles.addMoreSection}>
-            <Text style={styles.addMoreTitle}>Add More Causes</Text>
+            <Text style={styles.addMoreTitle}>Add More Nonprofits</Text>
 
             {/* Search Section */}
             <View style={styles.searchBarContainer}>

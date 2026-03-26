@@ -146,7 +146,7 @@ export default function CollectiveCarouselCard({
 
               {/* Title and Badge */}
               <View style={styles.titleBadgeContainer}>
-                <Text style={styles.title}>My Collectives</Text>
+                <Text style={styles.title}>My Giving Groups</Text>
                 {/* {currentCollective?.role === 'Admin' && (
                 <View
                   style={[

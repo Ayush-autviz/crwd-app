@@ -315,7 +315,7 @@ export default function App() {
         <Tab.Screen name="Home" component={NewHome} options={{ tabBarLabel: 'Home' }} />
         <Tab.Screen name="Search" component={NewSearch} options={{ tabBarLabel: 'Search' }} />
         <Tab.Screen name="Donate" component={DonationScreen} options={{ tabBarLabel: 'Donate' }} />
-        <Tab.Screen name="Collectives" component={Circles} options={{ tabBarLabel: 'Collectives' }} />
+        <Tab.Screen name="Collectives" component={Circles} options={{ tabBarLabel: 'Groups' }} />
         <Tab.Screen name="Profile" component={Profile} options={{ tabBarLabel: 'Profile' }} />
       </Tab.Navigator>
     )

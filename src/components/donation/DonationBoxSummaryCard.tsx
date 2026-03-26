@@ -67,12 +67,12 @@ export default function DonationBoxSummaryCard({
   }
 
   const incrementAmount = () => {
-    setEditableAmount(prev => Math.round(prev) + 5)
+    setEditableAmount(prev => Math.round(prev) + 1)
   }
 
   const decrementAmount = () => {
     if (editableAmount > 5) {
-      setEditableAmount(prev => Math.max(5, Math.round(prev) - 5))
+      setEditableAmount(prev => Math.max(5, Math.round(prev) - 1))
     }
   }
 
@@ -244,7 +244,7 @@ export default function DonationBoxSummaryCard({
         {/* Supported Entities */}
         <View style={styles.entitiesContainer}>
           <Text style={styles.entitiesText}>
-            {causesCount} Cause{causesCount !== 1 ? 's' : ''} • {collectivesCount} Collective{collectivesCount !== 1 ? 's' : ''}
+            {causesCount} Cause{causesCount !== 1 ? 's' : ''} • {collectivesCount} Giving Group{collectivesCount !== 1 ? 's' : ''}
           </Text>
         </View>
 

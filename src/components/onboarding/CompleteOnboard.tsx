@@ -489,10 +489,10 @@ export default function CompleteOnboard() {
                     key={category.id}
                     style={[
                       styles.categoryTag,
-                      { backgroundColor: '#F9C9B6' }
+                      { backgroundColor: category.background }
                     ]}
                   >
-                    <Text style={[styles.categoryTagText, { color: '#824C38' }]}>{category.name}</Text>
+                    <Text style={[styles.categoryTagText, { color: category.text }]}>{category.name}</Text>
                   </View>
                 ))}
               </View>
@@ -518,7 +518,7 @@ export default function CompleteOnboard() {
                   </View>
                 </View>
                 <View style={{ flex: 1, alignItems: 'flex-start' }}>
-                  <Text style={styles.optionTitle}>Join a Collective</Text>
+                  <Text style={styles.optionTitle}>Join a Giving Group</Text>
                   <Text style={styles.optionDescription}>
                     Join crwd giving communities
                   </Text>

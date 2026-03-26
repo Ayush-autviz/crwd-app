@@ -24,7 +24,7 @@ export default function SearchResults() {
     const { user: currentUser } = useAuthStore();
 
     const [searchQuery, setSearchQuery] = useState(params?.searchQuery || '');
-    const [activeTab, setActiveTab] = useState(params?.tab || 'Causes');
+    const [activeTab, setActiveTab] = useState(params?.tab || 'Nonprofits');
     const [showRequestModal, setShowRequestModal] = useState(false);
 
     // Update searchQuery if params change
@@ -40,7 +40,7 @@ export default function SearchResults() {
     const mapTabToApiValue = (tab: string) => {
         switch (tab) {
             case 'Nonprofits': return 'cause';
-            case 'Collectives': return 'collective';
+            case 'Giving Groups': return 'collective';
             case 'Users': return 'user';
             case 'Posts': return 'post';
             default: return 'cause';
@@ -85,7 +85,7 @@ export default function SearchResults() {
                 return page.results || page.causes || page.cause || [];
             }
             switch (activeTab) {
-                case 'Collectives': return page.collectives || page.collective || page.results || [];
+                case 'Giving Groups': return page.collectives || page.collective || page.results || [];
                 case 'Users': return page.users || page.user || page.results || [];
                 case 'Posts': return page.posts || page.post || page.results || [];
                 default: return page.results || [];
@@ -107,7 +107,7 @@ export default function SearchResults() {
         switch (activeTab) {
             case 'Nonprofits':
                 return <CauseResultCard cause={item} />;
-            case 'Collectives':
+            case 'Giving Groups':
                 return <CollectiveResultCard collective={item} />;
             case 'Users':
                 return <UserResultCard user={item} currentUserId={currentUser?.id?.toString()} />;
@@ -147,13 +147,13 @@ export default function SearchResults() {
             );
         }
 
-        if (activeTab === 'Collectives') {
+        if (activeTab === 'Giving Groups') {
             return (
                 <View style={styles.emptyContainer}>
                     <View style={styles.iconBg}>
                         <SearchIcon size={32} color="#9CA3AF" />
                     </View>
-                    <Text style={styles.emptyTitle}>No "{searchQuery}" collective found</Text>
+                    <Text style={styles.emptyTitle}>No "{searchQuery}" Giving Groups found</Text>
                     <Text style={styles.emptySubtitle}>Want to start one?</Text>
 
                     <TouchableOpacity

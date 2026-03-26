@@ -50,10 +50,10 @@ export default function DiscoverMoreCollectives({ collectiveId }: DiscoverMoreCo
   if (isLoading) {
     return (
       <View style={styles.container}>
-        <Text style={styles.title}>Discover More Collectives</Text>
+        <Text style={styles.title}>Discover More Giving Groups</Text>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="small" color="#6b7280" />
-          <Text style={styles.loadingText}>Loading collectives...</Text>
+          <Text style={styles.loadingText}>Loading Giving Groups...</Text>
         </View>
       </View>
     );
@@ -65,7 +65,7 @@ export default function DiscoverMoreCollectives({ collectiveId }: DiscoverMoreCo
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Discover More Collectives</Text>
+      <Text style={styles.title}>Discover More Giving Groups</Text>
 
       <View style={styles.collectivesList}>
         {suggestedCollectives.map((collective: any, index: number) => {
@@ -169,7 +169,7 @@ export default function DiscoverMoreCollectives({ collectiveId }: DiscoverMoreCo
           style={styles.browseButton}
           activeOpacity={0.7}
         >
-          <Text style={styles.browseButtonText}>Browse All Collectives</Text>
+          <Text style={styles.browseButtonText}>Browse All Giving Groups</Text>
         </TouchableOpacity>
       </View>
     </View>

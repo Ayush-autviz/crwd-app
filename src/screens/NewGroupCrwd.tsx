@@ -978,7 +978,7 @@ export default function NewGroupCrwdPage() {
                       <Text style={styles.joinButtonText}>Joining...</Text>
                     </>
                   ) : (
-                    <Text style={styles.joinButtonText}>Join Collective</Text>
+                    <Text style={styles.joinButtonText}>Join Giving Group</Text>
                   )}
                 </TouchableOpacity>
                 {/* <TouchableOpacity

@@ -374,7 +374,7 @@ export default function UserProfile() {
             case 'causes':
                 return { title: 'Nonprofits', subtitle: `All nonprofits that ${fullName} support` };
             case 'crwds':
-                return { title: 'Collectives', subtitle: `Collectives ${fullName} is part of` };
+                return { title: 'Giving Groups', subtitle: `Giving Groups ${fullName} is part of` };
             case 'followers':
                 return { title: 'Followers', subtitle: `People following ${fullName}` };
             case 'following':
@@ -500,7 +500,7 @@ export default function UserProfile() {
                 return (
                     <View style={styles.statsLoadingContainer}>
                         <ActivityIndicator size="large" color={PrimaryBlue} />
-                        <Text style={styles.statsLoadingText}>Loading collectives...</Text>
+                        <Text style={styles.statsLoadingText}>Loading Giving Groups...</Text>
                     </View>
                 );
             }
@@ -541,7 +541,7 @@ export default function UserProfile() {
                         );
                     }) : (
                         <View style={styles.statsEmptyContainer}>
-                            <Text style={styles.statsEmptyText}>No collectives found</Text>
+                            <Text style={styles.statsEmptyText}>No Giving Groups found</Text>
                         </View>
                     )}
                 </View>
@@ -1021,7 +1021,7 @@ export default function UserProfile() {
                 <View style={styles.tabsContainer}>
                     {[
                         { label: 'Nonprofits', value: 'causes' },
-                        { label: 'Collectives', value: 'crwds' },
+                        { label: 'Groups', value: 'crwds' },
                         { label: 'Followers', value: 'followers' },
                         { label: 'Following', value: 'following' },
                     ].map((tab) => (

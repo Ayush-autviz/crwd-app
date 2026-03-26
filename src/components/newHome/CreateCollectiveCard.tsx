@@ -18,7 +18,7 @@ export default function CreateCollectiveCard() {
             <Plus size={20} color="#000000" />
           </View>
           <View style={styles.content}>
-            <Text style={styles.cardTitle}>Start Your Own Collective</Text>
+            <Text style={styles.cardTitle}>Start Your Own Giving Group</Text>
             <Text style={styles.cardSubtitle}>
               Bring people together around causes you care about.
             </Text>
@@ -26,7 +26,7 @@ export default function CreateCollectiveCard() {
               style={styles.linkContainer}
               onPress={() => navigation.navigate('CreateCRWD' as never)}
             >
-              <Text style={styles.blackLink}>Create collective</Text>
+              <Text style={styles.blackLink}>Create Giving Group</Text>
               <ArrowRight size={12} color="#111827" />
             </TouchableOpacity>
           </View>

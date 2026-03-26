@@ -1044,7 +1044,7 @@ export default function PopularPosts({
                                         )}
 
                                         {/* Media Section - Only show if NO fundraiser */}
-                                        {!item.fundraiser && !item.previewDetails?.image && item.imageUrl && (
+                                        {!item.fundraiser && !item.previewDetails && item.imageUrl && (
                                             <View style={[styles.mediaContainer, { alignSelf: 'flex-start', width: 'auto' }]}>
                                                 <Image
                                                     source={{ uri: item.imageUrl }}
@@ -1059,43 +1059,56 @@ export default function PopularPosts({
 
                                         {/* Link Preview Section */}
                                         {!item.fundraiser && item.previewDetails && (
-                                            <View style={{
-                                                // borderWidth: 1,
-                                                // borderColor: '#E5E7EB',
-                                                borderRadius: 8,
-                                                backgroundColor: 'white',
-                                                overflow: 'hidden',
-                                                marginBottom: 12,
-                                            }}>
+                                            <TouchableOpacity
+                                                onPress={() => {
+                                                    if (item.previewDetails?.url) {
+                                                        Linking.openURL(item.previewDetails.url);
+                                                    }
+                                                }}
+                                                style={{
+                                                    borderWidth: 1,
+                                                    borderColor: '#E5E7EB',
+                                                    borderRadius: 8,
+                                                    backgroundColor: 'white',
+                                                    overflow: 'hidden',
+                                                    marginBottom: 12,
+                                                }}
+                                                activeOpacity={0.8}
+                                            >
                                                 {/* Preview Image */}
                                                 {item.previewDetails.image && (
-                                                    <View style={{ flexDirection: 'row', borderRadius: 8, paddingHorizontal: 0, paddingTop: 0 }}>
+                                                    <View style={{ flexDirection: 'row', borderTopLeftRadius: 8, borderTopRightRadius: 8, overflow: 'hidden' }}>
                                                         <Image
                                                             source={{ uri: item.previewDetails.image }}
                                                             style={{
-                                                                width: imageWidths[item.id] || 0,
+                                                                width: '100%',
                                                                 height: 200,
-                                                                borderRadius: 8,
-                                                                opacity: imageWidths[item.id] ? 1 : 0
+                                                                opacity: 1
                                                             }}
                                                             resizeMode="cover"
                                                         />
                                                     </View>
                                                 )}
                                                 {/* Preview Content */}
-                                                <View style={{ paddingVertical: 12 }}>
+                                                <View style={{ padding: 12 }}>
                                                     {item.previewDetails.site_name && (
                                                         <Text style={{ fontSize: 12, color: '#6B7280', textTransform: 'uppercase', marginBottom: 4, fontFamily: 'Outfit-SemiBold' }}>
-                                                            {item.previewDetails.site_name}
+                                                            {item.previewDetails.site_name.toUpperCase()}
                                                         </Text>
                                                     )}
-                                                    {item.previewDetails.title && (
-                                                        <Text style={{ fontSize: 14, fontFamily: 'Outfit-SemiBold', color: '#111827', marginBottom: 4 }} numberOfLines={2}>
+                                                    {item.previewDetails.title ? (
+                                                        <Text style={{ fontSize: 14, fontFamily: 'Outfit-Bold', color: '#111827', marginBottom: 4 }} numberOfLines={2}>
                                                             {item.previewDetails.title}
                                                         </Text>
+                                                    ) : (
+                                                        !item.previewDetails.description && !item.previewDetails.image && item.previewDetails.url && (
+                                                            <Text style={{ fontSize: 14, color: '#1600ff', marginBottom: 4, textDecorationLine: 'underline', fontFamily: 'Outfit-Medium' }} numberOfLines={1}>
+                                                                {item.previewDetails.url}
+                                                            </Text>
+                                                        )
                                                     )}
                                                     {item.previewDetails.description && (
-                                                        <Text style={{ fontSize: 14, color: '#4B5563', fontFamily: 'Outfit-Regular' }} numberOfLines={2}>
+                                                        <Text style={{ fontSize: 13, color: '#4B5563', fontFamily: 'Outfit-Regular', marginBottom: 4 }} numberOfLines={2}>
                                                             {item.previewDetails.description}
                                                         </Text>
                                                     )}
@@ -1104,8 +1117,13 @@ export default function PopularPosts({
                                                             {item.previewDetails.domain}
                                                         </Text>
                                                     )}
+                                                    {!item.previewDetails.title && (item.previewDetails.description || item.previewDetails.image) && item.previewDetails.url && (
+                                                        <Text style={{ fontSize: 12, color: '#1600ff', textDecorationLine: 'underline', marginTop: 4, fontFamily: 'Outfit-Medium' }} numberOfLines={1}>
+                                                            {item.previewDetails.url}
+                                                        </Text>
+                                                    )}
                                                 </View>
-                                            </View>
+                                            </TouchableOpacity>
                                         )}
 
 

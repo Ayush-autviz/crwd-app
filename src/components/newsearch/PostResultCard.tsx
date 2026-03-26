@@ -639,8 +639,8 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
           </View>
         ) : null}
 
-        {/* Media Section - Only show if no fundraiser */}
-        {!post.fundraiser && !post.preview_details?.image && post.media && (
+        {/* Media Section - Only show if no fundraiser and no preview details */}
+        {!post.fundraiser && !post.preview_details && post.media && (
           <View style={{ flexDirection: 'row', borderRadius: 8 }}>
             <Image
               source={{ uri: post.media }}
@@ -763,42 +763,47 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
         ) : (
           /* Preview Card */
           post.preview_details && (post.preview_details.url || post.preview_details.title || post.preview_details.image) ? (
-            <View
-              // onPress={() => {
-              //   if (post.preview_details?.url) {
-              //     Linking.openURL(post.preview_details.url);
-              //   }
-              // }}
+            <TouchableOpacity
+              onPress={() => {
+                if (post.preview_details?.url) {
+                  Linking.openURL(post.preview_details.url);
+                }
+              }}
               style={styles.previewCardVertical}
-            // activeOpacity={0.8}
+              activeOpacity={0.8}
             >
               {post.preview_details.image && (
-                <View style={{ flexDirection: 'row', borderRadius: 8, paddingHorizontal: 0, paddingTop: 0 }}>
+                <View style={{ flexDirection: 'row', borderTopLeftRadius: 8, borderTopRightRadius: 8, overflow: 'hidden' }}>
                   <Image
                     source={{ uri: post.preview_details.image }}
                     style={{
-                      width: imageWidth || 0,
+                      width: '100%',
                       height: 200,
-                      borderRadius: 8,
-                      opacity: imageWidth ? 1 : 0
+                      opacity: 1
                     }}
                     resizeMode="cover"
                   />
                 </View>
               )}
-              <View style={{ paddingVertical: 12 }}>
+              <View style={{ padding: 12 }}>
                 {post.preview_details.site_name && (
-                  <Text style={{ fontSize: 12, color: '#6B7280', textTransform: 'uppercase', marginBottom: 4 }}>
+                  <Text style={{ fontSize: 12, color: '#6B7280', textTransform: 'uppercase', marginBottom: 4, fontFamily: 'Outfit-SemiBold' }}>
                     {post.preview_details.site_name.toUpperCase()}
                   </Text>
                 )}
-                {post.preview_details.title && (
-                  <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827', marginBottom: 4 }} numberOfLines={2}>
+                {post.preview_details.title ? (
+                  <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827', marginBottom: 4, fontFamily: 'Outfit-Bold' }} numberOfLines={2}>
                     {post.preview_details.title}
                   </Text>
+                ) : (
+                  !post.preview_details.description && !post.preview_details.image && post.preview_details.url && (
+                    <Text style={{ fontSize: 14, color: '#1600ff', marginBottom: 4, textDecorationLine: 'underline', fontFamily: 'Outfit-Medium' }} numberOfLines={1}>
+                      {post.preview_details.url}
+                    </Text>
+                  )
                 )}
                 {post.preview_details.description && (
-                  <Text style={{ fontSize: 14, color: '#4B5563' }} numberOfLines={2}>
+                  <Text style={{ fontSize: 13, color: '#4B5563', marginBottom: 4, fontFamily: 'Outfit-Regular' }} numberOfLines={2}>
                     {post.preview_details.description}
                   </Text>
                 )}
@@ -807,8 +812,13 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
                     {post.preview_details.domain}
                   </Text>
                 )}
+                {!post.preview_details.title && (post.preview_details.description || post.preview_details.image) && post.preview_details.url && (
+                  <Text style={{ fontSize: 12, color: '#1600ff', textDecorationLine: 'underline', marginTop: 4, fontFamily: 'Outfit-Medium' }} numberOfLines={1}>
+                    {post.preview_details.url}
+                  </Text>
+                )}
               </View>
-            </View>
+            </TouchableOpacity>
           ) : null
         )}
 
@@ -1142,8 +1152,8 @@ const styles = StyleSheet.create({
   previewCardVertical: {
     backgroundColor: '#FFFFFF',
     borderRadius: 8,
-    // borderWidth: 1,
-    // borderColor: '#E5E7EB',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
     marginBottom: 10,
     overflow: 'hidden',
   },

@@ -1131,25 +1131,38 @@ export default function PostDetail() {
                     />
                   </View>
                 )}
-                <View style={{ paddingHorizontal: 12, paddingBottom: 12 }}>
+                <View style={{ paddingHorizontal: 12, paddingBottom: 12, paddingTop: post.previewDetails.image ? 0 : 12 }}>
                   {post.previewDetails.site_name && (
-                    <Text style={{ fontSize: 10, color: PrimaryGrey, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>
+                    <Text style={{ fontSize: 10, color: PrimaryGrey, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4, fontFamily: 'Outfit-SemiBold' }}>
                       {post.previewDetails.site_name}
                     </Text>
                   )}
-                  {post.previewDetails.title && (
-                    <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827', marginBottom: 4 }} numberOfLines={2}>
+                  {post.previewDetails.title ? (
+                    <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827', marginBottom: 4, fontFamily: 'Outfit-Bold' }} numberOfLines={2}>
                       {post.previewDetails.title}
                     </Text>
+                  ) : (
+                    !post.previewDetails.description && !post.previewDetails.image && post.previewDetails.url && (
+                      <Text style={{ fontSize: 14, color: '#1600ff', marginBottom: 4, textDecorationLine: 'underline', fontFamily: 'Outfit-Medium' }} numberOfLines={1}>
+                        {post.previewDetails.url}
+                      </Text>
+                    )
                   )}
                   {post.previewDetails.description && (
-                    <Text style={{ fontSize: 12, color: PrimaryGrey, marginBottom: 4 }} numberOfLines={2}>
+                    <Text style={{ fontSize: 12, color: PrimaryGrey, marginBottom: 4, fontFamily: 'Outfit-Regular' }} numberOfLines={2}>
                       {post.previewDetails.description}
                     </Text>
                   )}
-                  <Text style={{ fontSize: 12, color: '#6B7280', marginVertical: 0, fontFamily: 'Outfit-SemiBold' }}>
-                    {post.previewDetails.domain}
-                  </Text>
+                  {post.previewDetails.domain && (
+                    <Text style={{ fontSize: 12, color: '#6B7280', marginVertical: 0, fontFamily: 'Outfit-SemiBold' }}>
+                      {post.previewDetails.domain}
+                    </Text>
+                  )}
+                  {!post.previewDetails.title && (post.previewDetails.description || post.previewDetails.image) && post.previewDetails.url && (
+                    <Text style={{ fontSize: 12, color: '#1600ff', textDecorationLine: 'underline', marginTop: 4, fontFamily: 'Outfit-Medium' }} numberOfLines={1}>
+                      {post.previewDetails.url}
+                    </Text>
+                  )}
                 </View>
               </TouchableOpacity>
             ) : post.imageUrl ? (

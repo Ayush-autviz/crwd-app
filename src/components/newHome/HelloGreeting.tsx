@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useAuthStore } from '../../store/store';
 
-export default function HelloGreeting() {
+export default function HelloGreeting({ causeCount }: { causeCount: any }) {
   const { user } = useAuthStore();
 
   // Get user's first name or fallback to a default
@@ -21,7 +21,7 @@ export default function HelloGreeting() {
   return (
     <View style={styles.container}>
       <Text style={styles.greeting}>
-        Hi {userName}! You're making a difference.
+        Hi {userName}. {causeCount} nonprofits are counting on you.
       </Text>
     </View>
   );

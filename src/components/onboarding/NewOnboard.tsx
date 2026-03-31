@@ -138,7 +138,7 @@ export default function NewOnboard() {
 
       // Handle redirect
       if (response.user && !response.user.last_login_at) {
-        (navigation as any).navigate('NonProfitInterests', { fromAuth: true, redirectTo, redirectParams: (route.params as any)?.redirectParams });
+        (navigation as any).navigate('DonationBoxIntro', { fromAuth: true, redirectTo, redirectParams: (route.params as any)?.redirectParams });
       } else if (redirectTo && redirectTo !== '/' && redirectTo !== 'DrawerNav') {
         // Navigate to specific route if provided
         (navigation as any).navigate(redirectTo);
@@ -177,7 +177,7 @@ export default function NewOnboard() {
 
       // Handle redirect
       if (response.user && !response.user.last_login_at) {
-        (navigation as any).navigate('NonProfitInterests', { fromAuth: true, redirectTo, redirectParams: (route.params as any)?.redirectParams });
+        (navigation as any).navigate('DonationBoxIntro', { fromAuth: true, redirectTo, redirectParams: (route.params as any)?.redirectParams });
       } else if (redirectTo && redirectTo !== '/' && redirectTo !== 'DrawerNav') {
         // Navigate to specific route if provided
         (navigation as any).navigate(redirectTo);

@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, TextInput, StyleSheet, Image, Modal, Platform } from 'react-native'
+import { View, Text, TouchableOpacity, TextInput, StyleSheet, Image, Modal, Platform, Dimensions } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import * as React from 'react';
 import { useState, useRef } from 'react';
@@ -11,6 +11,8 @@ import { emailRegistration, emailVerification, resendEmailVerificationCode, logi
 import { useToast } from '../../contexts/ToastContext'
 import { useAuthStore } from '../../store/store'
 
+const { width } = Dimensions.get('window');
+
 export default function ClaimProfile() {
     const navigation = useNavigation<any>()
     const route = useRoute()
@@ -18,6 +20,7 @@ export default function ClaimProfile() {
     const { setUser, setToken } = useAuthStore()
     const redirectTo = (route.params as any)?.redirectTo || null
     const redirectParams = (route.params as any)?.redirectParams || {}
+
 
     const [formData, setFormData] = useState({
         firstName: "",
@@ -171,7 +174,7 @@ export default function ClaimProfile() {
                 // New user - go through onboarding with redirectTo and redirectParams
                 navigation.reset({
                     index: 0,
-                    routes: [{ name: 'NonProfitInterests' as never, params: { redirectTo, redirectParams, fromAuth: true } }],
+                    routes: [{ name: 'DonationBoxIntro' as never, params: { redirectTo, redirectParams, fromAuth: true } }],
                 });
             } else if (redirectTo) {
                 // Existing user - navigate to redirectTo using reset
@@ -405,372 +408,371 @@ export default function ClaimProfile() {
                 end={{ x: 1, y: 1 }}
                 style={{ flex: 1, }}
             > */}
-                <KeyboardAwareScrollView
-                    style={{ flex: 1 }}
-                    contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 60 }}
-                    showsVerticalScrollIndicator={false}
-                    enableOnAndroid={true}
-                    extraScrollHeight={Platform.OS === 'ios' ? 20 : 0}
-                    keyboardShouldPersistTaps="handled"
-                    ref={scrollViewRef as any}
-                >
-                    <View style={styles.card}>
-                        {/* Progress Indicator - Step 2 */}
-                        <View style={styles.stepIndicator}>
-                            <View style={styles.stepBar}>
-                                <View style={[styles.stepDot, styles.stepDotInactive]} />
-                                <View style={[styles.stepDot, styles.stepDotActive]} />
-                                <View style={[styles.stepDot, styles.stepDotInactive]} />
-                                <View style={[styles.stepDot, styles.stepDotInactive]} />
-                            </View>
-                        </View>
+            <KeyboardAwareScrollView
+                style={{ flex: 1 }}
+                contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 60 }}
+                showsVerticalScrollIndicator={false}
+                enableOnAndroid={true}
+                extraScrollHeight={Platform.OS === 'ios' ? 20 : 0}
+                keyboardShouldPersistTaps="handled"
+                ref={scrollViewRef as any}
+            >
+                <View style={styles.card}>
+                    {/* Progress Indicator - Step 2 */}
+                    <View style={styles.progressContainer}>
+                        <View style={[styles.progressStep, styles.progressActive]} />
+                        <View style={[styles.progressStep]} />
+                        <View style={[styles.progressStep]} />
+                        <View style={[styles.progressStep]} />
+                        <View style={styles.progressStep} />
+                    </View>
 
-                        {/* Title and Subtitle */}
-                        <View style={styles.headingContainer}>
-                            <Text style={styles.heading}>Finish your profile</Text>
-                            <Text style={styles.subheading}>So others can connect with you on CRWD</Text>
-                        </View>
+                    {/* Title and Subtitle */}
+                    <View style={styles.headingContainer}>
+                        <Text style={styles.heading}>Create your profile</Text>
+                        <Text style={styles.subheading}>So others can connect with you on CRWD</Text>
+                    </View>
 
-                        {/* Profile Photo Section */}
-                        <View style={styles.photoSection}>
-                            <TouchableOpacity onPress={handleImageUpload} style={styles.photoButton}>
-                                {formData.profileImage ? (
-                                    <View style={styles.photoPreview}>
-                                        <Image source={{ uri: formData.profileImage }} style={styles.photoImage} />
-                                    </View>
-                                ) : (
-                                    <View style={styles.photoUploadButton}>
-                                        <Camera size={32} color="#9333ea" />
-                                    </View>
-                                )}
-                            </TouchableOpacity>
-                            <Text style={styles.photoLabel}>Add a Photo</Text>
-                        </View>
-
-                        {/* Form Fields */}
-                        <View style={styles.formFields}>
-                            <View style={styles.nameRow}>
-                                <View style={[styles.inputGroup, styles.nameInputGroup]}>
-                                    <Text style={styles.label}>
-                                        First Name <Text style={styles.required}>*</Text>
-                                    </Text>
-                                    <TextInput
-                                        placeholder="First name"
-                                        style={[styles.input, errors.firstName && { borderColor: '#ef4444' }]}
-                                        placeholderTextColor="#9ca3af"
-                                        value={formData.firstName}
-                                        onChangeText={(text) => {
-                                            setFormData(prev => ({ ...prev, firstName: text }))
-                                            clearError('firstName')
-                                        }}
-                                        autoCapitalize="words"
-                                    />
-                                    {errors.firstName && (
-                                        <Text style={styles.errorText}>{errors.firstName}</Text>
-                                    )}
-                                </View>
-
-                                <View style={[styles.inputGroup, styles.nameInputGroup]}>
-                                    <Text style={styles.label}>
-                                        Last Name <Text style={styles.required}>*</Text>
-                                    </Text>
-                                    <TextInput
-                                        placeholder="Last name"
-                                        style={[styles.input, errors.lastName && { borderColor: '#ef4444' }]}
-                                        placeholderTextColor="#9ca3af"
-                                        value={formData.lastName}
-                                        onChangeText={(text) => {
-                                            setFormData(prev => ({ ...prev, lastName: text }))
-                                            clearError('lastName')
-                                        }}
-                                        autoCapitalize="words"
-                                    />
-                                    {errors.lastName && (
-                                        <Text style={styles.errorText}>{errors.lastName}</Text>
-                                    )}
-                                </View>
-                            </View>
-
-                            {/* Email */}
-                            <View style={styles.inputGroup}>
-                                <Text style={styles.label}>
-                                    Email <Text style={styles.required}>*</Text>
-                                </Text>
-                                <TextInput
-                                    placeholder="janedoe@example.com"
-                                    style={[styles.input, errors.email && { borderColor: '#ef4444' }]}
-                                    placeholderTextColor="#9ca3af"
-                                    value={formData.email}
-                                    onChangeText={(text) => {
-                                        setFormData(prev => ({ ...prev, email: text }))
-                                        clearError('email')
-                                    }}
-                                    keyboardType="email-address"
-                                />
-                                {errors.email && (
-                                    <Text style={styles.errorText}>{errors.email}</Text>
-                                )}
-                            </View>
-
-                            {/* Password */}
-                            <View style={styles.inputGroup}>
-                                <Text style={styles.label}>
-                                    Password <Text style={styles.required}>*</Text>
-                                </Text>
-                                <View style={styles.passwordContainer}>
-                                    <TextInput
-                                        placeholder="Enter password"
-                                        style={[styles.passwordInput, errors.password && { borderColor: '#ef4444' }]}
-                                        placeholderTextColor="#9ca3af"
-                                        value={formData.password}
-                                        onChangeText={(text) => {
-                                            handleInputChange('password', text)
-                                            clearError('password')
-                                        }}
-                                        // onFocus={handlePasswordFocus}
-                                        secureTextEntry={!showPassword}
-                                    />
-                                    <TouchableOpacity
-                                        style={styles.eyeButton}
-                                        onPress={() => setShowPassword(!showPassword)}
-                                    >
-                                        {showPassword ? <Eye size={20} color="#9ca3af" /> : <EyeOff size={20} color="#9ca3af" />}
-                                    </TouchableOpacity>
-                                </View>
-
-                                {/* Password Strength Indicator */}
-                                {!!formData.password && (
-                                    <View
-                                        ref={passwordStrengthRef}
-                                        style={styles.passwordStrengthContainer}
-                                        onLayout={handlePasswordStrengthLayout}
-                                    >
-                                        <Text style={styles.passwordStrengthTitle}>Password must contain:</Text>
-                                        <View style={styles.passwordStrengthList}>
-                                            <View style={styles.passwordStrengthItem}>
-                                                <Check
-                                                    size={12}
-                                                    color={passwordStrength.hasMinLength ? '#16a34a' : '#d1d5db'}
-                                                />
-                                                <Text style={[
-                                                    styles.passwordStrengthText,
-                                                    { color: passwordStrength.hasMinLength ? '#16a34a' : '#9ca3af' }
-                                                ]}>
-                                                    At least 8 characters
-                                                </Text>
-                                            </View>
-                                            <View style={styles.passwordStrengthItem}>
-                                                <Check
-                                                    size={12}
-                                                    color={passwordStrength.hasUppercase ? '#16a34a' : '#d1d5db'}
-                                                />
-                                                <Text style={[
-                                                    styles.passwordStrengthText,
-                                                    { color: passwordStrength.hasUppercase ? '#16a34a' : '#9ca3af' }
-                                                ]}>
-                                                    One uppercase letter
-                                                </Text>
-                                            </View>
-                                            <View style={styles.passwordStrengthItem}>
-                                                <Check
-                                                    size={12}
-                                                    color={passwordStrength.hasLowercase ? '#16a34a' : '#d1d5db'}
-                                                />
-                                                <Text style={[
-                                                    styles.passwordStrengthText,
-                                                    { color: passwordStrength.hasLowercase ? '#16a34a' : '#9ca3af' }
-                                                ]}>
-                                                    One lowercase letter
-                                                </Text>
-                                            </View>
-                                            <View style={styles.passwordStrengthItem}>
-                                                <Check
-                                                    size={12}
-                                                    color={passwordStrength.hasNumber ? '#16a34a' : '#d1d5db'}
-                                                />
-                                                <Text style={[
-                                                    styles.passwordStrengthText,
-                                                    { color: passwordStrength.hasNumber ? '#16a34a' : '#9ca3af' }
-                                                ]}>
-                                                    One number
-                                                </Text>
-                                            </View>
-                                            <View style={styles.passwordStrengthItem}>
-                                                <Check
-                                                    size={12}
-                                                    color={passwordStrength.hasSpecialChar ? '#16a34a' : '#d1d5db'}
-                                                />
-                                                <Text style={[
-                                                    styles.passwordStrengthText,
-                                                    { color: passwordStrength.hasSpecialChar ? '#16a34a' : '#9ca3af' }
-                                                ]}>
-                                                    One special character
-                                                </Text>
-                                            </View>
-                                        </View>
-                                    </View>
-                                )}
-
-                                {errors.password && (
-                                    <Text style={styles.errorText}>{errors.password}</Text>
-                                )}
-                            </View>
-                        </View>
-
-                        {/* Terms and Privacy Checkbox */}
-                        <View style={styles.termsContainer}>
-                            <TouchableOpacity
-                                style={[
-                                    styles.checkbox,
-                                    errors.terms ? styles.checkboxError : formData.termsAccepted ? styles.checkboxChecked : null
-                                ]}
-                                onPress={() => {
-                                    setFormData(prev => ({ ...prev, termsAccepted: !prev.termsAccepted }))
-                                    clearError('terms')
-                                }}
-                            >
-                                {formData.termsAccepted && <Check size={12} color="white" />}
-                            </TouchableOpacity>
-                            <Text style={styles.termsText}>
-                                By checking this box, you acknowledge and agree to CRWD's{' '}
-                                <Text
-                                    style={styles.termsLink}
-                                    onPress={() => navigation.navigate('TermsOfUse')}
-                                >
-                                    Terms of Use
-                                </Text>
-                                {' '}and{' '}
-                                <Text
-                                    style={styles.termsLink}
-                                    onPress={() => navigation.navigate('PrivacyPolicy')}
-                                >
-                                    Privacy Policy
-                                </Text>
-                                . <Text style={styles.required}>*</Text>
-                            </Text>
-                        </View>
-                        {errors.terms && (
-                            <Text style={styles.errorText}>{errors.terms}</Text>
-                        )}
-
-                        {/* Continue Button */}
-                        <TouchableOpacity
-                            style={[
-                                styles.continueButton,
-                                (emailRegistrationMutation.isPending || !isFormValid) && styles.continueButtonDisabled
-                            ]}
-                            onPress={handleContinue}
-                            disabled={emailRegistrationMutation.isPending || !isFormValid}
-                        >
-                            {emailRegistrationMutation.isPending ? (
-                                <View style={styles.loadingContainer}>
-                                    <Loader2 size={20} color="white" />
-                                    <Text style={styles.continueButtonText}>Creating Account...</Text>
+                    {/* Profile Photo Section */}
+                    <View style={styles.photoSection}>
+                        <TouchableOpacity onPress={handleImageUpload} style={styles.photoButton}>
+                            {formData.profileImage ? (
+                                <View style={styles.photoPreview}>
+                                    <Image source={{ uri: formData.profileImage }} style={styles.photoImage} />
                                 </View>
                             ) : (
-                                <View style={styles.continueButtonContent}>
-                                    <Text style={styles.continueButtonText}>Continue</Text>
-                                    <ArrowRight size={18} color="white" />
+                                <View style={styles.photoUploadButton}>
+                                    <Camera size={32} color="#A9A9A9" />
                                 </View>
                             )}
                         </TouchableOpacity>
-
-                        {/* Sign In Link */}
-                        <View style={styles.signInContainer}>
-                            <Text style={styles.signInText}>
-                                Already have an account?{' '}
-                                <Text
-                                    style={styles.signInLink}
-                                    onPress={() => navigation.navigate('Login' as never, { redirectTo, redirectParams } as never)}
-                                >
-                                    Sign In
-                                </Text>
-                            </Text>
-                        </View>
+                        <Text style={styles.photoLabel}>Add a Photo</Text>
                     </View>
-                </KeyboardAwareScrollView>
 
-                {/* OTP Verification Modal */}
-                <Modal
-                    visible={showOTPModal}
-                    transparent
-                    animationType="fade"
-                    onRequestClose={() => setShowOTPModal(false)}
-                >
-                    <View style={styles.modalOverlay}>
-                        <View style={styles.modalContent}>
-                            {/* Modal Header */}
-                            <View style={styles.modalHeader}>
-                                <Text style={styles.modalTitle}>Verify Your Email</Text>
-                                <Text style={styles.modalSubtitle}>
-                                    We've sent a verification code to{' '}
-                                    <Text style={styles.modalEmail}>{formData.email}</Text>
-                                </Text>
-                            </View>
-
-                            {/* OTP Input */}
-                            <View style={styles.otpInputGroup}>
-                                <Text style={styles.otpLabel}>
-                                    Enter Verification Code <Text style={styles.required}>*</Text>
+                    {/* Form Fields */}
+                    <View style={styles.formFields}>
+                        <View style={styles.nameRow}>
+                            <View style={[styles.inputGroup, styles.nameInputGroup]}>
+                                <Text style={styles.label}>
+                                    First Name <Text style={styles.required}>*</Text>
                                 </Text>
                                 <TextInput
-                                    placeholder="Enter 6-digit code"
-                                    value={otp}
-                                    onChangeText={setOtp}
-                                    maxLength={6}
-                                    style={styles.otpInput}
+                                    placeholder="First name"
+                                    style={[styles.input, errors.firstName && { borderColor: '#ef4444' }]}
                                     placeholderTextColor="#9ca3af"
-                                    keyboardType="number-pad"
+                                    value={formData.firstName}
+                                    onChangeText={(text) => {
+                                        setFormData(prev => ({ ...prev, firstName: text }))
+                                        clearError('firstName')
+                                    }}
+                                    autoCapitalize="words"
                                 />
+                                {errors.firstName && (
+                                    <Text style={styles.errorText}>{errors.firstName}</Text>
+                                )}
                             </View>
 
-                            {/* Action Buttons */}
-                            <View style={styles.modalButtons}>
-                                <TouchableOpacity
-                                    style={[
-                                        styles.modalButton,
-                                        styles.modalButtonPrimary,
-                                        (otp.length !== 6 || emailVerificationMutation.isPending) && styles.modalButtonDisabled
-                                    ]}
-                                    onPress={handleEmailVerification}
-                                    disabled={otp.length !== 6 || emailVerificationMutation.isPending}
-                                >
-                                    {emailVerificationMutation.isPending ? (
-                                        <View style={styles.loadingContainer}>
-                                            <Loader2 size={20} color="white" />
-                                            <Text style={styles.modalButtonText}>Verifying...</Text>
-                                        </View>
-                                    ) : (
-                                        <Text style={styles.modalButtonText}>Verify & Continue</Text>
-                                    )}
-                                </TouchableOpacity>
+                            <View style={[styles.inputGroup, styles.nameInputGroup]}>
+                                <Text style={styles.label}>
+                                    Last Name <Text style={styles.required}>*</Text>
+                                </Text>
+                                <TextInput
+                                    placeholder="Last name"
+                                    style={[styles.input, errors.lastName && { borderColor: '#ef4444' }]}
+                                    placeholderTextColor="#9ca3af"
+                                    value={formData.lastName}
+                                    onChangeText={(text) => {
+                                        setFormData(prev => ({ ...prev, lastName: text }))
+                                        clearError('lastName')
+                                    }}
+                                    autoCapitalize="words"
+                                />
+                                {errors.lastName && (
+                                    <Text style={styles.errorText}>{errors.lastName}</Text>
+                                )}
+                            </View>
+                        </View>
 
+                        {/* Email */}
+                        <View style={styles.inputGroup}>
+                            <Text style={styles.label}>
+                                Email <Text style={styles.required}>*</Text>
+                            </Text>
+                            <TextInput
+                                placeholder="janedoe@example.com"
+                                style={[styles.input, errors.email && { borderColor: '#ef4444' }]}
+                                placeholderTextColor="#9ca3af"
+                                value={formData.email}
+                                onChangeText={(text) => {
+                                    setFormData(prev => ({ ...prev, email: text }))
+                                    clearError('email')
+                                }}
+                                keyboardType="email-address"
+                            />
+                            {errors.email && (
+                                <Text style={styles.errorText}>{errors.email}</Text>
+                            )}
+                        </View>
+
+                        {/* Password */}
+                        <View style={styles.inputGroup}>
+                            <Text style={styles.label}>
+                                Password <Text style={styles.required}>*</Text>
+                            </Text>
+                            <View style={styles.passwordContainer}>
+                                <TextInput
+                                    placeholder="Enter password"
+                                    style={[styles.passwordInput, errors.password && { borderColor: '#ef4444' }]}
+                                    placeholderTextColor="#9ca3af"
+                                    value={formData.password}
+                                    onChangeText={(text) => {
+                                        handleInputChange('password', text)
+                                        clearError('password')
+                                    }}
+                                    // onFocus={handlePasswordFocus}
+                                    secureTextEntry={!showPassword}
+                                />
                                 <TouchableOpacity
-                                    style={[styles.modalButton, styles.modalButtonSecondary]}
-                                    onPress={handleResendEmailVerification}
-                                    disabled={resendEmailVerificationMutation.isPending}
+                                    style={styles.eyeButton}
+                                    onPress={() => setShowPassword(!showPassword)}
                                 >
-                                    {resendEmailVerificationMutation.isPending ? (
-                                        <View style={styles.loadingContainer}>
-                                            <Loader2 size={20} color="#374151" />
-                                            <Text style={[styles.modalButtonText, styles.modalButtonTextSecondary]}>Sending...</Text>
-                                        </View>
-                                    ) : (
-                                        <Text style={[styles.modalButtonText, styles.modalButtonTextSecondary]}>Resend Code</Text>
-                                    )}
+                                    {showPassword ? <Eye size={20} color="#9ca3af" /> : <EyeOff size={20} color="#9ca3af" />}
                                 </TouchableOpacity>
                             </View>
 
-                            {/* Close Modal */}
-                            <TouchableOpacity
-                                style={styles.modalCloseButton}
-                                onPress={() => setShowOTPModal(false)}
-                            >
-                                <Text style={styles.modalCloseText}>Back to Registration</Text>
-                            </TouchableOpacity>
+                            {/* Password Strength Indicator */}
+                            {!!formData.password && (
+                                <View
+                                    ref={passwordStrengthRef}
+                                    style={styles.passwordStrengthContainer}
+                                    onLayout={handlePasswordStrengthLayout}
+                                >
+                                    <Text style={styles.passwordStrengthTitle}>Password must contain:</Text>
+                                    <View style={styles.passwordStrengthList}>
+                                        <View style={styles.passwordStrengthItem}>
+                                            <Check
+                                                size={12}
+                                                color={passwordStrength.hasMinLength ? '#16a34a' : '#d1d5db'}
+                                            />
+                                            <Text style={[
+                                                styles.passwordStrengthText,
+                                                { color: passwordStrength.hasMinLength ? '#16a34a' : '#9ca3af' }
+                                            ]}>
+                                                At least 8 characters
+                                            </Text>
+                                        </View>
+                                        <View style={styles.passwordStrengthItem}>
+                                            <Check
+                                                size={12}
+                                                color={passwordStrength.hasUppercase ? '#16a34a' : '#d1d5db'}
+                                            />
+                                            <Text style={[
+                                                styles.passwordStrengthText,
+                                                { color: passwordStrength.hasUppercase ? '#16a34a' : '#9ca3af' }
+                                            ]}>
+                                                One uppercase letter
+                                            </Text>
+                                        </View>
+                                        <View style={styles.passwordStrengthItem}>
+                                            <Check
+                                                size={12}
+                                                color={passwordStrength.hasLowercase ? '#16a34a' : '#d1d5db'}
+                                            />
+                                            <Text style={[
+                                                styles.passwordStrengthText,
+                                                { color: passwordStrength.hasLowercase ? '#16a34a' : '#9ca3af' }
+                                            ]}>
+                                                One lowercase letter
+                                            </Text>
+                                        </View>
+                                        <View style={styles.passwordStrengthItem}>
+                                            <Check
+                                                size={12}
+                                                color={passwordStrength.hasNumber ? '#16a34a' : '#d1d5db'}
+                                            />
+                                            <Text style={[
+                                                styles.passwordStrengthText,
+                                                { color: passwordStrength.hasNumber ? '#16a34a' : '#9ca3af' }
+                                            ]}>
+                                                One number
+                                            </Text>
+                                        </View>
+                                        <View style={styles.passwordStrengthItem}>
+                                            <Check
+                                                size={12}
+                                                color={passwordStrength.hasSpecialChar ? '#16a34a' : '#d1d5db'}
+                                            />
+                                            <Text style={[
+                                                styles.passwordStrengthText,
+                                                { color: passwordStrength.hasSpecialChar ? '#16a34a' : '#9ca3af' }
+                                            ]}>
+                                                One special character
+                                            </Text>
+                                        </View>
+                                    </View>
+                                </View>
+                            )}
+
+                            {errors.password && (
+                                <Text style={styles.errorText}>{errors.password}</Text>
+                            )}
                         </View>
                     </View>
-                </Modal>
+
+                    {/* Terms and Privacy Checkbox */}
+                    <View style={styles.termsContainer}>
+                        <TouchableOpacity
+                            style={[
+                                styles.checkbox,
+                                errors.terms ? styles.checkboxError : formData.termsAccepted ? styles.checkboxChecked : null
+                            ]}
+                            onPress={() => {
+                                setFormData(prev => ({ ...prev, termsAccepted: !prev.termsAccepted }))
+                                clearError('terms')
+                            }}
+                        >
+                            {formData.termsAccepted && <Check size={12} color="white" />}
+                        </TouchableOpacity>
+                        <Text style={styles.termsText}>
+                            By checking this box, you acknowledge and agree to CRWD's{' '}
+                            <Text
+                                style={styles.termsLink}
+                                onPress={() => navigation.navigate('TermsOfUse')}
+                            >
+                                Terms of Use
+                            </Text>
+                            {' '}and{' '}
+                            <Text
+                                style={styles.termsLink}
+                                onPress={() => navigation.navigate('PrivacyPolicy')}
+                            >
+                                Privacy Policy
+                            </Text>
+                            . <Text style={styles.required}>*</Text>
+                        </Text>
+                    </View>
+                    {errors.terms && (
+                        <Text style={styles.errorText}>{errors.terms}</Text>
+                    )}
+
+                    {/* Continue Button */}
+                    <TouchableOpacity
+                        style={[
+                            styles.continueButton,
+                            (emailRegistrationMutation.isPending || !isFormValid) && styles.continueButtonDisabled
+                        ]}
+                        onPress={handleContinue}
+                        disabled={emailRegistrationMutation.isPending || !isFormValid}
+                    >
+                        {emailRegistrationMutation.isPending ? (
+                            <View style={styles.loadingContainer}>
+                                <Loader2 size={20} color="white" />
+                                <Text style={styles.continueButtonText}>Creating Account...</Text>
+                            </View>
+                        ) : (
+                            <View style={styles.continueButtonContent}>
+                                <Text style={styles.continueButtonText}>Continue</Text>
+                                <ArrowRight size={18} color="white" />
+                            </View>
+                        )}
+                    </TouchableOpacity>
+
+                    {/* Sign In Link */}
+                    <View style={styles.signInContainer}>
+                        <Text style={styles.signInText}>
+                            Already have an account?{' '}
+                            <Text
+                                style={styles.signInLink}
+                                onPress={() => navigation.navigate('Login' as never, { redirectTo, redirectParams } as never)}
+                            >
+                                Sign In
+                            </Text>
+                        </Text>
+                    </View>
+                </View>
+            </KeyboardAwareScrollView>
+
+            {/* OTP Verification Modal */}
+            <Modal
+                visible={showOTPModal}
+                transparent
+                animationType="fade"
+                onRequestClose={() => setShowOTPModal(false)}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        {/* Modal Header */}
+                        <View style={styles.modalHeader}>
+                            <Text style={styles.modalTitle}>Verify Your Email</Text>
+                            <Text style={styles.modalSubtitle}>
+                                We've sent a verification code to{' '}
+                                <Text style={styles.modalEmail}>{formData.email}</Text>
+                            </Text>
+                        </View>
+
+                        {/* OTP Input */}
+                        <View style={styles.otpInputGroup}>
+                            <Text style={styles.otpLabel}>
+                                Enter Verification Code <Text style={styles.required}>*</Text>
+                            </Text>
+                            <TextInput
+                                placeholder="Enter 6-digit code"
+                                value={otp}
+                                onChangeText={setOtp}
+                                maxLength={6}
+                                style={styles.otpInput}
+                                placeholderTextColor="#9ca3af"
+                                keyboardType="number-pad"
+                            />
+                        </View>
+
+                        {/* Action Buttons */}
+                        <View style={styles.modalButtons}>
+                            <TouchableOpacity
+                                style={[
+                                    styles.modalButton,
+                                    styles.modalButtonPrimary,
+                                    (otp.length !== 6 || emailVerificationMutation.isPending) && styles.modalButtonDisabled
+                                ]}
+                                onPress={handleEmailVerification}
+                                disabled={otp.length !== 6 || emailVerificationMutation.isPending}
+                            >
+                                {emailVerificationMutation.isPending ? (
+                                    <View style={styles.loadingContainer}>
+                                        <Loader2 size={20} color="white" />
+                                        <Text style={styles.modalButtonText}>Verifying...</Text>
+                                    </View>
+                                ) : (
+                                    <Text style={styles.modalButtonText}>Verify & Continue</Text>
+                                )}
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                style={[styles.modalButton, styles.modalButtonSecondary]}
+                                onPress={handleResendEmailVerification}
+                                disabled={resendEmailVerificationMutation.isPending}
+                            >
+                                {resendEmailVerificationMutation.isPending ? (
+                                    <View style={styles.loadingContainer}>
+                                        <Loader2 size={20} color="#374151" />
+                                        <Text style={[styles.modalButtonText, styles.modalButtonTextSecondary]}>Sending...</Text>
+                                    </View>
+                                ) : (
+                                    <Text style={[styles.modalButtonText, styles.modalButtonTextSecondary]}>Resend Code</Text>
+                                )}
+                            </TouchableOpacity>
+                        </View>
+
+                        {/* Close Modal */}
+                        <TouchableOpacity
+                            style={styles.modalCloseButton}
+                            onPress={() => setShowOTPModal(false)}
+                        >
+                            <Text style={styles.modalCloseText}>Back to Registration</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
             {/* </LinearGradient> */}
         </View>
     )
@@ -784,6 +786,21 @@ const styles = StyleSheet.create({
         width: '100%',
         maxWidth: 400,
         alignSelf: 'center',
+    },
+    progressContainer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        gap: 8,
+        marginBottom: 24,
+    },
+    progressStep: {
+        height: 4,
+        width: (width - 48 - 32) / 5,
+        backgroundColor: '#E5E7EB',
+        borderRadius: 2,
+    },
+    progressActive: {
+        backgroundColor: '#1600ff',
     },
     label: {
         fontSize: 14,
@@ -910,8 +927,8 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     subheading: {
-        fontSize: 14,
-        fontFamily: 'Outfit-SemiBold',
+        fontSize: 15,
+        fontFamily: 'Outfit-Medium',
         color: '#374151',
         textAlign: 'center',
     },
@@ -926,8 +943,10 @@ const styles = StyleSheet.create({
         width: 80,
         height: 80,
         borderRadius: 40,
-        backgroundColor: '#e9d5ff',
+        backgroundColor: '#f5f5f5',
         alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#e5e7eb',
         justifyContent: 'center',
     },
     photoPreview: {
@@ -1003,12 +1022,12 @@ const styles = StyleSheet.create({
         textDecorationLine: 'underline',
     },
     continueButton: {
-        backgroundColor: '#525ae2ff',
-        height: 48,
-        borderRadius: 8,
+        backgroundColor: '#2222EE',
+        height: 45,
+        borderRadius: 12,
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: 24,
+        marginBottom: 16,
     },
     continueButtonDisabled: {
         opacity: 0.5,
@@ -1021,7 +1040,7 @@ const styles = StyleSheet.create({
     continueButtonText: {
         color: 'white',
         fontSize: 16,
-        fontFamily: 'Outfit-Medium',
+        fontFamily: 'Outfit-SemiBold',
     },
     loadingContainer: {
         flexDirection: 'row',

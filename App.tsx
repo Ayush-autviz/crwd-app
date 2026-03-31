@@ -63,6 +63,10 @@ import NonProfitInterests from './src/components/onboarding/NonProfitInterests'
 import CompleteOnboard from './src/components/onboarding/CompleteOnboard'
 import OnBoard from './src/components/onboarding/OnBoard'
 import NewOnboard from './src/components/onboarding/NewOnboard'
+import NewDonationBoxIntro from './src/components/onboarding/NewDonationBoxIntro'
+import NewAddNonprofits from './src/components/onboarding/NewAddNonprofits'
+import NewDonationAmount from './src/components/onboarding/NewDonationAmount'
+import NewOnboardSuccess from './src/components/onboarding/NewOnboardSuccess'
 import OneTimeDonationScreen from './src/screens/OneTimeDonationScreen'
 import NewSaved from './src/screens/NewSaved'
 import { FontAwesome6 } from '@react-native-vector-icons/fontawesome6'
@@ -363,6 +367,10 @@ export default function App() {
         <Stack.Screen name="AddPhoto" component={AddPhoto} />
         <Stack.Screen name="NonProfitInterests" component={NonProfitInterests} />
         <Stack.Screen name="CompleteOnboard" component={CompleteOnboard} />
+        <Stack.Screen name="DonationBoxIntro" component={NewDonationBoxIntro} />
+        <Stack.Screen name="AddNonprofits" component={NewAddNonprofits} />
+        <Stack.Screen name="DonationAmount" component={NewDonationAmount} />
+        <Stack.Screen name="OnboardSuccess" component={NewOnboardSuccess} />
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="Signup" component={Signup} />
         <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
@@ -410,18 +418,18 @@ export default function App() {
   }
 
   return (
-    <PostHogProvider client={posthog}>
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <NavigationContainer
-          ref={navigationRef}
-          linking={linking}
-          onStateChange={() => {
-            const currentRouteName = navigationRef.getCurrentRoute()?.name;
-            if (currentRouteName) {
-              posthog.screen(currentRouteName);
-            }
-          }}
-        >
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <NavigationContainer
+        ref={navigationRef}
+        linking={linking}
+        onStateChange={() => {
+          const currentRouteName = navigationRef.getCurrentRoute()?.name;
+          if (currentRouteName) {
+            posthog.screen(currentRouteName);
+          }
+        }}
+      >
+        <PostHogProvider client={posthog}>
           <StripeProvider publishableKey={STRIPE_PUBLISHABLE_KEY} merchantIdentifier='merchant.com.react.crwd'>
             <QueryClientProvider client={queryClient}>
               <BottomSheetModalProvider>
@@ -431,9 +439,9 @@ export default function App() {
               </BottomSheetModalProvider>
             </QueryClientProvider>
           </StripeProvider>
-        </NavigationContainer>
-      </GestureHandlerRootView>
-    </PostHogProvider>
+        </PostHogProvider>
+      </NavigationContainer>
+    </GestureHandlerRootView>
   )
 
 }

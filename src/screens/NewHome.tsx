@@ -773,7 +773,7 @@ export default function NewHome() {
                     <>
                       {donationBoxInfo ? (
                         <>
-                          <HelloGreeting />
+                          <HelloGreeting causeCount={donationBoxInfo.causeCount} />
                           <MyDonationBoxCard
                             monthlyAmount={donationBoxInfo.monthlyAmount || 10}
                             causeCount={donationBoxInfo.causeCount || 0}

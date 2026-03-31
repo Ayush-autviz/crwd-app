@@ -21,7 +21,7 @@ export default function DonationBoxPrompt({ causeCount, hasJoinedCollectives = f
     <View style={styles.container}>
       {/* Greeting */}
       <Text style={styles.greeting}>
-        Hi {firstName}, ready to make an impact?
+        Hi {firstName}. Your Donation Box is waiting.
       </Text>
 
       {/* Action Cards */}

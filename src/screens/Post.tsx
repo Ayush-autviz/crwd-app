@@ -680,7 +680,7 @@ export default function Post() {
               ref={textareaRef}
               style={[styles.textInput, { zIndex: 2 }]}
               multiline
-              placeholder="What's on your mind?"
+              placeholder="What's on your mind? Share your thoughts, updates, or stories about the impact you're making..."
               placeholderTextColor={PrimaryGrey}
               value={form.content}
               onChangeText={(value) => handleInputChange('content', value)}
@@ -855,7 +855,7 @@ export default function Post() {
         )}
 
         {/* Posting Tips Box */}
-        <View style={styles.tipsContainer}>
+        {/* <View style={styles.tipsContainer}>
           <View style={styles.tipsHeader}>
             <Text style={{ fontSize: 18 }}>💡</Text>
             <Text style={styles.tipsTitle}>Posting Tips</Text>
@@ -878,7 +878,7 @@ export default function Post() {
               <Text style={styles.tipText}>Use "Create Event" or "Create Fundraiser" to organize your community</Text>
             </View>
           </View>
-        </View>
+        </View> */}
       </KeyboardAwareScrollView>
 
 

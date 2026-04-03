@@ -41,9 +41,9 @@ export default function DonationScreen() {
   const [activeTab, setActiveTab] = useState<'setup' | 'onetime'>('setup');
   const [checkout, setCheckout] = useState(false);
   const [selectedOrganizations, setSelectedOrganizations] = useState<string[]>([]);
-  const [donationAmount, setDonationAmount] = useState(5);
+  const [donationAmount, setDonationAmount] = useState(10);
   const [step, setStep] = useState(1);
-  const [inputValue, setInputValue] = useState('5');
+  const [inputValue, setInputValue] = useState('10');
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCauseIds, setSelectedCauseIds] = useState<number[]>([]);
@@ -753,7 +753,6 @@ export default function DonationScreen() {
                     setCheckout(false);
                   }
                   setActiveTab('setup');
-                  // Don't reset step - let useEffect handle it based on donation box existence
                 }}
               >
                 <Text style={[
@@ -822,20 +821,20 @@ export default function DonationScreen() {
                   {step === 1 ? (
                     <View style={styles.stepContent}>
                       {/* Header */}
-                      <View style={styles.step1Header}>
+                      {/* <View style={styles.step1Header}>
                         <Text style={styles.step1Title}>
                           {(route.params as any)?.collectiveName ? `Supporting ${(route.params as any).collectiveName}` : 'Set your monthly gift'}
                         </Text>
                         <Text style={styles.step1Subtitle}>
                           Support multiple nonprofits with one donation, split evenly. Change anytime.
                         </Text>
-                      </View>
+                      </View> */}
 
                       {/* Donation Box Card */}
                       <View style={styles.amountCard}>
                         {/* Your Monthly Impact Section */}
                         <View style={styles.monthlyImpactSection}>
-                          <Text style={styles.monthlyImpactTitle}>Your Monthly Impact</Text>
+                          <Text style={styles.monthlyImpactTitle}>Monthly Donation</Text>
 
                           {/* Amount Selector */}
                           <View style={styles.amountSelectorContainer}>
@@ -852,10 +851,7 @@ export default function DonationScreen() {
                                 donationAmount <= 5 && styles.amountButtonDisabled
                               ]}
                             >
-                              <Text style={[
-                                styles.minusIcon,
-                                donationAmount > 5 && styles.minusIconWhite
-                              ]}>−</Text>
+                              <Minus size={18} color="white" {...({ strokeWidth: 3 } as any)} />
                             </TouchableOpacity>
 
                             <TouchableOpacity
@@ -875,7 +871,7 @@ export default function DonationScreen() {
                               }}
                               style={styles.amountButton}
                             >
-                              <Plus size={20} color="white" />
+                              <Plus size={18} color="white" {...({ strokeWidth: 3 } as any)} />
                             </TouchableOpacity>
                           </View>
                         </View>
@@ -948,8 +944,8 @@ export default function DonationScreen() {
                             </View>
                           </View>
 
-                          <View style={styles.selectedCausesList}>
-                            {selectedCausesData.map((cause: any) => {
+                          <View style={styles.causesGroup}>
+                            {selectedCausesData.map((cause: any, index: number, array: any[]) => {
                               const avatarColors = ['#3B82F6', '#EC4899', '#8B5CF6', '#10B981', '#F59E0B', '#EF4444'];
                               const getConsistentColor = (id: number) => {
                                 return avatarColors[id % avatarColors.length];
@@ -966,26 +962,30 @@ export default function DonationScreen() {
                               const initials = getInitials(cause.name);
 
                               return (
-                                <TouchableOpacity
+                                <View
                                   key={cause.id}
-                                  style={styles.selectedCauseItem}
-                                  onPress={() => (navigation as any).navigate('CauseScreen', { id: cause.id })}
+                                  style={[styles.causeItem, index === array.length - 1 && { borderBottomWidth: 0 }]}
                                 >
-                                  <Avatar size={48} style={[styles.selectedCauseAvatar, { borderRadius: 8 }]}>
-                                    <AvatarImage src={cause.image} />
-                                    <AvatarFallback
-                                      style={{ backgroundColor: avatarBgColor }}
-                                      textStyle={{ color: '#FFFFFF', fontSize: 16, fontWeight: '700' }}
-                                    >
-                                      {initials}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                  <View style={styles.selectedCauseInfo}>
-                                    <Text style={styles.selectedCauseName}>{cause.name}</Text>
-                                    <Text style={styles.selectedCauseDescription} numberOfLines={1}>
-                                      {cause.mission || cause.description || 'No description available'}
-                                    </Text>
-                                  </View>
+                                  <TouchableOpacity
+                                    style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}
+                                    onPress={() => (navigation as any).navigate('CauseScreen', { id: cause.id })}
+                                  >
+                                    <Avatar size={44} style={styles.causeAvatar}>
+                                      <AvatarImage src={cause.image} />
+                                      <AvatarFallback
+                                        style={{ backgroundColor: avatarBgColor }}
+                                        textStyle={{ color: '#FFFFFF', fontSize: 16, fontWeight: '700' }}
+                                      >
+                                        {initials}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                    <View style={styles.causeInfo}>
+                                      <Text style={styles.causeName}>{cause.name}</Text>
+                                      <Text style={styles.causeDescription} numberOfLines={1}>
+                                        {cause.mission || cause.description || 'No description available'}
+                                      </Text>
+                                    </View>
+                                  </TouchableOpacity>
                                   <TouchableOpacity
                                     onPress={() => {
                                       setSelectedCauseIds(selectedCauseIds.filter(id => id !== cause.id));
@@ -993,9 +993,9 @@ export default function DonationScreen() {
                                     }}
                                     style={styles.removeCauseButton}
                                   >
-                                    <Trash2 size={16} color="#ef4444" />
+                                    <Trash2 size={18} color="#6B7280" />
                                   </TouchableOpacity>
-                                </TouchableOpacity>
+                                </View>
                               );
                             })}
                           </View>
@@ -1011,7 +1011,7 @@ export default function DonationScreen() {
                           <View style={styles.searchInputWrapper}>
                             <Search size={20} color="#9ca3af" style={styles.searchIcon} />
                             <TextInput
-                              placeholder="Search for causes..."
+                              placeholder="Search for nonprofits..."
                               placeholderTextColor="#9ca3af"
                               value={searchQuery}
                               onChangeText={setSearchQuery}
@@ -1020,33 +1020,22 @@ export default function DonationScreen() {
                           </View>
                         </View>
 
-                        {/* Request Nonprofit Link */}
-                        <TouchableOpacity
-                          onPress={() => setShowRequestModal(true)}
-                          style={styles.requestLinkContainer}
-                          activeOpacity={0.7}
-                        >
-                          <Text style={styles.requestLink}>
-                            Can't find your nonprofit? Request it here
-                          </Text>
-                        </TouchableOpacity>
                         {/* Nonprofits List */}
-                        <View style={styles.causesList}>
-                          {causesLoading ? (
-                            <View style={styles.loadingContainer}>
-                              <ActivityIndicator size="large" color="#9ca3af" />
-                            </View>
-                          ) : causesData?.results?.length > 0 ? (
-                            causesData.results
+                        {causesLoading ? (
+                          <View style={{ paddingVertical: 20 }}>
+                            <ActivityIndicator size="small" color={PrimaryBlue} />
+                          </View>
+                        ) : (causesData?.results?.length || 0) > 0 ? (
+                          <View style={styles.causesGroup}>
+                            {causesData.results
                               .filter((cause: any) => !selectedCauseIds.includes(cause.id))
-                              .map((cause: any) => {
+                              .map((cause: any, index: number, array: any[]) => {
                                 const avatarColors = ['#3B82F6', '#EC4899', '#8B5CF6', '#10B981', '#F59E0B', '#EF4444'];
                                 const getConsistentColor = (id: number) => {
                                   return avatarColors[id % avatarColors.length];
                                 };
                                 const getInitials = (name: string) => {
-                                  if (!name) return 'N';
-                                  const words = name.trim().split(' ');
+                                  const words = name.split(' ');
                                   if (words.length >= 2) {
                                     return (words[0].charAt(0) + words[1].charAt(0)).toUpperCase();
                                   }
@@ -1058,10 +1047,10 @@ export default function DonationScreen() {
                                 return (
                                   <TouchableOpacity
                                     key={cause.id}
-                                    style={styles.causeItem}
+                                    style={[styles.causeItem, index === array.length - 1 && { borderBottomWidth: 0 }]}
                                     onPress={() => (navigation as any).navigate('CauseScreen', { id: cause.id })}
                                   >
-                                    <Avatar size={48} style={[styles.causeAvatar, { borderRadius: 8 }]}>
+                                    <Avatar size={44} style={styles.causeAvatar}>
                                       <AvatarImage src={cause.image} />
                                       <AvatarFallback
                                         style={{ backgroundColor: avatarBgColor }}
@@ -1114,16 +1103,29 @@ export default function DonationScreen() {
                                       }}
                                       style={styles.addCauseButton}
                                     >
-                                      <Plus size={16} color="#ec4899" {...({ strokeWidth: 3 } as any)} />
+                                      <Plus size={14} color="#1600ff" {...({ strokeWidth: 3 } as any)} />
                                     </TouchableOpacity>
                                   </TouchableOpacity>
                                 );
-                              })
-                          ) : (
+                              })}
+                          </View>
+                        ) : (
+                          <View >
                             <Text style={styles.noCausesText}>No nonprofits found</Text>
-                          )}
-                        </View>
+                          </View>
+                        )}
                       </View>
+
+                      {/* Request Nonprofit Link */}
+                      <TouchableOpacity
+                        onPress={() => setShowRequestModal(true)}
+                        style={[styles.requestLinkContainer, { marginTop: 0 }]}
+                        activeOpacity={0.7}
+                      >
+                        <Text style={styles.requestLink}>
+                          Can't find your nonprofit? Request it here
+                        </Text>
+                      </TouchableOpacity>
 
                       {/* Choose Collective to Support */}
                       {/* <View style={{ marginTop: 24 }}>
@@ -1227,7 +1229,7 @@ export default function DonationScreen() {
                           {/* Donation Box Card (Amount) */}
                           <View style={styles.amountCard}>
                             <View style={styles.monthlyImpactSection}>
-                              <Text style={styles.monthlyImpactTitle}>Your Monthly Impact</Text>
+                              <Text style={styles.monthlyImpactTitle}>Monthly Donation</Text>
                               <View style={styles.amountSelectorContainer}>
                                 <TouchableOpacity
                                   onPress={() => {
@@ -1241,7 +1243,7 @@ export default function DonationScreen() {
                                     editableAmount <= 5 && !isEditingAmount && styles.amountButtonDisabled
                                   ]}
                                 >
-                                  <Minus size={18} color={donationAmount > 5 ? "#ffffff" : "#9ca3af"} {...({ strokeWidth: 3 } as any)} />
+                                  <Minus size={18} color="white" {...({ strokeWidth: 3 } as any)} />
                                 </TouchableOpacity>
 
                                 <TouchableOpacity
@@ -1260,7 +1262,7 @@ export default function DonationScreen() {
                                   }}
                                   style={styles.amountButton}
                                 >
-                                  <Plus size={20} color="white" />
+                                  <Plus size={18} color="white" {...({ strokeWidth: 3 } as any)} />
                                 </TouchableOpacity>
                               </View>
                             </View>
@@ -1304,18 +1306,18 @@ export default function DonationScreen() {
                               </View>
                             </View>
 
-                            <View style={styles.selectedCausesList}>
+                            <View style={styles.causesGroup}>
                               {(donationBoxQuery.data?.box_causes || []).length > 0 ? (
-                                (donationBoxQuery.data?.box_causes || []).map((boxCause: any) => {
+                                (donationBoxQuery.data?.box_causes || []).map((boxCause: any, index: number, array: any[]) => {
                                   const cause = boxCause.cause;
                                   if (!cause) return null;
                                   return (
                                     <TouchableOpacity
                                       key={cause.id}
-                                      style={styles.causeItem}
+                                      style={[styles.causeItem, index === array.length - 1 && { borderBottomWidth: 0 }]}
                                       onPress={() => (navigation as any).navigate('CauseScreen', { id: cause.id })}
                                     >
-                                      <Avatar size={48} style={styles.causeAvatar}>
+                                      <Avatar size={44} style={styles.causeAvatar}>
                                         <AvatarImage src={cause.image || cause.logo} />
                                         <AvatarFallback
                                           textStyle={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}
@@ -1330,21 +1332,6 @@ export default function DonationScreen() {
                                           {cause.mission || cause.description || 'Making a positive impact'}
                                         </Text>
                                       </View>
-                                      <View style={{ alignItems: 'flex-end', marginRight: 6 }}>
-                                        {/* <Text style={{ fontWeight: '700', fontSize: 13, color: '#111827' }}>
-                                          {(() => {
-                                            const customPercentage = getCausePercentage(cause.id);
-                                            return customPercentage != null
-                                              ? `${Number(customPercentage).toFixed(1)}%`
-                                              : distributionPercentage != null
-                                                ? `${Number(distributionPercentage).toFixed(1)}%`
-                                                : '0%';
-                                          })()}
-                                        </Text>
-                                        <Text style={{ fontSize: 11, color: '#6B7280' }}>
-                                          ${getAmountPerItem(cause.id).toFixed(2)}/mo
-                                        </Text> */}
-                                      </View>
                                       <TouchableOpacity
                                         onPress={() => {
                                           setItemToDelete({ id: cause.id.toString(), name: cause.name, type: 'cause' });
@@ -1352,13 +1339,13 @@ export default function DonationScreen() {
                                         }}
                                         style={styles.removeCauseButton}
                                       >
-                                        <Trash2 size={20} color="#EF4444" />
+                                        <Trash2 size={18} color="#6B7280" />
                                       </TouchableOpacity>
                                     </TouchableOpacity>
                                   );
                                 })
                               ) : (
-                                <Text style={{ textAlign: 'center', color: '#6B7280', padding: 16 }}>
+                                <Text style={{ textAlign: 'center', color: '#6B7280', padding: 24 }}>
                                   No causes in your box yet.
                                 </Text>
                               )}
@@ -1374,13 +1361,68 @@ export default function DonationScreen() {
                                 <Search size={20} color="#9CA3AF" style={styles.searchIcon} />
                                 <TextInput
                                   style={styles.searchInput}
-                                  placeholder="Search for causes..."
+                                  placeholder="Search for nonprofits..."
                                   placeholderTextColor="#9CA3AF"
                                   value={searchQuery}
                                   onChangeText={setSearchQuery}
                                 />
                               </View>
                             </View>
+
+
+
+                            {causesLoading ? (
+                              <View style={{ paddingVertical: 20 }}>
+                                <ActivityIndicator size="small" color={PrimaryBlue} />
+                              </View>
+                            ) : (
+                              <View style={styles.causesGroup}>
+                                {causesData?.results?.length > 0 ? (
+                                  causesData.results
+                                    .filter((cause: any) => !(donationBoxQuery.data?.box_causes || []).some((bc: any) => bc.cause?.id === cause.id))
+                                    .slice(0, 5)
+                                    .map((cause: any, index: number, array: any[]) => (
+                                      <TouchableOpacity
+                                        key={cause.id}
+                                        style={[styles.causeItem, index === array.length - 1 && { borderBottomWidth: 0 }]}
+                                        onPress={() => (navigation as any).navigate('CauseScreen', { id: cause.id })}
+                                      >
+                                        <Avatar size={44} style={styles.causeAvatar}>
+                                          <AvatarImage src={cause.image || cause.logo} />
+                                          <AvatarFallback
+                                            textStyle={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}
+                                            style={{ backgroundColor: PrimaryBlue }}
+                                          >
+                                            {cause.name?.substring(0, 2).toUpperCase()}
+                                          </AvatarFallback>
+                                        </Avatar>
+                                        <View style={styles.causeInfo}>
+                                          <Text style={styles.causeName} numberOfLines={1}>{cause.name}</Text>
+                                          <Text style={styles.causeDescription} numberOfLines={1}>{cause.mission || cause.description || 'Nonprofit'}</Text>
+                                        </View>
+                                        <TouchableOpacity
+                                          onPress={() => {
+                                            setAddingCauseId(cause.id);
+                                            addCausesMutation.mutate(cause.id, {
+                                              onSettled: () => setAddingCauseId(null)
+                                            });
+                                          }}
+                                          disabled={addCausesMutation.isPending}
+                                          style={styles.addCauseButton}
+                                        >
+                                          {addingCauseId === cause.id ? (
+                                            <ActivityIndicator size="small" color="#1600ff" />
+                                          ) : (
+                                            <Plus size={14} color="#1600ff" {...({ strokeWidth: 3 } as any)} />
+                                          )}
+                                        </TouchableOpacity>
+                                      </TouchableOpacity>
+                                    ))
+                                ) : searchQuery ? (
+                                  <Text style={styles.noCausesText}>No nonprofits found matching "{searchQuery}"</Text>
+                                ) : null}
+                              </View>
+                            )}
 
                             <TouchableOpacity
                               onPress={() => setShowRequestModal(true)}
@@ -1390,55 +1432,6 @@ export default function DonationScreen() {
                                 Can't find your nonprofit? Request it here
                               </Text>
                             </TouchableOpacity>
-
-                            <View style={styles.causesList}>
-                              {causesLoading ? (
-                                <ActivityIndicator size="small" color={PrimaryBlue} style={{ marginVertical: 20 }} />
-                              ) : causesData?.results?.length > 0 ? (
-                                causesData.results
-                                  .filter((cause: any) => !(donationBoxQuery.data?.box_causes || []).some((bc: any) => bc.cause?.id === cause.id))
-                                  .slice(0, 5)
-                                  .map((cause: any) => (
-                                    <TouchableOpacity
-                                      key={cause.id}
-                                      style={styles.causeItem}
-                                      onPress={() => (navigation as any).navigate('CauseScreen', { id: cause.id })}
-                                    >
-                                      <Avatar size={48} style={styles.causeAvatar}>
-                                        <AvatarImage src={cause.image || cause.logo} />
-                                        <AvatarFallback
-                                          textStyle={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}
-                                          style={{ backgroundColor: PrimaryBlue }}
-                                        >
-                                          {cause.name?.substring(0, 2).toUpperCase()}
-                                        </AvatarFallback>
-                                      </Avatar>
-                                      <View style={styles.causeInfo}>
-                                        <Text style={styles.causeName} numberOfLines={1}>{cause.name}</Text>
-                                        <Text style={styles.causeDescription} numberOfLines={1}>{cause.mission || 'Nonprofit'}</Text>
-                                      </View>
-                                      <TouchableOpacity
-                                        onPress={() => {
-                                          setAddingCauseId(cause.id);
-                                          addCausesMutation.mutate(cause.id, {
-                                            onSettled: () => setAddingCauseId(null)
-                                          });
-                                        }}
-                                        disabled={addCausesMutation.isPending}
-                                        style={styles.addCauseButton}
-                                      >
-                                        {addingCauseId === cause.id ? (
-                                          <ActivityIndicator size="small" color="#db2777" />
-                                        ) : (
-                                          <Plus size={16} color="#db2777" {...({ strokeWidth: 3 } as any)} />
-                                        )}
-                                      </TouchableOpacity>
-                                    </TouchableOpacity>
-                                  ))
-                              ) : searchQuery ? (
-                                <Text style={styles.noCausesText}>No nonprofits found matching "{searchQuery}"</Text>
-                              ) : null}
-                            </View>
                           </View>
                         </>
                       )}
@@ -1467,12 +1460,12 @@ export default function DonationScreen() {
                       {createBoxMutation.isPending ? 'Creating...' : 'Continue to Review'}
                     </Text>
                   </TouchableOpacity>
-                  <TouchableOpacity
+                  {/* <TouchableOpacity
                     onPress={() => navigation.navigate('Home' as never)}
                     style={styles.skipButton}
                   >
                     <Text style={styles.skipButtonText}>Skip for now</Text>
-                  </TouchableOpacity>
+                  </TouchableOpacity> */}
                 </View>
               )}
 
@@ -1486,12 +1479,12 @@ export default function DonationScreen() {
                       Continue to Review
                     </Text>
                   </TouchableOpacity>
-                  <TouchableOpacity
+                  {/* <TouchableOpacity
                     onPress={() => navigation.navigate('Home' as never)}
                     style={styles.skipButton}
                   >
                     <Text style={styles.skipButtonText}>Skip for now</Text>
-                  </TouchableOpacity>
+                  </TouchableOpacity> */}
                 </View>
               )}
             </View>
@@ -1693,11 +1686,11 @@ export default function DonationScreen() {
         {/* Edit Donation Split Bottom Sheet */}
         {(() => {
           const boxCauses = donationBoxQuery.data?.box_causes || donationBox?.box_causes || [];
-          console.log('=== DonationScreen: Preparing causes for Edit Split ===');
-          console.log('boxCauses:', boxCauses);
-          console.log('boxCauses.length:', boxCauses?.length);
-          console.log('donationBoxQuery.data:', donationBoxQuery.data);
-          console.log('donationBox:', donationBox);
+          // console.log('=== DonationScreen: Preparing causes for Edit Split ===');
+          // console.log('boxCauses:', boxCauses);
+          // console.log('boxCauses.length:', boxCauses?.length);
+          // console.log('donationBoxQuery.data:', donationBoxQuery.data);
+          // console.log('donationBox:', donationBox);
 
           const causesForEditSplit = (boxCauses || [])
             .map((boxCause: any, index: number) => {
@@ -1752,7 +1745,7 @@ export default function DonationScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#f9fafb',
     paddingBottom: 70,
   },
   header: {
@@ -1804,20 +1797,26 @@ const styles = StyleSheet.create({
   },
   tabWrapper: {
     flexDirection: 'row',
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
+    backgroundColor: '#F5F9F2',
+    borderRadius: 100,
     borderWidth: 1,
     borderColor: '#e5e7eb',
     overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
   tab: {
     flex: 1,
-    paddingVertical: 16,
+    paddingVertical: 14,
     alignItems: 'center',
-    backgroundColor: '#ffffff',
+    backgroundColor: 'transparent',
   },
   activeTab: {
     backgroundColor: PrimaryBlue,
+    borderRadius: 100,
   },
   tabText: {
     fontSize: 14,
@@ -1860,15 +1859,15 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Regular',
   },
   amountCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#F5F9F2',
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
     borderWidth: 1,
     borderColor: '#e5e7eb',
   },
@@ -1894,9 +1893,9 @@ const styles = StyleSheet.create({
     paddingBottom: 16
   },
   amountButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 8,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: PrimaryBlue,
     alignItems: 'center',
     justifyContent: 'center',
@@ -1926,10 +1925,11 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Bold',
   },
   amountLabel: {
-    fontSize: 13,
+    fontSize: 16,
+    fontWeight: 'bold',
     color: '#111827',
     marginTop: 4,
-    fontFamily: 'Outfit-Regular',
+    fontFamily: 'Outfit-Bold',
   },
   amountSheetBackground: {
     backgroundColor: '#ffffff',
@@ -2450,40 +2450,45 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     height: 40,
-    fontSize: 14,
+    fontSize: 15,
     color: '#111827',
     fontFamily: 'Outfit-Regular',
   },
   requestLinkContainer: {
     alignItems: 'center',
-    marginBottom: 16,
+    marginVertical: 16,
   },
   requestLink: {
-    fontSize: 13,
+    fontSize: 14,
     color: '#1600ff',
     textDecorationLine: 'underline',
     fontWeight: '500',
     fontFamily: 'Outfit-Medium',
   },
-  causesList: {
-    gap: 12,
+  causesGroup: {
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    borderRadius: 12,
+    backgroundColor: '#ffffff',
+    overflow: 'hidden',
   },
   causeItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 12,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    borderRadius: 8,
+    padding: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
     backgroundColor: '#ffffff',
   },
   causeAvatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
+    width: 44,
+    height: 44,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#f3f4f6',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
+    marginRight: 10,
   },
   causeAvatarText: {
     color: 'white',
@@ -2494,12 +2499,13 @@ const styles = StyleSheet.create({
   causeInfo: {
     flex: 1,
     minWidth: 0,
+    marginRight: 8,
   },
   causeName: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: 'bold',
     color: '#111827',
-    marginBottom: 4,
+    marginBottom: 2,
     fontFamily: 'Outfit-Bold',
   },
   causeDescription: {
@@ -2508,17 +2514,20 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Regular',
   },
   addCauseButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#fce7f3',
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#1600ff',
+    backgroundColor: 'transparent',
     alignItems: 'center',
     justifyContent: 'center',
   },
   noCausesText: {
     color: '#6b7280',
     textAlign: 'center',
-    fontFamily: 'Outfit-Regular',
+    fontFamily: 'Outfit-Medium',
+    fontSize: 15
   },
   step2Content: {
     padding: 16,
@@ -2624,6 +2633,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     paddingHorizontal: 16,
     paddingVertical: 10,
+    paddingBottom: 16,
     borderTopWidth: 1,
     borderTopColor: '#f3f4f6',
     shadowColor: '#000',
@@ -2639,12 +2649,12 @@ const styles = StyleSheet.create({
   continueButton: {
     backgroundColor: '#1600ff',
     paddingVertical: 16,
-    borderRadius: 100,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
   continueButtonDisabled: {
-    backgroundColor: '#d1d5db',
+    backgroundColor: '#9ca3af',
     opacity: 0.6,
   },
   continueButtonText: {

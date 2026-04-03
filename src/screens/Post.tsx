@@ -680,7 +680,7 @@ export default function Post() {
               ref={textareaRef}
               style={[styles.textInput, { zIndex: 2 }]}
               multiline
-              placeholder="What's on your mind? Share your thoughts, updates, or stories about the impact you're making..."
+              placeholder="What's on your mind?"
               placeholderTextColor={PrimaryGrey}
               value={form.content}
               onChangeText={(value) => handleInputChange('content', value)}

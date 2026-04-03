@@ -12,6 +12,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import LinearGradient from 'react-native-linear-gradient';
 import { Plus, Minus, Trash2, Search, X, ChevronLeft, ChevronDown, FileText, Pencil } from 'lucide-react-native';
 import EditDonationSplitBottomSheet from './EditDonationSplitBottomSheet';
 import { useNavigation } from '@react-navigation/native';
@@ -594,7 +595,6 @@ export default function ManageDonationBoxScreen() {
   const displayCauses = causesData?.results
     ? causesData.results
       .filter((cause: any) => !allSelectedCauseIds.includes(cause.id))
-      .slice(0, 5)
     : [];
 
   // Get joined collectives, excluding all selected ones
@@ -757,13 +757,13 @@ export default function ManageDonationBoxScreen() {
                           editableAmount <= 5 && styles.amountControlButtonDisabled
                         ]}
                       >
-                        <Minus size={14} color={editableAmount <= 5 ? '#9CA3AF' : '#374151'} />
+                        <Minus size={16} color={editableAmount <= 5 ? '#9CA3AF' : 'white'} />
                       </TouchableOpacity>
                       <TouchableOpacity
                         onPress={incrementAmount}
                         style={styles.amountControlButton}
                       >
-                        <Plus size={14} color="#374151" />
+                        <Plus size={16} color="white" />
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -783,7 +783,7 @@ export default function ManageDonationBoxScreen() {
                 {/* Supported Entities */}
                 <View style={styles.entitiesContainer}>
                   <Text style={styles.entitiesText}>
-                    {totalCausesCount} Cause{totalCausesCount !== 1 ? 's' : ''} • {totalCollectivesCount} Giving Group{totalCollectivesCount !== 1 ? 's' : ''}
+                    {totalCausesCount} Nonprofit{totalCausesCount !== 1 ? 's' : ''} • {totalCollectivesCount} Giving Group{totalCollectivesCount !== 1 ? 's' : ''}
                   </Text>
                 </View>
 
@@ -883,18 +883,19 @@ export default function ManageDonationBoxScreen() {
                     )} */}
                   </View>
                   <View style={styles.list}>
-                    {selectedCausesForDisplay.map((org) => {
+                    {selectedCausesForDisplay.map((org, index) => {
                       const causeId = org.isNewlySelected ? (org as any).causeId : parseInt(org.id.replace('cause-', ''));
                       const colors = getNonprofitColor(causeId || org.name);
                       const initials = org.name.charAt(0).toUpperCase();
+                      const isLast = index === selectedCausesForDisplay.length - 1;
                       return (
                         <TouchableOpacity
                           key={org.id}
-                          style={styles.causeCard}
+                          style={[styles.causeItem, isLast && { borderBottomWidth: 0 }]}
                           onPress={() => (navigation as any).navigate('CauseScreen', { id: causeId })}
                         >
                           <View style={styles.causeCardContent}>
-                            <Avatar size={40} style={[styles.causeIcon, { borderRadius: 8 }]}>
+                            <Avatar size={44} style={styles.causeIcon}>
                               <AvatarImage src={org.imageUrl} />
                               <AvatarFallback
                                 style={{ backgroundColor: colors.bgColor }}
@@ -919,7 +920,7 @@ export default function ManageDonationBoxScreen() {
                                   handleDeselectCause(causeId, org.isNewlySelected, org.name);
                                 }}
                               >
-                                <Trash2 size={18} color="#ef4444" />
+                                <Trash2 size={18} color="#6B7280" />
                               </TouchableOpacity>
                             </View>
                           </View>
@@ -975,18 +976,19 @@ export default function ManageDonationBoxScreen() {
                   <Text style={styles.loadingText}>Loading...</Text>
                 ) : displayCauses.length > 0 ? (
                   <View style={styles.list}>
-                    {displayCauses.map((cause: any) => {
+                    {displayCauses.map((cause: any, index: number) => {
                       const isSelected = selectedCauses.includes(cause.id);
                       const colors = getNonprofitColor(cause.id || cause.name);
                       const initials = cause.name?.charAt(0)?.toUpperCase() || 'C';
+                      const isLast = index === displayCauses.length - 1;
                       return (
                         <TouchableOpacity
                           key={cause.id}
-                          style={styles.causeCard}
+                          style={[styles.causeItem, isLast && { borderBottomWidth: 0 }]}
                           onPress={() => (navigation as any).navigate('CauseScreen', { id: cause.id })}
                         >
                           <View style={styles.causeCardContent}>
-                            <Avatar size={40} style={[styles.causeIcon, { borderRadius: 8 }]}>
+                            <Avatar size={44} style={styles.causeIcon}>
                               <AvatarImage src={cause.image} />
                               <AvatarFallback
                                 style={{ backgroundColor: colors.bgColor }}
@@ -1009,7 +1011,7 @@ export default function ManageDonationBoxScreen() {
                                 }}
                                 style={styles.addButton}
                               >
-                                <Plus size={14} color="#ec4899" />
+                                <Plus size={14} color="#2222EE" />
                               </TouchableOpacity>
                             ) : (
                               <TouchableOpacity
@@ -1081,7 +1083,7 @@ export default function ManageDonationBoxScreen() {
                                   }}
                                   style={styles.addButton}
                                 >
-                                  <Plus size={14} color="#ec4899" />
+                                  <Plus size={14} color="#2222EE" />
                                 </TouchableOpacity>
                               ) : (
                                 <TouchableOpacity
@@ -1549,18 +1551,18 @@ const styles = StyleSheet.create({
   summaryCardContainer: {
     marginHorizontal: 16,
     marginTop: 16,
-    marginBottom: 24,
+    // marginBottom: 24,
   },
   summaryCard: {
-    backgroundColor: 'white',
-    borderRadius: 12,
+    backgroundColor: '#F5F9F2',
+    borderRadius: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
     elevation: 2,
     borderWidth: 1,
-    borderColor: SecondaryGrey,
+    borderColor: '#e5e7eb',
     overflow: 'hidden',
   },
   gradientHeader: {
@@ -1569,7 +1571,7 @@ const styles = StyleSheet.create({
     backgroundColor: PrimaryBlue,
   },
   summaryCardContent: {
-    padding: 24,
+    padding: 16,
   },
   monthlySection: {
     marginBottom: 24,
@@ -1588,33 +1590,16 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     width: '100%',
   },
-  amountControlsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-  },
-  amountControlButton: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: LightGrey,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginLeft: 0,
-  },
-  amountControlButtonDisabled: {
-    opacity: 0.5,
-  },
-  amountControlMinus: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: PrimaryGrey,
-    fontFamily: 'Outfit-SemiBold',
-  },
   amountDisplayContainer: {
     flexDirection: 'row',
     alignItems: 'baseline',
     gap: 8,
+  },
+  amountText: {
+    fontSize: 36,
+    fontWeight: '700',
+    color: '#111827',
+    fontFamily: 'Outfit-Bold',
   },
   amountInput: {
     fontSize: 36,
@@ -1622,6 +1607,28 @@ const styles = StyleSheet.create({
     color: '#111827',
     minWidth: 80,
     fontFamily: 'Outfit-Bold',
+  },
+  perMonthText: {
+    fontSize: 16,
+    color: '#6b7280',
+    fontFamily: 'Outfit-Regular',
+  },
+  amountControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  amountControlButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#1600ff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  amountControlButtonDisabled: {
+    backgroundColor: '#e5e7eb',
+    opacity: 0.5,
   },
   lifetimeAmount: {
     fontSize: 13,
@@ -1643,17 +1650,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontFamily: 'Outfit-Regular',
   },
-  amountControls: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
   entitiesContainer: {
-    backgroundColor: LightGrey,
+    backgroundColor: '#f3f4f6',
     borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    // marginBottom: 24,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    marginBottom: 16,
     alignItems: 'center',
   },
   entitiesText: {
@@ -1663,42 +1665,42 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Bold',
   },
   capacityContainer: {
-    backgroundColor: '#EFF6FF',
+    backgroundColor: 'rgba(59, 130, 246, 0.05)',
     borderRadius: 8,
-    padding: 16,
-    marginBottom: 24,
+    padding: 12,
+    marginBottom: 16,
   },
   capacityHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 8,
   },
   capacityTitle: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '700',
-    color: PrimaryBlue,
+    color: '#3B82F6',
     fontFamily: 'Outfit-Bold',
   },
   capacityCount: {
     fontSize: 13,
     color: '#111827',
-    fontFamily: 'Outfit-Regular',
+    fontFamily: 'Outfit-Bold',
   },
   progressBarContainer: {
-    marginBottom: 8,
+    height: 6,
+    width: '100%',
+    backgroundColor: '#e5e7eb',
+    borderRadius: 3,
+    overflow: 'hidden',
   },
   progressBar: {
+    height: '100%',
     width: '100%',
-    height: 8,
-    backgroundColor: '#e5e7eb',
-    borderRadius: 4,
-    overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
-    borderRadius: 4,
-    backgroundColor: PrimaryBlue,
+    borderRadius: 3,
   },
   capacityText: {
     fontSize: 13,
@@ -1765,114 +1767,7 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     marginBottom: 4,
   },
-  amountText: {
-    fontSize: 36,
-    fontWeight: '700',
-    color: '#111827',
-    fontFamily: 'Outfit-Bold',
-  },
-  perMonthText: {
-    fontSize: 16,
-    color: '#6b7280',
-    fontFamily: 'Outfit-Regular',
-  },
-  amountControlsContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 16,
-    marginTop: 16,
-    marginBottom: 16,
-    marginHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#f9fafb',
-    borderRadius: 8,
-  },
-  amountControlText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: PrimaryBlue,
-    lineHeight: 24,
-  },
-  amountControlInput: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#111827',
-    borderBottomWidth: 1,
-    borderBottomColor: SecondaryGrey,
-    minWidth: 100,
-    textAlign: 'center',
-    paddingVertical: 4,
-  },
-  amountDisplay: {
-    minWidth: 100,
-    alignItems: 'center',
-  },
-  amountDisplayText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#111827',
-  },
-  scheduleText: {
-    fontSize: 14,
-    color: '#6b7280',
-    textAlign: 'center',
-    marginBottom: 16,
-    fontFamily: 'Outfit-Regular',
-  },
-  actionButtons: {
-    flexDirection: 'row',
-    gap: 8,
-    width: '100%',
-    maxWidth: 300,
-  },
-  // actionButton: {
-  //   flex: 1,
-  //   backgroundColor: 'rgba(255, 255, 255, 0.1)',
-  //   borderRadius: 12,
-  //   paddingVertical: 12,
-  //   alignItems: 'center',
-  // },
-  // actionButtonText: {
-  //   fontSize: 12,
-  //   color: '#ffffff',
-  //   marginTop: 4,
-  // },
-  tabsContainer: {
-    marginHorizontal: 16,
-    marginTop: 0,
-    marginBottom: 16,
-  },
-  tabs: {
-    flexDirection: 'row',
-    borderRadius: 12,
-    backgroundColor: '#ffffff',
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: 16,
-    alignItems: 'center',
-  },
-  tabActive: {
-    backgroundColor: '#2563eb',
-  },
-  tabText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#6b7280',
-    fontFamily: 'Outfit-Medium',
-  },
-  tabTextActive: {
-    color: '#ffffff',
-  },
+  // Removed duplicate styles to resolve lint errors
   contentSection: {
     paddingHorizontal: 20,
     marginTop: 16,
@@ -1896,42 +1791,37 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-SemiBold',
   },
   sectionTitleLarge: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '700',
     color: '#111827',
-    marginBottom: 4,
+    // marginBottom: 4,
     fontFamily: 'Outfit-Bold',
   },
   sectionSubtitle: {
-    fontSize: 13,
+    fontSize: 14,
     color: '#6b7280',
     marginBottom: 12,
     fontFamily: 'Outfit-Regular',
   },
   causeCard: {
     backgroundColor: 'white',
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
-    borderWidth: 1,
-    borderColor: SecondaryGrey,
-    // marginBottom: 2,
+    // Removed individual card styling to use grouped list style
   },
   causeCardContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 14,
     gap: 12,
   },
   causeIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 10,
+    width: 44,
+    height: 44,
+    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
   causeIconText: {
     fontSize: 18,
@@ -1953,7 +1843,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Bold',
   },
   amountPerMonth: {
-    fontSize: 13,
+    fontSize: 12,
     color: '#6b7280',
     fontFamily: 'Outfit-Regular',
   },
@@ -2070,21 +1960,16 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-SemiBold',
   },
   list: {
-    gap: 12,
-  },
-  causeItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    backgroundColor: '#ffffff',
+    backgroundColor: 'white',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#dbeafe',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
+    borderColor: '#E5E7EB',
+    overflow: 'hidden',
+  },
+  causeItem: {
+    backgroundColor: 'white',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
   },
   causeImageContainer: {
     marginRight: 16,
@@ -2190,7 +2075,9 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#fce7f3',
+    // backgroundColor: '#fce7f3',
+    borderWidth: 1,
+    borderColor: '#2222EE',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -2229,7 +2116,7 @@ const styles = StyleSheet.create({
   updateButton: {
     backgroundColor: PrimaryBlue,
     borderRadius: 8,
-    paddingVertical: 16,
+    paddingVertical: 14,
     alignItems: 'center',
     justifyContent: 'center',
     // marginBottom: 12,

@@ -134,26 +134,26 @@ export default function CheckoutScreen({
 
   // Fetch previously supported causes
   const {
-      data: previouslySupportedInfiniteData,
-      fetchNextPage: fetchNextPreviouslySupported,
-      hasNextPage: hasMorePreviouslySupported,
-      isFetchingNextPage: isFetchingMorePreviouslySupported,
+    data: previouslySupportedInfiniteData,
+    fetchNextPage: fetchNextPreviouslySupported,
+    hasNextPage: hasMorePreviouslySupported,
+    isFetchingNextPage: isFetchingMorePreviouslySupported,
   } = useInfiniteQuery({
-      queryKey: ['previouslySupportedCauses'],
-      queryFn: ({ pageParam = 1 }) => getPreviouslySupportedCauses(pageParam as number),
-      getNextPageParam: (lastPage: any) => {
-          if (lastPage.next) {
-              const url = new URL(lastPage.next);
-              const page = url.searchParams.get('page');
-              return page ? parseInt(page) : undefined;
-          }
-          return undefined;
-      },
-      initialPageParam: 1,
+    queryKey: ['previouslySupportedCauses'],
+    queryFn: ({ pageParam = 1 }) => getPreviouslySupportedCauses(pageParam as number),
+    getNextPageParam: (lastPage: any) => {
+      if (lastPage.next) {
+        const url = new URL(lastPage.next);
+        const page = url.searchParams.get('page');
+        return page ? parseInt(page) : undefined;
+      }
+      return undefined;
+    },
+    initialPageParam: 1,
   });
 
   const displayPreviouslySupported = useMemo(() => {
-      return previouslySupportedInfiniteData?.pages.flatMap((page: any) => page.results) || [];
+    return previouslySupportedInfiniteData?.pages.flatMap((page: any) => page.results) || [];
   }, [previouslySupportedInfiniteData]);
 
   // Mutation to remove cause from box
@@ -358,6 +358,9 @@ export default function CheckoutScreen({
               <View style={styles.sectionHeader}>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.sectionTitle}>Currently Supporting</Text>
+                  <Text style={styles.sectionSubtitle}>
+                    Supporting {causes.length} nonprofit{causes.length !== 1 ? 's' : ''}
+                  </Text>
                 </View>
                 {causes.length > 1 && (
                   <TouchableOpacity
@@ -365,23 +368,21 @@ export default function CheckoutScreen({
                     style={styles.editSplitButton}
                   >
                     <Pencil size={16} color="#374151" />
-                    <Text style={styles.editSplitButtonText}>Edit Split</Text>
+                    <Text style={styles.editSplitButtonText}>Adjust Split</Text>
                   </TouchableOpacity>
                 )}
               </View>
-              <Text style={styles.sectionSubtitle}>
-                Supporting {causes.length} nonprofit{causes.length !== 1 ? 's' : ''}
-              </Text>
 
-              {/* Causes List from box_causes */}
-              <View style={styles.causesList}>
-                {causes.map((cause: any) => {
+              {/* Causes List from box_causes - Grouped Container */}
+              <View style={styles.causesListContainer}>
+                {causes.map((cause: any, index: number) => {
                   const avatarBgColor = getConsistentColor(cause.id, avatarColors);
                   const initials = getInitials(cause.name || 'N');
+                  const isLast = index === causes.length - 1;
                   return (
                     <TouchableOpacity
                       key={cause.id}
-                      style={styles.causeCard}
+                      style={[styles.causeListItem, isLast && styles.lastCauseListItem]}
                       onPress={() => (navigation as any).navigate('CauseScreen', { id: cause.id })}
                     >
                       <View style={styles.causeCardContent}>
@@ -398,7 +399,7 @@ export default function CheckoutScreen({
 
                         {/* Cause Info */}
                         <View style={styles.causeInfo}>
-                          <Text style={styles.causeName}>{cause.name}</Text>
+                          <Text style={styles.causeName} numberOfLines={1}>{cause.name}</Text>
                           <Text style={styles.causeDescription} numberOfLines={1}>
                             {cause.mission || cause.description || 'Making a positive impact in the community'}
                           </Text>
@@ -425,7 +426,7 @@ export default function CheckoutScreen({
                             style={styles.trashButton}
                             activeOpacity={0.7}
                           >
-                            <Trash2 size={18} color="#EF4444" />
+                            <Trash2 size={18} color="#6B7280" />
                           </TouchableOpacity>
                         </View>
                       </View>
@@ -437,28 +438,33 @@ export default function CheckoutScreen({
           )}
 
           {/* Fallback to selectedOrganizations if no API data */}
+          {/* Fallback to selectedOrganizations if no API data */}
           {!hasApiData && selectedOrganizationsList.length > 0 && (
             <View style={styles.causesSection}>
               <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>Currently Supporting</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.sectionTitle}>Currently Supporting</Text>
+                  <Text style={styles.sectionSubtitle}>
+                    Supporting {selectedOrganizationsList.length} nonprofit{selectedOrganizationsList.length !== 1 ? 's' : ''}
+                  </Text>
+                </View>
               </View>
-              <Text style={styles.sectionSubtitle}>
-                Supporting {selectedOrganizationsList.length} nonprofit{selectedOrganizationsList.length !== 1 ? 's' : ''}
-              </Text>
-              <View style={styles.causesList}>
+
+              <View style={styles.causesListContainer}>
                 {selectedOrganizationsList.map((orgName: string, index: number) => {
                   const avatarBgColor = getConsistentColor(orgName, avatarColors);
                   const initials = getInitials(orgName);
+                  const isLast = index === selectedOrganizationsList.length - 1;
                   return (
-                    <View key={`${orgName}-${index}`} style={styles.causeCard}>
+                    <View key={`${orgName}-${index}`} style={[styles.causeListItem, isLast && styles.lastCauseListItem]}>
                       <View style={styles.causeCardContent}>
-                        <View style={[styles.causeIcon, { backgroundColor: avatarBgColor }]}>
-                          <Text style={styles.causeIconText}>
+                        <View style={[styles.causeIcon, { backgroundColor: avatarBgColor, justifyContent: 'center', alignItems: 'center' }]}>
+                          <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '700', fontFamily: 'Outfit-Bold' }}>
                             {initials}
                           </Text>
                         </View>
                         <View style={styles.causeInfo}>
-                          <Text style={styles.causeName}>{orgName}</Text>
+                          <Text style={styles.causeName} numberOfLines={1}>{orgName}</Text>
                           <Text style={styles.causeDescription} numberOfLines={1}>
                             {getOrganizationDescription(orgName)}
                           </Text>
@@ -848,15 +854,15 @@ export default function CheckoutScreen({
 
       {/* Edit Donation Split Bottom Sheet */}
       {(() => {
-        console.log('=== CheckoutScreen: Preparing causes for Edit Split ===');
-        console.log('causes:', causes);
-        console.log('causes.length:', causes?.length);
-        console.log('causes is array:', Array.isArray(causes));
-        console.log('boxCauses:', boxCauses);
-        console.log('boxCauses.length:', boxCauses?.length);
-        console.log('donationBox:', donationBox);
-        console.log('actualDonationAmount:', actualDonationAmount);
-        console.log('showEditSplitSheet:', showEditSplitSheet);
+        // console.log('=== CheckoutScreen: Preparing causes for Edit Split ===');
+        // console.log('causes:', causes);
+        // console.log('causes.length:', causes?.length);
+        // console.log('causes is array:', Array.isArray(causes));
+        // console.log('boxCauses:', boxCauses);
+        // console.log('boxCauses.length:', boxCauses?.length);
+        // console.log('donationBox:', donationBox);
+        // console.log('actualDonationAmount:', actualDonationAmount);
+        // console.log('showEditSplitSheet:', showEditSplitSheet);
 
         const causesForEditSplit = (causes || [])
           .filter((cause: any, index: number) => {
@@ -1030,92 +1036,56 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Medium',
   },
   causesSection: {
-    paddingHorizontal: 20,
-    marginTop: 8,
-  },
-  causeImageContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 8,
-    overflow: 'hidden',
-    marginRight: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  causeInfoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    flex: 1,
-  },
-  causeInfoContent: {
-    flex: 1,
+    paddingHorizontal: 16,
+    marginTop: 20,
+    marginBottom: 20,
   },
   sectionHeader: {
-    marginBottom: 8,
+    marginBottom: 12,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '700',
     color: '#111827',
-    marginBottom: 4,
     fontFamily: 'Outfit-Bold',
   },
   sectionSubtitle: {
     fontSize: 14,
     color: '#6b7280',
-    marginBottom: 16,
     fontFamily: 'Outfit-Regular',
+    marginTop: 2,
   },
-  causesList: {
-    marginBottom: 32,
-    gap: 12,
-  },
-  causeCard: {
+  causesListContainer: {
     backgroundColor: 'white',
     borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
     borderWidth: 1,
-    borderColor: SecondaryGrey,
-    // marginBottom: 12,
+    borderColor: '#E5E7EB',
+    overflow: 'hidden',
+  },
+  causeListItem: {
+    backgroundColor: 'white',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  lastCauseListItem: {
+    borderBottomWidth: 0,
   },
   causeCardContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 10,
-    gap: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 14,
+    gap: 12,
   },
   causeIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  causeIconText: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#ffffff',
-    fontFamily: 'Outfit-Bold',
-  },
-  causeItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 16,
-    // paddingHorizontal: 32,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    width: 44,
+    height: 44,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
   causeImage: {
     width: 48,
@@ -1128,44 +1098,38 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  causeAvatarText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#ffffff',
-    fontFamily: 'Outfit-Bold',
-  },
   causeInfo: {
     flex: 1,
+    gap: 2,
   },
   causeName: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '700',
     color: '#111827',
-    marginBottom: 4,
     fontFamily: 'Outfit-Bold',
   },
   causeDescription: {
-    fontSize: 14,
-    color: '#6b7280',
+    fontSize: 13,
+    color: '#6B7280',
     fontFamily: 'Outfit-Regular',
   },
   causeActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 12,
   },
   amountInfo: {
     alignItems: 'flex-end',
   },
   amountPercentage: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: 14,
+    fontWeight: '600',
     color: '#111827',
-    fontFamily: 'Outfit-Bold',
+    fontFamily: 'Outfit-SemiBold',
   },
   amountPerMonth: {
-    fontSize: 14,
-    color: '#6b7280',
+    fontSize: 12,
+    color: '#6B7280',
     fontFamily: 'Outfit-Regular',
   },
   collectiveHeader: {

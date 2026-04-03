@@ -30,18 +30,6 @@ interface EditDonationSplitBottomSheetProps {
   boxCauses?: any[];
 }
 
-// Slider colors for each nonprofit
-const sliderColors = [
-  '#3B82F6', // Blue
-  '#EF4444', // Red
-  '#8B5CF6', // Purple
-  '#10B981', // Green
-  '#F59E0B', // Amber
-  '#EC4899', // Pink
-  '#06B6D4', // Cyan
-  '#F97316', // Orange
-];
-
 const avatarColors = [
   '#3B82F6', '#EC4899', '#8B5CF6', '#10B981', '#F59E0B', '#EF4444', '#06B6D4',
   '#F97316', '#84CC16', '#A855F7', '#14B8A6', '#F43F5E', '#6366F1', '#22C55E', '#EAB308',
@@ -76,6 +64,7 @@ interface CauseCardProps {
   onInputBlur: (id: number) => void;
   onSliderChange: (id: number, value: number) => void;
   onSliderComplete: (id: number, value: number) => void;
+  isLast?: boolean;
 }
 
 const CauseCard = React.memo(({
@@ -93,76 +82,45 @@ const CauseCard = React.memo(({
   onInputBlur,
   onSliderChange,
   onSliderComplete,
+  isLast,
 }: CauseCardProps) => {
   const amount = (netAmount * displayPercentage) / 100;
   const avatarBgColor = getConsistentColor(cause.id, avatarColors);
   const initials = getInitials(cause.name || 'N');
-  const sliderColor = sliderColors[index % sliderColors.length];
 
   return (
-    <View style={styles.causeCard}>
-      {/* Cause Header */}
-      <View style={styles.causeHeader}>
-        <Avatar size={36}>
-          <AvatarImage src={cause.image || cause.logo} />
-          <AvatarFallback
-            style={{ backgroundColor: avatarBgColor }}
-            textStyle={{ color: '#FFFFFF', fontSize: 12, fontWeight: 'bold' }}
-          >
-            {initials}
-          </AvatarFallback>
-        </Avatar>
-        <View style={styles.causeInfo}>
-          <Text style={styles.causeName} numberOfLines={1}>{cause.name}</Text>
-          <Text style={styles.causeAmount}>${amount.toFixed(2)}/mo</Text>
+    <View style={[styles.causeListItem, isLast && styles.causeListItemLast]}>
+      <View style={styles.causeItemTop}>
+        {/* Identity Section */}
+        <View style={styles.causeIdentity}>
+          <Avatar size={40}>
+            <AvatarImage src={cause.image || cause.logo} />
+            <AvatarFallback
+              style={{ backgroundColor: avatarBgColor }}
+              textStyle={{ color: '#FFFFFF', fontSize: 13, fontWeight: 'bold' }}
+            >
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+          <View style={styles.causeInfo}>
+            <Text style={styles.causeName} numberOfLines={1}>{cause.name}</Text>
+            <Text style={styles.causeAmount}>${amount.toFixed(2)}/mo</Text>
+          </View>
+        </View>
+
+        {/* Controls/Amount Section */}
+        <View style={styles.causeRight}>
+          <Text style={styles.causePercentageText}>
+            {parseInt(inputValue).toString() || '0'}%
+          </Text>
         </View>
       </View>
 
-      {/* Controls */}
-      <View style={styles.controls}>
-        <TouchableOpacity
-          onPress={() => onDecrease(cause.id)}
-          disabled={percentage <= minPercentage}
-          style={[styles.controlButton, percentage <= minPercentage && styles.controlButtonDisabled]}
-        >
-          <Minus size={14} color={percentage <= minPercentage ? "#9CA3AF" : "#374151"} />
-        </TouchableOpacity>
-
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.percentageInput}
-            value={parseInt(inputValue).toString() || '0'}
-            onChangeText={(value) => onInputChange(cause.id, value)}
-            onBlur={() => onInputBlur(cause.id)}
-            keyboardType="numeric"
-            selectTextOnFocus
-          />
-        </View>
-
-        <TouchableOpacity
-          onPress={() => onIncrease(cause.id)}
-          disabled={percentage >= 100}
-          style={[styles.controlButton, percentage >= 100 && styles.controlButtonDisabled]}
-        >
-          <Plus size={14} color={percentage >= 100 ? "#9CA3AF" : "#374151"} />
-        </TouchableOpacity>
-      </View>
-
-      <Text style={styles.percentLabel}>percent</Text>
-
-      {/* Slider */}
+      {/* Slider Section */}
       <View
         style={styles.sliderContainer}
         onTouchStart={(e) => e.stopPropagation()}
       >
-        <View style={styles.sliderTrack}>
-          <View
-            style={[
-              styles.sliderFill,
-              { width: `${displayPercentage}%`, backgroundColor: sliderColor },
-            ]}
-          />
-        </View>
         <Slider
           style={styles.slider}
           minimumValue={minPercentage}
@@ -171,9 +129,9 @@ const CauseCard = React.memo(({
           value={draggingValue ?? percentage}
           onValueChange={(value) => onSliderChange(cause.id, value)}
           onSlidingComplete={(value) => onSliderComplete(cause.id, value)}
-          minimumTrackTintColor="transparent"
-          maximumTrackTintColor="transparent"
-          thumbTintColor={sliderColor}
+          minimumTrackTintColor="#D1D5DB"
+          maximumTrackTintColor="#F3F4F6"
+          thumbTintColor="#FFFFFF"
         />
       </View>
     </View>
@@ -539,7 +497,7 @@ export default function EditDonationSplitBottomSheet({
             }
 
             return (
-              <View style={styles.causesList}>
+              <View style={styles.causesListContainer}>
                 {causes.map((cause: any, index: number) => {
                   const percentage = percentages[cause.id] || 0;
                   const displayPercentage = draggingValues[cause.id] ?? percentage;
@@ -573,6 +531,7 @@ export default function EditDonationSplitBottomSheet({
                         });
                         handlePercentageChange(id, value);
                       }}
+                      isLast={index === causes.length - 1}
                     />
                   );
                 })}
@@ -654,110 +613,74 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 12,
-    paddingTop: 12,
   },
   contentContainer: {
-    paddingBottom: 12,
+    paddingTop: 12,
+    paddingBottom: 24,
   },
-  causesList: {
-    gap: 8,
-  },
-  causeCard: {
+  causesListContainer: {
     backgroundColor: '#FFFFFF',
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#D1D5DB',
-    borderRadius: 8,
-    padding: 12,
+    borderColor: '#E5E7EB',
+    overflow: 'hidden',
   },
-  causeHeader: {
+  causeListItem: {
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+    backgroundColor: '#FFFFFF',
+  },
+  causeListItemLast: {
+    borderBottomWidth: 0,
+  },
+  causeItemTop: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginBottom: 8,
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  causeIdentity: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    gap: 12,
+    marginRight: 12,
   },
   causeInfo: {
     flex: 1,
     minWidth: 0,
   },
   causeName: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: 'bold',
     color: '#111827',
     marginBottom: 2,
     fontFamily: 'Outfit-Bold',
   },
   causeAmount: {
-    fontSize: 11,
-    color: '#6B7280',
-    fontFamily: 'Outfit-Regular',
-  },
-  controls: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginBottom: 6,
-  },
-  controlButton: {
-    width: 28,
-    height: 28,
-    borderRadius: 6,
-    backgroundColor: '#F3F4F6',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  controlButtonDisabled: {
-    opacity: 0.5,
-  },
-  inputContainer: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  percentageInput: {
-    width: '100%',
-    textAlign: 'center',
     fontSize: 13,
-    fontWeight: '600',
     color: '#111827',
-    borderWidth: 1,
-    borderColor: '#D1D5DB',
-    borderRadius: 6,
-    paddingVertical: 6,
-    backgroundColor: '#FFFFFF',
+    fontFamily: 'Outfit-Medium',
+    fontWeight: '500',
+  },
+  causeRight: {
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+  },
+  causePercentageText: {
+    fontSize: 17,
+    color: '#1600ff',
     fontFamily: 'Outfit-SemiBold',
   },
-  percentLabel: {
-    fontSize: 9,
-    color: '#6B7280',
-    textAlign: 'center',
-    marginTop: 4,
-    marginBottom: 4,
-    fontFamily: 'Outfit-Regular',
-  },
   sliderContainer: {
-    marginTop: 6,
-    position: 'relative',
-    height: 4,
-  },
-  sliderTrack: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 4,
-    backgroundColor: '#E5E7EB',
-    borderRadius: 2,
-    overflow: 'hidden',
-    zIndex: 1,
-  },
-  sliderFill: {
-    height: '100%',
-    borderRadius: 2,
+    marginTop: 4,
+    height: 32, // More space for the thumb to be tappable
+    justifyContent: 'center',
   },
   slider: {
     width: '100%',
-    height: 20,
-    zIndex: 2,
-    marginTop: -8,
+    height: 40,
   },
   footer: {
     paddingHorizontal: 12,
@@ -776,7 +699,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   resetButtonText: {
-    fontSize: 11,
+    fontSize: 14,
     color: '#6B7280',
     fontFamily: 'Outfit-Regular',
   },

@@ -179,13 +179,13 @@ export default function DonationBoxSummaryCard({
                     editableAmount <= 5 && styles.amountControlButtonDisabled
                   ]}
                 >
-                  <Minus size={20} color={editableAmount <= 5 ? '#9CA3AF' : '#374151'} />
+                  <Minus size={20} color={editableAmount <= 5 ? '#9CA3AF' : '#fff'} />
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={incrementAmount}
                   style={styles.amountControlButton}
                 >
-                  <Plus size={20} color="#374151" />
+                  <Plus size={20} color="#fff" />
                 </TouchableOpacity>
               </View>
             )}
@@ -244,7 +244,7 @@ export default function DonationBoxSummaryCard({
         {/* Supported Entities */}
         <View style={styles.entitiesContainer}>
           <Text style={styles.entitiesText}>
-            {causesCount} Cause{causesCount !== 1 ? 's' : ''} • {collectivesCount} Giving Group{collectivesCount !== 1 ? 's' : ''}
+            {causesCount} Nonprofit{causesCount !== 1 ? 's' : ''} • {collectivesCount} Giving Group{collectivesCount !== 1 ? 's' : ''}
           </Text>
         </View>
 
@@ -296,7 +296,7 @@ export default function DonationBoxSummaryCard({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: 'white',
+    backgroundColor: '#F5F9F2',
     borderRadius: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
@@ -304,7 +304,7 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 2,
     borderWidth: 1,
-    borderColor: SecondaryGrey,
+    borderColor: '#e5e7eb',
     overflow: 'hidden',
     // marginHorizontal: 16,
     marginVertical: 16,
@@ -312,7 +312,7 @@ const styles = StyleSheet.create({
   gradientHeader: {
     height: 4,
     width: '100%',
-    backgroundColor: PrimaryBlue, // Gradient effect - can be enhanced with LinearGradient
+    backgroundColor: '#1600ff', // Standard CRWD Blue
   },
   content: {
     padding: 24,
@@ -352,13 +352,13 @@ const styles = StyleSheet.create({
   editButton: {
     width: 40,
     height: 40,
-    borderRadius: 8,
-    backgroundColor: LightGrey,
+    borderRadius: 48,
+    backgroundColor: '#E5E7EB',
     alignItems: 'center',
     justifyContent: 'center',
   },
   entitiesContainer: {
-    backgroundColor: LightGrey,
+    backgroundColor: '#E5E7EB',
     borderRadius: 8,
     paddingHorizontal: 16,
     paddingVertical: 12,
@@ -435,8 +435,8 @@ const styles = StyleSheet.create({
   amountControlButton: {
     width: 40,
     height: 40,
-    borderRadius: 8,
-    backgroundColor: LightGrey,
+    borderRadius: 50,
+    backgroundColor: '#1600ff',
     alignItems: 'center',
     justifyContent: 'center',
   },

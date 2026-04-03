@@ -70,7 +70,7 @@ export default function Login() {
         // New user - go through onboarding with redirectTo and redirectParams
         navigation.reset({
           index: 0,
-          routes: [{ name: 'NonProfitInterests' as never, params: { fromAuth: true, redirectTo: redirectTo || null, redirectParams } }],
+          routes: [{ name: 'DonationBoxIntro' as never, params: { fromAuth: true, redirectTo: redirectTo || null, redirectParams } }],
         });
       } else if (redirectTo && redirectTo !== 'DrawerNav') {
         // Existing user - navigate to redirectTo using reset

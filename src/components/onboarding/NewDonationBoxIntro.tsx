@@ -152,7 +152,7 @@ export default function NewDonationBoxIntro() {
                       <Text style={styles.addPlus}>+</Text>
                     </View>
                     <View style={styles.amountBadge}>
-                      <Text style={styles.amountText}>$30/mo</Text>
+                      {/* <Text style={styles.amountText}>$30/mo</Text> */}
                     </View>
                   </View>
                 </SlideInItem>

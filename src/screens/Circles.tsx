@@ -1,57 +1,22 @@
 import React, { useEffect, useState, useMemo } from 'react'
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, ScrollView, Image, RefreshControl } from 'react-native'
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, Image, RefreshControl } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
-import { PrimaryGreen, SecondaryGreen, PrimaryGrey } from '../Constants/Colors'
+import { PrimaryGreen, PrimaryGrey } from '../Constants/Colors'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import MainHeaderNav from '../components/MainHeaderNav'
-import { Plus, Search, Users } from 'lucide-react-native'
+import { Plus, Users, ChevronRight, ArrowLeft } from 'lucide-react-native'
 import { useQuery } from '@tanstack/react-query'
 import { getCollectives, getJoinCollective } from '../services/api/crwd'
 import { useAuthStore } from '../store/store'
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/Avatar'
-import { truncateAtFirstPeriod } from '../utils/truncateFirstPeriod'
 
 type TabKey = 'my-crwds' | 'discover'
-
-type DiscoverCircle = {
-  id: number
-  name: string
-  description: string
-  image: any
-  type: string
-  members: number
-}
 
 const Circles = () => {
   const navigation = useNavigation<any>()
   const [activeTab, setActiveTab] = useState<TabKey>('my-crwds')
-  const { user: currentUser } = useAuthStore();
+  const { user: currentUser } = useAuthStore()
 
-  // Avatar colors for consistent coloring
-  const avatarColors = [
-    '#EF4444', // Red
-    '#10B981', // Green
-    '#3B82F6', // Blue
-    '#8B5CF6', // Purple
-    '#84CC16', // Lime Green
-    '#EC4899', // Pink
-    '#F59E0B', // Amber
-    '#06B6D4', // Cyan
-    '#F97316', // Orange
-    '#A855F7', // Violet
-    '#14B8A6', // Teal
-    '#F43F5E', // Rose
-    '#6366F1', // Indigo
-    '#22C55E', // Emerald
-    '#EAB308', // Yellow
-  ];
-
-  const getConsistentColor = (id: number | string, colors: string[]) => {
-    const hash = typeof id === 'number' ? id : id.toString().split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
-    return colors[hash % colors.length];
-  };
-
-  // Fetch collectives data using React Query
+  // Fetch collectives data
   const {
     data: collectiveData,
     isLoading: isLoadingCollectives,
@@ -60,10 +25,9 @@ const Circles = () => {
   } = useQuery({
     queryKey: ['circles'],
     queryFn: () => getCollectives(),
-    enabled: true,
-  });
+  })
 
-  // Fetch joined collectives for current user
+  // Fetch joined collectives
   const {
     data: joinCollectiveData,
     isLoading: isLoadingJoinCollective,
@@ -73,294 +37,161 @@ const Circles = () => {
     queryKey: ['joined-collectives', currentUser?.id],
     queryFn: () => getJoinCollective(currentUser?.id || ''),
     enabled: !!currentUser?.id,
-  });
+  })
 
   const onRefresh = React.useCallback(() => {
-    refetchCollectives();
+    refetchCollectives()
     if (currentUser?.id) {
-      refetchJoinCollectives();
+      refetchJoinCollectives()
     }
-  }, [refetchCollectives, refetchJoinCollectives, currentUser?.id]);
+  }, [refetchCollectives, refetchJoinCollectives, currentUser?.id])
 
-  const refreshing = isRefetchingCollectives || isRefetchingJoinCollective;
+  const refreshing = isRefetchingCollectives || isRefetchingJoinCollective
 
-  // Filter out joined collectives from discover list
-  const filteredDiscoverList = useMemo(() => {
-    if (!collectiveData?.results) return [];
-    if (!joinCollectiveData?.data) return collectiveData.results;
+  const joinedCollectiveIds = useMemo(() => {
+    return new Set(joinCollectiveData?.data?.map((item: any) => item.collective?.id || item.id) || [])
+  }, [joinCollectiveData])
 
-    const joinedIds = new Set(joinCollectiveData.data.map((item: any) => (item.collective?.id || item.id)));
+  const discoverGroups = useMemo(() => {
+    return collectiveData?.results?.filter((item: any) => !joinedCollectiveIds.has(item.id)) || []
+  }, [collectiveData, joinedCollectiveIds])
 
-    return collectiveData.results.filter((item: any) => !joinedIds.has(item.id));
-  }, [collectiveData, joinCollectiveData]);
+  const myGroups = joinCollectiveData?.data?.map((item: any) => item.collective || item) || []
 
-  // Auto-switch to discover tab if no joined collectives
   useEffect(() => {
-    if (!joinCollectiveData?.data || joinCollectiveData.data.length === 0) {
-      setActiveTab('discover');
+    if (joinCollectiveData?.data && joinCollectiveData.data.length === 0) {
+      setActiveTab('discover')
     }
-  }, [joinCollectiveData]);
+  }, [joinCollectiveData])
 
-  const renderJoinedCollectiveItem = ({ item }: { item: any }) => {
-    const circle = item.collective || item;
-    // Priority: 1. Use color (with white text), 2. Use logo (image), 3. Fallback to generated color with letter
-    const hasColor = circle.color;
-    const hasLogo = circle.logo &&
-      (circle.logo.startsWith('http') || circle.logo.startsWith('/') || circle.logo.startsWith('data:'));
-    // Generate consistent color based on collective name if no color/logo
-    const colors = [
-      '#f97316', // orange
-      '#ec4899', // pink
-      '#3b82f6', // blue
-      '#10b981', // green
-      '#f59e0b', // amber
-      '#8b5cf6', // purple
-      '#ef4444', // red
-    ];
-    const colorIndex = (circle.name?.charCodeAt(0) || 0) % colors.length;
-    const circleBgColor = hasColor || (!hasLogo ? colors[colorIndex] : undefined);
-    const showImage = hasLogo
-    const iconLetter = circle.name?.charAt(0)?.toUpperCase() || 'C';
-    const founderName = circle.created_by
-      ? `${circle.created_by.first_name || ''} ${circle.created_by.last_name || ''}`.trim() || circle.created_by.username
-      : 'Unknown';
-
-    return (
-      <TouchableOpacity
-        onPress={() => navigation.navigate('GroupCRWD', { collectiveId: circle.id?.toString() })}
-        activeOpacity={0.9}
-        style={styles.card}
-      >
-        {/* Collective Icon */}
-        <View
-          style={[styles.collectiveIcon, !showImage && circleBgColor ? { backgroundColor: circleBgColor } : {}]}
+  const CircleItem = ({ item, isStartAction = false }: { item?: any, isStartAction?: boolean }) => {
+    if (isStartAction) {
+      return (
+        <TouchableOpacity
+          onPress={() => navigation.navigate('DrawerNav', { screen: 'CreateCRWD' })}
+          activeOpacity={0.7}
+          style={styles.itemContainer}
         >
-          {showImage ? (
-            <Image
-              source={{ uri: circle.logo }}
-              style={styles.collectiveIconImage}
-              resizeMode="cover"
-            />
-          ) : (
-            <Text style={styles.collectiveIconText}>
-              {iconLetter}
-            </Text>
-          )}
-        </View>
-
-        <Text style={styles.cardTitle} numberOfLines={1}>
-          {circle.name}
-        </Text>
-        <Text style={styles.cardDescription}>
-          {truncateAtFirstPeriod(circle.description)}
-        </Text>
-
-        {/* Founder Info */}
-        {circle.created_by && (
-          <View style={styles.founderInfo}>
-            <Avatar size={20}>
-              <AvatarImage src={circle.created_by.profile_picture} />
-              <AvatarFallback
-                style={{ backgroundColor: circle.created_by.color || getConsistentColor(circle.created_by.id || founderName, avatarColors) }}
-                textStyle={{ color: '#FFFFFF', fontSize: 10, fontWeight: '600' }}
-              >
-                {founderName.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <Text style={styles.founderText}>
-              Founded by {founderName}
-            </Text>
+          <View style={styles.itemWrapper}>
+            <View style={styles.itemMain}>
+              <View style={[styles.avatarContainer, { backgroundColor: '#eff6ff' }]}>
+                <Text style={[styles.avatarText, { color: '#2222EE' }]}>G</Text>
+              </View>
+              <View style={styles.textContainer}>
+                <Text style={styles.itemTitle}>Start a Giving Group</Text>
+                <Text style={styles.itemSubtitle} numberOfLines={1}>
+                  Bring people together around causes you care about
+                </Text>
+              </View>
+            </View>
+            <ChevronRight size={24} color="#6b7280" />
           </View>
-        )}
+        </TouchableOpacity>
+      )
+    }
 
-        {/* Supporting nonprofits count */}
-        <Text style={styles.nonprofitCount}>
-          Supporting {circle.causes_count} nonprofit{circle.causes_count !== 1 ? 's' : ''}
-        </Text>
-      </TouchableOpacity>
-    );
-  };
+    const name = item.name || 'Unnamed Group'
+    const initials = name.split(' ').map((w: string) => w[0]).join('').substring(0, 1).toUpperCase()
 
-  const renderDiscoverItem = ({ item }: { item: any }) => {
-    // Priority: 1. Use color (with white text), 2. Use logo (image), 3. Fallback to generated color with letter
-    const hasColor = item.color;
-    const hasLogo = item.logo &&
-      (item.logo.startsWith('http') || item.logo.startsWith('/') || item.logo.startsWith('data:'));
-    // Generate consistent color based on collective name if no color/logo
-    const colors = [
-      '#f97316', // orange
-      '#ec4899', // pink
-      '#3b82f6', // blue
-      '#10b981', // green
-      '#f59e0b', // amber
-      '#8b5cf6', // purple
-      '#ef4444', // red
-    ];
-    const colorIndex = (item.name?.charCodeAt(0) || 0) % colors.length;
-    const circleBgColor = hasColor || (!hasLogo ? colors[colorIndex] : undefined);
-    const showImage = hasLogo
-    const iconLetter = item.name?.charAt(0)?.toUpperCase() || 'C';
-    const founderName = item.created_by
-      ? `${item.created_by.first_name || ''} ${item.created_by.last_name || ''}`.trim() || item.created_by.username
-      : 'Unknown';
+    const nonprofitCount = item.causes_count || item.supported_causes_count || 0
+    const memberCount = item.member_count || item.members_count || 0
 
     return (
       <TouchableOpacity
         onPress={() => navigation.navigate('GroupCRWD', { collectiveId: item.id?.toString() })}
-        activeOpacity={0.9}
-        style={styles.card}
+        activeOpacity={0.7}
+        style={styles.itemContainer}
       >
-        {/* Collective Icon */}
-        <View
-          style={[styles.collectiveIcon, !showImage && circleBgColor ? { backgroundColor: circleBgColor } : {}]}
-        >
-          {showImage ? (
-            <Image
-              source={{ uri: item.logo }}
-              style={styles.collectiveIconImage}
-              resizeMode="cover"
-            />
-          ) : (
-            <Text style={styles.collectiveIconText}>
-              {iconLetter}
-            </Text>
-          )}
-        </View>
-
-        <Text style={styles.cardTitle} numberOfLines={1}>
-          {item.name}
-        </Text>
-        <Text style={styles.cardDescription}>
-          {truncateAtFirstPeriod(item.description)}
-        </Text>
-
-        {/* Founder Info */}
-        {item.created_by && (
-          <View style={styles.founderInfo}>
-            <Avatar size={20}>
-              <AvatarImage src={item.created_by.profile_picture} />
+        <View style={styles.itemWrapper}>
+          <View style={styles.itemMain}>
+            <Avatar size={48} style={styles.avatar}>
+              <AvatarImage src={item.logo} />
               <AvatarFallback
-                style={{ backgroundColor: item.created_by.color || getConsistentColor(item.created_by.id || founderName, avatarColors) }}
-                textStyle={{ color: '#FFFFFF', fontSize: 10, fontWeight: '600' }}
+                style={[styles.avatarContainer, { backgroundColor: item.color || '#2222EE' }]}
+                textStyle={{ color: '#fff', fontWeight: '700', fontSize: 18 }}
               >
-                {founderName.charAt(0).toUpperCase()}
+                {initials}
               </AvatarFallback>
             </Avatar>
-            <Text style={styles.founderText}>
-              Founded by {founderName}
-            </Text>
+            <View style={styles.textContainer}>
+              <Text style={styles.itemTitle} numberOfLines={1}>{name}</Text>
+              <Text style={styles.itemStats}>
+                {nonprofitCount} nonprofits · {memberCount} members
+              </Text>
+            </View>
           </View>
-        )}
-
-        {/* Supporting nonprofits count */}
-        <Text style={styles.nonprofitCount}>
-          Supporting {item.causes_count} nonprofit{item.causes_count !== 1 ? 's' : ''}
-        </Text>
+          <ChevronRight size={24} color="#6b7280" />
+        </View>
       </TouchableOpacity>
     )
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'right', 'left']}>
-      <MainHeaderNav title={'Giving Groups'} menu={false} postButton={false} />
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+      {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Give Together</Text>
-        <Text style={styles.headerSubtitle}>
-          Join Communities of people supporting nonprofits together or start your own.
-        </Text>
-        <TouchableOpacity
-          style={styles.createButton}
-          onPress={() => navigation.navigate('DrawerNav', { screen: 'CreateCRWD' })}
-          activeOpacity={0.8}
-        >
-          <Plus color='#ffffff' size={18} />
-          <Text style={styles.createButtonText}>Start a Giving Group</Text>
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.tabsRow}>
-        <TouchableOpacity
-          style={[styles.tabButton, activeTab === 'my-crwds' && styles.tabButtonActive]}
-          onPress={() => setActiveTab('my-crwds')}
-          activeOpacity={0.7}
-        >
-          <Users size={16} color={activeTab === 'my-crwds' ? '#000' : '#6B7280'} />
-          <Text style={[styles.tabText, activeTab === 'my-crwds' && styles.tabTextActive]}>
-            My Giving Groups ({joinCollectiveData?.data?.length || 0})
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tabButton, activeTab === 'discover' && styles.tabButtonActive]}
-          onPress={() => setActiveTab('discover')}
-          activeOpacity={0.7}
-        >
-          <Search color={activeTab === 'discover' ? '#000' : '#6B7280'} size={16} />
-          <Text style={[styles.tabText, activeTab === 'discover' && styles.tabTextActive]}>Discover</Text>
-        </TouchableOpacity>
-      </View>
-
-      {activeTab === 'my-crwds' ? (
-        <ScrollView
-          style={styles.scrollContainer}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[PrimaryGreen]} />
-          }
-        >
-          <View style={styles.contentContainer}>
-            {/* Loading State */}
-            {isLoadingJoinCollective ? (
-              <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color={PrimaryGreen} />
-                <Text style={styles.loadingText}>Loading collectives...</Text>
-              </View>
-            ) : (
-              <>
-                {joinCollectiveData?.data?.length > 0 ? (
-                  <View style={styles.listContainer}>
-                    {joinCollectiveData.data.map((item: any, index: number) => (
-                      <View key={String(item.id)}>
-                        {renderJoinedCollectiveItem({ item })}
-                        {index < joinCollectiveData.data.length - 1 && <View style={styles.separator} />}
-                      </View>
-                    ))}
-                  </View>
-                ) : (
-                  <View style={styles.emptyState}>
-                    <View style={styles.emptyStateIcon}>
-                      <Users size={48} color={PrimaryGrey} />
-                    </View>
-                    <Text style={styles.emptyStateTitle}>you haven't joined any Giving Groups yet</Text>
-                    <Text style={styles.emptyStateText}>Check out the discover tab to join a Giving Group</Text>
-                  </View>
-                )}
-              </>
-            )}
-          </View>
-        </ScrollView>
-      ) : (
-        /* Discover Tab Content */
-        <View style={styles.contentContainer}>
-          {isLoadingCollectives ? (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color={PrimaryGreen} />
-              <Text style={styles.loadingText}>Loading collectives...</Text>
-            </View>
-          ) : (
-            <FlatList
-              data={filteredDiscoverList}
-              keyExtractor={(item) => String(item.id)}
-              renderItem={renderDiscoverItem}
-              contentContainerStyle={styles.listContent}
-              // ItemSeparatorComponent={() => <View style={styles.separator} />}
-              showsVerticalScrollIndicator={false}
-              refreshControl={
-                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[PrimaryGreen]} />
-              }
-            />
-          )}
+        <View style={styles.headerLeft}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <ArrowLeft size={24} color="#374151" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Groups</Text>
         </View>
-      )}
+        <TouchableOpacity
+          onPress={() => navigation.navigate('DrawerNav', { screen: 'CreateCRWD' })}
+          style={styles.createIconButton}
+        >
+          <Plus size={20} color="#2222EE" strokeWidth={2.5} />
+        </TouchableOpacity>
+      </View>
+
+      {/* Tabs */}
+      <View style={styles.tabsContainer}>
+        <TouchableOpacity
+          onPress={() => setActiveTab('my-crwds')}
+          style={styles.tabButton}
+        >
+          <Text style={[styles.tabText, activeTab === 'my-crwds' && styles.activeTabText]}>
+            My Groups {myGroups.length > 0 && <Text style={styles.tabCount}>{myGroups.length}</Text>}
+          </Text>
+          {activeTab === 'my-crwds' && <View style={styles.activeIndicator} />}
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => setActiveTab('discover')}
+          style={styles.tabButton}
+        >
+          <Text style={[styles.tabText, activeTab === 'discover' && styles.activeTabText]}>
+            Discover
+          </Text>
+          {activeTab === 'discover' && <View style={styles.activeIndicator} />}
+        </TouchableOpacity>
+      </View>
+
+      <FlatList
+        data={activeTab === 'my-crwds' ? ['start-action', ...myGroups] : ['start-action', ...discoverGroups]}
+        keyExtractor={(item, index) => (typeof item === 'string' ? item : String(item.id || index))}
+        renderItem={({ item }) => (
+          <CircleItem item={item === 'start-action' ? undefined : item} isStartAction={item === 'start-action'} />
+        )}
+        ListEmptyComponent={
+          !isLoadingJoinCollective && !isLoadingCollectives ? (
+            <View style={styles.emptyState}>
+              <Users size={48} color="#e5e7eb" />
+              <Text style={styles.emptyTitle}>No groups yet</Text>
+              <Text style={styles.emptyText}>Join a group or start your own!</Text>
+            </View>
+          ) : null
+        }
+        ListHeaderComponent={
+          (isLoadingJoinCollective || isLoadingCollectives) && !refreshing ? (
+            <ActivityIndicator style={{ marginTop: 20 }} color="#2222EE" />
+          ) : null
+        }
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#2222EE" />
+        }
+        contentContainerStyle={styles.listContent}
+        showsVerticalScrollIndicator={false}
+      />
     </SafeAreaView>
   )
 }
@@ -369,211 +200,145 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    // paddingBottom: 16,
   },
   header: {
-    paddingHorizontal: 20,
-    paddingTop: 24,
-    paddingBottom: 12,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f3f4f6',
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  backButton: {
+    padding: 4,
   },
   headerTitle: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: '700',
     color: '#111827',
-    marginBottom: 6,
-    textAlign: 'center',
     fontFamily: 'Outfit-Bold',
   },
-  headerSubtitle: {
-    fontSize: 15,
-    color: '#6B7280',
-    textAlign: 'center',
-    marginBottom: 12,
-    fontFamily: 'Outfit-Regular',
-  },
-  createButton: {
-    flexDirection: 'row',
+  createIconButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 18,
+    borderWidth: 2,
+    borderColor: '#2222EE',
     alignItems: 'center',
-    gap: 5,
-    backgroundColor: '#00c854',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 999,
+    justifyContent: 'center',
   },
-  createButtonText: {
-    color: '#fff',
-    fontWeight: '600',
-    fontSize: 15,
-    fontFamily: 'Outfit-SemiBold',
-  },
-  tabsRow: {
+  tabsContainer: {
     flexDirection: 'row',
-    paddingHorizontal: 16,
-    backgroundColor: '#F3F4F6',
-    borderRadius: 999,
-    padding: 6,
-    gap: 2,
-    marginTop: 8,
-    marginBottom: 8,
-    marginHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
   },
   tabButton: {
     flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 10,
-    borderRadius: 999,
+    paddingVertical: 12,
     alignItems: 'center',
-  },
-  tabButtonActive: {
-    backgroundColor: '#FFFFFF',
+    position: 'relative',
   },
   tabText: {
-    color: '#6B7280',
-    fontWeight: '600',
-    fontSize: 14,
-    fontFamily: 'Outfit-SemiBold',
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#6b7280',
+    fontFamily: 'Outfit-Medium',
   },
-  tabTextActive: {
-    color: '#111827',
+  tabCount: {
+    fontSize: 18,
+  },
+  activeTabText: {
+    color: '#2222EE',
+    fontWeight: '700',
+  },
+  activeIndicator: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 1,
+    backgroundColor: '#2222EE',
   },
   listContent: {
-    // paddingHorizontal: 16,
-    // paddingTop: 4,
-    paddingBottom: 32,
-    gap: 10,
+    paddingBottom: 40,
   },
-  separator: {
-    height: 10,
+  itemContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
   },
-  card: {
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    backgroundColor: '#fff',
-    flexDirection: 'column',
-  },
-  collectiveIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 6,
-    overflow: 'hidden',
-  },
-  collectiveIconImage: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 8,
-    objectFit: 'contain'
-  },
-  collectiveIconText: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    fontFamily: 'Outfit-Bold',
-  },
-  cardTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#111827',
-    marginBottom: 2,
-    fontFamily: 'Outfit-Bold',
-  },
-  cardDescription: {
-    fontSize: 15,
-    color: '#4B5563',
-    marginBottom: 6,
-    lineHeight: 20,
-    fontFamily: 'Outfit-Regular',
-  },
-  founderInfo: {
+  itemWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginBottom: 6,
+    justifyContent: 'space-between',
   },
-  founderText: {
-    fontSize: 14,
-    color: '#6B7280',
-    fontFamily: 'Outfit-Regular',
-  },
-  nonprofitCount: {
-    fontSize: 14,
-    color: '#6B7280',
-    fontFamily: 'Outfit-Regular',
-  },
-  placeholderWrapper: {
-    paddingHorizontal: 24,
-    paddingTop: 40,
+  itemMain: {
+    flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
+    gap: 16,
   },
-  placeholderTitle: {
-    fontSize: 18,
+  avatarContainer: {
+    width: 45,
+    height: 45,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatar: {
+    borderRadius: 8,
+  },
+  avatarText: {
+    fontSize: 20,
     fontWeight: '700',
-    color: '#111827',
-    marginBottom: 6,
-    textAlign: 'center',
     fontFamily: 'Outfit-Bold',
   },
-  placeholderDescription: {
-    fontSize: 14,
-    color: '#6B7280',
-    textAlign: 'center',
-    fontFamily: 'Outfit-Regular',
-  },
-  contentContainer: {
+  textContainer: {
     flex: 1,
-    paddingHorizontal: 16,
-    marginBottom: 48,
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 40,
-  },
-  loadingText: {
-    marginTop: 10,
-    color: PrimaryGrey,
+  itemTitle: {
     fontSize: 15,
+    fontWeight: '700',
+    color: '#111827',
+    fontFamily: 'Outfit-Bold',
+    marginBottom: 2,
+  },
+  itemSubtitle: {
+    fontSize: 14,
+    color: '#4b5563',
     fontFamily: 'Outfit-Regular',
+  },
+  itemStats: {
+    fontSize: 14,
+    color: '#4b5563',
+    fontFamily: 'Outfit-Medium',
   },
   emptyState: {
     alignItems: 'center',
-    paddingVertical: 32,
-    paddingHorizontal: 16,
+    justifyContent: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 40,
   },
-  emptyStateIcon: {
-    backgroundColor: '#F3F4F6',
-    padding: 16,
-    borderRadius: 999,
-    marginBottom: 16,
-  },
-  emptyStateTitle: {
-    fontSize: 15,
-    fontWeight: '600',
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '700',
     color: '#111827',
-    marginBottom: 8,
-    textAlign: 'center',
-    fontFamily: 'Outfit-SemiBold',
+    marginTop: 16,
+    fontFamily: 'Outfit-Bold',
   },
-  emptyStateText: {
-    color: PrimaryGrey,
-    fontSize: 15,
+  emptyText: {
+    fontSize: 14,
+    color: '#6b7280',
     textAlign: 'center',
+    marginTop: 8,
     fontFamily: 'Outfit-Regular',
-  },
-  scrollContainer: {
-    flex: 1,
-    marginBottom: 48,
-  },
-  listContainer: {
-    // No specific height limit, let it grow naturally
   },
 })
 

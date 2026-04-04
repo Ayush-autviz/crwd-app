@@ -509,7 +509,7 @@ export default function PopularPosts({
 
     return (
         <>
-            <View style={{ marginTop: 20, marginBottom: 0 }}>
+            <View style={{ marginTop: 10, marginBottom: 0 }}>
                 {shouldShowTitle && (
                     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>

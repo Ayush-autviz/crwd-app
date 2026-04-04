@@ -1,31 +1,29 @@
 import { View, Text, ScrollView, TouchableOpacity, Alert, Image, Modal, TouchableWithoutFeedback, ActivityIndicator, RefreshControl, StyleSheet, Dimensions } from 'react-native'
 import React, { useState, useCallback, useMemo, useRef } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
 import BottomSheet, { BottomSheetView, BottomSheetBackdrop, BottomSheetScrollView, BottomSheetModal } from '@gorhom/bottom-sheet'
 import MainHeaderNav from '../components/MainHeaderNav'
 import ProfileBio from '../components/ProfileBio'
-import ProfileStats from '../components/ProfileStats'
 import PopularPosts from '../components/PopularPosts'
 import ProfileInterests from '../components/ProfileInterests'
 import { PrimaryBlue, PrimaryGrey, LightGrey } from '../Constants/Colors'
 import { useNavigation, NavigationProp } from '@react-navigation/native'
-import { Share2, Flag, ChevronRight, Ellipsis, MessageCircle, MessageSquare, ArrowLeft, X, Users, Plus } from 'lucide-react-native'
+import { Share2, Flag, ChevronRight, Ellipsis, MessageCircle, MessageSquare, ArrowLeft, X, Users, Plus, MapPin, DoorOpenIcon, Pencil } from 'lucide-react-native'
 import SharePost from '../components/SharePost'
 import { getPosts, getUserProfileById, getUserFollowers, getUserFollowing, getFavoriteCauses, getSupportedCausesByUserId, followUser, unfollowUser } from '../services/api/social'
 import { getUserCollectives, getJoinCollective } from '../services/api/crwd'
 import { useAuthStore } from '../store/store'
-import { Pencil } from 'lucide-react-native'
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/Avatar'
-import { useMutation } from '@tanstack/react-query'
 import { logout, unregisterToken } from '../services/api/auth'
 import messaging from '@react-native-firebase/messaging';
-import { MapPin } from 'lucide-react-native'
-import { DoorOpenIcon } from 'lucide-react-native'
 import { useToast } from '../contexts/ToastContext'
 import { WEB_BASE_URL } from '../Constants/url'
 import CommentsBottomSheet from '../components/post/CommentsBottomSheet'
 import { truncateAtFirstPeriod } from '../utils/truncateFirstPeriod'
+import { CompactProfileHeader } from '../components/profile/CompactProfileHeader'
+import { ProfileDonationBox } from '../components/profile/ProfileDonationBox'
+import { ProfileGroups } from '../components/profile/ProfileGroups'
 
 type RootStackParamList = {
     ProfileEdit: undefined;
@@ -677,9 +675,18 @@ export default function Profile() {
         <SafeAreaView style={{ backgroundColor: 'white', flex: 1 }} edges={['top', 'left', 'right']}>
             {/* <MainHeaderNav title={'Me'} menu={false} /> */}
 
-            {/* Top right buttons */}
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 12, paddingHorizontal: 16, height: 60, borderBottomWidth: 2, borderBottomColor: '#e5e7eb' }}>
-                <Text style={{ fontSize: 20, fontFamily: 'Outfit-SemiBold', color: '#111827' }}>Me</Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, height: 60, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                    <TouchableOpacity onPress={() => (navigation as any).goBack()}>
+                        <ArrowLeft size={24} color="#111827" />
+                    </TouchableOpacity>
+                    <Text style={{ fontSize: 18, fontFamily: 'Outfit-Bold', color: '#111827' }}>
+                        {profileData?.first_name && profileData?.last_name
+                            ? `${profileData.first_name} ${profileData.last_name}`
+                            : profileData?.username || 'Profile'
+                        }
+                    </Text>
+                </View>
                 <View style={{ position: 'relative' }}>
                     <TouchableOpacity
                         onPress={() => setShowMenu(!showMenu)}
@@ -798,86 +805,24 @@ export default function Profile() {
                     />
                 }
             >
-                <View style={{ paddingHorizontal: 20 }}>
-                    {/* Profile Header */}
-                    <View style={{ paddingTop: 16, paddingBottom: 8, alignItems: 'center' }}>
-                        {/* Avatar */}
-                        <TouchableOpacity onPress={() => setShowImageModal(true)}>
-                            {/* <Image
-                                source={{ uri: profileData?.profile_picture || 'https://randomuser.me/api/portraits/women/44.jpg' }}
-                                style={{
-                                    width: 56,
-                                    height: 56,
-                                    borderRadius: 28,
-                                    marginBottom: 16
-                                }}
-                            /> */}
-                            <Avatar size={130}>
-                                <AvatarImage src={profileData?.profile_picture} />
-                                <AvatarFallback
-                                    style={{ backgroundColor: profileData?.profile_picture ? 'transparent' : (profileData?.color || getConsistentColor(profileData?.id || profileData?.username || 'U', avatarColors)) }}
-                                    textStyle={{ color: '#FFFFFF', fontFamily: 'Outfit-SemiBold', fontSize: 40 }}
-                                >
-                                    {getInitials(profileData?.first_name, profileData?.last_name, profileData?.username, profileData?.username)}
-                                </AvatarFallback>
-                            </Avatar>
-                        </TouchableOpacity>
-                        <View style={{ alignItems: 'center', marginVertical: 16 }}>
-                            <View style={{ flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-                                <Text style={{
-                                    fontSize: 18,
-                                    fontFamily: 'Outfit-Bold',
-                                    color: '#111827',
-                                }}>
-                                    {profileData?.first_name && profileData?.last_name
-                                        ? `${profileData.first_name} ${profileData.last_name}`
-                                        : profileData?.username || 'User'
-                                    }
-                                </Text>
-                                {adminCollectives.length > 0 && (
-                                    <TouchableOpacity
-                                        onPress={() => setShowFounderSheet(true)}
-                                        style={{
-                                            backgroundColor: '#FCE7F3',
-                                            paddingHorizontal: 12,
-                                            paddingVertical: 4,
-                                            borderRadius: 9999,
-                                        }}
-                                    >
-                                        <Text style={{
-                                            color: '#EC4899',
-                                            fontSize: 14,
-                                            fontFamily: 'Outfit-SemiBold',
-                                        }}>
-                                            Organizer
-                                        </Text>
-                                    </TouchableOpacity>
-                                )}
-                            </View>
-                        </View>
-
-                        {/* Location and Link */}
-                        {profileData?.location && (
-                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                                    {/* <Text style={{ fontSize: 16, color: '#6b7280' }}>📍</Text> */}
-                                    <MapPin size={16} color="#000000" />
-                                    <Text style={{ fontSize: 14, color: '#000000' }}>{profileData.location}</Text>
-                                </View>
-
-                                {/* {profileData?.username && (
-                                <TouchableOpacity>
-                                    <Text style={{ fontSize: 12, color: PrimaryBlue,}}>
-                                        {profileData.username}
-                                    </Text>
-                                </TouchableOpacity>
-                            )}
-                            <Text style={{ fontSize: 12, color: '#6b7280' }}>
-                                Active since {profileData?.date_joined ? new Date(profileData.date_joined).getFullYear() : '2023'}
-                            </Text> */}
-                            </View>
-                        )}
-                    </View>
+                <View style={{ paddingHorizontal: 20, paddingTop: 10 }}>
+                    <CompactProfileHeader
+                        profileData={profileData}
+                        followersCount={followersQuery?.data?.count || profileData?.followers_count || 0}
+                        followingCount={followingQuery?.data?.count || profileData?.following_count || 0}
+                        onAvatarPress={() => setShowImageModal(true)}
+                        onFollowersPress={() => {
+                            setActiveStatsTab('followers');
+                            bottomSheetRef.current?.present();
+                        }}
+                        onFollowingPress={() => {
+                            setActiveStatsTab('following');
+                            bottomSheetRef.current?.present();
+                        }}
+                        getConsistentColor={getConsistentColor}
+                        avatarColors={avatarColors}
+                        getInitials={getInitials}
+                    />
 
                     {profileData?.bio && <ProfileBio bio={profileData.bio} />}
 
@@ -897,191 +842,59 @@ export default function Profile() {
                     )} */}
 
 
-                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 16, marginTop: 8 }}>
-                        <TouchableOpacity onPress={handleEditProfile} style={{ paddingHorizontal: 16, paddingVertical: 10, borderRadius: 8, borderWidth: 1, borderColor: '#e5e7eb', minWidth: 120 }}>
-                            <Text style={{ fontSize: 15, color: '#595959', fontFamily: 'Outfit-Bold', textAlign: 'center' }}>Edit Profile</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={handleShare} style={{ paddingHorizontal: 16, paddingVertical: 10, borderRadius: 8, borderWidth: 1, borderColor: '#e5e7eb', minWidth: 120 }}>
-                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, justifyContent: 'center' }}>
-                                {/* <Share2 size={16} color="#595959" /> */}
-                                <Text style={{ fontSize: 15, color: '#595959', fontFamily: 'Outfit-Bold' }}>Share Profile</Text>
-                            </View>
-                        </TouchableOpacity>
-                    </View>
+                    <TouchableOpacity
+                        onPress={handleEditProfile}
+                        style={{
+                            width: '100%',
+                            height: 40,
+                            borderRadius: 8,
+                            borderWidth: 1,
+                            borderColor: '#e5e7eb',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            marginVertical: 10,
+                        }}
+                    >
+                        <Text style={{ fontSize: 16, color: '#111827', fontFamily: 'Outfit-Bold' }}>Edit Profile</Text>
+                    </TouchableOpacity>
 
-                    {/* Profile Stats */}
-                    <ProfileStats
-                        causes={profileData?.supported_causes_count || 0}
-                        crwds={userCollectivesQuery?.data?.data?.length || profileData?.joined_collectives_count || 0}
-                        followers={followersQuery?.data?.count || profileData?.followers_count || 0}
-                        following={followingQuery?.data?.count || profileData?.following_count || 0}
-                        profileId={profileData?.id?.toString() || ''}
-                        isLoadingCauses={favoriteCausesQuery?.isLoading || profileLoading}
-                        isLoadingCrwds={userCollectivesQuery?.isLoading || profileLoading}
-                        isLoadingFollowers={followersQuery?.isLoading || false}
-                        isLoadingFollowing={followingQuery?.isLoading || false}
-                        onStatPress={(tab) => {
-                            setActiveStatsTab(tab);
+                    <ProfileDonationBox
+                        causes={profileData?.recently_supported_causes || []}
+                        totalCount={profileData?.supported_causes_count || 0}
+                        onSectionPress={() => {
+                            setActiveStatsTab('causes');
                             bottomSheetRef.current?.present();
                         }}
+                        onCausePress={(id) => (navigation as any).navigate('CauseScreen', { id })}
+                        getConsistentColor={getConsistentColor}
+                        avatarColors={avatarColors}
                     />
 
-                    <View style={{ height: 1, backgroundColor: '#e5e7eb', marginHorizontal: 8, marginTop: 8 }}></View>
+                    <ProfileGroups
+                        collectives={userCollectivesQuery?.data?.data || []}
+                        totalCount={userCollectivesQuery?.data?.data?.length || 0}
+                        onSectionPress={() => {
+                            setActiveStatsTab('crwds');
+                            bottomSheetRef.current?.present();
+                        }}
+                        onCollectivePress={(id) => (navigation as any).navigate('GroupCRWD', { id: id.toString() })}
+                        getConsistentColor={getConsistentColor}
+                        avatarColors={avatarColors}
+                    />
 
-                    {/* Recently Supported Section */}
-                    {profileData?.recently_supported_causes && profileData.recently_supported_causes.length > 0 && (
-                        <View style={{ marginTop: 24 }}>
-                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                                <Text style={{ fontSize: 16, fontWeight: '700', color: '#111827' }}>
-                                    Supports
-                                </Text>
-                            </View>
-
-                            {/* Grid Layout - 2 rows, 3 columns */}
-                            <View style={{
-                                flexDirection: 'row',
-                                flexWrap: 'wrap',
-                                marginHorizontal: -6,
-                            }}>
-                                {profileData.recently_supported_causes.slice(0, 6).map((cause: any, i: number) => {
-                                    // Generate consistent color based on cause ID
-                                    const bgColor = getConsistentColor(cause.id || cause.name || 'N', avatarColors);
-
-                                    return (
-                                        <TouchableOpacity
-                                            key={cause.id || i}
-                                            onPress={() => (navigation as any).navigate('CauseScreen', { id: cause.id })}
-                                            style={{
-                                                width: '33.333%',
-                                                paddingHorizontal: 6,
-                                                marginBottom: 12,
-                                            }}
-                                        >
-                                            <View style={{
-                                                backgroundColor: 'white',
-                                                borderRadius: 12,
-                                                borderWidth: 1,
-                                                borderColor: '#e5e7eb',
-                                                paddingVertical: 12,
-                                                paddingHorizontal: 8,
-                                                alignItems: 'center',
-                                                height: 120,
-                                                justifyContent: 'flex-start',
-                                            }}>
-                                                {cause.image || cause.logo ? (
-                                                    <View style={{
-                                                        width: 48,
-                                                        height: 48,
-                                                        borderRadius: 10,
-                                                        marginBottom: 8,
-                                                        overflow: 'hidden',
-                                                    }}>
-                                                        <Image
-                                                            source={{ uri: cause.image || cause.logo }}
-                                                            style={{
-                                                                width: 48,
-                                                                height: 48,
-                                                                borderRadius: 10,
-                                                            }}
-                                                            resizeMode="cover"
-                                                        />
-                                                    </View>
-                                                ) : (
-                                                    <View style={{
-                                                        width: 48,
-                                                        height: 48,
-                                                        borderRadius: 10,
-                                                        backgroundColor: bgColor,
-                                                        justifyContent: 'center',
-                                                        alignItems: 'center',
-                                                        marginBottom: 8,
-                                                    }}>
-                                                        <Text style={{
-                                                            fontSize: 20,
-                                                            fontFamily: 'Outfit-SemiBold',
-                                                            color: 'white',
-                                                        }}>
-                                                            {cause.name?.charAt(0)?.toUpperCase() || 'N'}
-                                                        </Text>
-                                                    </View>
-                                                )}
-                                                <Text
-                                                    numberOfLines={2}
-                                                    ellipsizeMode="tail"
-                                                    style={{
-                                                        fontSize: 13,
-                                                        fontFamily: 'Outfit-SemiBold',
-                                                        color: '#111827',
-                                                        textAlign: 'center',
-                                                        lineHeight: 18,
-                                                    }}
-                                                >
-                                                    {cause.name}
-                                                </Text>
-                                            </View>
-                                        </TouchableOpacity>
-                                    );
-                                })}
-                            </View>
-
-                            {/* Show more causes text and link */}
-                            {profileData.recently_supported_causes.length > 5 && (
-                                <View style={{ alignItems: 'center', gap: 8, marginTop: 4 }}>
-                                    {/* <Text style={{ fontSize: 14, color: '#6b7280' }}>
-                                        + {profileData.supported_causes_count - 6} more causes
-                                    </Text> */}
-                                    <TouchableOpacity onPress={() => {
-                                        setActiveStatsTab('causes');
-                                        bottomSheetRef.current?.present();
-                                    }}>
-                                        <Text style={{
-                                            fontSize: 14,
-                                            color: PrimaryBlue,
-                                            fontFamily: 'Outfit-Medium'
-                                        }}>
-                                            See all
-                                        </Text>
-                                    </TouchableOpacity>
-                                </View>
-                            )}
-
-                            <View style={{ height: 1, backgroundColor: '#e5e7eb', marginTop: 16 }}></View>
-
-                        </View>
-                    )}
-
-                    {/* <View style={{ height: 1, backgroundColor: '#e5e7eb', marginHorizontal: 8, marginTop: 16 }}></View> */}
-
-                    {/* Profile Bio */}
-
-
-                    {/* Recent Activity */}
-                    <View style={{ paddingVertical: 16 }}>
+                    {/* Posts Section */}
+                    <View style={{ marginTop: 12, borderTopWidth: 1, borderTopColor: '#f3f4f6', paddingTop: 10, paddingBottom: 100 }}>
                         {postsQuery.isLoading ? (
                             <View style={{ padding: 20, alignItems: 'center' }}>
                                 <ActivityIndicator size="large" color={PrimaryBlue} />
-                                <Text style={{ marginTop: 10, color: PrimaryGrey }}>Loading...</Text>
+                                <Text style={{ marginTop: 10, color: '#6b7280', fontFamily: 'Outfit-Regular' }}>Loading posts...</Text>
                             </View>
-                        ) : userPosts.length === 0 ? (
-                            <View style={styles.emptyContainer}>
-                                <View style={styles.emptyIconContainer}>
-                                    <Users size={48} color="#1600ff" />
-                                </View>
-                                <Text style={styles.emptyTitle}>No posts yet</Text>
-                                <Text style={styles.emptyDescription}>
-                                    Posts appear when you share updates in your collectives. Join or start a collective to start sharing your impact!
-                                </Text>
-                            </View>
-                        ) : null}
-                        {userPosts.length > 0 && (
+                        ) : userPosts.length > 0 ? (
                             <>
-                                <View style={{ marginBottom: 0 }}>
-                                    <Text style={{ fontSize: 16, fontFamily: 'Outfit-Bold', color: '#111827', marginBottom: 4 }}>
-                                        Recent Activity
+                                <View style={{}}>
+                                    <Text style={{ fontSize: 13, fontFamily: 'Outfit-Bold', color: '#6b7280', textTransform: 'uppercase' }}>
+                                        POSTS
                                     </Text>
-                                    {/* <Text style={{ fontSize: 12, color: '#6B7280' }}>
-                                        Activity, updates, and discoveries from your community
-                                    </Text> */}
                                 </View>
                                 <PopularPosts
                                     posts={userPosts}
@@ -1089,7 +902,6 @@ export default function Profile() {
                                     onLoadMore={async () => { }}
                                     hasMore={false}
                                     onCommentPress={(post) => {
-                                        // Find the original post data to get firstName and lastName
                                         const originalPost = postsQuery?.data?.results?.find((p: any) => p.id?.toString() === post.id);
                                         setSelectedPost({
                                             id: parseInt(post.id),
@@ -1102,8 +914,17 @@ export default function Profile() {
                                         setShowCommentsSheet(true);
                                     }}
                                 />
-                                <View style={{ height: 100 }} />
                             </>
+                        ) : (
+                            <View style={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 40, paddingHorizontal: 20 }}>
+                                <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: '#f0fdf4', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+                                    <Users size={32} color="#16a34a" />
+                                </View>
+                                <Text style={{ fontSize: 18, fontFamily: 'Outfit-Bold', color: '#111827', marginBottom: 8, textAlign: 'center' }}>No posts yet</Text>
+                                <Text style={{ fontSize: 14, color: '#6b7280', textAlign: 'center', fontFamily: 'Outfit-Regular', lineHeight: 20 }}>
+                                    Updates will appear here as you share and interact in your Giving Groups. Join a new group to get started!
+                                </Text>
+                            </View>
                         )}
                     </View>
                 </View>

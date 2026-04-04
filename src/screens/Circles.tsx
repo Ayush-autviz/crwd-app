@@ -74,9 +74,10 @@ const Circles = () => {
         >
           <View style={styles.itemWrapper}>
             <View style={styles.itemMain}>
-              <View style={[styles.avatarContainer, { backgroundColor: '#eff6ff' }]}>
-                <Text style={[styles.avatarText, { color: '#2222EE' }]}>G</Text>
-              </View>
+              <Avatar size={48} style={styles.avatar}>
+                <AvatarImage src={currentUser?.profile_image} />
+                <AvatarFallback style={[styles.avatarContainer, { backgroundColor: currentUser?.color }]} textStyle={{ color: '#fff', fontWeight: '700', fontSize: 18 }}>{currentUser?.first_name.charAt(0).toUpperCase()}</AvatarFallback>
+              </Avatar>
               <View style={styles.textContainer}>
                 <Text style={styles.itemTitle}>Start a Giving Group</Text>
                 <Text style={styles.itemSubtitle} numberOfLines={1}>
@@ -251,7 +252,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Medium',
   },
   tabCount: {
-    fontSize: 18,
+    fontSize: 16,
   },
   activeTabText: {
     color: '#2222EE',

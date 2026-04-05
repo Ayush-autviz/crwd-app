@@ -57,7 +57,7 @@ export default function SearchResults() {
     } = useInfiniteQuery({
         queryKey: ['search', searchQuery, activeTab],
         queryFn: async ({ pageParam = 1 }) => {
-            if (activeTab === 'Causes') {
+            if (activeTab === 'Nonprofits') {
                 const categoryId = params?.categoryId;
                 // If searching by category, use that endpoint
                 if (categoryId && (!searchQuery || searchQuery === params?.categoryName)) {

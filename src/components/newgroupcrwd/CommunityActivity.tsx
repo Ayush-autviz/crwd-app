@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, Modal, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useAuthStore } from '../../store/store';
-import { MessageCircle, Calendar, Heart } from 'lucide-react-native';
-import PopularPosts from '../PopularPosts';
+import { MessageCircle, Calendar, Heart, Users } from 'lucide-react-native';
+import GivingPost from '../newgivinggroup/GivingPost';
 import ActivityCard from './ActivityCard';
+import PopularPosts from '../PopularPosts';
 
 interface CommunityActivityProps {
   posts: any[];
@@ -14,6 +15,7 @@ interface CommunityActivityProps {
   collectiveData?: any;
   onCommentPress?: (post: any) => void;
   onJoin?: () => void;
+  fromCollective?: boolean;
 }
 
 export default function CommunityActivity({
@@ -24,6 +26,7 @@ export default function CommunityActivity({
   collectiveData,
   onCommentPress,
   onJoin,
+  fromCollective = false,
 }: CommunityActivityProps) {
   const navigation = useNavigation();
   const { user } = useAuthStore();
@@ -34,68 +37,70 @@ export default function CommunityActivity({
   const recentActivities = collectiveData?.recent_activities || [];
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.title}>Community Activity</Text>
-          {/* {posts && posts.length > 0 && (
+    <View style={[styles.container, fromCollective && { paddingTop: 0 }]}>
+      {!fromCollective && (
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.title}>Community Activity</Text>
+            {/* {posts && posts.length > 0 && (
             <Text style={styles.subtitle}>
               {posts.length} Update{posts.length !== 1 ? 's' : ''}
             </Text>
           )} */}
-        </View>
-        {!isJoined ? (
-          <TouchableOpacity
-            style={styles.joinButton}
-            onPress={onJoin}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.joinButtonText}>Join to post updates</Text>
-          </TouchableOpacity>
-        ) : (
-          <View>
+          </View>
+          {!isJoined ? (
             <TouchableOpacity
-              onPress={() => isFounder ? setModalVisible(true) : (navigation as any).navigate('Post', { collectiveData })}
-              style={styles.postButton}
+              style={styles.joinButton}
+              onPress={onJoin}
               activeOpacity={0.7}
             >
-              <Text style={styles.postButtonText}>{isFounder ? '+ Create' : 'Create Post'}</Text>
+              <Text style={styles.joinButtonText}>Join to post updates</Text>
             </TouchableOpacity>
+          ) : (
+            <View>
+              <TouchableOpacity
+                onPress={() => isFounder ? setModalVisible(true) : (navigation as any).navigate('Post', { collectiveData })}
+                style={styles.postButton}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.postButtonText}>{isFounder ? '+ Create' : 'Create Post'}</Text>
+              </TouchableOpacity>
 
-            {modalVisible && (
-              <View style={styles.dropdownContainer}>
-                <TouchableOpacity
-                  style={styles.overlay}
-                  activeOpacity={1}
-                  onPress={() => setModalVisible(false)}
-                />
-                <View style={styles.dropdownMenu}>
+              {modalVisible && (
+                <View style={styles.dropdownContainer}>
                   <TouchableOpacity
-                    style={styles.dropdownItem}
-                    onPress={() => {
-                      setModalVisible(false);
-                      (navigation as any).navigate('Post', { collectiveData });
-                    }}
-                  >
-                    <MessageCircle size={20} color="#4B5563" />
-                    <Text style={styles.dropdownText}>Create Post</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.dropdownItem}
-                    onPress={() => {
-                      setModalVisible(false);
-                      (navigation as any).navigate('CreateFundraiser', { collectiveId: collectiveId });
-                    }}
-                  >
-                    <Heart size={20} color="#4B5563" />
-                    <Text style={styles.dropdownText}>Create Fundraiser</Text>
-                  </TouchableOpacity>
+                    style={styles.overlay}
+                    activeOpacity={1}
+                    onPress={() => setModalVisible(false)}
+                  />
+                  <View style={styles.dropdownMenu}>
+                    <TouchableOpacity
+                      style={styles.dropdownItem}
+                      onPress={() => {
+                        setModalVisible(false);
+                        (navigation as any).navigate('Post', { collectiveData });
+                      }}
+                    >
+                      <MessageCircle size={20} color="#4B5563" />
+                      <Text style={styles.dropdownText}>Create Post</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.dropdownItem}
+                      onPress={() => {
+                        setModalVisible(false);
+                        (navigation as any).navigate('CreateFundraiser', { collectiveId: collectiveId });
+                      }}
+                    >
+                      <Heart size={20} color="#4B5563" />
+                      <Text style={styles.dropdownText}>Create Fundraiser</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
-              </View>
-            )}
-          </View>
-        )}
-      </View>
+              )}
+            </View>
+          )}
+        </View>
+      )}
 
       {isLoading ? (
         <View style={styles.loadingContainer}>
@@ -105,17 +110,32 @@ export default function CommunityActivity({
         <>
           {/* Posts Section */}
           {posts && posts.length > 0 ? (
-            <PopularPosts posts={posts} title="no title" hasMore={false} onCommentPress={onCommentPress} showSimplifiedHeader={true} />
+            fromCollective ? (
+              <GivingPost
+                posts={posts}
+                title="no title"
+                showTitle={!fromCollective}
+                hasMore={false}
+                onCommentPress={onCommentPress}
+                showSimplifiedHeader={true}
+              />
+            ) : (
+              <PopularPosts posts={posts} title="no title" hasMore={false} onCommentPress={onCommentPress} showSimplifiedHeader={true} />
+            )
           ) : (
             <View style={styles.emptyContainer}>
+              <View style={styles.emptyIconContainer}>
+                <Users size={32} color="#606060" strokeWidth={2} {...({} as any)} />
+              </View>
+              <Text style={styles.emptyTitle}>No posts yet</Text>
               <Text style={styles.emptyText}>
-                No community activity yet. Be the first to post!
+                Updates will appear here as you share and interact in your Giving Groups. Join a group to get started!
               </Text>
             </View>
           )}
 
           {/* Recent Activities Section */}
-          {recentActivities.length > 0 && (
+          {recentActivities.length > 0 && !fromCollective && (
             <View style={styles.activitiesContainer}>
               <Text style={styles.activitiesTitle}>Recent Activities</Text>
               {recentActivities.map((activity: any) => (
@@ -190,14 +210,34 @@ const styles = StyleSheet.create({
     color: '#6B7280',
   },
   emptyContainer: {
-    paddingTop: 24,
+    paddingVertical: 48,
     alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+  },
+  emptyIconContainer: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#F6F5ED',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 24,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontFamily: 'Outfit-Bold',
+    color: '#111827',
+    marginBottom: 8,
+    textAlign: 'center',
   },
   emptyText: {
-    fontSize: 14,
+    fontSize: 15,
     fontFamily: 'Outfit-Regular',
     color: '#6B7280',
     textAlign: 'center',
+    maxWidth: 280,
+    lineHeight: 22,
   },
   activitiesContainer: {
     marginTop: 16,

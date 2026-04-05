@@ -75,7 +75,7 @@ const Circles = () => {
           <View style={styles.itemWrapper}>
             <View style={styles.itemMain}>
               <Avatar size={48} style={styles.avatar}>
-                <AvatarImage src={currentUser?.profile_image} />
+                <AvatarImage src={currentUser?.profile_picture} />
                 <AvatarFallback style={[styles.avatarContainer, { backgroundColor: currentUser?.color }]} textStyle={{ color: '#fff', fontWeight: '700', fontSize: 18 }}>{currentUser?.first_name.charAt(0).toUpperCase()}</AvatarFallback>
               </Avatar>
               <View style={styles.textContainer}>

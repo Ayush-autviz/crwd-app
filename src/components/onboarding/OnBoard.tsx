@@ -215,7 +215,7 @@ export default function OnBoard() {
       }
     },
     onError: (error: any) => {
-      console.error('Google callback error:', error);
+      console.error('Google callback error:', error.response);
       const errorMessage = error?.response?.data?.message || error.message || 'Google callback failed';
       showToast(errorMessage);
       setIsGoogleLoading(false);

@@ -86,6 +86,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { useAuthStore } from './src/store/store';
 import { PostHog, PostHogProvider, usePostHog } from 'posthog-react-native'
+import NewGivingGroupPage from './src/screens/NewGivingGroup'
 
 const Tab = createBottomTabNavigator()
 const Drawer = createDrawerNavigator()
@@ -378,7 +379,8 @@ export default function App() {
         <Stack.Screen name="ResetPassword" component={ResetPassword} />
         <Stack.Screen name="GoogleCallback" component={GoogleCallback} />
         {/* <Stack.Screen name="DrawerNav" component={DrawerNavigator} /> */}
-        <Stack.Screen name="GroupCRWD" component={NewGroupCrwd} />
+        {/* <Stack.Screen name="GroupCRWD" component={NewGroupCrwd} /> */}
+        <Stack.Screen name="GroupCRWD" component={NewGivingGroupPage} />
         <Stack.Screen name="CauseScreen" component={NewCause} />
         <Stack.Screen name="NewSearch" component={NewSearch} />
         <Stack.Screen name="SearchResults" component={SearchResults} />

@@ -7,17 +7,31 @@ import {
   TextInput,
   TouchableOpacity,
   Keyboard,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { Search as SearchIcon, Heart, Plus } from 'lucide-react-native';
+import { Search as SearchIcon, Plus, Loader2, ChevronRight, Sparkles } from 'lucide-react-native';
 import MainHeaderNav from '../components/MainHeaderNav';
+import LinearGradient from 'react-native-linear-gradient';
+import { useQuery } from '@tanstack/react-query';
+import { getCategories } from '../services/api/crwd';
 import { normalizeSearchText } from '../utils/textNormalization';
 
 export default function NewSearchPage() {
   const navigation = useNavigation();
   const route = useRoute();
   const [searchQuery, setSearchQuery] = useState('');
+  const [showCategories, setShowCategories] = useState(false);
+
+  // Fetch categories
+  const { data: categoriesData, isLoading: isLoadingCategories } = useQuery({
+    queryKey: ['categories'],
+    queryFn: getCategories,
+    enabled: true,
+  });
+
+  const categories = categoriesData?.data || [];
 
   // Get category parameters if present
   const params = route.params as any;
@@ -25,15 +39,15 @@ export default function NewSearchPage() {
   useEffect(() => {
     // If there's a category/query in params, navigate immediately to SearchResults
     if (params?.searchQuery) {
-      navigation.navigate('SearchResults' as never, { searchQuery: params.searchQuery } as never);
+      (navigation as any).navigate('SearchResults', { searchQuery: params.searchQuery });
     } else if (params?.categoryId || params?.categoryName) {
       const categoryName = params.categoryName || params.searchQuery;
-      navigation.navigate('SearchResults' as never, {
+      (navigation as any).navigate('SearchResults', {
         searchQuery: categoryName,
         categoryId: params.categoryId,
         categoryName: params.categoryName,
-        tab: 'Causes'
-      } as never);
+        tab: 'Nonprofits'
+      });
     }
   }, [params, navigation]);
 
@@ -41,18 +55,22 @@ export default function NewSearchPage() {
     const normalizedQuery = normalizeSearchText(searchQuery);
     if (normalizedQuery) {
       Keyboard.dismiss();
-      navigation.navigate('SearchResults' as never, { searchQuery: normalizedQuery } as never);
-      setSearchQuery(''); // Optional: clear input after search or keep it
+      (navigation as any).navigate('SearchResults', { searchQuery: normalizedQuery });
+      setSearchQuery('');
     }
   };
 
-  const handleSurpriseMe = () => {
-    const categories = (route.params as any)?.categories;
-    if (categories && Array.isArray(categories) && categories.length > 0) {
-      navigation.navigate('SurpriseMe' as never, { categories } as never);
-    } else {
-      navigation.navigate('SurpriseMe' as never);
-    }
+  const handleToggleCategories = () => {
+    setShowCategories(!showCategories);
+  };
+
+  const handleCategoryClick = (cat: any) => {
+    (navigation as any).navigate('SearchResults', {
+      searchQuery: cat.name,
+      categoryId: cat.id,
+      categoryName: cat.name,
+      tab: 'Nonprofits'
+    });
   };
 
   return (
@@ -68,7 +86,7 @@ export default function NewSearchPage() {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Search Input */}
+        {/* Search Input Section */}
         <View style={styles.searchSection}>
           <View style={styles.inputContainer}>
             <SearchIcon size={20} color="#9CA3AF" style={styles.searchIcon} />
@@ -80,32 +98,72 @@ export default function NewSearchPage() {
               onSubmitEditing={handleSearch}
               returnKeyType="search"
               autoCapitalize="none"
+              placeholderTextColor="#9CA3AF"
             />
           </View>
         </View>
 
-        {/* Not Sure Where to Start Section */}
+        {/* Not Sure Where to Start Section - Exactly like Vite Card */}
         <View style={styles.surpriseSection}>
           <Text style={styles.sectionTitle}>NOT SURE WHERE TO START?</Text>
+
           <TouchableOpacity
-            onPress={handleSurpriseMe}
-            style={styles.surpriseCard}
-            activeOpacity={0.7}
+            onPress={handleToggleCategories}
+            activeOpacity={0.8}
+            style={styles.browseCard}
           >
-            <View style={styles.surpriseContent}>
-              <View style={styles.iconContainer}>
-                <Heart size={20} color="#FFFFFF" />
-                <View style={styles.plusBadge}>
-                  <Plus size={8} color="#A855F7" />
+            <View style={styles.browseCardContent}>
+              <View style={styles.browseHeader}>
+                {/* Gradient Icon Wrapper */}
+                <View style={styles.iconContainer}>
+                  <LinearGradient
+                    colors={['#A855F7', '#EC4899']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.gradientIcon}
+                  >
+                    <Sparkles size={20} color="#FFFFFF" strokeWidth={2.5} />
+                  </LinearGradient>
+                  {/* Plus badge positioned absolutely relative to iconContainer to avoid clipping */}
+                  <View style={styles.plusBadge}>
+                    <Plus size={8} color="#A855F7" />
+                  </View>
+                </View>
+
+                <View style={styles.browseTextContainer}>
+                  <Text style={styles.browseTitle}>Browse</Text>
+                  <Text style={styles.browseSubtitle}>Discover nonprofits by category</Text>
                 </View>
               </View>
 
-              <View style={styles.surpriseText}>
-                <Text style={styles.surpriseTitle}>Surprise Me</Text>
-                <Text style={styles.surpriseSubtitle}>
-                  We'll pick 5 amazing nonprofits for you
-                </Text>
-              </View>
+              {/* Categories Section */}
+              {showCategories && (
+                <View style={styles.categoriesContainer}>
+                  {isLoadingCategories ? (
+                    <View style={styles.loaderArea}>
+                      <ActivityIndicator size="small" color="#1600ff" />
+                    </View>
+                  ) : (
+                    <View style={styles.categoriesGrid}>
+                      {categories.map((cat: any) => (
+                        <TouchableOpacity
+                          key={cat.id}
+                          onPress={() => handleCategoryClick(cat)}
+                          style={[
+                            styles.categoryPill,
+                            { backgroundColor: cat.background_color || '#f3f4f6' }
+                          ]}
+                        >
+                          <Text style={[
+                            styles.categoryText,
+                            { color: cat.text_color || cat.color || '#111' }
+                          ]}>{cat.name}</Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  )}
+                </View>
+              )}
             </View>
           </TouchableOpacity>
         </View>
@@ -123,7 +181,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 20,
+    paddingBottom: 100,
   },
   searchSection: {
     paddingHorizontal: 12,
@@ -164,52 +222,98 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     fontFamily: 'Outfit-Bold',
   },
-  surpriseCard: {
+  browseCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#E5E7EB',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
   },
-  surpriseContent: {
+  browseCardContent: {
+    padding: 12,
+  },
+  browseHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    padding: 12,
   },
   iconContainer: {
+    position: 'relative',
+  },
+  gradientIcon: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#A855F7',
     justifyContent: 'center',
     alignItems: 'center',
-    position: 'relative',
   },
   plusBadge: {
     position: 'absolute',
-    top: 0,
-    right: 0,
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+    top: -4,
+    right: -4,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
     backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: '#FFFFFF',
+    zIndex: 10,
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 2,
+    elevation: 4,
   },
-  surpriseText: {
+  browseTextContainer: {
     flex: 1,
   },
-  surpriseTitle: {
+  browseTitle: {
     fontSize: 15,
     fontWeight: '700',
     color: '#111827',
     marginBottom: 4,
     fontFamily: 'Outfit-Bold',
   },
-  surpriseSubtitle: {
+  browseSubtitle: {
     fontSize: 14,
     color: '#4B5563',
     fontFamily: 'Outfit-Regular',
+  },
+  categoriesContainer: {
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#F3F4F6',
+  },
+  loaderArea: {
+    paddingVertical: 20,
+    alignItems: 'center',
+  },
+  categoriesGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  categoryPill: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 1,
+    elevation: 1,
+  },
+  categoryText: {
+    fontSize: 12,
+    fontWeight: '700',
+    fontFamily: 'Outfit-Bold',
   },
 });
 

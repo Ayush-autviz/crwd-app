@@ -514,10 +514,10 @@ export default function Post() {
           {createPostMutation.isPending ? (
             <>
               <ActivityIndicator size="small" color="white" style={{ marginRight: 8 }} />
-              <Text style={styles.postButtonText}>Posting...</Text>
+              <Text style={[styles.postButtonText, !canSubmitPost() && { color: PrimaryGrey }]}>Posting...</Text>
             </>
           ) : (
-            <Text style={styles.postButtonText}>Post</Text>
+            <Text style={[styles.postButtonText, !canSubmitPost() && { color: PrimaryGrey }]}>Post</Text>
           )}
         </TouchableOpacity>
       </View>
@@ -531,7 +531,8 @@ export default function Post() {
               setShowCollectiveModal(!showCollectiveModal);
             }}
             activeOpacity={0.7}
-            disabled={isFromSpecificCollective}
+            // disabled={isFromSpecificCollective}
+            disabled={true}
             style={[
               {
                 width: '100%',
@@ -582,9 +583,9 @@ export default function Post() {
                 Posting to <Text style={{ fontWeight: 'bold' }}>{selectedCollective ? (selectedCollective.collective || selectedCollective).name : "Your Feed"}</Text>
               </Text>
             </View>
-            {!isFromSpecificCollective && (
+            {/* {!isFromSpecificCollective && (
               <ChevronDown size={16} color="#0066ff" />
-            )}
+            )} */}
           </TouchableOpacity>
 
           {/* Inline Dropdown - Absolute Positioned */}
@@ -681,7 +682,7 @@ export default function Post() {
               style={[styles.textInput, { zIndex: 2 }]}
               multiline
               placeholder="What's on your mind?"
-              placeholderTextColor={PrimaryGrey}
+              placeholderTextColor="#6B7280"
               value={form.content}
               onChangeText={(value) => handleInputChange('content', value)}
               selection={selection}
@@ -698,43 +699,8 @@ export default function Post() {
               position="below"
             />
           </View>
-          {/* Character Count */}
-          <View style={styles.characterCountContainer}>
-            <Text style={styles.characterCount}>
-              {characterCount}/{maxCharacters}
-            </Text>
-          </View>
         </View>
 
-        <View style={styles.actionButtonsContainer}>
-          <TouchableOpacity
-            onPress={() => handlePostTypeSelect('image')}
-            style={styles.actionButton}
-            activeOpacity={0.7}
-          >
-            <ImageIcon size={20} color="#374151" />
-            <Text style={styles.actionButtonText}>Add Image</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => handlePostTypeSelect('link')}
-            style={styles.actionButton}
-            activeOpacity={0.7}
-          >
-            <Paperclip size={20} color="#374151" />
-            <Text style={styles.actionButtonText}>Add Link</Text>
-          </TouchableOpacity>
-
-          {selectedCollective && (selectedCollective.role === "admin" || selectedCollective.role === "Admin") && (
-            <TouchableOpacity
-              onPress={() => navigation.navigate('CreateFundraiser', { collectiveId: (selectedCollective.collective || selectedCollective).id } as any)}
-              style={styles.actionButton}
-              activeOpacity={0.7}
-            >
-              <Heart size={20} color="#374151" />
-              <Text style={styles.actionButtonText}>Create Fundraiser</Text>
-            </TouchableOpacity>
-          )}
-        </View>
 
         {/* Link Input Field - Show when link is selected or URL is entered */}
         {(postType === 'link' || form.url) && (
@@ -882,7 +848,43 @@ export default function Post() {
       </KeyboardAwareScrollView>
 
 
-      {/* Toast notification */}
+      <View style={styles.footer}>
+        <View style={styles.characterCountContainer}>
+          <Text style={styles.characterCount}>
+            {characterCount}/{maxCharacters}
+          </Text>
+        </View>
+
+        <View style={styles.actionButtonsContainer}>
+          <TouchableOpacity
+            onPress={() => handlePostTypeSelect('image')}
+            style={styles.actionButton}
+            activeOpacity={0.7}
+          >
+            <ImageIcon size={20} color="#374151" />
+            <Text style={styles.actionButtonText}>Add Image</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => handlePostTypeSelect('link')}
+            style={styles.actionButton}
+            activeOpacity={0.7}
+          >
+            <Paperclip size={20} color="#374151" />
+            <Text style={styles.actionButtonText}>Add Link</Text>
+          </TouchableOpacity>
+
+          {selectedCollective && (selectedCollective.role === "admin" || selectedCollective.role === "Admin") && (
+            <TouchableOpacity
+              onPress={() => navigation.navigate('CreateFundraiser', { collectiveId: (selectedCollective.collective || selectedCollective).id } as any)}
+              style={styles.actionButton}
+              activeOpacity={0.7}
+            >
+              <Heart size={20} color="#374151" />
+              <Text style={styles.actionButtonText}>Create Fundraiser</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
       <Toast
         message={toastMessage}
         show={showToast}
@@ -939,19 +941,21 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   postButton: {
-    backgroundColor: '#1600ff',
     paddingHorizontal: 24,
-    paddingVertical: 8,
-    borderRadius: 40,
+    paddingVertical: 6,
+    borderRadius: 8,
     flexDirection: 'row',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: PrimaryGrey
   },
   postButtonDisabled: {
-    backgroundColor: '#D1D5DB',
-    opacity: 0.6,
+    backgroundColor: 'white',
+    borderWidth: 1,
+    borderColor: PrimaryGrey,
   },
   postButtonText: {
-    color: 'white',
+    color: 'black',
     fontSize: 16,
     fontWeight: '500',
   },
@@ -969,14 +973,12 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   textInputContainer: {
-    borderWidth: 2,
-    borderRadius: 8,
+    backgroundColor: '#F6F5ED',
+    borderRadius: 16,
     padding: 16,
-    backgroundColor: '#F9FAFB',
-    borderColor: '#D1D5DB',
     position: 'relative',
+    minHeight: 200,
     zIndex: 1,
-    elevation: 2,
   },
   textInput: {
     minHeight: 200,
@@ -998,10 +1000,19 @@ const styles = StyleSheet.create({
     right: 16,
     zIndex: 1,
   },
+  footer: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 24,
+    backgroundColor: '#FFFFFF',
+    width: '100%',
+    maxWidth: 672,
+    alignSelf: 'center',
+  },
   characterCountContainer: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    marginTop: 8,
+    marginBottom: 12,
   },
   characterCount: {
     fontSize: 12,
@@ -1010,8 +1021,8 @@ const styles = StyleSheet.create({
   actionButtonsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
-    marginBottom: 5,
+    gap: 12,
+    marginBottom: 10,
   },
   actionButton: {
     flexDirection: 'row',
@@ -1019,14 +1030,14 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingHorizontal: 16,
     paddingVertical: 10,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderWidth: 0.5,
+    borderColor: '#D1D5DB',
     borderRadius: 99,
   },
   actionButtonText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#1F2937',
+    color: '#374151',
     fontFamily: 'Outfit-Bold',
   },
   linkInputSection: {

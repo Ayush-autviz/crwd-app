@@ -5,19 +5,22 @@ import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
 interface MentionSearchResultsProps {
     results: any[];
     onSelect: (user: any) => void;
-    position?: 'above' | 'below';
+    position?: 'above' | 'below' | 'inline';
     isLoading?: boolean;
 }
 
 function MentionSearchResultsComponent({ results, onSelect, position = 'above', isLoading }: MentionSearchResultsProps) {
     if (!isLoading && (!results || results.length === 0)) return null;
 
-    const containerStyle = [
-        styles.container,
-        position === 'above'
-            ? { bottom: '100%' as any, top: undefined as any, marginBottom: 8 }
-            : { top: '100%' as any, bottom: undefined as any, marginTop: 8 }
-    ];
+    let containerStyle: any = [styles.container];
+
+    if (position === 'above') {
+        containerStyle.push({ bottom: '100%', top: undefined, marginBottom: 8 });
+    } else if (position === 'below') {
+        containerStyle.push({ top: '100%', bottom: undefined, marginTop: 8 });
+    } else if (position === 'inline') {
+        containerStyle.push({ position: 'relative', top: 0, marginTop: 8, elevation: 0, shadowOpacity: 0, maxHeight: 200, minHeight: 50 });
+    }
 
     return (
         <View style={containerStyle}>
@@ -25,6 +28,7 @@ function MentionSearchResultsComponent({ results, onSelect, position = 'above', 
                 horizontal={false}
                 showsVerticalScrollIndicator={true}
                 keyboardShouldPersistTaps="handled"
+                nestedScrollEnabled={true}
                 style={styles.scrollView}
             >
                 {isLoading ? (

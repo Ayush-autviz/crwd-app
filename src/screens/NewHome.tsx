@@ -827,9 +827,9 @@ export default function NewHome() {
                 <View style={styles.feedSection}>
                   <View style={styles.feedHeading}>
                     <Text style={styles.feedTitle}>Community Updates</Text>
-                    <Text style={styles.feedSubtitle}>
+                    {/* <Text style={styles.feedSubtitle}>
                       Updates and discoveries from your community
-                    </Text>
+                    </Text> */}
                   </View>
                   <View style={styles.feedList}>
                     {feedPart1.map(renderFeedItem)}

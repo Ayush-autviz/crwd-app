@@ -19,6 +19,7 @@ import {
   BottomSheetScrollView,
   BottomSheetBackdrop,
   BottomSheetFooter,
+  BottomSheetTextInput,
 } from '@gorhom/bottom-sheet';
 import {
   X,
@@ -116,6 +117,48 @@ const CreatePostBottomSheet = React.forwardRef<BottomSheetModal, CreatePostBotto
         setShowPreview(false);
       }
     }, [previewData, form.url, urlError]);
+
+    // Mention search - debounced API call (from CommentsBottomSheet)
+    useEffect(() => {
+      const fetchMentions = async () => {
+        if (mentionSearchQuery !== null) {
+          try {
+            const data = await mentionSearch(mentionSearchQuery);
+            setMentionResults(data.results || (Array.isArray(data) ? data : []));
+          } catch (error) {
+            console.error('Mention search error:', error);
+            setMentionResults([]);
+          }
+        } else {
+          setMentionResults([]);
+        }
+      };
+
+      const timer = setTimeout(fetchMentions, 150);
+      return () => clearTimeout(timer);
+    }, [mentionSearchQuery]);
+
+    // Mention detection - detect @ at cursor position (from CommentsBottomSheet)
+    useEffect(() => {
+      if (selectionLockRef.current) return;
+      const cursorPosition = selection.start;
+      const textBeforeCursor = form.content.substring(0, cursorPosition);
+      const lastAtSymbolIndex = textBeforeCursor.lastIndexOf('@');
+
+      if (lastAtSymbolIndex !== -1) {
+        const charBeforeAt = lastAtSymbolIndex > 0 ? textBeforeCursor[lastAtSymbolIndex - 1] : null;
+        const isStartOfWord = !charBeforeAt || charBeforeAt === ' ' || charBeforeAt === '\n';
+
+        if (isStartOfWord) {
+          const query = textBeforeCursor.substring(lastAtSymbolIndex + 1);
+          if (query.length === 0 || (query.trim().split(/\s+/).length <= 3 && !query.includes('\n') && query.length <= 30)) {
+            setMentionSearchQuery(query);
+            return;
+          }
+        }
+      }
+      setMentionSearchQuery(null);
+    }, [form.content, selection]);
 
     const createPostMutation = useMutation({
       mutationFn: createPost,
@@ -225,17 +268,43 @@ const CreatePostBottomSheet = React.forwardRef<BottomSheetModal, CreatePostBotto
 
     const renderHighlightedText = (text: string) => {
       if (!text) return null;
-      const mentionNames = selectedMentions.map(m => `@${m.name}`);
-      const highlightStyle = { color: '#111827', fontSize: 16, lineHeight: 22, fontFamily: 'Outfit-Regular' };
 
-      const parts = text.split(/(@[\w\s]{1,30}(?=\s|$)|@\w+)/g);
+      const mentionNames = selectedMentions.map(m => `@${m.name}`);
+      const mentionNamesLower = mentionNames.map(n => n.toLowerCase());
+      mentionNames.sort((a, b) => b.length - a.length);
+
+      const highlightStyle = { color: '#111827', fontSize: 16, lineHeight: 22, fontFamily: 'Outfit-Regular' };
+      const mentionStyle = { color: PrimaryBlue, fontWeight: '500' as const, fontFamily: 'Outfit-SemiBold' };
+
+      const renderPart = (part: string, key: string | number) => {
+        if (part.startsWith('@')) {
+          return <Text key={key} style={mentionStyle}>{part}</Text>;
+        }
+        return <Text key={key}>{part}</Text>;
+      };
+
+      // Fallback: simple highlighter if no selected mentions
+      if (mentionNames.length === 0) {
+        const parts = text.split(/(@[\w\s]{1,30}(?=\s|$)|@\w+)/g);
+        return (
+          <Text style={highlightStyle}>
+            {parts.map((part, i) => renderPart(part, i))}
+          </Text>
+        );
+      }
+
+      const pattern = mentionNames.map(name => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+      const regex = new RegExp(`(${pattern})`, 'gi');
+
       return (
         <Text style={highlightStyle}>
-          {parts.map((part, i) => {
-            if (part.startsWith('@')) {
-              return <Text key={i} style={{ color: PrimaryBlue, fontWeight: '500', fontFamily: 'Outfit-SemiBold' }}>{part}</Text>;
+          {text.split(regex).map((part, i) => {
+            if (mentionNamesLower.includes(part.toLowerCase())) {
+              return renderPart(part, i);
             }
-            return <Text key={i}>{part}</Text>;
+            return part.split(/(@[\w\s]{1,30}(?=\s|$)|@\w+)/g).map((subPart, j) => {
+              return renderPart(subPart, `${i}-${j}`);
+            });
           })}
         </Text>
       );
@@ -362,24 +431,26 @@ const CreatePostBottomSheet = React.forwardRef<BottomSheetModal, CreatePostBotto
             {/* Input Area */}
             <View style={styles.inputWrapper}>
               <View style={styles.inputContainer}>
-                <View pointerEvents="none" style={styles.highlightOverlay}>
-                  {renderHighlightedText(form.content)}
-                </View>
-                <TextInput
-                  ref={textareaRef}
+                <BottomSheetTextInput
+                  ref={textareaRef as any}
                   style={styles.textInput}
                   multiline
                   placeholder="What's on your mind?"
                   placeholderTextColor="#6B7280"
-                  value={form.content}
                   onChangeText={(v) => handleInputChange('content', v)}
-                  selection={selection}
                   onSelectionChange={(e) => setSelection(e.nativeEvent.selection)}
                   maxLength={maxCharacters}
                   autoCapitalize="none"
                   selectionColor={PrimaryBlue}
-                />
+                >
+                  {renderHighlightedText(form.content)}
+                </BottomSheetTextInput>
               </View>
+              <MentionSearchResults
+                results={mentionResults}
+                onSelect={handleMentionSelect}
+                position="inline"
+              />
             </View>
 
             {/* Previews */}
@@ -446,11 +517,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: PrimaryGrey,
   },
-  // postButtonDisabled: { backgroundColor: '#F3F4F6', borderColor: '#F3F4F6' },
+  postButtonDisabled: { backgroundColor: '#F3F4F6', borderColor: '#F3F4F6' },
   postButtonText: { color: '#000000', fontFamily: 'Outfit-Medium', fontSize: 16 },
   postButtonTextDisabled: { color: PrimaryGrey },
   content: { flex: 1, padding: 16 },
-  selectorContainer: { marginBottom: 20, zIndex: 10 },
+  selectorContainer: { marginBottom: 10, zIndex: 10 },
   selector: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -485,8 +556,7 @@ const styles = StyleSheet.create({
   dropdownItemText: { fontWeight: '600', color: '#111827' },
   inputWrapper: { marginBottom: 16 },
   inputContainer: { backgroundColor: '#F6F5ED', borderRadius: 16, padding: 16, minHeight: 180 },
-  highlightOverlay: { position: 'absolute', top: 16, left: 16, right: 16, zIndex: 1 },
-  textInput: { fontSize: 16, color: 'transparent', textAlignVertical: 'top', lineHeight: 22, zIndex: 2, minHeight: 150 },
+  textInput: { fontSize: 16, color: '#111827', fontFamily: 'Outfit-Regular', textAlignVertical: 'top', lineHeight: 22, minHeight: 150 },
   previewCard: { borderRadius: 12, borderWidth: 1, borderColor: '#E5E7EB', overflow: 'hidden', marginBottom: 16 },
   previewImage: { width: '100%', height: 150 },
   previewText: { padding: 12 },

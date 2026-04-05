@@ -693,12 +693,12 @@ export default function Post() {
               spellCheck={false}
               selectionColor={PrimaryBlue}
             />
-            <MentionSearchResults
-              results={mentionResults}
-              onSelect={handleMentionSelect}
-              position="below"
-            />
           </View>
+          <MentionSearchResults
+            results={mentionResults}
+            onSelect={handleMentionSelect}
+            position="inline"
+          />
         </View>
 
 

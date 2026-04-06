@@ -65,7 +65,17 @@ export default function NewDonationAmount() {
   const handleSkip = () => {
     navigation.reset({
       index: 0,
-      routes: [{ name: 'DrawerNav' }],
+      routes: [
+        {
+          name: 'DrawerNav',
+          params: {
+            screen: 'MainTabs',
+            params: {
+              screen: 'Profile',
+            },
+          },
+        },
+      ] as any,
     });
   };
 

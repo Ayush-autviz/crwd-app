@@ -1,5 +1,6 @@
 import { View, Text, ScrollView, TouchableOpacity, Alert, Image, Modal, TouchableWithoutFeedback, ActivityIndicator, RefreshControl, StyleSheet, Dimensions } from 'react-native'
-import React, { useState, useCallback, useMemo, useRef } from 'react'
+import * as React from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
 import BottomSheet, { BottomSheetView, BottomSheetBackdrop, BottomSheetScrollView, BottomSheetModal } from '@gorhom/bottom-sheet'
@@ -9,7 +10,7 @@ import PopularPosts from '../components/PopularPosts'
 import ProfileInterests from '../components/ProfileInterests'
 import { PrimaryBlue, PrimaryGrey, LightGrey } from '../Constants/Colors'
 import { useNavigation, NavigationProp } from '@react-navigation/native'
-import { Share2, Flag, ChevronRight, Ellipsis, MessageCircle, MessageSquare, ArrowLeft, X, Users, Plus, MapPin, DoorOpenIcon, Pencil } from 'lucide-react-native'
+import { Share2, Flag, ChevronRight, Ellipsis, MessageCircle, MessageSquare, ArrowLeft, X, Users, Plus, MapPin, DoorOpenIcon, Pencil, Heart } from 'lucide-react-native'
 import SharePost from '../components/SharePost'
 import { getPosts, getUserProfileById, getUserFollowers, getUserFollowing, getFavoriteCauses, getSupportedCausesByUserId, followUser, unfollowUser } from '../services/api/social'
 import { getUserCollectives, getJoinCollective } from '../services/api/crwd'
@@ -792,6 +793,18 @@ export default function Profile() {
                     <Text style={{ fontSize: 14, color: '#111827', fontFamily: 'Outfit-Medium' }}>Edit</Text>
                 </TouchableOpacity> */}
             </View>
+
+            {/* Activate Donation Box Prompt */}
+            {(!profileData?.supported_causes_count || profileData?.supported_causes_count === 0) && (
+                <View style={{ backgroundColor: '#FEF2F2', borderBottomWidth: 1, borderBottomColor: '#FEE2E2', paddingVertical: 12, alignItems: 'center', zIndex: 10, elevation: 1, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        <Heart size={16} color="#EF4444" fill="#EF4444" />
+                        <Text style={{ color: '#EF4444', fontFamily: 'Outfit-SemiBold', fontSize: 14 }}>
+                            Activate your Donation Box
+                        </Text>
+                    </View>
+                </View>
+            )}
 
             <ScrollView
                 style={{ flex: 1 }}

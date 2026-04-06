@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo, useCallback, useImperativeHandle, forwardRef, useRef } from 'react';
+import * as React from 'react';
+import { useState, useEffect, useMemo, useCallback, useImperativeHandle, forwardRef, useRef } from 'react';
 import {
   View,
   Text,
@@ -271,15 +272,15 @@ const DonationReviewBottomSheet = forwardRef<any, DonationReviewBottomSheetProps
           {/* Header - Fixed */}
           <View style={styles.header}>
             <View style={styles.headerContent}>
-              <Text style={styles.title}>{isOneTime ? 'Complete Your Gift' : 'Complete Your Monthly Gift'}</Text>
+              <Text style={styles.title}>
+                {showEditButton ? "Activate your Donation Box" : "Review your donation"}
+              </Text>
               <Text style={styles.subtitle}>
-                {isOneTime
-                  ? 'Review your donation details and complete payment.'
-                  : 'Review your recurring donation details and set up monthly payment.'}
+                Review and confirm. You can change this anytime.
               </Text>
             </View>
             <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
-              <X size={20} color="#6B7280" />
+              <X size={20} color="#9CA3AF" />
             </TouchableOpacity>
           </View>
 
@@ -292,16 +293,18 @@ const DonationReviewBottomSheet = forwardRef<any, DonationReviewBottomSheetProps
             {/* Summary Box */}
             <View style={styles.summaryBox}>
               <View style={styles.summaryRow}>
-                <Text style={styles.summaryLabel}>Amount:</Text>
-                <Text style={styles.summaryValue}>${donationAmount.toFixed(2)}</Text>
+                <Text style={styles.summaryLabel}>Amount</Text>
+                <Text style={styles.summaryValue}>
+                  ${donationAmount.toFixed(2)}{showEditButton ? "/mo" : ""}
+                </Text>
               </View>
               <View style={styles.summaryRow}>
-                <Text style={styles.summaryLabel}>Split among:</Text>
-                <Text style={styles.summaryValue}>{totalCauses} cause{totalCauses !== 1 ? 's' : ''}</Text>
+                <Text style={styles.summaryLabel}>Split among</Text>
+                <Text style={styles.summaryValue}>{totalCauses} nonprofit{totalCauses !== 1 ? 's' : ''}</Text>
               </View>
               <View style={styles.summaryRow}>
                 <View style={styles.summaryLabelRow}>
-                  <Text style={styles.summaryLabel}>Platform fee:</Text>
+                  <Text style={styles.summaryLabel}>Platform fee</Text>
                   <TouchableOpacity
                     onPress={() => setShowPlatformFeeInfoSheet(true)}
                     style={styles.infoButton}
@@ -311,13 +314,8 @@ const DonationReviewBottomSheet = forwardRef<any, DonationReviewBottomSheetProps
                 </View>
                 <Text style={styles.summaryValue}>${platformFee.toFixed(2)}</Text>
               </View>
-              {/* <View style={styles.summaryRow}>
-                <Text style={styles.summaryLabel}>Per cause:</Text>
-                <Text style={styles.summaryValue}>${perCause.toFixed(2)}</Text>
-              </View> */}
-              <View style={styles.summaryDivider} />
-              <View style={styles.summaryRow}>
-                <Text style={styles.summaryTotalLabel}>Total:</Text>
+              <View style={styles.summaryTotalRow}>
+                <Text style={styles.summaryTotalLabel}>Total</Text>
                 <Text style={styles.summaryTotalValue}>${donationAmount.toFixed(2)}</Text>
               </View>
             </View>
@@ -330,27 +328,28 @@ const DonationReviewBottomSheet = forwardRef<any, DonationReviewBottomSheetProps
             {/* Selected Causes */}
             <View style={styles.causesSection}>
               <View style={styles.causesHeaderRow}>
-                <Text style={styles.causesTitle}>Your Selected Nonprofits ({totalCauses})</Text>
-                {showEditButton && onEditCauses && (
+                <Text style={styles.causesTitle}>Your Donation Box</Text>
+                {onEditCauses && (
                   <TouchableOpacity
                     onPress={onEditCauses}
                     style={styles.editButton}
                   >
-                    <Text style={styles.editButtonText}>Adjust</Text>
+                    <Text style={styles.editButtonText}>Adjust split</Text>
                   </TouchableOpacity>
                 )}
               </View>
               <View style={styles.causesList}>
-                {selectedCauses.map((cause: any) => {
+                {selectedCauses.map((cause: any, index: number) => {
                   const avatarBgColor = getConsistentColor(cause.id, avatarColors);
                   const initials = getInitials(cause.name);
+                  const isLast = index === selectedCauses.length - 1;
                   return (
-                    <View key={cause.id} style={styles.causeItem}>
+                    <View key={cause.id} style={[styles.causeItem, isLast ? undefined : styles.causeItemBorder]}>
                       <Avatar size={40} style={[styles.causeAvatar, { borderRadius: 8 }]}>
-                        <AvatarImage src={cause.image} />
+                        <AvatarImage src={cause.image || cause.logo} />
                         <AvatarFallback
-                          style={{ backgroundColor: avatarBgColor }}
-                          textStyle={{ color: '#FFFFFF', fontSize: 14, fontWeight: '700' }}
+                          style={{ backgroundColor: avatarBgColor + '15' }}
+                          textStyle={{ color: avatarBgColor, fontSize: 12, fontWeight: '700' }}
                         >
                           {initials}
                         </AvatarFallback>
@@ -360,13 +359,11 @@ const DonationReviewBottomSheet = forwardRef<any, DonationReviewBottomSheetProps
                           {cause.name}
                         </Text>
                       </View>
-                      {showEditButton && (
-                        <Text style={styles.causeAmount}>
-                          {cause.percentage != null
-                            ? `${Number(cause.percentage).toFixed(0)}%`
-                            : `${(100 / (selectedCauses.length || 1)).toFixed(0)}%`}
-                        </Text>
-                      )}
+                      <Text style={styles.causeAmount}>
+                        {cause.percentage != null
+                          ? `${Number(cause.percentage).toFixed(0)}%`
+                          : `${(100 / (selectedCauses.length || 1)).toFixed(0)}%`}
+                      </Text>
                     </View>
                   );
                 })}
@@ -374,7 +371,6 @@ const DonationReviewBottomSheet = forwardRef<any, DonationReviewBottomSheetProps
             </View>
           </BottomSheetScrollView>
 
-          {/* Complete Monthly Gift Button - Fixed at bottom */}
           <View style={styles.footer}>
             <TouchableOpacity
               onPress={() => {
@@ -393,11 +389,15 @@ const DonationReviewBottomSheet = forwardRef<any, DonationReviewBottomSheetProps
               {activateBoxMutation.isPending || isProcessingPayment ? (
                 <>
                   <ActivityIndicator size="small" color="#FFFFFF" style={{ marginRight: 8 }} />
-                  <Text style={styles.completeButtonText}>{isOneTime ? 'Processing...' : 'Activating...'}</Text>
+                  <Text style={styles.completeButtonText}>Configuring...</Text>
                 </>
               ) : (
-                <Text style={styles.completeButtonText}>{isOneTime ? 'Complete Gift' : 'Complete Monthly Gift'}</Text>
+                <Text style={styles.completeButtonText}>{showEditButton ? 'Confirm and Activate' : 'Confirm Donation'}</Text>
               )}
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={handleClose} style={styles.skipButton}>
+              <Text style={styles.skipButtonText}>skip for now</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -458,7 +458,7 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   summaryBox: {
-    backgroundColor: '#F9FAFB',
+    backgroundColor: '#FEFCE8',
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
@@ -467,7 +467,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(229, 231, 235, 0.5)',
     marginBottom: 12,
+  },
+  summaryTotalRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: 4,
   },
   summaryLabel: {
     fontSize: 13,
@@ -482,45 +491,6 @@ const styles = StyleSheet.create({
   },
   infoButton: {
     padding: 4,
-  },
-  tooltip: {
-    position: 'absolute',
-    bottom: 30,
-    left: 0,
-    backgroundColor: '#1F2937',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-    width: 290,
-    zIndex: 1000,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  tooltipText: {
-    color: '#FFFFFF',
-    fontSize: 11,
-    // textAlign: 'center',
-    lineHeight: 16,
-    fontFamily: 'Outfit-Regular',
-  },
-  tooltipArrow: {
-    position: 'absolute',
-    top: '100%',
-    left: 100,
-    width: 0,
-    height: 0,
-    borderLeftWidth: 4,
-    borderRightWidth: 4,
-    borderTopWidth: 4,
-    borderLeftColor: 'transparent',
-    borderRightColor: 'transparent',
-    borderTopColor: '#1F2937',
   },
   summaryValue: {
     fontSize: 14,
@@ -569,39 +539,37 @@ const styles = StyleSheet.create({
   },
   editButton: {
     paddingVertical: 4,
-    paddingHorizontal: 12,
-    backgroundColor: '#F3F4F6',
-    borderRadius: 12,
+    paddingHorizontal: 0,
   },
   editButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#3B82F6',
+    color: '#1600ff',
     fontFamily: 'Outfit-SemiBold',
   },
   causesList: {
-    gap: 6,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 12,
+    overflow: 'hidden',
+    backgroundColor: '#FFFFFF',
   },
   causeItem: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
     padding: 12,
-    backgroundColor: '#F9FAFB',
-    borderRadius: 8,
+    backgroundColor: '#FFFFFF',
+  },
+  causeItemBorder: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
   },
   causeAvatar: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  causeAvatarText: {
-    color: '#FFFFFF',
-    fontWeight: '700',
-    fontSize: 13,
-    fontFamily: 'Outfit-Bold',
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
   },
   causeInfo: {
     flex: 1,
@@ -616,7 +584,7 @@ const styles = StyleSheet.create({
   causeAmount: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#111827',
+    color: '#1600ff',
     fontFamily: 'Outfit-SemiBold',
   },
   footer: {
@@ -624,17 +592,18 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 16,
     borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
+    borderTopColor: '#F3F4F6',
     backgroundColor: '#FFFFFF',
   },
   completeButton: {
-    backgroundColor: '#1F2937',
+    backgroundColor: '#1600ff',
     paddingVertical: 14,
-    borderRadius: 24,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
     width: '100%',
+    marginBottom: 8,
   },
   completeButtonDisabled: {
     opacity: 0.5,
@@ -644,6 +613,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     fontFamily: 'Outfit-SemiBold',
+  },
+  skipButton: {
+    paddingVertical: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  skipButtonText: {
+    fontSize: 14,
+    color: '#6B7280',
+    fontWeight: '700',
+    fontFamily: 'Outfit-Bold',
   },
   logoAnimationContainer: {
     flex: 1,

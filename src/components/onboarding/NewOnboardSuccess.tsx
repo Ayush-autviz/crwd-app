@@ -49,7 +49,7 @@ export default function NewOnboardSuccess() {
     }
   });
 
-  const handleFinish = async (target: 'Donation' | 'Home') => {
+  const handleFinish = async (target: 'Donation' | 'Profile') => {
     const hasValidData = addedNonprofits.length > 0 && amount >= 5;
 
     if (hasValidData) {
@@ -81,10 +81,20 @@ export default function NewOnboardSuccess() {
       }
     }
 
-    // Default navigation for 'Home' or if creation was skipped because of invalid data
+    // Default navigation for 'Profile' or if creation was skipped because of invalid data
     navigation.reset({
       index: 0,
-      routes: [{ name: 'DrawerNav' as never }],
+      routes: [
+        {
+          name: 'DrawerNav' as never,
+          params: {
+            screen: 'MainTabs',
+            params: {
+              screen: 'Profile',
+            },
+          },
+        },
+      ] as any,
     });
   };
 
@@ -171,7 +181,7 @@ export default function NewOnboardSuccess() {
 
         <TouchableOpacity
           style={styles.skipLink}
-          onPress={() => handleFinish('Home')}
+          onPress={() => handleFinish('Profile')}
           disabled={createDonationMutation.isPending}
         >
           <Text style={styles.skipLinkText}>Skip for now</Text>

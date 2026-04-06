@@ -67,7 +67,17 @@ export default function NewAddNonprofits() {
   const handleSkip = () => {
     navigation.reset({
       index: 0,
-      routes: [{ name: 'DrawerNav' }],
+      routes: [
+        {
+          name: 'DrawerNav',
+          params: {
+            screen: 'MainTabs',
+            params: {
+              screen: 'Profile',
+            },
+          },
+        },
+      ] as any,
     });
   };
 
@@ -216,6 +226,13 @@ export default function NewAddNonprofits() {
           renderItem={({ item }) => (
             <View style={styles.selectedNgoAvatar}>
               <Image source={{ uri: item.image }} style={styles.selectedNgoImage} />
+              <TouchableOpacity
+                style={styles.removeSelectedNgo}
+                onPress={() => toggleSelection(item)}
+                activeOpacity={0.7}
+              >
+                <X size={12} color="#FFFFFF" />
+              </TouchableOpacity>
             </View>
           )}
           ListFooterComponent={() => (
@@ -474,11 +491,29 @@ const styles = StyleSheet.create({
     backgroundColor: '#F3F4F6',
     borderWidth: 1,
     borderColor: '#F3F4F6',
-    overflow: 'hidden',
+    overflow: 'visible',
+    marginRight: 8,
+    marginTop: 8,
   },
   selectedNgoImage: {
     width: '100%',
     height: '100%',
+    borderRadius: 10, // Added border radius to the image since parent no longer clips
+  },
+  removeSelectedNgo: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+    backgroundColor: '#6B7280',
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+    zIndex: 50,
+    elevation: 5,
   },
   emptyNgoSlot: {
     width: 56,

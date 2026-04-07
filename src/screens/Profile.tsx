@@ -143,7 +143,7 @@ export default function Profile() {
         enabled: !!user?.id,
     });
 
-    const { data: donationBoxData, refetch: refetchDonationBox } = useQuery({
+    const { data: donationBoxData, isLoading: donationBoxLoading, refetch: refetchDonationBox } = useQuery({
         queryKey: ['donationBox'],
         queryFn: getDonationBox,
         enabled: !!user?.id,
@@ -803,7 +803,7 @@ export default function Profile() {
             </View>
 
             {/* Activate Donation Box Prompt */}
-            {!donationBoxData?.is_active && (
+            {!donationBoxData?.is_active && !donationBoxLoading && (
                 <View style={{ backgroundColor: '#FEF2F2', borderBottomWidth: 1, borderBottomColor: '#FEE2E2', paddingVertical: 12, alignItems: 'center', zIndex: 10, elevation: 1, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                         <Heart size={16} color="#EF4444" fill="#EF4444" />

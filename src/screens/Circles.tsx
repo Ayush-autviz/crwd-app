@@ -8,6 +8,7 @@ import { useQuery } from '@tanstack/react-query'
 import { getCollectives, getJoinCollective } from '../services/api/crwd'
 import { useAuthStore } from '../store/store'
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/Avatar'
+import { Skeleton } from '../components/ui/Skeleton'
 
 type TabKey = 'my-crwds' | 'discover'
 
@@ -117,7 +118,7 @@ const Circles = () => {
             <View style={styles.textContainer}>
               <Text style={styles.itemTitle} numberOfLines={1}>{name}</Text>
               <Text style={styles.itemStats}>
-                {nonprofitCount} nonprofits · {memberCount} members
+                {nonprofitCount} nonprofit{nonprofitCount !== 1 ? 's' : ''} · {memberCount} member{memberCount !== 1 ? 's' : ''}
               </Text>
             </View>
           </View>
@@ -126,6 +127,21 @@ const Circles = () => {
       </TouchableOpacity>
     )
   }
+
+  const CircleItemSkeleton = () => (
+    <View style={styles.itemContainer}>
+      <View style={styles.itemWrapper}>
+        <View style={styles.itemMain}>
+          <Skeleton width={48} height={48} borderRadius={8} />
+          <View style={styles.textContainer}>
+            <Skeleton width="60%" height={15} style={{ marginBottom: 6 }} />
+            <Skeleton width="40%" height={14} />
+          </View>
+        </View>
+        <View style={{ width: 24, height: 24, backgroundColor: '#f3f4f6', borderRadius: 12 }} />
+      </View>
+    </View>
+  );
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
@@ -168,10 +184,17 @@ const Circles = () => {
       </View>
 
       <FlatList
-        data={activeTab === 'my-crwds' ? ['start-action', ...myGroups] : ['start-action', ...discoverGroups]}
-        keyExtractor={(item, index) => (typeof item === 'string' ? item : String(item.id || index))}
+        data={activeTab === 'my-crwds' 
+          ? ['start-action', ...(isLoadingJoinCollective && !refreshing ? ['skeleton','skeleton','skeleton'] : myGroups)] 
+          : ['start-action', ...(isLoadingCollectives && !refreshing ? ['skeleton','skeleton','skeleton'] : discoverGroups)]
+        }
+        keyExtractor={(item, index) => (typeof item === 'string' ? item + index : String(item.id || index))}
         renderItem={({ item }) => (
-          <CircleItem item={item === 'start-action' ? undefined : item} isStartAction={item === 'start-action'} />
+          item === 'skeleton' ? (
+            <CircleItemSkeleton />
+          ) : (
+            <CircleItem item={item === 'start-action' ? undefined : item} isStartAction={item === 'start-action'} />
+          )
         )}
         ListEmptyComponent={
           !isLoadingJoinCollective && !isLoadingCollectives ? (
@@ -180,11 +203,6 @@ const Circles = () => {
               <Text style={styles.emptyTitle}>No groups yet</Text>
               <Text style={styles.emptyText}>Join a group or start your own!</Text>
             </View>
-          ) : null
-        }
-        ListHeaderComponent={
-          (isLoadingJoinCollective || isLoadingCollectives) && !refreshing ? (
-            <ActivityIndicator style={{ marginTop: 20 }} color="#2222EE" />
           ) : null
         }
         refreshControl={

@@ -764,7 +764,8 @@ export default function GivingPost({
                                         </View>
                                     )}
 
-                                    <View style={{ flexDirection: 'row', padding: 5 }}>
+                                    {/* Header Row: Avatar and User Info centered together */}
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 5, paddingTop: 5, paddingBottom: 0 }}>
                                         {/* Avatar Left Column */}
                                         <TouchableOpacity
                                             onPress={() => {
@@ -808,24 +809,22 @@ export default function GivingPost({
                                             </Avatar>
                                         </TouchableOpacity>
 
-                                        {/* Main Content Column */}
-                                        <View style={{ flex: 1, marginLeft: 12 }}>
-                                            {/* Header Info with Ellipsis */}
-                                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-                                                <View style={styles.headerInfo}>
-                                                    <View style={styles.headerTop}>
-                                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                                                            <Text style={styles.username}>{item.username || 'Unknown User'}</Text>
-                                                            {item.fundraiser && (
-                                                                <View style={styles.founderBadge}>
-                                                                    <Text style={styles.founderBadgeText}>Organizer</Text>
-                                                                </View>
-                                                            )}
-                                                        </View>
+                                        {/* Header Info Column */}
+                                        <View style={{ flex: 1, marginLeft: 12, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <View style={styles.headerInfo}>
+                                                <View style={styles.headerTop}>
+                                                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                                                        <Text style={styles.username}>{item.username || 'Unknown User'}</Text>
                                                         {item.fundraiser && (
-                                                            <Text style={[styles.startedFundraiserText, { marginTop: -2, marginBottom: 2 }]}>started a fundraiser</Text>
+                                                            <View style={styles.founderBadge}>
+                                                                <Text style={styles.founderBadgeText}>Organizer</Text>
+                                                            </View>
                                                         )}
-                                                        {/* <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                                                    </View>
+                                                    {item.fundraiser && (
+                                                        <Text style={[styles.startedFundraiserText, { marginTop: -2, marginBottom: 2 }]}>started a fundraiser</Text>
+                                                    )}
+                                                    {/* <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                                                             {item.org && (
                                                                 <TouchableOpacity
                                                                     onPress={() => {
@@ -842,18 +841,26 @@ export default function GivingPost({
                                                                 </TouchableOpacity>
                                                             )}
                                                         </View> */}
-                                                    </View>
                                                 </View>
-                                                {/* Ellipsis Menu - positioned in top right of content */}
-                                                {user?.id && user.id.toString() === item.userId?.toString() && !item.fundraiser?.is_active && (
-                                                    <TouchableOpacity
-                                                        onPress={(event) => handleEllipsisPress(event, item)}
-                                                        style={styles.menuButton}
-                                                    >
-                                                        <Ellipsis size={20} color="#6b7280" />
-                                                    </TouchableOpacity>
-                                                )}
                                             </View>
+                                            {/* Ellipsis Menu - positioned in top right of content */}
+                                            {user?.id && user.id.toString() === item.userId?.toString() && !item.fundraiser?.is_active && (
+                                                <TouchableOpacity
+                                                    onPress={(event) => handleEllipsisPress(event, item)}
+                                                    style={styles.menuButton}
+                                                >
+                                                    <Ellipsis size={20} color="#6b7280" />
+                                                </TouchableOpacity>
+                                            )}
+                                        </View>
+                                    </View>
+
+                                    {/* Content Block Column (Indented under avatar) */}
+                                    <View style={{ flexDirection: 'row', paddingHorizontal: 5, paddingBottom: 0, paddingTop: 0 }}>
+                                        {/* Left Spacer to match avatar width (40px) */}
+                                        <View style={{ width: 40 }} />
+
+                                        <View style={{ flex: 1, marginLeft: 12 }}>
 
                                             {/* Clickable Post Content/Media/Fundraiser */}
                                             <TouchableOpacity
@@ -1022,7 +1029,7 @@ export default function GivingPost({
                                             </TouchableOpacity>
 
                                             {/* Footer Interaction Buttons */}
-                                            <View style={[styles.postFooter, { marginTop: 4, borderTopWidth: 0, paddingBottom: 4 }]}>
+                                            <View style={[styles.postFooter, { marginTop: 0, borderTopWidth: 0, paddingBottom: 6 }]}>
                                                 <View style={styles.footerLeft}>
                                                     <TouchableOpacity
                                                         style={styles.footerButton}

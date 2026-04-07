@@ -1269,7 +1269,7 @@ const styles = StyleSheet.create({
     },
     postHeader: {
         flexDirection: 'row',
-        alignItems: 'flex-start',
+        alignItems: 'center',
         marginBottom: 12,
         gap: 12,
     },

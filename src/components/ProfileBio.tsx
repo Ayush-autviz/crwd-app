@@ -13,7 +13,7 @@ export default function ProfileBio({ bio }: ProfileBioProps) {
         fontSize: 15,
         color: '#000000',
         // lineHeight: 20,
-        textAlign: 'center',
+        // textAlign: 'center',
         fontFamily: 'Outfit-Regular',
       }}>
         {bio}

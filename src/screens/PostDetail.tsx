@@ -997,7 +997,7 @@ export default function PostDetail() {
         <ScrollView style={{ flex: 1 }}>
           {/* Post Content */}
           <View style={{ padding: 20 }}>
-            <View style={{ flexDirection: 'row', gap: 12 }}>
+            <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
               <TouchableOpacity onPress={() => {
                 // If it's the current user's own profile, navigate to Profile tab
                 // Otherwise navigate to UserProfile page
@@ -1084,7 +1084,7 @@ export default function PostDetail() {
                       : post.time}
                   </Text> */}
                 </View>
-                <Text style={{ fontSize: 14, color: PrimaryGrey, marginTop: 5, fontFamily: 'Outfit-Regular' }}>
+                <Text style={{ fontSize: 13, color: PrimaryGrey, marginTop: 0, fontFamily: 'Outfit-Regular' }}>
                   {post.created_at || post.timestamp
                     ? formatDistanceToNow(new Date(post.created_at || post.timestamp as string), { addSuffix: true })
                     : post.time}

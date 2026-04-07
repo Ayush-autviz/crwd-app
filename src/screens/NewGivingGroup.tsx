@@ -158,7 +158,7 @@ export default function NewGivingGroupPage() {
         staleTime: 0,
         gcTime: 0,
     });
-    
+
     useEffect(() => {
         if (showDetailsSheet && crwdData) {
             detailsSheetRef.current?.present();
@@ -306,14 +306,14 @@ export default function NewGivingGroupPage() {
         mutationFn: () => deleteCollective(crwdId),
         onSuccess: async () => {
             console.log('Delete collective successful');
-            
+
             // Invalidate relevant queries
             queryClient.invalidateQueries({ queryKey: ['joined-collectives'] });
             queryClient.invalidateQueries({ queryKey: ['joined-collectives', currentUser?.id] });
-            
+
             deleteCollectiveSheetRef.current?.dismiss();
             showToast('Giving Group deleted successfully', 3000);
-            
+
             // Navigate back to Home
             navigation.dispatch(
                 CommonActions.reset({
@@ -392,9 +392,9 @@ export default function NewGivingGroupPage() {
         return (
             <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
                 <View style={styles.errorContainer}>
-                    <Text style={styles.errorTitle}>Collective not found</Text>
+                    <Text style={styles.errorTitle}>Giving Group not found</Text>
                     <Text style={styles.errorText}>
-                        The collective you're looking for doesn't exist or has been removed.
+                        The Giving Group you're looking for doesn't exist or has been removed.
                     </Text>
                     <TouchableOpacity
                         onPress={() => navigation.goBack()}
@@ -850,10 +850,13 @@ export default function NewGivingGroupPage() {
                 <View>
                     {/* Summary Box */}
                     <View style={styles.donationSummaryBox}>
-                        <Text style={styles.donationSummaryTitle}>Collective Donations</Text>
-                        {/* <Text style={styles.donationSummaryAmount}>
-              ${donationHistoryData?.total_donated_to_collective?.toFixed(2) || '0.00'}
-            </Text> */}
+                        <Text style={styles.donationSummaryTitle}>Group Donations</Text>
+                        {
+                            crwdData?.created_by?.id === currentUser?.id &&
+                            <Text style={styles.donationSummaryAmount}>
+                                ${donationHistoryData?.total_donated_to_collective?.toFixed(2) || '0.00'}
+                            </Text>
+                        }
                         <Text style={styles.donationSummaryText}>
                             {donations.filter((d: any) => d.amount_attributed_to_collective > 0).length} donation{donations.filter((d: any) => d.amount_attributed_to_collective > 0).length !== 1 ? 's' : ''} credited to this collective
                         </Text>
@@ -1071,7 +1074,7 @@ export default function NewGivingGroupPage() {
                 handleIndicatorStyle={styles.modalHandle}
             >
                 <BottomSheetView style={styles.removeModalBody}>
-                    <Text style={styles.removeModalTitle}>Leave Collective</Text>
+                    <Text style={styles.removeModalTitle}>Leave Group</Text>
                     <Text style={styles.removeModalDescription}>
                         Are you sure you want to leave <Text style={styles.removeModalBold}>{crwdData?.name}</Text>? You can always join back later.
                     </Text>
@@ -1100,7 +1103,7 @@ export default function NewGivingGroupPage() {
                     </View>
                 </BottomSheetView>
             </BottomSheetModal>
-            
+
             {/* Delete Collective Bottom Sheet */}
             <BottomSheetModal
                 ref={deleteCollectiveSheetRef}
@@ -1199,6 +1202,8 @@ export default function NewGivingGroupPage() {
                     description: crwdData.description || '',
                     avatar: crwdData.avatar || crwdData.image || crwdData.logo,
                     color: crwdData.color,
+                    founderUsername: crwdData.created_by?.username,
+                    founderId: crwdData.created_by?.id,
                 }}
                 nonprofits={nonprofits}
                 isAdmin={isAdmin}

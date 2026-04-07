@@ -65,7 +65,11 @@ export default function GivingGroupHeader({
           <ArrowLeft size={20} color="#374151" />
         </TouchableOpacity>
 
-        <View style={styles.profileSection}>
+        <TouchableOpacity 
+          style={styles.profileSection}
+          onPress={onMore}
+          activeOpacity={0.7}
+        >
           <Avatar size={40} style={styles.avatar}>
             <AvatarImage src={avatar} />
             <AvatarFallback 
@@ -81,7 +85,7 @@ export default function GivingGroupHeader({
               {title}
             </Text>
           </View>
-        </View>
+        </TouchableOpacity>
       </View>
 
       <View style={styles.rightSection}>

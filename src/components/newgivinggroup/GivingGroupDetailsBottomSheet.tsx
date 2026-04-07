@@ -1,9 +1,11 @@
 import React, { useMemo, useState } from 'react';
+import { useNavigation } from '@react-navigation/native';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 import { BottomSheetModal, BottomSheetView, BottomSheetBackdrop, BottomSheetScrollView, BottomSheetFooter } from '@gorhom/bottom-sheet';
 import { Bell, UserPlus, Settings, Star, X, Pencil } from 'lucide-react-native';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/Avatar';
 import { SquarePen } from 'lucide-react-native';
+import { useAuthStore } from '../../store/store';
 
 interface Nonprofit {
   id: number;
@@ -35,6 +37,8 @@ interface GivingGroupDetailsProps {
     description: string;
     avatar?: string;
     color?: string;
+    founderUsername?: string;
+    founderId?: string | number;
   };
   nonprofits: Nonprofit[];
   isAdmin?: boolean;
@@ -64,6 +68,27 @@ const getInitials = (name: string) => {
     .toUpperCase();
 };
 
+const avatarColors = [
+  '#F97316', // Orange
+  '#EC4899', // Pink
+  '#10B981', // Green
+  '#3B82F6', // Blue
+  '#8B5CF6', // Purple
+  '#F59E0B', // Amber
+  '#EF4444', // Red
+  '#06B6D4', // Cyan
+  '#84CC16', // Lime
+  '#A855F7', // Violet
+];
+
+const getConsistentColor = (id: number | string, colors: string[]) => {
+  const hash =
+    typeof id === 'number'
+      ? id
+      : id.split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
+  return colors[hash % colors.length];
+};
+
 const GivingGroupDetailsBottomSheet = React.forwardRef<BottomSheetModal, GivingGroupDetailsProps>(({
   isOpen,
   onClose,
@@ -85,7 +110,25 @@ const GivingGroupDetailsBottomSheet = React.forwardRef<BottomSheetModal, GivingG
   onFavorite,
 }, ref) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const navigation = useNavigation<any>();
+  const currentUser = useAuthStore((state) => state.user);
   const snapPoints = useMemo(() => ['90%'], []);
+
+  const handleFounderPress = () => {
+    if (!groupData.founderUsername && !groupData.founderId) return;
+
+    onClose();
+    const isOwnProfile = currentUser?.id === groupData.founderId || currentUser?.username === groupData.founderUsername;
+
+    if (isOwnProfile) {
+      navigation.navigate('MainTabs', { screen: 'Profile' });
+    } else {
+      navigation.navigate('UserProfile', {
+        userId: groupData.founderId?.toString(),
+        username: groupData.founderUsername
+      });
+    }
+  };
 
   const existingCauseIds = useMemo(() => {
     const ids = new Set<number>();
@@ -168,7 +211,11 @@ const GivingGroupDetailsBottomSheet = React.forwardRef<BottomSheetModal, GivingG
 
             <Text style={styles.groupName}>{groupData.name}</Text>
             <Text style={styles.founderInfo}>
-              Founded by {groupData.founderName} · {groupData.memberCount.toLocaleString()} members
+              Founded by{' '}
+              <Text style={styles.founderLink} onPress={handleFounderPress}>
+                {groupData.founderName}
+              </Text>
+              {' '}· {groupData.memberCount.toLocaleString()} member{groupData.memberCount !== 1 ? 's' : ''}
             </Text>
 
             <View style={styles.descriptionContainer}>
@@ -239,27 +286,35 @@ const GivingGroupDetailsBottomSheet = React.forwardRef<BottomSheetModal, GivingG
 
               return (
                 <View key={np.id} style={styles.nonprofitItem}>
-                  <View style={styles.nonprofitInfo}>
+                  <TouchableOpacity
+                    style={styles.nonprofitInfo}
+                    onPress={() => {
+                      onClose();
+                      navigation.navigate('CauseScreen', { id: causeId });
+                    }}
+                  >
                     <Avatar size={40} style={styles.nonprofitAvatar}>
                       <AvatarImage src={logo} />
-                      <AvatarFallback style={{ backgroundColor: '#f3f4f6' }} textStyle={{ color: '#6b7280', fontSize: 14 }}>
+                      <AvatarFallback style={{ backgroundColor: getConsistentColor(causeId, avatarColors) }} textStyle={{ color: '#ffffff', fontSize: 14, fontWeight: '700' }}>
                         {name.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     <Text style={styles.nonprofitName} numberOfLines={1}>{name}</Text>
-                  </View>
-                  <TouchableOpacity
-                    onPress={() => onToggleCause?.(causeId, !isInBox)}
-                    disabled={loadingCauseId === causeId}
-                  >
-                    {loadingCauseId === causeId ? (
-                      <ActivityIndicator size="small" color={isInBox ? '#ef4444' : '#1600ff'} />
-                    ) : (
-                      <Text style={[styles.addButton, isInBox && styles.removeButton]}>
-                        {isInBox ? 'Remove' : '+Add'}
-                      </Text>
-                    )}
                   </TouchableOpacity>
+                  {(isJoined || isAdmin) && (
+                    <TouchableOpacity
+                      onPress={() => onToggleCause?.(causeId, !isInBox)}
+                      disabled={loadingCauseId === causeId}
+                    >
+                      {loadingCauseId === causeId ? (
+                        <ActivityIndicator size="small" color={isInBox ? '#ef4444' : '#1600ff'} />
+                      ) : (
+                        <Text style={[styles.addButton, isInBox && styles.removeButton]}>
+                          {isInBox ? 'Remove' : '+Add'}
+                        </Text>
+                      )}
+                    </TouchableOpacity>
+                  )}
                 </View>
               );
             })}
@@ -337,6 +392,10 @@ const styles = StyleSheet.create({
     color: '#374151',
     marginTop: 4,
     textAlign: 'center',
+  },
+  founderLink: {
+    color: '#2222EE',
+    fontFamily: 'Outfit-Semibold',
   },
   descriptionContainer: {
     marginTop: 4,

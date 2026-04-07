@@ -14,6 +14,7 @@ import { Share2, Flag, ChevronRight, Ellipsis, MessageCircle, MessageSquare, Arr
 import SharePost from '../components/SharePost'
 import { getPosts, getUserProfileById, getUserFollowers, getUserFollowing, getFavoriteCauses, getSupportedCausesByUserId, followUser, unfollowUser } from '../services/api/social'
 import { getUserCollectives, getJoinCollective } from '../services/api/crwd'
+import { getDonationBox } from '../services/api/donation'
 import { useAuthStore } from '../store/store'
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/Avatar'
 import { logout, unregisterToken } from '../services/api/auth'
@@ -139,6 +140,12 @@ export default function Profile() {
     const { data: profileData, isLoading: profileLoading, error: profileError, refetch: refetchProfile } = useQuery({
         queryKey: ['userProfile', user?.id],
         queryFn: () => getUserProfileById(user?.id?.toString() || ''),
+        enabled: !!user?.id,
+    });
+
+    const { data: donationBoxData, refetch: refetchDonationBox } = useQuery({
+        queryKey: ['donationBox'],
+        queryFn: getDonationBox,
         enabled: !!user?.id,
     });
 
@@ -618,6 +625,7 @@ export default function Profile() {
                 followingQuery.refetch(),
                 favoriteCausesQuery.refetch(),
                 userCollectivesQuery.refetch(),
+                refetchDonationBox(),
             ]);
         } catch (error) {
             console.error('Error refreshing profile:', error);
@@ -795,7 +803,7 @@ export default function Profile() {
             </View>
 
             {/* Activate Donation Box Prompt */}
-            {(!profileData?.supported_causes_count || profileData?.supported_causes_count === 0) && (
+            {!donationBoxData?.is_active && (
                 <View style={{ backgroundColor: '#FEF2F2', borderBottomWidth: 1, borderBottomColor: '#FEE2E2', paddingVertical: 12, alignItems: 'center', zIndex: 10, elevation: 1, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                         <Heart size={16} color="#EF4444" fill="#EF4444" />

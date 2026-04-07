@@ -601,7 +601,7 @@ export default function CreateFundraiser() {
                   (navigation as any).navigate('GroupCRWD', { id: collectiveId, fromCreate: true });
                 }}
               >
-                <Text style={styles.backToCollectiveText}>Back to Collective</Text>
+                <Text style={styles.backToCollectiveText}>Back to Giving Group</Text>
               </TouchableOpacity>
 
               <TouchableOpacity

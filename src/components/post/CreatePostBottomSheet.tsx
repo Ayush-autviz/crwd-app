@@ -38,6 +38,7 @@ import { getJoinCollective } from '../../services/api/crwd';
 import { useAuthStore } from '../../store/store';
 import { MentionSearchResults } from './MentionSearchResults';
 import { PrimaryBlue, PrimaryGrey } from '../../Constants/Colors';
+import { useNavigation } from '@react-navigation/native';
 
 interface CreatePostBottomSheetProps {
   isOpen: boolean;
@@ -50,7 +51,7 @@ const CreatePostBottomSheet = React.forwardRef<BottomSheetModal, CreatePostBotto
     const queryClient = useQueryClient();
     const { user: currentUser } = useAuthStore();
     const screenWidth = Dimensions.get('window').width;
-
+    const navigation = useNavigation();
     const isFromSpecificCollective = !!collectiveData;
     const [selectedCollective, setSelectedCollective] = useState<any>(collectiveData || null);
     const [showCollectiveModal, setShowCollectiveModal] = useState(false);
@@ -244,6 +245,12 @@ const CreatePostBottomSheet = React.forwardRef<BottomSheetModal, CreatePostBotto
       (ref as any)?.current?.dismiss();
     };
 
+    const handleCreateFundraiser = () => {
+      handleClose();
+      (navigation as any).navigate('CreateFundraiser', { collectiveId: selectedCollective?.id })
+    }
+
+
     const renderBackdrop = useCallback(
       (props: any) => (
         <BottomSheetBackdrop
@@ -326,8 +333,9 @@ const CreatePostBottomSheet = React.forwardRef<BottomSheetModal, CreatePostBotto
                 <Paperclip size={20} color="#374151" />
                 <Text style={styles.actionText}>Add Link</Text>
               </TouchableOpacity>
-              {selectedCollective?.role === "admin" && (
-                <TouchableOpacity style={styles.actionPill}>
+              {selectedCollective?.created_by.id === currentUser?.id && (
+                <TouchableOpacity onPress={() => handleCreateFundraiser()}
+                  style={styles.actionPill}>
                   <Heart size={20} color="#374151" />
                   <Text style={styles.actionText}>Create Fundraiser</Text>
                 </TouchableOpacity>

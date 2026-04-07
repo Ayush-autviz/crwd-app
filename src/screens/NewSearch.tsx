@@ -131,7 +131,7 @@ export default function NewSearchPage() {
                 </View>
 
                 <View style={styles.browseTextContainer}>
-                  <Text style={styles.browseTitle}>Browse</Text>
+                  <Text style={styles.browseTitle}>Browse Nonprofits</Text>
                   <Text style={styles.browseSubtitle}>Discover nonprofits by category</Text>
                 </View>
               </View>

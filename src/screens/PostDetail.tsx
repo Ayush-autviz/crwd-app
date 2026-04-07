@@ -1202,7 +1202,7 @@ export default function PostDetail() {
                   disabled={likePostMutation.isPending || unlikePostMutation.isPending}
                   style={{ flexDirection: 'row', alignItems: 'center', gap: 4, opacity: (likePostMutation.isPending || unlikePostMutation.isPending) ? 0.5 : 1 }}
                 >
-                  <Heart size={18} color={post.isLiked ? 'red' : PrimaryGrey} />
+                  <Heart size={18} color={post.isLiked ? 'red' : PrimaryGrey} fill={post.isLiked ? 'red' : 'none'} />
                   <Text style={{ fontSize: 12, color: post.isLiked ? 'red' : PrimaryGrey }}>
                     {likePostMutation.isPending || unlikePostMutation.isPending ? '' : post.likes}
                   </Text>

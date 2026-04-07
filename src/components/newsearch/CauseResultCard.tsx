@@ -46,7 +46,7 @@ export default function CauseResultCard({ cause }: CauseResultCardProps) {
   const initials = cause.name
     ?.split(' ')
     .map((word) => word.charAt(0))
-    .slice(0, 2)
+    .slice(0, 1)
     .join('')
     .toUpperCase() || 'N';
 

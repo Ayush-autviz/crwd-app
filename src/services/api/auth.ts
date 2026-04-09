@@ -91,3 +91,8 @@ export const unregisterToken = async (data: any) => {
         throw error;
     }
 };
+
+export const getLatestAppVersion = async () => {
+    const response = await axiosClient.get('/admin/app-version/latest/');
+    return response.data;
+};

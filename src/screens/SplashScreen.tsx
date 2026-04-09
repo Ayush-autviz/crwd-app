@@ -1,16 +1,38 @@
-import { View, Image, StyleSheet } from 'react-native'
+import { View, Image, StyleSheet, Text, TouchableOpacity, Linking, Platform } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { useNavigation } from '@react-navigation/native'
 import { useAuthStore } from '../store/store'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import DeviceInfo from 'react-native-device-info'
+import { getLatestAppVersion } from '../services/api/auth'
+import { PrimaryBlue } from '../Constants/Colors'
+import AppUpdate from '../components/ui/AppUpdate'
 
 export default function SplashScreen() {
   const navigation = useNavigation()
-  const [isReady, setIsReady] = useState(false)
+  const [needsUpdate, setNeedsUpdate] = useState(false)
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
+        // Version Check
+        const currentVersion = DeviceInfo.getVersion();
+        console.log('Current App Version:', currentVersion);
+
+        try {
+          const latestData = await getLatestAppVersion();
+          console.log('Latest App Version from API:', latestData?.app_version);
+
+          if (latestData?.app_version && currentVersion !== latestData.app_version) {
+            console.log('Version mismatch detected. Showing update screen.');
+            setNeedsUpdate(true);
+            return;
+          }
+        } catch (apiError) {
+          console.error('Error fetching latest version:', apiError);
+          // Continue with auth if version check fails (optional, depending on requirement)
+        }
+
         // Wait for AsyncStorage to load the persisted state
         const storedData = await AsyncStorage.getItem('driver-auth-storage')
         const parsedData = storedData ? JSON.parse(storedData) : null
@@ -46,6 +68,10 @@ export default function SplashScreen() {
 
     checkAuth()
   }, [navigation])
+
+  if (needsUpdate) {
+    return <AppUpdate />
+  }
 
   return (
     <View style={styles.container}>

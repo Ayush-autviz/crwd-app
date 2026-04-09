@@ -318,33 +318,8 @@ const CreatePostBottomSheet = React.forwardRef<BottomSheetModal, CreatePostBotto
     };
 
     const renderFooter = useCallback(
-      (props: any) => (
-        <BottomSheetFooter {...props} bottomInset={Platform.OS === 'ios' ? 20 : 0}>
-          <View style={styles.footer}>
-            <View style={styles.footerTop}>
-              <Text style={styles.charCount}>{characterCount}/{maxCharacters}</Text>
-            </View>
-            <View style={styles.actionButtons}>
-              <TouchableOpacity onPress={handleImageSelect} style={styles.actionPill}>
-                <ImageIcon size={20} color="#374151" />
-                <Text style={styles.actionText}>Add Image</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => setPostType('link')} style={styles.actionPill}>
-                <Paperclip size={20} color="#374151" />
-                <Text style={styles.actionText}>Add Link</Text>
-              </TouchableOpacity>
-              {selectedCollective?.created_by.id === currentUser?.id && (
-                <TouchableOpacity onPress={() => handleCreateFundraiser()}
-                  style={styles.actionPill}>
-                  <Heart size={20} color="#374151" />
-                  <Text style={styles.actionText}>Create Fundraiser</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          </View>
-        </BottomSheetFooter>
-      ),
-      [characterCount, selectedCollective, handleImageSelect]
+      (props: any) => null,
+      []
     );
 
     return (
@@ -453,13 +428,35 @@ const CreatePostBottomSheet = React.forwardRef<BottomSheetModal, CreatePostBotto
                 >
                   {renderHighlightedText(form.content)}
                 </BottomSheetTextInput>
+                <View style={styles.charCountContainer}>
+                  <Text style={styles.charCount}>{characterCount}/{maxCharacters}</Text>
+                </View>
               </View>
-              <MentionSearchResults
-                results={mentionResults}
-                onSelect={handleMentionSelect}
-                position="inline"
-              />
+
+              <View style={styles.actionButtons}>
+                <TouchableOpacity onPress={handleImageSelect} style={styles.actionPill}>
+                  <ImageIcon size={20} color="#374151" />
+                  <Text style={styles.actionText}>Add Image</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => setPostType('link')} style={styles.actionPill}>
+                  <Paperclip size={20} color="#374151" />
+                  <Text style={styles.actionText}>Add Link</Text>
+                </TouchableOpacity>
+                {selectedCollective?.created_by.id === currentUser?.id && (
+                  <TouchableOpacity onPress={() => handleCreateFundraiser()}
+                    style={styles.actionPill}>
+                    <Heart size={20} color="#374151" />
+                    <Text style={styles.actionText}>Create Fundraiser</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
             </View>
+
+            <MentionSearchResults
+              results={mentionResults}
+              onSelect={handleMentionSelect}
+              position="inline"
+            />
 
             {/* Previews */}
             {showPreview && previewData && (
@@ -578,9 +575,14 @@ const styles = StyleSheet.create({
   linkInput: { borderBottomWidth: 1, borderBottomColor: '#D1D5DB', paddingVertical: 8, fontSize: 14 },
   errorText: { color: '#EF4444', fontSize: 12, marginTop: 4 },
   footer: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 24, backgroundColor: 'white' },
-  footerTop: { alignItems: 'flex-end', marginBottom: 12 },
+  charCountContainer: {
+    position: 'absolute',
+    bottom: 12,
+    right: 16,
+    zIndex: 10,
+  },
   charCount: { fontSize: 12, color: '#9CA3AF' },
-  actionButtons: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  actionButtons: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 16 },
   actionPill: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20, borderWidth: 1, borderColor: '#E5E7EB', gap: 6 },
   actionText: { fontSize: 14, fontWeight: '600', color: '#4B5563' },
 });

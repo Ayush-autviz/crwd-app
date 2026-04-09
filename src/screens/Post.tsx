@@ -693,12 +693,47 @@ export default function Post() {
               spellCheck={false}
               selectionColor={PrimaryBlue}
             />
+            <View style={styles.characterCountContainer}>
+              <Text style={styles.characterCount}>
+                {characterCount}/{maxCharacters}
+              </Text>
+            </View>
           </View>
           <MentionSearchResults
             results={mentionResults}
             onSelect={handleMentionSelect}
             position="inline"
           />
+
+          <View style={[styles.actionButtonsContainer, { marginTop: 16 }]}>
+            <TouchableOpacity
+              onPress={() => handlePostTypeSelect('image')}
+              style={styles.actionButton}
+              activeOpacity={0.7}
+            >
+              <ImageIcon size={20} color="#374151" />
+              <Text style={styles.actionButtonText}>Add Image</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => handlePostTypeSelect('link')}
+              style={styles.actionButton}
+              activeOpacity={0.7}
+            >
+              <Paperclip size={20} color="#374151" />
+              <Text style={styles.actionButtonText}>Add Link</Text>
+            </TouchableOpacity>
+
+            {selectedCollective && (selectedCollective.created_by.id === currentUser?.id) && (
+              <TouchableOpacity
+                onPress={() => navigation.navigate('CreateFundraiser', { collectiveId: (selectedCollective.collective || selectedCollective).id } as any)}
+                style={styles.actionButton}
+                activeOpacity={0.7}
+              >
+                <Heart size={20} color="#374151" />
+                <Text style={styles.actionButtonText}>Create Fundraiser</Text>
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
 
 
@@ -848,43 +883,7 @@ export default function Post() {
       </KeyboardAwareScrollView>
 
 
-      <View style={styles.footer}>
-        <View style={styles.characterCountContainer}>
-          <Text style={styles.characterCount}>
-            {characterCount}/{maxCharacters}
-          </Text>
-        </View>
 
-        <View style={styles.actionButtonsContainer}>
-          <TouchableOpacity
-            onPress={() => handlePostTypeSelect('image')}
-            style={styles.actionButton}
-            activeOpacity={0.7}
-          >
-            <ImageIcon size={20} color="#374151" />
-            <Text style={styles.actionButtonText}>Add Image</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => handlePostTypeSelect('link')}
-            style={styles.actionButton}
-            activeOpacity={0.7}
-          >
-            <Paperclip size={20} color="#374151" />
-            <Text style={styles.actionButtonText}>Add Link</Text>
-          </TouchableOpacity>
-
-          {selectedCollective && (selectedCollective.role === "admin" || selectedCollective.role === "Admin") && (
-            <TouchableOpacity
-              onPress={() => navigation.navigate('CreateFundraiser', { collectiveId: (selectedCollective.collective || selectedCollective).id } as any)}
-              style={styles.actionButton}
-              activeOpacity={0.7}
-            >
-              <Heart size={20} color="#374151" />
-              <Text style={styles.actionButtonText}>Create Fundraiser</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-      </View>
       <Toast
         message={toastMessage}
         show={showToast}
@@ -1010,13 +1009,14 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   characterCountContainer: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    marginBottom: 12,
+    position: 'absolute',
+    bottom: 12,
+    right: 16,
+    zIndex: 10,
   },
   characterCount: {
     fontSize: 12,
-    color: '#6B7280',
+    color: '#9CA3AF',
   },
   actionButtonsContainer: {
     flexDirection: 'row',

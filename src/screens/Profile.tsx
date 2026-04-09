@@ -804,14 +804,17 @@ export default function Profile() {
 
             {/* Activate Donation Box Prompt */}
             {!donationBoxData?.is_active && !donationBoxLoading && (
-                <View style={{ backgroundColor: '#FEF2F2', borderBottomWidth: 1, borderBottomColor: '#FEE2E2', paddingVertical: 12, alignItems: 'center', zIndex: 10, elevation: 1, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2 }}>
+                <TouchableOpacity 
+                    onPress={() => (navigation as any).navigate('MainTabs', { screen: 'Donate' })}
+                    style={{ backgroundColor: '#FEF2F2', borderBottomWidth: 1, borderBottomColor: '#FEE2E2', paddingVertical: 12, alignItems: 'center', zIndex: 10, elevation: 1, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2 }}
+                >
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                         <Heart size={16} color="#EF4444" fill="#EF4444" />
                         <Text style={{ color: '#EF4444', fontFamily: 'Outfit-SemiBold', fontSize: 14 }}>
                             Activate your Donation Box
                         </Text>
                     </View>
-                </View>
+                </TouchableOpacity>
             )}
 
             <ScrollView
@@ -843,9 +846,17 @@ export default function Profile() {
                         getConsistentColor={getConsistentColor}
                         avatarColors={avatarColors}
                         getInitials={getInitials}
+                        isOwnProfile={true}
+                        onEditPress={handleEditProfile}
                     />
 
-                    {profileData?.bio && <ProfileBio bio={profileData.bio} />}
+                    {profileData?.bio ? (
+                        <ProfileBio bio={profileData.bio} />
+                    ) : (
+                        <TouchableOpacity onPress={handleEditProfile}>
+                            <Text style={{ color: '#2222EE', fontFamily: 'Outfit-Bold', fontSize: 14, marginVertical: 5 }}>Add a bio</Text>
+                        </TouchableOpacity>
+                    )}
 
 
                     {/* People Inspired */}

@@ -1242,6 +1242,7 @@ export default function NewGivingGroupPage() {
                 }}
                 donationBox={donationBoxData}
                 loadingCauseId={loadingCauseId}
+                isLoadingNonprofits={isLoadingCauses}
             />
 
             {/* Statistics Bottom Sheet */}

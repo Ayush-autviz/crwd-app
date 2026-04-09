@@ -6,6 +6,7 @@ import { Bell, UserPlus, Settings, Star, X, Pencil } from 'lucide-react-native';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/Avatar';
 import { SquarePen } from 'lucide-react-native';
 import { useAuthStore } from '../../store/store';
+import { Skeleton } from '../ui/Skeleton';
 
 interface Nonprofit {
   id: number;
@@ -55,6 +56,7 @@ interface GivingGroupDetailsProps {
   loadingCauseId?: number | null;
   isFavorited?: boolean;
   onFavorite?: () => void;
+  isLoadingNonprofits?: boolean;
 }
 
 const getInitials = (name: string) => {
@@ -108,6 +110,7 @@ const GivingGroupDetailsBottomSheet = React.forwardRef<BottomSheetModal, GivingG
   loadingCauseId = null,
   isFavorited = false,
   onFavorite,
+  isLoadingNonprofits = false,
 }, ref) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const navigation = useNavigation<any>();
@@ -276,8 +279,19 @@ const GivingGroupDetailsBottomSheet = React.forwardRef<BottomSheetModal, GivingG
 
           {/* Nonprofits Section */}
           <View style={styles.nonprofitsSection}>
-            <Text style={styles.sectionHeader}>NONPROFITS IN THIS GROUP</Text>
-            {nonprofits.map((np) => {
+            <Text style={styles.sectionHeader}>WHERE YOUR DONATION GOES</Text>
+            <Text style={styles.supportingText}>Your monthly amount is split evenly across these nonprofits.</Text>
+            {isLoadingNonprofits ? (
+              [1, 2, 3].map((_, i) => (
+                <View key={i} style={styles.nonprofitItem}>
+                  <View style={styles.nonprofitInfo}>
+                    <Skeleton width={40} height={40} borderRadius={8} style={styles.nonprofitAvatar} />
+                    <Skeleton width={120} height={20} borderRadius={4} />
+                  </View>
+                  <Skeleton width={50} height={20} borderRadius={4} />
+                </View>
+              ))
+            ) : nonprofits.map((np) => {
               const cause = np.cause || np;
               const name = cause.name || np.name || 'Unknown Nonprofit';
               const logo = cause.logo || cause.image || np.logo || np.image;
@@ -474,6 +488,12 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Bold',
     color: '#6b7280',
     letterSpacing: 0.5,
+    marginBottom: 4,
+  },
+  supportingText: {
+    fontSize: 12,
+    fontFamily: 'Outfit-Regular',
+    color: '#9ca3af',
     marginBottom: 16,
   },
   nonprofitItem: {

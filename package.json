@@ -49,7 +49,9 @@
     "react-native-screens": "^4.10.0",
     "react-native-share": "^12.1.0",
     "react-native-svg": "^15.12.0",
+    "react-native-version-check": "^3.5.0",
     "react-native-webview": "^13.16.0",
+    "semver": "^7.7.4",
     "zustand": "^5.0.8"
   },
   "devDependencies": {

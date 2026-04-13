@@ -7,31 +7,39 @@ import DeviceInfo from 'react-native-device-info'
 import { getLatestAppVersion } from '../services/api/auth'
 import { PrimaryBlue } from '../Constants/Colors'
 import AppUpdate from '../components/ui/AppUpdate'
+import VersionCheck from 'react-native-version-check';
+import { lt } from 'semver'
 
 export default function SplashScreen() {
   const navigation = useNavigation()
   const [needsUpdate, setNeedsUpdate] = useState(false)
 
+  const normalizeVersion = (v) => {
+    const parts = v.split('.');
+    while (parts.length < 3) parts.push('0');
+    return parts.join('.');
+  };
+
+
   useEffect(() => {
     const checkAuth = async () => {
       try {
         // Version Check
+        const latest = await VersionCheck.getLatestVersion();
         const currentVersion = DeviceInfo.getVersion();
+
         console.log('Current App Version:', currentVersion);
+        console.log('Latest App Version:', latest);
 
-        try {
-          const latestData = await getLatestAppVersion();
-          console.log('Latest App Version from API:', latestData?.app_version);
-
-          if (latestData?.app_version && currentVersion !== latestData.app_version) {
-            console.log('Version mismatch detected. Showing update screen.');
-            setNeedsUpdate(true);
-            return;
-          }
-        } catch (apiError) {
-          console.error('Error fetching latest version:', apiError);
-          // Continue with auth if version check fails (optional, depending on requirement)
+        if (lt(normalizeVersion(currentVersion), normalizeVersion(latest))) {
+          console.log('Update required');
+          setNeedsUpdate(true);
+          return;
         }
+        else {
+          console.log('Update not required');
+        }
+
 
         // Wait for AsyncStorage to load the persisted state
         const storedData = await AsyncStorage.getItem('driver-auth-storage')

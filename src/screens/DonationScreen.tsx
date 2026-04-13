@@ -141,6 +141,7 @@ export default function DonationScreen() {
   const { data: causesData, isLoading: causesLoading } = useQuery({
     queryKey: ['causes', searchQuery],
     queryFn: () => getCausesBySearch(searchQuery, '', 1),
+    enabled: !!searchQuery
   });
 
   // Joined collectives
@@ -1380,7 +1381,6 @@ export default function DonationScreen() {
                                 {causesData?.results?.length > 0 ? (
                                   causesData.results
                                     .filter((cause: any) => !(donationBoxQuery.data?.box_causes || []).some((bc: any) => bc.cause?.id === cause.id))
-                                    .slice(0, 5)
                                     .map((cause: any, index: number, array: any[]) => (
                                       <TouchableOpacity
                                         key={cause.id}

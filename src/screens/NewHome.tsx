@@ -757,8 +757,7 @@ export default function NewHome() {
         )}
         {/* Main Content */}
         <View style={styles.mainContent}>
-          {/* My Donation Box Card or Prompt */}
-          <LinearGradient
+          {/* <LinearGradient
             colors={['#EFF6FF', '#FAF5FF', '#FDF2F8']}
             start={{ x: 0, y: 0.5 }}
             end={{ x: 1, y: 0.5 }}
@@ -793,10 +792,10 @@ export default function NewHome() {
                         />
                       )}
                     </>
-                  )}
+                  )} */}
 
-                  {/* Collective Carousel Card */}
-                  {/* <View style={{ width: '100%' }} collapsable={false}>
+          {/* Collective Carousel Card */}
+          {/* <View style={{ width: '100%' }} collapsable={false}>
                     {joinedCollectivesLoading ? (
                       <CollectiveCarouselSkeleton />
                     ) : (
@@ -809,10 +808,10 @@ export default function NewHome() {
                       </>
                     )}
                   </View> */}
-                </>
+          {/* </>
               ) : null}
             </View>
-          </LinearGradient>
+          </LinearGradient> */}
 
           {/* Community Updates Feed Section */}
           {communityUpdatesLoading && transformedFeedItems.length === 0 ? (
@@ -825,12 +824,12 @@ export default function NewHome() {
               {/* Feed Part 1 */}
               {feedPart1.length > 0 && (
                 <View style={styles.feedSection}>
-                  <View style={styles.feedHeading}>
+                  {/* <View style={styles.feedHeading}>
                     <Text style={styles.feedTitle}>Community Updates</Text>
-                    {/* <Text style={styles.feedSubtitle}>
+                    <Text style={styles.feedSubtitle}>
                       Updates and discoveries from your community
-                    </Text> */}
-                  </View>
+                    </Text>
+                  </View> */}
                   <View style={styles.feedList}>
                     {feedPart1.map(renderFeedItem)}
                   </View>

@@ -40,14 +40,18 @@ const Circles = () => {
     enabled: !!currentUser?.id,
   })
 
-  const onRefresh = React.useCallback(() => {
-    refetchCollectives()
-    if (currentUser?.id) {
-      refetchJoinCollectives()
-    }
+  const [isManualRefreshing, setIsManualRefreshing] = useState(false)
+
+  const onRefresh = React.useCallback(async () => {
+    setIsManualRefreshing(true)
+    await Promise.all([
+      refetchCollectives(),
+      currentUser?.id ? refetchJoinCollectives() : Promise.resolve()
+    ])
+    setIsManualRefreshing(false)
   }, [refetchCollectives, refetchJoinCollectives, currentUser?.id])
 
-  const refreshing = isRefetchingCollectives || isRefetchingJoinCollective
+  // const refreshing = isRefetchingCollectives || isRefetchingJoinCollective
 
   const joinedCollectiveIds = useMemo(() => {
     return new Set(joinCollectiveData?.data?.map((item: any) => item.collective?.id || item.id) || [])
@@ -109,7 +113,7 @@ const Circles = () => {
             <Avatar size={48} style={styles.avatar}>
               <AvatarImage src={item.logo} />
               <AvatarFallback
-                style={[styles.avatarContainer, { backgroundColor: item.color || '#2222EE' }]}
+                style={{ backgroundColor: item.color || '#2222EE' }}
                 textStyle={{ color: '#fff', fontWeight: '700', fontSize: 18 }}
               >
                 {initials}
@@ -184,9 +188,9 @@ const Circles = () => {
       </View>
 
       <FlatList
-        data={activeTab === 'my-crwds' 
-          ? ['start-action', ...(isLoadingJoinCollective && !refreshing ? ['skeleton','skeleton','skeleton'] : myGroups)] 
-          : ['start-action', ...(isLoadingCollectives && !refreshing ? ['skeleton','skeleton','skeleton'] : discoverGroups)]
+        data={activeTab === 'my-crwds'
+          ? ['start-action', ...(isLoadingJoinCollective && !refreshing ? ['skeleton', 'skeleton', 'skeleton'] : myGroups)]
+          : ['start-action', ...(isLoadingCollectives && !refreshing ? ['skeleton', 'skeleton', 'skeleton'] : discoverGroups)]
         }
         keyExtractor={(item, index) => (typeof item === 'string' ? item + index : String(item.id || index))}
         renderItem={({ item }) => (
@@ -206,7 +210,7 @@ const Circles = () => {
           ) : null
         }
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#2222EE" />
+          <RefreshControl refreshing={isManualRefreshing} onRefresh={onRefresh} tintColor="#2222EE" />
         }
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}

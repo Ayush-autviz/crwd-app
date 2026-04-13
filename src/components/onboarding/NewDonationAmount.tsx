@@ -19,7 +19,7 @@ export default function NewDonationAmount() {
   const navigation = useNavigation();
   const route = useRoute();
   const params = route.params as any;
-  const [amount, setAmount] = useState<number>(10);
+  const [amount, setAmount] = useState<number>(20);
   const [isCustom, setIsCustom] = useState(false);
   const inputRef = useRef<TextInput>(null);
 
@@ -140,13 +140,6 @@ export default function NewDonationAmount() {
               </TouchableOpacity>
             </View>
 
-            <TouchableOpacity
-              onPress={() => setIsCustom(true)}
-              style={styles.customToggle}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.customToggleText}>Enter custom amount</Text>
-            </TouchableOpacity>
           </View>
 
           <View style={styles.infoBox}>
@@ -168,6 +161,13 @@ export default function NewDonationAmount() {
           <Text style={styles.continueButtonText}>Continue</Text>
         </TouchableOpacity>
 
+        <TouchableOpacity
+          onPress={() => setIsCustom(true)}
+          style={styles.customToggle}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.customToggleText}>Enter custom amount</Text>
+        </TouchableOpacity>
         <TouchableOpacity onPress={handleSkip} style={styles.skipLink}>
           <Text style={styles.skipLinkText}>Skip for now, I'll set this up later</Text>
         </TouchableOpacity>
@@ -280,6 +280,7 @@ const styles = StyleSheet.create({
   },
   customToggle: {
     paddingVertical: 8,
+    marginHorizontal: 'auto'
   },
   customToggleText: {
     fontSize: 15,

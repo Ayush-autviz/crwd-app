@@ -1417,7 +1417,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         marginTop: 12,
-        borderTopWidth: 1,
+        // borderTopWidth: 1,
         borderTopColor: '#f5f5f5',
         borderBottomWidth: 1,
         borderBottomColor: '#f5f5f5',

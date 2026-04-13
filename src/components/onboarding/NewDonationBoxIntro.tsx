@@ -157,6 +157,8 @@ export default function NewDonationBoxIntro() {
                   </View>
                 </SlideInItem>
               </View>
+              <Text style={[styles.previewLabel, { fontSize: 13, paddingTop: 12, marginBottom: 0 }]}>Not your actual box</Text>
+
             </View>
           </SlideInItem>
 
@@ -251,11 +253,11 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   previewLabel: {
-    fontSize: 10,
-    fontWeight: '900',
+    fontSize: 12,
+    fontWeight: '800',
     color: '#9CA3AF',
-    letterSpacing: 2,
-    marginBottom: 24,
+    // letterSpacing: 2,
+    marginBottom: 18,
   },
   badgeRow: {
     flexDirection: 'row',

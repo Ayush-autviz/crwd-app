@@ -184,7 +184,7 @@ export default function ManageDonationBoxScreen() {
   const { data: causesData, isLoading: causesLoading } = useQuery({
     queryKey: ['causes-manage', searchQuery, currentUser?.id],
     queryFn: () => getCausesBySearch(searchQuery || '', '', 1),
-    enabled: true, // Always enable to allow adding causes after reload
+    enabled: !!searchQuery, // Always enable to allow adding causes after reload
     refetchOnMount: true,
   });
 
@@ -1030,7 +1030,8 @@ export default function ManageDonationBoxScreen() {
                     })}
                   </View>
                 ) : (
-                  <Text style={styles.loadingText}>No nonprofits available</Text>
+                  <></>
+                  // <Text style={styles.loadingText}>No nonprofits available</Text>
                 )}
               </View>
             )}
@@ -1038,14 +1039,13 @@ export default function ManageDonationBoxScreen() {
             {/* Search Results */}
             {showSearchResults && (
               <View style={styles.resultsSection}>
-                <Text style={styles.resultsTitle}>Search Results (Max 5)</Text>
+                <Text style={styles.resultsTitle}>Search Results</Text>
                 {causesLoading ? (
                   <Text style={styles.loadingText}>Loading...</Text>
                 ) : (() => {
                   const searchResults = causesData?.results
                     ? causesData.results
                       .filter((cause: any) => !allSelectedCauseIds.includes(cause.id))
-                      .slice(0, 5)
                     : [];
                   return searchResults.length > 0 ? (
                     <View style={styles.list}>

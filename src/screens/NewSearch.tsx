@@ -67,8 +67,6 @@ export default function NewSearchPage() {
   const handleCategoryClick = (cat: any) => {
     (navigation as any).navigate('SearchResults', {
       searchQuery: cat.name,
-      categoryId: cat.id,
-      categoryName: cat.name,
       tab: 'Nonprofits'
     });
   };

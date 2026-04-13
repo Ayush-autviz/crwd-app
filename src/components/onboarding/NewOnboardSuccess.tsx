@@ -115,6 +115,11 @@ export default function NewOnboardSuccess() {
             <View style={[styles.progressStep, styles.progressActive]} />
           </View>
 
+          {/* Success Message */}
+          <View style={styles.messageSection}>
+            <Text style={styles.title}>Your profile is live.</Text>
+            <Text style={styles.subtitle}>The nonprofits you support show up publicly. When others see what you give to, it moves them to do the same.</Text>
+          </View>
           {/* Profile Summary Card */}
           <View style={styles.summaryCard}>
             <Avatar size={80} >
@@ -143,11 +148,6 @@ export default function NewOnboardSuccess() {
             </View>
           </View>
 
-          {/* Success Message */}
-          <View style={styles.messageSection}>
-            <Text style={styles.title}>Giving is better with people you know.</Text>
-            <Text style={styles.subtitle}>Share your page. Invite someone to build theirs.</Text>
-          </View>
 
           {/* Share Button Link */}
           <TouchableOpacity style={styles.shareLink} onPress={handleShare} activeOpacity={0.7}>
@@ -155,13 +155,13 @@ export default function NewOnboardSuccess() {
               <Share2 size={22} color="#FFFFFF" />
             </View>
             <View style={styles.shareTextContent}>
-              <Text style={styles.shareTitle}>Share your invite link</Text>
+              <Text style={styles.shareTitle}>Invite others</Text>
               <Text style={styles.shareSub}>Text, email, DM — whatever works</Text>
             </View>
             <ChevronRight size={18} color="#9CA3AF" />
           </TouchableOpacity>
 
-          <Text style={styles.footerNote}>You can always invite people later from your profile.</Text>
+          {/* <Text style={styles.footerNote}>You can always invite people later from your profile.</Text> */}
         </View>
       </ScrollView>
 
@@ -179,13 +179,13 @@ export default function NewOnboardSuccess() {
           )}
         </TouchableOpacity>
 
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={styles.skipLink}
           onPress={() => handleFinish('Profile')}
           disabled={createDonationMutation.isPending}
         >
           <Text style={styles.skipLinkText}>Skip for now</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
 
       <SharePost
@@ -332,10 +332,12 @@ const styles = StyleSheet.create({
   shareLink: {
     backgroundColor: '#F9F9F5',
     borderRadius: 12,
-    padding: 12,
+    padding: 14,
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#F3F4F1'
   },
   shareIconBox: {
     width: 36,
@@ -356,7 +358,7 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   shareSub: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#6B7280',
     fontWeight: '500',
   },

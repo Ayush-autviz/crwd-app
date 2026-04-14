@@ -13,10 +13,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute, useNavigation } from '@react-navigation/native';
-import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, Share2, MoreHorizontal, Users, ArrowRight } from 'lucide-react-native';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { ArrowLeft, Share2, MoreHorizontal, Users, ArrowRight, Flag, Pencil } from 'lucide-react-native';
 import { formatDistanceToNow, differenceInDays } from 'date-fns';
-import { getFundraiserById, getCollectiveById } from '../services/api/crwd';
+import { getFundraiserById, getCollectiveById, patchFundraiser } from '../services/api/crwd';
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/Avatar';
 import { PrimaryBlue } from '../Constants/Colors';
 import { Share } from 'react-native';
@@ -126,6 +126,48 @@ export default function FundraiserDetail() {
     setShowDropdown(false);
   };
 
+  const queryClient = useQueryClient();
+
+  const endFundraiserMutation = useMutation({
+    mutationFn: (id: string) => patchFundraiser(id, { is_active: false }),
+    onSuccess: () => {
+      Alert.alert('Success', 'Fundraiser ended successfully');
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
+      queryClient.invalidateQueries({ queryKey: ['fundraiser'] });
+      navigation.goBack();
+      setShowDropdown(false);
+    },
+    onError: (error: any) => {
+      console.error('Error ending fundraiser:', error);
+      Alert.alert('Error', `Failed to end fundraiser: ${error?.response?.data?.message || error.message}`);
+      setShowDropdown(false);
+    },
+  });
+
+  const handleEditFundraiser = () => {
+    const collId = fundraiserData?.collective?.id || fundraiserData?.collective;
+    (navigation as any).navigate('EditFundraiser', {
+      fundraiserId: fundraiserId,
+      collectiveId: collId?.toString(),
+    });
+    setShowDropdown(false);
+  };
+
+  const handleEndFundraiser = () => {
+    Alert.alert(
+      'End Fundraiser',
+      'Are you sure you want to end this fundraiser?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'End',
+          onPress: () => endFundraiserMutation.mutate(fundraiserId),
+          style: 'destructive'
+        }
+      ]
+    );
+  };
+
   // Format currency
   const formatCurrency = (amount: string | number) => {
     const num = typeof amount === 'string' ? parseFloat(amount) : amount;
@@ -163,11 +205,12 @@ export default function FundraiserDetail() {
 
   const handleBack = () => {
     const fromCreate = params?.fromCreate;
-    if (fromCreate && fundraiserData?.collective) {
-      const collectiveId = typeof fundraiserData.collective === 'object'
-        ? fundraiserData.collective.id
-        : fundraiserData.collective;
-      (navigation as any).navigate('GroupCRWD', { id: collectiveId, fromCreate: true });
+    if (fromCreate) {
+      if ((navigation as any).pop) {
+        (navigation as any).pop(2);
+      } else {
+        navigation.goBack();
+      }
     } else {
       navigation.goBack();
     }
@@ -232,12 +275,33 @@ export default function FundraiserDetail() {
                   {showDropdown && (
                     <View style={styles.dropdown}>
                       <TouchableOpacity
+                        onPress={handleEditFundraiser}
+                        style={styles.dropdownItem}
+                        activeOpacity={0.7}
+                      >
+                        <Pencil size={16} color="#6b7280" />
+                        <Text style={styles.dropdownText}>Edit Fundraiser</Text>
+                      </TouchableOpacity>
+                      {/* <View style={styles.dropdownDivider} /> */}
+                      <TouchableOpacity
+                        onPress={handleEndFundraiser}
+                        style={styles.dropdownItem}
+                        activeOpacity={0.7}
+                        disabled={endFundraiserMutation.isPending}
+                      >
+                        <Flag size={16} color="#ef4444" />
+                        <Text style={[styles.dropdownText, { color: '#ef4444' }]}>
+                          {endFundraiserMutation.isPending ? 'Ending...' : 'End Fundraiser'}
+                        </Text>
+                      </TouchableOpacity>
+                      {/* <View style={styles.dropdownDivider} /> */}
+                      {/* <TouchableOpacity
                         onPress={handleReport}
                         style={styles.dropdownItem}
                         activeOpacity={0.7}
                       >
-                        <Text style={styles.dropdownText}>Report</Text>
-                      </TouchableOpacity>
+                        <Text style={[styles.dropdownText, { marginLeft: 24 }]}>Report</Text>
+                      </TouchableOpacity> */}
                     </View>
                   )}
                 </View>
@@ -615,6 +679,9 @@ const styles = StyleSheet.create({
   dropdownItem: {
     paddingHorizontal: 16,
     paddingVertical: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   dropdownText: {
     fontSize: 14,

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo, useCallback, memo } from '
 import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, Platform, Dimensions, TextInput } from 'react-native';
 import { BottomSheetModal, BottomSheetBackdrop, BottomSheetScrollView, BottomSheetTextInput, BottomSheetFooter } from '@gorhom/bottom-sheet';
 import { X, MessageCircle } from 'lucide-react-native';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getPostComments, createPostComment, getCommentReplies, likeComment, unlikeComment, deleteComment, mentionSearch } from '../../services/api/social';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
 import { useAuthStore } from '../../store/store';
@@ -321,11 +321,25 @@ export default function CommentsBottomSheet({
     [handleClose]
   );
 
-  // Fetch comments
-  const { data: commentsData, isLoading: isLoadingComments } = useQuery({
+  // Fetch comments with infinite query
+  const {
+    data: commentsData,
+    isLoading: isLoadingComments,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage
+  } = useInfiniteQuery({
     queryKey: ['postComments', post.id],
-    queryFn: () => getPostComments(post.id.toString()),
+    queryFn: ({ pageParam = 1 }) => getPostComments(post.id.toString(), pageParam),
     enabled: isOpen && !!post.id,
+    getNextPageParam: (lastPage) => {
+      if (lastPage.next) {
+        const match = lastPage.next.match(/[?&]page=(\d+)/);
+        return match ? parseInt(lastPage.next.match(/[?&]page=(\d+)/)[1]) : undefined;
+      }
+      return undefined;
+    },
+    initialPageParam: 1,
   });
 
   // Get display name helper
@@ -341,24 +355,28 @@ export default function CommentsBottomSheet({
 
   // Transform API comments to CommentData format - memoized
   const apiComments = useMemo(() => {
-    return commentsData?.results?.map((comment: any) => ({
-      id: comment.id,
-      username: getDisplayName(comment.user),
-      firstName: comment.user?.first_name,
-      lastName: comment.user?.last_name,
-      avatarUrl: comment.user?.profile_picture || '',
-      color: comment.user?.color,
-      content: comment.content,
-      timestamp: new Date(comment.created_at),
-      likes: comment.likes_count || 0,
-      replies: [],
-      repliesCount: comment.replies_count || 0,
-      parentComment: comment.parent_comment,
-      isLiked: comment.is_liked || false,
-      userId: comment.user?.id,
-      mentions: comment.mentions,
-    })) || [];
-  }, [commentsData?.results]);
+    if (!commentsData?.pages) return [];
+
+    return commentsData.pages.flatMap(page =>
+      (page.results || []).map((comment: any) => ({
+        id: comment.id,
+        username: getDisplayName(comment.user),
+        firstName: comment.user?.first_name,
+        lastName: comment.user?.last_name,
+        avatarUrl: comment.user?.profile_picture || '',
+        color: comment.user?.color,
+        content: comment.content,
+        timestamp: new Date(comment.created_at),
+        likes: comment.likes_count || 0,
+        replies: [],
+        repliesCount: comment.replies_count || 0,
+        parentComment: comment.parent_comment,
+        isLiked: comment.is_liked || false,
+        userId: comment.user?.id,
+        mentions: comment.mentions,
+      }))
+    );
+  }, [commentsData?.pages]);
 
   // Update comments when API data changes, but preserve existing replies
   useEffect(() => {
@@ -753,7 +771,17 @@ export default function CommentsBottomSheet({
         </View>
 
         {/* Comments List */}
-        <BottomSheetScrollView contentContainerStyle={styles.commentsListContainer}>
+        <BottomSheetScrollView
+          contentContainerStyle={styles.commentsListContainer}
+          onScroll={({ nativeEvent }) => {
+            const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
+            const isCloseToBottom = layoutMeasurement.height + contentOffset.y >= contentSize.height - 400;
+            if (isCloseToBottom && hasNextPage && !isFetchingNextPage) {
+              fetchNextPage();
+            }
+          }}
+          scrollEventThrottle={16}
+        >
           {isLoadingComments ? (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="small" color="#1600ff" />
@@ -783,6 +811,11 @@ export default function CommentsBottomSheet({
                   onClose={handleClose}
                 />
               ))}
+              {isFetchingNextPage && (
+                <View style={{ paddingVertical: 10, alignItems: 'center' }}>
+                  <ActivityIndicator size="small" color="#1600ff" />
+                </View>
+              )}
             </>
           )}
         </BottomSheetScrollView>

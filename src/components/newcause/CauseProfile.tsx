@@ -109,10 +109,8 @@ export default function CauseProfile({ causeData }: CauseProfileProps) {
           categories={causeData.categories}
           onCategoryClick={(cat) => {
             (navigation as any).navigate('SearchResults', {
-              categoryId: cat.id,
-              categoryName: cat.name,
               searchQuery: cat.name,
-              tab: 'Causes'
+              tab: 'Nonprofits'
             });
           }}
           containerStyle={styles.categoriesContainer}

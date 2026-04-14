@@ -200,7 +200,7 @@ export default function NewGroupCrwdPage() {
   });
 
   // Fetch posts
-  const { data: postsData, isLoading: isLoadingPosts } = useInfiniteQuery({
+  const { data: postsData, isLoading: isLoadingPosts, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
     queryKey: ['posts', crwdId],
     queryFn: ({ pageParam = 1 }) => getPosts('', crwdId, pageParam),
     getNextPageParam: (lastPage: any) => {
@@ -1080,6 +1080,12 @@ export default function NewGroupCrwdPage() {
               } : undefined,
             })) : []}
             isLoading={isLoadingPosts}
+            hasMore={hasNextPage}
+            onLoadMore={() => {
+                if (hasNextPage && !isFetchingNextPage) {
+                    fetchNextPage();
+                }
+            }}
             collectiveId={crwdId}
             isJoined={crwdData.is_joined}
             collectiveData={crwdData}

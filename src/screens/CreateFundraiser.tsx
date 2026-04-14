@@ -399,7 +399,11 @@ export default function CreateFundraiser() {
         type: uploadedCoverImageFile.type || 'image/jpeg',
         name: uploadedCoverImageFile.fileName || 'cover_image.jpg',
       } as any);
-      formData.append('collective_id', collectiveId || '');
+      
+      if (collectiveId) {
+        formData.append('collective_id', collectiveId.toString());
+      }
+      
       formData.append('target_amount', fundraisingGoal);
       formData.append('start_date', startDate);
       formData.append('end_date', endDateISO);
@@ -411,17 +415,21 @@ export default function CreateFundraiser() {
       createFundraiserMutation.mutate(formData);
     } else if (coverType === 'color') {
       // Use JSON for color-based cover - send only color, no image
-      const requestData = {
+      const requestData: any = {
         name: campaignTitle,
         description: campaignStory,
         color: coverColor,
-        collective_id: parseInt(collectiveId || '0', 10),
         target_amount: parseFloat(fundraisingGoal),
         start_date: startDate,
         end_date: endDateISO,
         is_active: true,
         cause_ids: selectedNonprofits,
       };
+      
+      if (collectiveId) {
+        requestData.collective_id = parseInt(collectiveId.toString(), 10);
+      }
+      
       console.log('Create fundraiser request data:', requestData);
 
       createFundraiserMutation.mutate(requestData);
@@ -594,15 +602,17 @@ export default function CreateFundraiser() {
                 <Text style={styles.viewCampaignText}>View Campaign</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity
-                style={styles.backToCollectiveButton}
-                onPress={() => {
-                  setIsConfirmedDiscard(true);
-                  (navigation as any).navigate('GroupCRWD', { id: collectiveId, fromCreate: true });
-                }}
-              >
-                <Text style={styles.backToCollectiveText}>Back to Giving Group</Text>
-              </TouchableOpacity>
+              {!!collectiveId && (
+                <TouchableOpacity
+                  style={styles.backToCollectiveButton}
+                  onPress={() => {
+                    setIsConfirmedDiscard(true);
+                    (navigation as any).navigate('GroupCRWD', { id: collectiveId, fromCreate: true });
+                  }}
+                >
+                  <Text style={styles.backToCollectiveText}>Back to Giving Group</Text>
+                </TouchableOpacity>
+              )}
 
               <TouchableOpacity
                 style={styles.shareButton}
@@ -653,7 +663,7 @@ export default function CreateFundraiser() {
               <Text style={styles.headerTitle}>
                 {step === 3 ? 'Confirm & Launch' : 'Create Fundraiser'}
               </Text>
-              {step !== 3 && (
+              {step !== 3 && !!collectiveId && (
                 <Text style={styles.headerSubtitle}>
                   For {collectiveName}
                 </Text>

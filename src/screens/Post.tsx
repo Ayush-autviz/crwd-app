@@ -723,9 +723,12 @@ export default function Post() {
               <Text style={styles.actionButtonText}>Add Link</Text>
             </TouchableOpacity>
 
-            {selectedCollective && (selectedCollective.created_by.id === currentUser?.id) && (
+            {(!selectedCollective || (selectedCollective.created_by?.id === currentUser?.id)) && (
               <TouchableOpacity
-                onPress={() => navigation.navigate('CreateFundraiser', { collectiveId: (selectedCollective.collective || selectedCollective).id } as any)}
+                onPress={() => {
+                  const id = selectedCollective ? (selectedCollective.collective?.id || selectedCollective.id) : undefined;
+                  navigation.navigate('CreateFundraiser', { collectiveId: id } as any);
+                }}
                 style={styles.actionButton}
                 activeOpacity={0.7}
               >

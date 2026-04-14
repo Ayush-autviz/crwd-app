@@ -45,7 +45,7 @@ export default function SimilarNonprofits({ similarCauses, isLoading, categoryNa
       <View style={styles.container}>
         <View style={styles.titleRow}>
           <Text style={styles.title}>Similar Nonprofits</Text>
-          {categoryName && categoryId && (
+          {/* {categoryName && categoryId && (
             <TouchableOpacity
               onPress={() => {
                 (navigation as any).navigate('SearchResults', {
@@ -59,7 +59,7 @@ export default function SimilarNonprofits({ similarCauses, isLoading, categoryNa
             >
               <Text style={styles.seeAllText}>See all</Text>
             </TouchableOpacity>
-          )}
+          )} */}
         </View>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#9CA3AF" />
@@ -76,7 +76,7 @@ export default function SimilarNonprofits({ similarCauses, isLoading, categoryNa
     <View style={styles.container}>
       <View style={styles.titleRow}>
         <Text style={styles.title}>Similar Nonprofits</Text>
-        {categoryName && categoryId && (
+        {/* {categoryName && categoryId && (
           <TouchableOpacity
             onPress={() => {
               (navigation as any).navigate('SearchResults', {
@@ -90,7 +90,7 @@ export default function SimilarNonprofits({ similarCauses, isLoading, categoryNa
           >
             <Text style={styles.seeAllText}>See all</Text>
           </TouchableOpacity>
-        )}
+        )} */}
       </View>
       <View style={styles.causesList}>
         {similarCauses.map((cause) => {

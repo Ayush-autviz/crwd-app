@@ -135,6 +135,7 @@ interface PopularPostsProps {
     error?: any;
     onCommentPress?: (post: Post) => void;
     showSimplifiedHeader?: boolean; // When true, hide collective name (for collective view)
+    scrollEnabled?: boolean;
 }
 
 type RootStackParamList = {
@@ -162,6 +163,7 @@ export default function GivingPost({
     error = null,
     onCommentPress,
     showSimplifiedHeader = false,
+    scrollEnabled = true,
 }: PopularPostsProps) {
     // Handle "no title" case - don't show title if title is "no title" or empty
     const shouldShowTitle = showTitle && title && title !== 'no title' && title.trim() !== '';
@@ -625,6 +627,7 @@ export default function GivingPost({
 
                 {!isLoading && !error && posts && posts.length > 0 && (
                     <FlatList
+                        scrollEnabled={scrollEnabled}
                         data={posts || []}
                         contentContainerStyle={{ paddingVertical: 8 }}
                         renderItem={({ item }) => {

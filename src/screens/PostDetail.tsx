@@ -9,11 +9,11 @@ import DiscardBottomSheet from '../components/ui/DiscardBottomSheet'
 import { useNavigation, useRoute, useFocusEffect, NavigationProp, CommonActions, usePreventRemove } from '@react-navigation/native'
 import { useToast } from '../contexts/ToastContext'
 import { formatDistanceToNow } from 'date-fns'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getPostById, getPostComments, createPostComment, getCommentReplies, likePost, unlikePost, likeComment, unlikeComment, deleteComment, mentionSearch } from '../services/api/social'
 import { useAuthStore } from '../store/store'
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/Avatar'
 import { MentionInput } from '../components/post/MentionInput'
+import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
 interface CommentData {
   id: number;
@@ -150,11 +150,25 @@ export default function PostDetail() {
     mentions: postData.mentions || [],
   } : (route.params as RouteParams)?.post;
 
-  // Fetch comments for the post
-  const { data: commentsData, isLoading: isLoadingComments } = useQuery({
+  // Fetch comments for the post with infinite query
+  const {
+    data: commentsData,
+    isLoading: isLoadingComments,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage
+  } = useInfiniteQuery({
     queryKey: ['postComments', postId],
-    queryFn: () => getPostComments(postId || ''),
+    queryFn: ({ pageParam = 1 }) => getPostComments(postId || '', pageParam),
     enabled: !!postId,
+    getNextPageParam: (lastPage) => {
+      if (lastPage.next) {
+        const match = lastPage.next.match(/[?&]page=(\d+)/);
+        return match ? parseInt(match[1]) : undefined;
+      }
+      return undefined;
+    },
+    initialPageParam: 1,
   });
 
   // Calculate image sizes
@@ -186,23 +200,25 @@ export default function PostDetail() {
 
   // Transform API comments to CommentData format
   const apiComments = React.useMemo(() => {
-    if (!commentsData?.results) return [];
+    if (!commentsData?.pages) return [];
 
-    return commentsData.results.map((comment: any) => ({
-      id: comment.id,
-      username: comment.user?.full_name || (comment.user?.first_name && comment.user?.last_name ? `${comment.user.first_name} ${comment.user.last_name}` : null) || comment.user?.username || 'Unknown User',
-      avatarUrl: comment.user?.profile_picture,
-      color: comment.user?.color || stringToColor(comment.user?.full_name || (comment.user?.first_name && comment.user?.last_name ? `${comment.user.first_name} ${comment.user.last_name}` : null) || comment.user?.username || 'Unknown User'),
-      content: comment.content,
-      timestamp: new Date(comment.created_at),
-      likes: comment.likes_count || 0,
-      replies: [],
-      repliesCount: comment.replies_count || 0,
-      parentComment: comment.parent_comment,
-      isLiked: comment.is_liked || false,
-      userId: comment.user?.id?.toString(),
-      mentions: comment.mentions,
-    }));
+    return commentsData.pages.flatMap(page =>
+      (page.results || []).map((comment: any) => ({
+        id: comment.id,
+        username: comment.user?.full_name || (comment.user?.first_name && comment.user?.last_name ? `${comment.user.first_name} ${comment.user.last_name}` : null) || comment.user?.username || 'Unknown User',
+        avatarUrl: comment.user?.profile_picture,
+        color: comment.user?.color || stringToColor(comment.user?.full_name || (comment.user?.first_name && comment.user?.last_name ? `${comment.user.first_name} ${comment.user.last_name}` : null) || comment.user?.username || 'Unknown User'),
+        content: comment.content,
+        timestamp: new Date(comment.created_at),
+        likes: comment.likes_count || 0,
+        replies: [],
+        repliesCount: comment.replies_count || 0,
+        parentComment: comment.parent_comment,
+        isLiked: comment.is_liked || false,
+        userId: comment.user?.id?.toString(),
+        mentions: comment.mentions,
+      }))
+    );
   }, [commentsData]);
 
   // Use API comments only
@@ -994,7 +1010,17 @@ export default function PostDetail() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
       >
-        <ScrollView style={{ flex: 1 }}>
+        <ScrollView
+          style={{ flex: 1 }}
+          onScroll={({ nativeEvent }) => {
+            const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
+            const isCloseToBottom = layoutMeasurement.height + contentOffset.y >= contentSize.height - 400;
+            if (isCloseToBottom && hasNextPage && !isFetchingNextPage) {
+              fetchNextPage();
+            }
+          }}
+          scrollEventThrottle={16}
+        >
           {/* Post Content */}
           <View style={{ padding: 20 }}>
             <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
@@ -1270,6 +1296,11 @@ export default function PostDetail() {
                       isLoadingReplies={loadingReplies.has(comment.id)}
                     />
                   ))}
+                {isFetchingNextPage && (
+                  <View style={{ paddingVertical: 20, alignItems: 'center' }}>
+                    <ActivityIndicator size="small" color="#1600ff" />
+                  </View>
+                )}
               </View>
             )}
           </View>

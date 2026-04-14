@@ -100,10 +100,8 @@ export default function CauseDetails({ causeData }: CauseDetailsProps) {
                 key={index}
                 onPress={() => {
                   (navigation as any).navigate('SearchResults', {
-                    categoryId: cat.id,
-                    categoryName: cat.name,
                     searchQuery: cat.name,
-                    tab: 'Causes'
+                    tab: 'Nonprofits'
                   });
                 }}
                 style={styles.mainFocusBadge}

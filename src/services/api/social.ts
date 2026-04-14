@@ -101,8 +101,10 @@ export const deletePost = async (id: string) => {
 };
 
 // Post Comments API endpoints
-export const getPostComments = async (postId: string) => {
-    const response = await axiosClient.get(`/social/posts/${postId}/comments/`);
+export const getPostComments = async (postId: string, page?: number) => {
+    const response = await axiosClient.get(`/social/posts/${postId}/comments/`, {
+        params: { page }
+    });
     return response.data;
 };
 

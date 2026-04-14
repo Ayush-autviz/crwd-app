@@ -16,17 +16,23 @@ interface CommunityActivityProps {
   onCommentPress?: (post: any) => void;
   onJoin?: () => void;
   fromCollective?: boolean;
+  hasMore?: boolean;
+  onLoadMore?: () => void;
+  isFetchingNextPage?: boolean;
 }
 
 export default function CommunityActivity({
   posts,
   isLoading = false,
+  hasMore = false,
+  onLoadMore,
   collectiveId,
   isJoined = false,
   collectiveData,
   onCommentPress,
   onJoin,
   fromCollective = false,
+  isFetchingNextPage = false,
 }: CommunityActivityProps) {
   const navigation = useNavigation();
   const { user } = useAuthStore();
@@ -116,11 +122,14 @@ export default function CommunityActivity({
                 title="no title"
                 showTitle={!fromCollective}
                 hasMore={false}
+                scrollEnabled={false}
+                onLoadMore={onLoadMore}
+                isLoading={isFetchingNextPage}
                 onCommentPress={onCommentPress}
                 showSimplifiedHeader={true}
               />
             ) : (
-              <PopularPosts posts={posts} title="no title" hasMore={false} onCommentPress={onCommentPress} showSimplifiedHeader={true} />
+              <PopularPosts posts={posts} title="no title" hasMore={false} scrollEnabled={false} onLoadMore={onLoadMore} isLoading={isFetchingNextPage} onCommentPress={onCommentPress} showSimplifiedHeader={true} />
             )
           ) : (
             <View style={styles.emptyContainer}>
@@ -132,6 +141,25 @@ export default function CommunityActivity({
                 Updates will appear here as you share and interact in your Giving Groups. Join a group to get started!
               </Text>
             </View>
+          )}
+
+          {hasMore && (
+            <TouchableOpacity
+              style={styles.showMoreButton}
+              onPress={onLoadMore}
+              disabled={isFetchingNextPage}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                {isFetchingNextPage ? (
+                  <>
+                    <ActivityIndicator color="#1600ff" size="small" />
+                    <Text style={styles.showMoreText}>Loading...</Text>
+                  </>
+                ) : (
+                  <Text style={styles.showMoreText}>Show More Posts</Text>
+                )}
+              </View>
+            </TouchableOpacity>
           )}
 
           {/* Recent Activities Section */}
@@ -288,6 +316,26 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: 'Outfit-SemiBold',
     color: '#111827',
+  },
+  showMoreButton: {
+    backgroundColor: 'white',
+    paddingVertical: 10,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 16,
+    marginBottom: 30,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    minWidth: 140,
+    alignSelf: 'center',
+  },
+  showMoreText: {
+    color: '#374151',
+    fontSize: 14,
+    fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
   },
 });
 

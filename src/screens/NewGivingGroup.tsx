@@ -218,14 +218,13 @@ export default function NewGivingGroupPage() {
     });
 
     // Fetch posts
-    const { data: postsData, isLoading: isLoadingPosts } = useInfiniteQuery({
+    const { data: postsData, isLoading: isLoadingPosts, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
         queryKey: ['posts', crwdId],
         queryFn: ({ pageParam = 1 }) => getPosts('', crwdId, pageParam),
         getNextPageParam: (lastPage: any) => {
             if (lastPage.next) {
-                const url = new URL(lastPage.next);
-                const page = url.searchParams.get('page');
-                return page ? parseInt(page) : undefined;
+                const pageMatch = lastPage.next.match(/[?&]page=(\d+)/);
+                return pageMatch ? parseInt(pageMatch[1], 10) : undefined;
             }
             return undefined;
         },
@@ -1038,6 +1037,13 @@ export default function NewGivingGroupPage() {
                             } : undefined,
                         })) : []}
                         isLoading={isLoadingPosts}
+                        hasMore={hasNextPage}
+                        isFetchingNextPage={isFetchingNextPage}
+                        onLoadMore={() => {
+                            if (hasNextPage && !isFetchingNextPage) {
+                                fetchNextPage();
+                            }
+                        }}
                         collectiveId={crwdId}
                         isJoined={crwdData.is_joined}
                         collectiveData={crwdData}

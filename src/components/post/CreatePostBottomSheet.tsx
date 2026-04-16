@@ -331,10 +331,10 @@ const CreatePostBottomSheet = React.forwardRef<BottomSheetModal, CreatePostBotto
         footerComponent={renderFooter}
         enableDynamicSizing={false}
         enablePanDownToClose
-        keyboardBehavior="interactive"
+        keyboardBehavior="padding"
         keyboardBlurBehavior="restore"
       >
-        <BottomSheetView style={styles.container}>
+        <View style={styles.container}>
           {/* Header */}
           <View style={styles.header}>
             <View style={styles.headerLeft}>
@@ -360,7 +360,10 @@ const CreatePostBottomSheet = React.forwardRef<BottomSheetModal, CreatePostBotto
             </TouchableOpacity>
           </View>
 
-          <BottomSheetScrollView style={styles.content}>
+          <BottomSheetScrollView 
+            style={styles.content}
+            contentContainerStyle={{ paddingBottom: 60 }}
+          >
             {/* Collective Selector */}
             <View style={styles.selectorContainer}>
               <TouchableOpacity
@@ -482,18 +485,53 @@ const CreatePostBottomSheet = React.forwardRef<BottomSheetModal, CreatePostBotto
             {/* Link Input Section */}
             {(postType === 'link' || form.url) && (
               <View style={styles.linkInputSection}>
-                <TextInput
-                  style={styles.linkInput}
-                  placeholder="https://example.com/article"
-                  value={form.url}
-                  onChangeText={(v) => handleInputChange('url', v)}
-                  onBlur={() => { if (form.url && !validateUrl(form.url)) setUrlError("Invalid URL"); }}
-                />
+                <View style={styles.linkInputContainer}>
+                  <TextInput
+                    style={styles.linkInput}
+                    placeholder="https://example.com/article"
+                    placeholderTextColor={PrimaryGrey}
+                    value={form.url}
+                    onChangeText={(v) => handleInputChange('url', v)}
+                    onBlur={() => { if (form.url && !validateUrl(form.url)) setUrlError("Oops, this link isn't valid. Double-check, and try again."); }}
+                  />
+                  {form.url && (
+                    <TouchableOpacity
+                      onPress={() => {
+                        setForm(prev => ({ ...prev, url: "" }));
+                        if (postType === 'link') setPostType(null);
+                        setShowPreview(false);
+                      }}
+                      style={styles.clearButton}
+                    >
+                      <X size={16} color="#6B7280" />
+                    </TouchableOpacity>
+                  )}
+                </View>
                 {urlError && <Text style={styles.errorText}>{urlError}</Text>}
+                
+                {form.url && validateUrl(form.url) && !urlError && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      fetchPreview();
+                    }}
+                    disabled={isLoadingPreview}
+                    style={[styles.previewButton, isLoadingPreview && styles.previewButtonDisabled]}
+                    activeOpacity={0.7}
+                  >
+                    {isLoadingPreview ? (
+                      <>
+                        <ActivityIndicator size="small" color="#374151" style={{ marginRight: 8 }} />
+                        <Text style={styles.previewButtonText}>Loading Preview...</Text>
+                      </>
+                    ) : (
+                      <Text style={styles.previewButtonText}>Refresh Preview</Text>
+                    )}
+                  </TouchableOpacity>
+                )}
               </View>
             )}
           </BottomSheetScrollView>
-        </BottomSheetView>
+        </View>
       </BottomSheetModal>
     );
   }
@@ -568,21 +606,53 @@ const styles = StyleSheet.create({
   previewSite: { fontSize: 10, color: '#6B7280', textTransform: 'uppercase' },
   previewTitle: { fontSize: 14, fontWeight: '700', marginVertical: 4 },
   previewDesc: { fontSize: 12, color: '#6B7280' },
-  imagePreviewWrapper: { borderRadius: 12, overflow: 'hidden', marginBottom: 16, position: 'relative' },
   imagePreview: { width: '100%', height: 200 },
   removeImage: { position: 'absolute', top: 10, right: 10, backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 15, padding: 5 },
   linkInputSection: { marginBottom: 16 },
-  linkInput: { borderBottomWidth: 1, borderBottomColor: '#D1D5DB', paddingVertical: 8, fontSize: 14 },
-  errorText: { color: '#EF4444', fontSize: 12, marginTop: 4 },
-  footer: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 24, backgroundColor: 'white' },
-  charCountContainer: {
-    position: 'absolute',
-    bottom: 12,
-    right: 16,
-    zIndex: 10,
+  linkInputContainer: { position: 'relative' },
+  linkInput: {
+    width: '100%',
+    paddingHorizontal: 16,
+    paddingRight: 40,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 8,
+    fontSize: 16,
+    color: '#111827',
+    fontFamily: 'Outfit-Regular'
   },
-  charCount: { fontSize: 12, color: '#9CA3AF' },
+  clearButton: {
+    position: 'absolute',
+    right: 12,
+    top: '50%',
+    marginTop: -12,
+    width: 24,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  previewButton: {
+    marginTop: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+  },
+  previewButtonDisabled: { opacity: 0.5 },
+  previewButtonText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#374151',
+    textAlign: 'center',
+    fontFamily: 'Outfit-Medium'
+  },
+  errorText: { color: '#EF4444', fontSize: 14, marginTop: 8, fontFamily: 'Outfit-Regular' },
   actionButtons: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 16 },
-  actionPill: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20, borderWidth: 1, borderColor: '#E5E7EB', gap: 6 },
-  actionText: { fontSize: 14, fontWeight: '600', color: '#4B5563' },
+  actionPill: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 99, borderWidth: 0.5, borderColor: '#D1D5DB', gap: 8 },
+  actionText: { fontSize: 14, fontWeight: '700', color: '#374151', fontFamily: 'Outfit-Bold' },
 });

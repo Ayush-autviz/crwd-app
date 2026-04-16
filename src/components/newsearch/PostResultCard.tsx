@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { useState, useRef, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, Linking, ActivityIndicator, Share, Clipboard, Dimensions } from 'react-native';
+import InAppBrowser from 'react-native-inappbrowser-reborn';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import SharePost from '../SharePost';
 import { useNavigation, CommonActions } from '@react-navigation/native';
@@ -13,6 +14,7 @@ import { WEB_BASE_URL } from '../../Constants/url';
 import DeletePostBottomSheet from '../post/DeletePostBottomSheet';
 import { useToast } from '../../contexts/ToastContext';
 import { LightGrey, PrimaryBlue, PrimaryGrey } from '../../Constants/Colors';
+import { useInAppBrowser } from '../../hooks/useInAppBrowser';
 import { Modal, TouchableWithoutFeedback, Pressable } from 'react-native';
 import { encodePostId } from '../../utils/truncateFirstPeriod';
 
@@ -127,6 +129,7 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
   const deleteBottomSheetRef = useRef<BottomSheetModal>(null);
   const [tooltipVisible, setTooltipVisible] = useState(false);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
+  const { openInAppBrowser } = useInAppBrowser();
 
   // Sync local state when post prop changes (e.g. after query invalidation/refetch)
   useEffect(() => {
@@ -277,6 +280,8 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
     }
   };
 
+
+
   const handleShare = async () => {
     shareSheetRef.current?.present();
   };
@@ -330,12 +335,27 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
 
     triggers.sort((a, b) => b.length - a.length);
 
-    const pattern = triggers.length > 0
-      ? `(${triggers.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')}|@\\w+)`
-      : '(@\\w+)';
-    const regex = new RegExp(pattern, 'gi');
+    const urlPattern = '(https?:\\/\\/[^\\s]+)';
+    const mentionPattern = triggers.length > 0
+      ? `(${urlPattern}|${triggers.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')}|@\\w+)`
+      : `(${urlPattern}|@\\w+)`;
+    const regex = new RegExp(mentionPattern, 'gi');
 
     return displayContent.split(regex).map((part, index) => {
+      if (!part) return null;
+
+      if (part.match(/^https?:\/\//i)) {
+        return (
+          <Text
+            key={`${index}-${part}`}
+            style={{ color: PrimaryBlue, textDecorationLine: 'underline', fontFamily: 'Outfit-Medium' }}
+            onPress={() => openInAppBrowser(part)}
+          >
+            {part}
+          </Text>
+        );
+      }
+
       if (part.startsWith('@')) {
         const mention = mentionMap.get(part.toLowerCase());
 
@@ -387,7 +407,7 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
         return (
           <Text
             key={`${index}-${part}`}
-            style={{ color: '#1600ff', fontFamily: 'Outfit-Medium' }}
+            style={{ color: PrimaryBlue, fontFamily: 'Outfit-Medium' }}
             onPress={handlePress}
           >
             {part}
@@ -766,7 +786,7 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
             <TouchableOpacity
               onPress={() => {
                 if (post.preview_details?.url) {
-                  Linking.openURL(post.preview_details.url);
+                  openInAppBrowser(post.preview_details.url);
                 }
               }}
               style={styles.previewCardVertical}
@@ -797,7 +817,7 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
                   </Text>
                 ) : (
                   !post.preview_details.description && !post.preview_details.image && post.preview_details.url && (
-                    <Text style={{ fontSize: 14, color: '#1600ff', marginBottom: 4, textDecorationLine: 'underline', fontFamily: 'Outfit-Medium' }} numberOfLines={1}>
+                    <Text style={{ fontSize: 14, color: PrimaryBlue, marginBottom: 4, textDecorationLine: 'underline', fontFamily: 'Outfit-Medium' }} numberOfLines={1}>
                       {post.preview_details.url}
                     </Text>
                   )
@@ -813,7 +833,7 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
                   </Text>
                 )}
                 {!post.preview_details.title && (post.preview_details.description || post.preview_details.image) && post.preview_details.url && (
-                  <Text style={{ fontSize: 12, color: '#1600ff', textDecorationLine: 'underline', marginTop: 4, fontFamily: 'Outfit-Medium' }} numberOfLines={1}>
+                  <Text style={{ fontSize: 12, color: PrimaryBlue, textDecorationLine: 'underline', marginTop: 4, fontFamily: 'Outfit-Medium' }} numberOfLines={1}>
                     {post.preview_details.url}
                   </Text>
                 )}

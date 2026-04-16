@@ -1,23 +1,21 @@
 import { View, Image, StyleSheet, Text, TouchableOpacity, Linking, Platform } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { useNavigation } from '@react-navigation/native'
-import { useAuthStore } from '../store/store'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import DeviceInfo from 'react-native-device-info'
-import { getLatestAppVersion } from '../services/api/auth'
 import { PrimaryBlue } from '../Constants/Colors'
 import AppUpdate from '../components/ui/AppUpdate'
 import VersionCheck from 'react-native-version-check';
-import { lt } from 'semver'
+import semver from 'semver';
 
 export default function SplashScreen() {
   const navigation = useNavigation()
   const [needsUpdate, setNeedsUpdate] = useState(false)
 
-  const normalizeVersion = (v) => {
-    const parts = v.split('.');
-    while (parts.length < 3) parts.push('0');
-    return parts.join('.');
+  const cleanVersion = (v: string | null) => {
+    if (!v) return null;
+    const coerced = semver.coerce(v);
+    return coerced ? coerced.version : null;
   };
 
 
@@ -28,15 +26,17 @@ export default function SplashScreen() {
         const latest = await VersionCheck.getLatestVersion();
         const currentVersion = DeviceInfo.getVersion();
 
-        console.log('Current App Version:', currentVersion);
-        console.log('Latest App Version:', latest);
+        const current = cleanVersion(currentVersion);
+        const latestV = cleanVersion(latest);
 
-        if (lt(normalizeVersion(currentVersion), normalizeVersion(latest))) {
+        console.log('Clean Current:', current);
+        console.log('Clean Latest:', latestV);
+
+        if (current && latestV && semver.lt(current, latestV)) {
           console.log('Update required');
           setNeedsUpdate(true);
           return;
-        }
-        else {
+        } else {
           console.log('Update not required');
         }
 

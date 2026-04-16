@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import MainHeaderNav from '../components/MainHeaderNav'
 import { PrimaryGrey, PrimaryBlue, LightGrey } from '../Constants/Colors'
+import { useInAppBrowser } from '../hooks/useInAppBrowser'
 import { Heart, MessageCircle, ChevronRight, Trash2, Ellipsis, X } from 'lucide-react-native'
 import { BottomSheetModal } from '@gorhom/bottom-sheet'
 import DiscardBottomSheet from '../components/ui/DiscardBottomSheet'
@@ -85,6 +86,7 @@ export default function PostDetail() {
   const route = useRoute()
   const { showToast } = useToast()
   const { user: currentUser } = useAuthStore()
+  const { openInAppBrowser } = useInAppBrowser()
   const queryClient = useQueryClient()
 
   // Helper function for avatar colors
@@ -421,6 +423,20 @@ export default function PostDetail() {
     const regex = new RegExp(pattern, 'gi');
 
     return content.split(regex).map((part, index) => {
+      if (!part) return null;
+
+      if (part.match(/^https?:\/\//i)) {
+        return (
+          <Text
+            key={`${index}-${part}`}
+            style={{ color: PrimaryBlue, textDecorationLine: 'underline', fontFamily: 'Outfit-Medium' }}
+            onPress={() => openInAppBrowser(part)}
+          >
+            {part}
+          </Text>
+        );
+      }
+
       if (part.startsWith('@')) {
         const mention = mentionMap.get(part.toLowerCase());
         const handlePress = () => {
@@ -1127,10 +1143,7 @@ export default function PostDetail() {
               <TouchableOpacity
                 onPress={() => {
                   if (post.previewDetails?.url) {
-                    Linking.openURL(post.previewDetails.url).catch(err => {
-                      console.error('Failed to open URL:', err);
-                      Alert.alert('Error', 'Failed to open link');
-                    });
+                    openInAppBrowser(post.previewDetails.url);
                   }
                 }}
                 style={{

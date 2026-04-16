@@ -13,6 +13,7 @@ import { patchFundraiser } from '../../services/api/crwd'
 import { WEB_BASE_URL } from '../../Constants/url'
 import { encodePostId } from '../../utils/truncateFirstPeriod'
 import { PrimaryBlue, PrimaryGrey, SecondaryGrey } from '../../Constants/Colors'
+import { useInAppBrowser } from '../../hooks/useInAppBrowser'
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/Avatar'
 import SocialShare from '../SocialShare'
 import SharePost from '../SharePost'
@@ -183,6 +184,7 @@ export default function GivingPost({
     const deleteBottomSheetRef = useRef<BottomSheetModal>(null);
 
     const queryClient = useQueryClient();
+    const { openInAppBrowser } = useInAppBrowser();
     const { showToast } = useToast();
     const { user } = useAuthStore();
 
@@ -431,6 +433,20 @@ export default function GivingPost({
         const regex = new RegExp(pattern, 'gi');
 
         return content.split(regex).map((part, index) => {
+            if (!part) return null;
+
+            if (part.match(/^https?:\/\//i)) {
+                return (
+                    <Text
+                        key={`${index}-${part}`}
+                        style={{ color: PrimaryBlue, textDecorationLine: 'underline', fontFamily: 'Outfit-Medium' }}
+                        onPress={() => openInAppBrowser(part)}
+                    >
+                        {part}
+                    </Text>
+                );
+            }
+
             if (part.startsWith('@')) {
                 const mention = mentionMap.get(part.toLowerCase());
                 const handlePress = () => {
@@ -999,7 +1015,7 @@ export default function GivingPost({
                                                 {/* Link Preview Section */}
                                                 {!item.fundraiser && item.previewDetails && (
                                                     <TouchableOpacity
-                                                        onPress={() => item.previewDetails?.url && Linking.openURL(item.previewDetails.url)}
+                                                        onPress={() => item.previewDetails?.url && openInAppBrowser(item.previewDetails.url)}
                                                         style={{ borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, backgroundColor: 'white', overflow: 'hidden', marginBottom: 12 }}
                                                         activeOpacity={0.8}
                                                     >

@@ -1025,7 +1025,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 12,
-    marginBottom: 10,
+    marginBottom: 0,
   },
   actionButton: {
     flexDirection: 'row',
@@ -1084,8 +1084,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#D1D5DB',
     borderRadius: 8,
-    width: 150,
-
+    alignSelf: 'flex-start',
   },
   previewButtonDisabled: {
     opacity: 0.5,

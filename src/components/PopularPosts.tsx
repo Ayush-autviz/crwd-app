@@ -12,6 +12,7 @@ import { patchFundraiser } from '../services/api/crwd'
 import { useToast } from '../contexts/ToastContext'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/Avatar'
 import { useAuthStore } from '../store/store'
+import { useInAppBrowser } from '../hooks/useInAppBrowser'
 import DeletePostBottomSheet from './post/DeletePostBottomSheet'
 import { WEB_BASE_URL } from '../Constants/url'
 import { encodePostId } from '../utils/truncateFirstPeriod'
@@ -180,6 +181,7 @@ export default function PopularPosts({
     const deleteBottomSheetRef = useRef<BottomSheetModal>(null);
 
     const queryClient = useQueryClient();
+    const { openInAppBrowser } = useInAppBrowser();
     const { showToast } = useToast();
     const { user } = useAuthStore();
 
@@ -428,6 +430,20 @@ export default function PopularPosts({
         const regex = new RegExp(pattern, 'gi');
 
         return content.split(regex).map((part, index) => {
+            if (!part) return null;
+
+            if (part.match(/^https?:\/\//i)) {
+                return (
+                    <Text
+                        key={`${index}-${part}`}
+                        style={{ color: PrimaryBlue, textDecorationLine: 'underline', fontFamily: 'Outfit-Medium' }}
+                        onPress={() => openInAppBrowser(part)}
+                    >
+                        {part}
+                    </Text>
+                );
+            }
+
             if (part.startsWith('@')) {
                 const mention = mentionMap.get(part.toLowerCase());
                 const handlePress = () => {
@@ -1065,7 +1081,7 @@ export default function PopularPosts({
                                             <TouchableOpacity
                                                 onPress={() => {
                                                     if (item.previewDetails?.url) {
-                                                        Linking.openURL(item.previewDetails.url);
+                                                        openInAppBrowser(item.previewDetails.url);
                                                     }
                                                 }}
                                                 style={{
@@ -1105,7 +1121,7 @@ export default function PopularPosts({
                                                         </Text>
                                                     ) : (
                                                         !item.previewDetails.description && !item.previewDetails.image && item.previewDetails.url && (
-                                                            <Text style={{ fontSize: 14, color: '#1600ff', marginBottom: 4, textDecorationLine: 'underline', fontFamily: 'Outfit-Medium' }} numberOfLines={1}>
+                                                            <Text style={{ fontSize: 14, color: PrimaryBlue, marginBottom: 4, textDecorationLine: 'underline', fontFamily: 'Outfit-Medium' }} numberOfLines={1}>
                                                                 {item.previewDetails.url}
                                                             </Text>
                                                         )
@@ -1121,7 +1137,7 @@ export default function PopularPosts({
                                                         </Text>
                                                     )}
                                                     {!item.previewDetails.title && (item.previewDetails.description || item.previewDetails.image) && item.previewDetails.url && (
-                                                        <Text style={{ fontSize: 12, color: '#1600ff', textDecorationLine: 'underline', marginTop: 4, fontFamily: 'Outfit-Medium' }} numberOfLines={1}>
+                                                        <Text style={{ fontSize: 12, color: PrimaryBlue, textDecorationLine: 'underline', marginTop: 4, fontFamily: 'Outfit-Medium' }} numberOfLines={1}>
                                                             {item.previewDetails.url}
                                                         </Text>
                                                     )}

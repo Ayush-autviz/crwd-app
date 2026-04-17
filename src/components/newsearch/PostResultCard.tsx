@@ -137,9 +137,15 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
     setLikesCount(post.likes_count || 0);
   }, [post.is_liked, post.likes_count]);
 
+  const isImageUrl = (url: string) => {
+    if (!url) return false;
+    return /\.(jpg|jpeg|png|gif|webp|svg|bmp)(\?|$)/i.test(url) ||
+      /unsplash\.com|s3\.amazonaws\.com|crwd-bucket|imgur\.com/i.test(url);
+  };
+
   useEffect(() => {
     const imageUrl = post.fundraiser?.image || post.preview_details?.image || post.media;
-    if (imageUrl) {
+    if (imageUrl && (post.fundraiser?.image || post.preview_details?.image || (post.media && isImageUrl(post.media)))) {
       Image.getSize(
         imageUrl,
         (width, height) => {
@@ -149,8 +155,14 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
         },
         (error) => {
           console.log('Image size error', error);
+          // Fallback to full width on error
+          const screenWidth = Dimensions.get('window').width - 32;
+          setImageWidth(screenWidth);
         }
       );
+    } else {
+      // If no image url, or media is not an image, reset imageWidth
+      setImageWidth(null);
     }
   }, [post.media, post.fundraiser?.image, post.preview_details?.image]);
 
@@ -660,15 +672,14 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
         ) : null}
 
         {/* Media Section - Only show if no fundraiser and no preview details */}
-        {!post.fundraiser && !post.preview_details && post.media && (
+        {!post.fundraiser && !post.preview_details && post.media && isImageUrl(post.media) && (
           <View style={{ flexDirection: 'row', borderRadius: 8 }}>
             <Image
               source={{ uri: post.media }}
               style={[
                 styles.media,
                 {
-                  width: imageWidth || 0,
-                  opacity: imageWidth ? 1 : 0
+                  width: imageWidth || '100%',
                 }
               ]}
               resizeMode="cover"
@@ -702,10 +713,9 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
                   <Image
                     source={{ uri: post.fundraiser.image }}
                     style={{
-                      width: imageWidth || 0,
+                      width: imageWidth || '100%',
                       height: 200,
                       borderRadius: 8,
-                      opacity: imageWidth ? 1 : 0
                     }}
                     resizeMode="cover"
                   />

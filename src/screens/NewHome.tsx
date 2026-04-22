@@ -20,7 +20,7 @@ import { useAuthStore } from '../store/store';
 import { getCollectives, getCauses, getJoinCollective } from '../services/api/crwd';
 import { getDonationBox } from '../services/api/donation';
 import { getNotifications, registerNotificationToken } from '../services/api/notification';
-import { getUserProfileById, getCommunityUpdatesPosts } from '../services/api/social';
+import { getUserProfileById, getCommunityUpdatesPosts, getUserFollowing } from '../services/api/social';
 import messaging from '@react-native-firebase/messaging';
 import HomeHeader from '../components/HomeHeader';
 import HelloGreeting from '../components/newHome/HelloGreeting';
@@ -85,6 +85,7 @@ export default function NewHome() {
         queryClient.refetchQueries({ queryKey: ['joined-collectives', user?.id], type: 'active' }),
         queryClient.refetchQueries({ queryKey: ['communityUpdatesPosts'] }),
         queryClient.invalidateQueries({ queryKey: ['userProfile'] }),
+        queryClient.invalidateQueries({ queryKey: ['following', user?.id] }),
       ]);
     } catch (error) {
       console.error('Error refreshing data:', error);
@@ -224,6 +225,26 @@ export default function NewHome() {
     enabled: !!token?.access_token,
   });
 
+  // Fetch users the current user is following
+  const { data: followingData } = useQuery({
+    queryKey: ['following', user?.id],
+    queryFn: () => getUserFollowing(user?.id?.toString() || ''),
+    enabled: !!user?.id && !!token?.access_token,
+  });
+
+  const followingIds = useMemo(() => {
+    const list = followingData?.following || followingData?.data || (Array.isArray(followingData) ? followingData : []);
+    if (Array.isArray(list)) {
+      return new Set(
+        list.map((item: any) => {
+          const userData = item.followee || item.following || item.user || item;
+          return (userData?.id || userData || '').toString();
+        }).filter(id => id !== '')
+      );
+    }
+    return new Set();
+  }, [followingData]);
+
   const allCommunityUpdates = useMemo(() => {
     return communityUpdatesPostsData?.pages.flatMap((page: any) => page.results) || [];
   }, [communityUpdatesPostsData]);
@@ -235,29 +256,26 @@ export default function NewHome() {
     try {
       const results = allCommunityUpdates || [];
       const notifications = results.filter((n: any) => n.item_type === 'notification');
+      const userIdsFromNotifications = notifications
+        .map((notification: any) => {
+          return (
+            notification.data?.donor_id ||
+            notification.data?.follower_id ||
+            notification.data?.creator_id ||
+            notification.data?.new_member_id ||
+            notification.data?.commenter_id ||
+            null
+          );
+        });
+
+      const posts = results.filter((n: any) => n.item_type === 'post');
+      const userIdsFromPosts = posts
+        .map((post: any) => post.user?.id || null);
+
       return Array.from(
         new Set(
-          notifications
-            .map((notification: any) => {
-              const usernameMatch = notification.body?.match(/@(\w+)/);
-              if (usernameMatch) {
-                return (
-                  notification.data?.donor_id ||
-                  notification.data?.follower_id ||
-                  notification.data?.creator_id ||
-                  notification.data?.new_member_id ||
-                  null
-                );
-              }
-              return (
-                notification.data?.donor_id ||
-                notification.data?.follower_id ||
-                notification.data?.creator_id ||
-                notification.data?.new_member_id ||
-                null
-              );
-            })
-            .filter((id: any) => id !== null)
+          [...userIdsFromNotifications, ...userIdsFromPosts]
+            .filter((id: any) => id !== null && id !== undefined)
         )
       ) as (string | number)[];
     } catch (error) {
@@ -507,6 +525,7 @@ export default function NewHome() {
                   end_date: item.fundraiser.end_date,
                 } : undefined,
                 mentions: item.mentions || [],
+                isFollowing: item.user?.id ? followingIds.has(item.user.id.toString()) : false,
               }
             };
           } else if (item.item_type === 'notification') {
@@ -661,7 +680,8 @@ export default function NewHome() {
                   donation_id: notification.data?.donation_id,
                   nonprofit_id: notification.data?.nonprofit_id,
                   nonprofit_count: notification.data?.nonprofit_count,
-                }
+                },
+                isFollowing: userId ? followingIds.has(userId.toString()) : false,
               }
             };
           }
@@ -672,7 +692,7 @@ export default function NewHome() {
       console.error('Error transforming feed items:', error);
       return [];
     }
-  }, [communityUpdatesPostsData, userProfilesMap]);
+  }, [communityUpdatesPostsData, userProfilesMap, followingIds]);
 
   const feedPart1 = transformedFeedItems.slice(0, 4);
   const feedPart2 = transformedFeedItems.slice(4, 8);

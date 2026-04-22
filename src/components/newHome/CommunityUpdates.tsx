@@ -40,6 +40,7 @@ interface CommunityUpdate {
     user_color?: string;
     user_profile_picture?: string | null;
   };
+  isFollowing?: boolean;
 }
 
 interface CommunityUpdatesProps {
@@ -137,11 +138,11 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
   const { data: userProfile, isLoading: isLoadingProfile } = useQuery({
     queryKey: ['userProfile', update.user.id],
     queryFn: () => getUserProfileById(update.user.id?.toString() || ''),
-    enabled: !!update.user.id && !!token?.access_token && isDonationNotification && currentUser?.id !== update.user.id,
+    enabled: !!update.user.id && !!token?.access_token && isDonationNotification && currentUser?.id !== update.user.id && update.isFollowing === undefined,
   });
 
   // Check if user is being followed
-  const isFollowing = userProfile?.is_following || false;
+  const isFollowing = update.isFollowing ?? userProfile?.is_following ?? false;
 
   // Follow user mutation
   const followMutation = useMutation({
@@ -149,6 +150,7 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
     onSuccess: () => {
       showToast('Following user');
       queryClient.invalidateQueries({ queryKey: ['userProfile', update.user.id] });
+      queryClient.invalidateQueries({ queryKey: ['following', currentUser?.id] });
     },
     onError: (error: any) => {
       console.error('Error following user:', error);
@@ -162,6 +164,7 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
     onSuccess: () => {
       // showToast('Unfollowed user');
       queryClient.invalidateQueries({ queryKey: ['userProfile', update.user.id] });
+      queryClient.invalidateQueries({ queryKey: ['following', currentUser?.id] });
     },
     onError: (error: any) => {
       console.error('Error unfollowing user:', error);

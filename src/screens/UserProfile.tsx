@@ -1195,7 +1195,7 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         alignItems: 'center',
         justifyContent: 'center',
-        alignSelf: 'center',
+        // alignSelf: 'center',
         // marginTop: 16,
         minWidth: 120,
     },

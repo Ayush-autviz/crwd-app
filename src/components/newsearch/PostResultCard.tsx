@@ -66,6 +66,7 @@ interface PostResultCardProps {
       end_date?: string;
     };
     mentions?: any[];
+    isFollowing?: boolean;
   };
   onCommentPress?: (post: PostResultCardProps['post']) => void;
   showSimplifiedHeader?: boolean; // When true, only show name and timestamp (for collective view)
@@ -236,11 +237,11 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
   const { data: userProfile, isLoading: isLoadingProfile } = useQuery({
     queryKey: ['userProfile', String(user?.id)],
     queryFn: () => getUserProfileById(user?.id?.toString() || ''),
-    enabled: !!user?.id && !!token?.access_token && isHomeFeed && user?.id.toString() !== currentUser?.id?.toString(),
+    enabled: !!user?.id && !!token?.access_token && isHomeFeed && user?.id.toString() !== currentUser?.id?.toString() && post.isFollowing === undefined,
     staleTime: 0,
   });
 
-  const isFollowing = userProfile?.is_following || false;
+  const isFollowing = post.isFollowing ?? userProfile?.is_following ?? false;
 
   // Follow user mutation
   const followMutation = useMutation({
@@ -248,6 +249,7 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
     onSuccess: () => {
       // showToast('Following user');
       queryClient.invalidateQueries({ queryKey: ['userProfile', String(user?.id)] });
+      queryClient.invalidateQueries({ queryKey: ['following', currentUser?.id] });
     },
     onError: (error: any) => {
       console.error('Error following user:', error);
@@ -261,6 +263,7 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
     onSuccess: () => {
       // showToast('Unfollowed user');
       queryClient.invalidateQueries({ queryKey: ['userProfile', String(user?.id)] });
+      queryClient.invalidateQueries({ queryKey: ['following', currentUser?.id] });
     },
     onError: (error: any) => {
       console.error('Error unfollowing user:', error);

@@ -1637,6 +1637,8 @@ PODS:
     - ReactCommon/turbomodule/core
     - Yoga
   - react-native-vector-icons-fontawesome6 (12.2.0)
+  - react-native-version-check (3.5.0):
+    - React-Core
   - react-native-webview (13.16.0):
     - DoubleConversion
     - glog
@@ -2542,6 +2544,7 @@ DEPENDENCIES:
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - "react-native-slider (from `../node_modules/@react-native-community/slider`)"
   - "react-native-vector-icons-fontawesome6 (from `../node_modules/@react-native-vector-icons/fontawesome6`)"
+  - react-native-version-check (from `../node_modules/react-native-version-check`)
   - react-native-webview (from `../node_modules/react-native-webview`)
   - React-NativeModulesApple (from `../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios`)
   - React-oscompat (from `../node_modules/react-native/ReactCommon/oscompat`)
@@ -2710,6 +2713,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-community/slider"
   react-native-vector-icons-fontawesome6:
     :path: "../node_modules/@react-native-vector-icons/fontawesome6"
+  react-native-version-check:
+    :path: "../node_modules/react-native-version-check"
   react-native-webview:
     :path: "../node_modules/react-native-webview"
   React-NativeModulesApple:
@@ -2867,6 +2872,7 @@ SPEC CHECKSUMS:
   react-native-safe-area-context: 00d03dc688ba86664be66f9e3f203fc7d747d899
   react-native-slider: dcd0321a3c47241b8afc50b4271be675d8dd2e34
   react-native-vector-icons-fontawesome6: 1b667969bef2f430d1d7515163b980b856f58670
+  react-native-version-check: 54a471d70dadf0f72fc142e70f16e4bf473a91a5
   react-native-webview: 31e5182717002afb31a4452498e890daf28a77de
   React-NativeModulesApple: 452b86b29fae99ed0a4015dca3ad9cd222f88abf
   React-oscompat: ef5df1c734f19b8003e149317d041b8ce1f7d29c

@@ -30,6 +30,7 @@ import {
   Users,
   ChevronDown,
   Check,
+  Video,
 } from 'lucide-react-native';
 import * as ImagePicker from 'react-native-image-picker';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
@@ -39,6 +40,7 @@ import { useAuthStore } from '../../store/store';
 import { MentionSearchResults } from './MentionSearchResults';
 import { PrimaryBlue, PrimaryGrey } from '../../Constants/Colors';
 import { useNavigation } from '@react-navigation/native';
+import VideoPlayer from '../ui/VideoPlayer';
 
 interface CreatePostBottomSheetProps {
   isOpen: boolean;
@@ -65,7 +67,7 @@ const CreatePostBottomSheet = React.forwardRef<BottomSheetModal, CreatePostBotto
 
     const userCollectives = joinedCollectivesData?.data || [];
 
-    const [postType, setPostType] = useState<'link' | 'image' | 'event' | null>(null);
+    const [postType, setPostType] = useState<'link' | 'image' | 'video' | 'event' | null>(null);
     const [form, setForm] = useState({
       content: '',
       url: '',
@@ -212,6 +214,34 @@ const CreatePostBottomSheet = React.forwardRef<BottomSheetModal, CreatePostBotto
       });
     };
 
+    const handleVideoSelect = () => {
+      const options: ImagePicker.ImageLibraryOptions = {
+        mediaType: 'video',
+        videoQuality: 'high',
+        includeBase64: false,
+      };
+      ImagePicker.launchImageLibrary(options, (response) => {
+        if (response.assets && response.assets[0]?.uri) {
+          setSelectedImage(response.assets[0].uri);
+          setImagePreview(response.assets[0].uri);
+        }
+      });
+    };
+
+    const handlePostTypeSelect = (type: 'link' | 'image' | 'video' | 'event') => {
+      setPostType(type);
+      setForm((prev) => ({ ...prev, url: '' }));
+      setSelectedImage(null);
+      setImagePreview(null);
+      setUrlError(null);
+
+      if (type === 'image') {
+        handleImageSelect();
+      } else if (type === 'video') {
+        handleVideoSelect();
+      }
+    };
+
     const canSubmitPost = () => {
       if (!form.content.trim()) return false;
       if (form.url.trim() && (!validateUrl(form.url) || urlError)) return false;
@@ -225,7 +255,15 @@ const CreatePostBottomSheet = React.forwardRef<BottomSheetModal, CreatePostBotto
       if (collectiveId) formData.append('collective_id', collectiveId.toString());
       formData.append('content', form.content);
       formData.append('post_type', selectedCollective ? 'collective' : 'feed');
-      if (selectedImage) formData.append('media_file', { uri: selectedImage, type: 'image/jpeg', name: 'image.jpg' } as any);
+      if ((postType === 'image' || postType === 'video') && selectedImage) {
+        const extension = selectedImage.split('.').pop();
+        formData.append('media_file', {
+          uri: selectedImage,
+          type: postType === 'video' ? 'video/mp4' : `image/${extension === 'png' ? 'png' : 'jpeg'}`,
+          name: postType === 'video' ? 'video.mp4' : `image.${extension || 'jpg'}`,
+        } as any);
+        formData.append('media_type', postType);
+      }
       if (form.url.trim()) formData.append('media_url', form.url);
 
       const finalMentions = selectedMentions
@@ -437,13 +475,17 @@ const CreatePostBottomSheet = React.forwardRef<BottomSheetModal, CreatePostBotto
               </View>
 
               <View style={styles.actionButtons}>
-                <TouchableOpacity onPress={handleImageSelect} style={styles.actionPill}>
+                <TouchableOpacity onPress={() => handlePostTypeSelect('image')} style={styles.actionPill}>
                   <ImageIcon size={20} color="#374151" />
                   <Text style={styles.actionText}>Add Image</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => setPostType('link')} style={styles.actionPill}>
                   <Paperclip size={20} color="#374151" />
                   <Text style={styles.actionText}>Add Link</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => handlePostTypeSelect('video')} style={styles.actionPill}>
+                  <Video size={20} color="#374151" />
+                  <Text style={styles.actionText}>Add Video</Text>
                 </TouchableOpacity>
                 {selectedCollective?.created_by.id === currentUser?.id && (
                   <TouchableOpacity onPress={() => handleCreateFundraiser()}
@@ -473,10 +515,19 @@ const CreatePostBottomSheet = React.forwardRef<BottomSheetModal, CreatePostBotto
               </View>
             )}
 
+            {/* Media Preview (Image or Video) */}
             {selectedImage && imagePreview && (
               <View style={styles.imagePreviewWrapper}>
-                <Image source={{ uri: imagePreview }} style={styles.imagePreview} resizeMode="cover" />
-                <TouchableOpacity onPress={() => setSelectedImage(null)} style={styles.removeImage}>
+                {postType === 'video' ? (
+                    <VideoPlayer src={imagePreview} />
+                ) : (
+                  <Image source={{ uri: imagePreview }} style={styles.imagePreview} resizeMode="cover" />
+                )}
+                <TouchableOpacity onPress={() => {
+                  setSelectedImage(null);
+                  setImagePreview(null);
+                  setPostType(null);
+                }} style={styles.removeImage}>
                   <X size={16} color="white" />
                 </TouchableOpacity>
               </View>
@@ -598,8 +649,10 @@ const styles = StyleSheet.create({
   dropdownItem: { flexDirection: 'row', alignItems: 'center', padding: 12, gap: 12, borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
   dropdownItemText: { fontWeight: '600', color: '#111827' },
   inputWrapper: { marginBottom: 16 },
-  inputContainer: { backgroundColor: '#F6F5ED', borderRadius: 16, padding: 16, minHeight: 180 },
+  inputContainer: { backgroundColor: '#F6F5ED', borderRadius: 16, padding: 16, minHeight: 180, position: 'relative' },
   textInput: { fontSize: 16, color: '#111827', fontFamily: 'Outfit-Regular', textAlignVertical: 'top', lineHeight: 22, minHeight: 150 },
+  charCountContainer: { position: 'absolute', bottom: 12, right: 16, zIndex: 10 },
+  charCount: { fontSize: 12, color: '#9CA3AF' },
   previewCard: { borderRadius: 12, borderWidth: 1, borderColor: '#E5E7EB', overflow: 'hidden', marginBottom: 16 },
   previewImage: { width: '100%', height: 150 },
   previewText: { padding: 12 },

@@ -3,8 +3,9 @@ import React, { useState, useEffect, useRef } from 'react'
 import { BottomSheetModal } from '@gorhom/bottom-sheet'
 import SharePost from './SharePost'
 import { LightGrey, PrimaryBlue, PrimaryGrey, SecondaryGrey } from '../Constants/Colors'
-import { Ellipsis, Heart, MessageCircle, Trash2, Share2, MessageSquare, Users, MapPin, MoreHorizontal, Pencil, Flag } from 'lucide-react-native'
+import { Ellipsis, Heart, MessageCircle, Trash2, Share2, MessageSquare, Users, MapPin, MoreHorizontal, Pencil, Flag, Play } from 'lucide-react-native'
 import { useNavigation, NavigationProp, CommonActions } from '@react-navigation/native'
+import VideoPlayer from './ui/VideoPlayer'
 import SocialShare from './SocialShare'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { likePost, unlikePost, deletePost } from '../services/api/social'
@@ -96,6 +97,7 @@ interface Post {
     orgUrl?: string | number; // Collective ID for navigation
     text: string;
     imageUrl?: string;
+    media_type?: string;
     previewDetails?: PreviewDetails | null;
     likes: number;
     comments: number;
@@ -318,7 +320,7 @@ export default function PopularPosts({
         if (!posts) return;
         posts.forEach(item => {
             const imageUrl = item.fundraiser?.image || item.previewDetails?.image || item.imageUrl;
-            if (imageUrl && !imageWidths[item.id]) {
+            if (imageUrl && !imageWidths[item.id] && item.media_type !== 'video') {
                 Image.getSize(imageUrl, (width, height) => {
                     const calculatedWidth = (200 * width) / height;
                     setImageWidths(prev => ({
@@ -331,6 +333,7 @@ export default function PopularPosts({
     }, [posts, screenWidth]);
 
     // Handle like button press
+
     const handleLikePress = (postId: string) => {
         const isLiked = likedPosts.has(postId);
         if (isLiked) {
@@ -1062,17 +1065,23 @@ export default function PopularPosts({
                                             </>
                                         )}
 
-                                        {/* Media Section - Only show if NO fundraiser */}
+                                         {/* Media Section - Only show if NO fundraiser */}
                                         {!item.fundraiser && !item.previewDetails && item.imageUrl && (
-                                            <View style={[styles.mediaContainer, { alignSelf: 'flex-start', width: 'auto' }]}>
-                                                <Image
-                                                    source={{ uri: item.imageUrl }}
-                                                    style={[styles.postImage, {
-                                                        width: imageWidths[item.id] || 0,
-                                                        opacity: imageWidths[item.id] ? 1 : 0
-                                                    }]}
-                                                    resizeMode="cover"
-                                                />
+                                            <View style={{ marginTop: 12 }}>
+                                                {item.media_type === 'video' ? (
+                                                    <VideoPlayer src={item.imageUrl} />
+                                                ) : (
+                                                    <View style={[styles.mediaContainer, { alignSelf: 'flex-start', width: 'auto' }]}>
+                                                        <Image
+                                                            source={{ uri: item.imageUrl }}
+                                                            style={[styles.postImage, {
+                                                                width: imageWidths[item.id] || 0,
+                                                                opacity: imageWidths[item.id] ? 1 : 0
+                                                            }]}
+                                                            resizeMode="cover"
+                                                        />
+                                                    </View>
+                                                )}
                                             </View>
                                         )}
 

@@ -2,7 +2,7 @@ import { View, Text, TouchableOpacity, TextInput, Image, ScrollView, StyleSheet,
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { PrimaryGrey, PrimaryBlue, LightGrey } from '../Constants/Colors'
-import { ImageIcon, X, ArrowLeft, Paperclip, Lightbulb, Globe, ChevronDown, Check, Heart } from 'lucide-react-native'
+import { ImageIcon, X, ArrowLeft, Paperclip, Lightbulb, Globe, ChevronDown, Check, Heart, Video } from 'lucide-react-native'
 import * as ImagePicker from 'react-native-image-picker'
 import { useNavigation, useRoute, usePreventRemove } from '@react-navigation/native'
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query'
@@ -15,6 +15,7 @@ import { BottomSheetModal } from '@gorhom/bottom-sheet'
 import DiscardBottomSheet from '../components/ui/DiscardBottomSheet'
 import { MentionSearchResults } from '../components/post/MentionSearchResults'
 import { Modal, FlatList, Pressable } from 'react-native'
+import VideoPlayer from '../components/ui/VideoPlayer'
 
 export default function Post() {
   const navigation = useNavigation<any>();
@@ -42,7 +43,7 @@ export default function Post() {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
 
-  const [postType, setPostType] = useState<'link' | 'image' | 'event' | null>(null)
+  const [postType, setPostType] = useState<'link' | 'image' | 'video' | 'event' | null>(null)
   const [form, setForm] = useState({
     content: '',
     url: '',
@@ -360,8 +361,34 @@ export default function Post() {
     });
   }
 
+  // Handle video selection
+  const handleVideoSelect = () => {
+    const options: ImagePicker.ImageLibraryOptions = {
+      mediaType: 'video',
+      videoQuality: 'high',
+      includeBase64: false,
+    };
+
+    ImagePicker.launchImageLibrary(options, (response) => {
+      if (response.didCancel) {
+        return;
+      }
+      if (response.errorMessage) {
+        console.log('ImagePicker Error: ', response.errorMessage);
+        return;
+      }
+      if (response.assets && response.assets[0]) {
+        const asset = response.assets[0];
+        if (asset.uri) {
+          setSelectedImage(asset.uri);
+          setImagePreview(asset.uri); // Use same state for preview URI
+        }
+      }
+    });
+  }
+
   // Handle post type selection
-  const handlePostTypeSelect = (type: 'link' | 'image' | 'event') => {
+  const handlePostTypeSelect = (type: 'link' | 'image' | 'video' | 'event') => {
     setPostType(type);
 
     // Reset form fields when switching post types
@@ -375,9 +402,11 @@ export default function Post() {
     setImagePreview(null);
     setUrlError(null);
 
-    // Trigger image picker for image posts
+    // Trigger picker for media types
     if (type === 'image') {
       handleImageSelect();
+    } else if (type === 'video') {
+      handleVideoSelect();
     }
   }
 
@@ -409,13 +438,15 @@ export default function Post() {
     formData.append('content', form.content);
     formData.append('post_type', selectedCollective ? 'collective' : 'feed');
 
-    // Add media file if it's an image post
-    if (postType === 'image' && selectedImage) {
+    // Add media file if it's an image or video post
+    if ((postType === 'image' || postType === 'video') && selectedImage) {
+      const extension = selectedImage.split('.').pop();
       formData.append('media_file', {
         uri: selectedImage,
-        type: 'image/jpeg',
-        name: 'image.jpg',
+        type: postType === 'video' ? 'video/mp4' : `image/${extension === 'png' ? 'png' : 'jpeg'}`,
+        name: postType === 'video' ? 'video.mp4' : `image.${extension || 'jpg'}`,
       } as any);
+      formData.append('media_type', postType);
     }
 
     // Add media_url if URL is provided (for link posts or when URL is filled)
@@ -722,6 +753,14 @@ export default function Post() {
               <Paperclip size={20} color="#374151" />
               <Text style={styles.actionButtonText}>Add Link</Text>
             </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => handlePostTypeSelect('video')}
+              style={styles.actionButton}
+              activeOpacity={0.7}
+            >
+              <Video size={20} color="#374151" />
+              <Text style={styles.actionButtonText}>Add Video</Text>
+            </TouchableOpacity>
 
             {(!selectedCollective || (selectedCollective.created_by?.id === currentUser?.id)) && (
               <TouchableOpacity
@@ -831,24 +870,38 @@ export default function Post() {
           </View>
         )}
 
-        {/* Image Preview */}
+        {/* Media Preview (Image or Video) */}
         {selectedImage && imagePreview && (
           <View style={styles.imagePreviewSection}>
             <View style={[styles.imagePreviewContainer, { flexDirection: 'row' }]}>
-              <Image
-                source={{ uri: imagePreview }}
-                style={[styles.imagePreview, {
-                  width: previewWidth || 0,
-                  borderRadius: 8,
-                  opacity: previewWidth ? 1 : 0
-                }]}
-                resizeMode="cover"
-              />
+              {postType === 'video' ? (
+                <View style={{
+                  width: '100%',
+                  aspectRatio: 16 / 9,
+                  backgroundColor: '#f3f4f6',
+                  borderRadius: 12,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  overflow: 'hidden'
+                }}>
+                  <VideoPlayer src={imagePreview} />
+                </View>
+              ) : (
+                <Image
+                  source={{ uri: imagePreview }}
+                  style={[styles.imagePreview, {
+                    width: previewWidth || 0,
+                    borderRadius: 8,
+                    opacity: previewWidth ? 1 : 0
+                  }]}
+                  resizeMode="cover"
+                />
+              )}
               <TouchableOpacity
                 onPress={() => {
                   setSelectedImage(null);
                   setImagePreview(null);
-                  if (postType === 'image') setPostType(null);
+                  setPostType(null);
                 }}
                 style={styles.removeImageButton}
               >

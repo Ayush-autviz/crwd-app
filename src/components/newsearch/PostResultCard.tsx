@@ -6,8 +6,9 @@ import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import SharePost from '../SharePost';
 import { useNavigation, CommonActions } from '@react-navigation/native';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
-import { Heart, MessageCircle, Share2, Users, Ellipsis, Trash2 } from 'lucide-react-native';
+import { Heart, MessageCircle, Share2, Users, Ellipsis, Trash2, Play } from 'lucide-react-native';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
+import VideoPlayer from '../ui/VideoPlayer';
 import { likePost, unlikePost, followUserById, unfollowUserById, getUserProfileById, deletePost } from '../../services/api/social';
 import { useAuthStore } from '../../store/store';
 import { WEB_BASE_URL } from '../../Constants/url';
@@ -32,6 +33,7 @@ interface PostResultCardProps {
     id: number;
     content: string;
     media?: string;
+    media_type?: string;
     preview_details?: PreviewDetails | null;
     created_at: string;
     likes_count: number;
@@ -138,15 +140,10 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
     setLikesCount(post.likes_count || 0);
   }, [post.is_liked, post.likes_count]);
 
-  const isImageUrl = (url: string) => {
-    if (!url) return false;
-    return /\.(jpg|jpeg|png|gif|webp|svg|bmp)(\?|$)/i.test(url) ||
-      /unsplash\.com|s3\.amazonaws\.com|crwd-bucket|imgur\.com/i.test(url);
-  };
 
   useEffect(() => {
     const imageUrl = post.fundraiser?.image || post.preview_details?.image || post.media;
-    if (imageUrl && (post.fundraiser?.image || post.preview_details?.image || (post.media && isImageUrl(post.media)))) {
+    if (imageUrl && (post.fundraiser?.image || post.preview_details?.image || (post.media && post.media_type !== 'video'))) {
       Image.getSize(
         imageUrl,
         (width, height) => {
@@ -675,18 +672,24 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
         ) : null}
 
         {/* Media Section - Only show if no fundraiser and no preview details */}
-        {!post.fundraiser && !post.preview_details && post.media && isImageUrl(post.media) && (
-          <View style={{ flexDirection: 'row', borderRadius: 8 }}>
-            <Image
-              source={{ uri: post.media }}
-              style={[
-                styles.media,
-                {
-                  width: imageWidth || '100%',
-                }
-              ]}
-              resizeMode="cover"
-            />
+        {!post.fundraiser && !post.preview_details && post.media && (
+          <View style={{ marginTop: 12 }}>
+            {post.media_type === 'video' ? (
+              <VideoPlayer src={post.media} />
+            ) : (
+              <View style={{ flexDirection: 'row', borderRadius: 8 }}>
+                <Image
+                  source={{ uri: post.media }}
+                  style={[
+                    styles.media,
+                    {
+                      width: imageWidth || '100%',
+                    }
+                  ]}
+                  resizeMode="cover"
+                />
+              </View>
+            )}
           </View>
         )}
 

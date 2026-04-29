@@ -494,6 +494,7 @@ export default function NewHome() {
                 id: item.id,
                 content: item.content || '',
                 media: item.media || undefined,
+                media_type: item.media_type || undefined,
                 preview_details: item.preview_details || null,
                 created_at: item.created_at || item.timestamp || new Date().toISOString(),
                 likes_count: item.likes_count || 0,

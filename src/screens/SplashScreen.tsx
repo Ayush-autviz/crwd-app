@@ -32,13 +32,13 @@ export default function SplashScreen() {
         console.log('Clean Current:', current);
         console.log('Clean Latest:', latestV);
 
-        if (current && latestV && semver.lt(current, latestV)) {
-          console.log('Update required');
-          setNeedsUpdate(true);
-          return;
-        } else {
-          console.log('Update not required');
-        }
+        // if (current && latestV && semver.lt(current, latestV)) {
+        //   console.log('Update required');
+        //   setNeedsUpdate(true);
+        //   return;
+        // } else {
+        //   console.log('Update not required');
+        // }
 
 
         // Wait for AsyncStorage to load the persisted state

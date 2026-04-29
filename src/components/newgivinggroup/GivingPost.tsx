@@ -2,8 +2,9 @@ import { View, Text, FlatList, Image, Dimensions, TouchableOpacity, StyleSheet, 
 import React, { useState, useEffect, useRef } from 'react'
 import { BottomSheetModal } from '@gorhom/bottom-sheet'
 
-import { Ellipsis, Heart, MessageCircle, Trash2, Share2, MessageSquare, Users, MapPin, MoreHorizontal, Pencil, Flag } from 'lucide-react-native'
+import { Ellipsis, Heart, MessageCircle, Trash2, Share2, MessageSquare, Users, MapPin, MoreHorizontal, Pencil, Flag, Play } from 'lucide-react-native'
 import { useNavigation, NavigationProp, CommonActions } from '@react-navigation/native'
+import VideoPlayer from '../ui/VideoPlayer'
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useToast } from '../../contexts/ToastContext'
@@ -99,6 +100,7 @@ interface Post {
     orgUrl?: string | number; // Collective ID for navigation
     text: string;
     imageUrl?: string;
+    media_type?: string;
     previewDetails?: PreviewDetails | null;
     likes: number;
     comments: number;
@@ -321,7 +323,7 @@ export default function GivingPost({
         if (!posts) return;
         posts.forEach(item => {
             const imageUrl = item.fundraiser?.image || item.previewDetails?.image || item.imageUrl;
-            if (imageUrl && !imageWidths[item.id]) {
+            if (imageUrl && !imageWidths[item.id] && item.media_type !== 'video') {
                 Image.getSize(imageUrl, (width, height) => {
                     const calculatedWidth = (200 * width) / height;
                     setImageWidths(prev => ({
@@ -342,6 +344,7 @@ export default function GivingPost({
             likeMutation.mutate(postId);
         }
     };
+
 
     const handlePostPress = (post: Post) => {
         navigation.navigate('PostDetail', { post });
@@ -998,17 +1001,23 @@ export default function GivingPost({
                                                     <Text style={styles.postText}>{renderHighlightedText(item.text, item.mentions)}</Text>
                                                 )}
 
-                                                {/* Media Section */}
+                                                 {/* Media Section */}
                                                 {!item.fundraiser && !item.previewDetails && item.imageUrl && (
-                                                    <View style={[styles.mediaContainer, { alignSelf: 'flex-start', width: 'auto' }]}>
-                                                        <Image
-                                                            source={{ uri: item.imageUrl }}
-                                                            style={[styles.postImage, {
-                                                                width: imageWidths[item.id] || 0,
-                                                                opacity: imageWidths[item.id] ? 1 : 0
-                                                            }]}
-                                                            resizeMode="cover"
-                                                        />
+                                                    <View style={{ marginTop: 12 }}>
+                                                        {item.media_type === 'video' ? (
+                                                            <VideoPlayer src={item.imageUrl} />
+                                                        ) : (
+                                                            <View style={[styles.mediaContainer, { alignSelf: 'flex-start', width: 'auto' }]}>
+                                                                <Image
+                                                                    source={{ uri: item.imageUrl }}
+                                                                    style={[styles.postImage, {
+                                                                        width: imageWidths[item.id] || 0,
+                                                                        opacity: imageWidths[item.id] ? 1 : 0
+                                                                    }]}
+                                                                    resizeMode="cover"
+                                                                />
+                                                            </View>
+                                                        )}
                                                     </View>
                                                 )}
 

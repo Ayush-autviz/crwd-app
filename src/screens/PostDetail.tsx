@@ -4,8 +4,9 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import MainHeaderNav from '../components/MainHeaderNav'
 import { PrimaryGrey, PrimaryBlue, LightGrey } from '../Constants/Colors'
 import { useInAppBrowser } from '../hooks/useInAppBrowser'
-import { Heart, MessageCircle, ChevronRight, Trash2, Ellipsis, X } from 'lucide-react-native'
+import { Heart, MessageCircle, ChevronRight, Trash2, Ellipsis, X, Play } from 'lucide-react-native'
 import { BottomSheetModal } from '@gorhom/bottom-sheet'
+import VideoPlayer from '../components/ui/VideoPlayer'
 import DiscardBottomSheet from '../components/ui/DiscardBottomSheet'
 import { useNavigation, useRoute, useFocusEffect, NavigationProp, CommonActions, usePreventRemove } from '@react-navigation/native'
 import { useToast } from '../contexts/ToastContext'
@@ -47,6 +48,7 @@ interface Post {
   username: string;
   avatarUrl: string;
   imageUrl?: string;
+  media_type?: string;
   previewDetails?: PreviewDetails | null;
   time: string;
   org: string;
@@ -111,6 +113,7 @@ export default function PostDetail() {
   const discardSheetRef = React.useRef<BottomSheetModal>(null)
   const [isConfirmedDiscard, setIsConfirmedDiscard] = useState(false)
   const [pendingAction, setPendingAction] = useState<any>(null)
+
   const [imageWidth, setImageWidth] = useState<number | null>(null)
   const [previewImageWidth, setPreviewImageWidth] = useState<number | null>(null)
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
@@ -130,6 +133,7 @@ export default function PostDetail() {
     username: postData.user?.full_name || (postData.user?.first_name && postData.user?.last_name ? `${postData.user.first_name} ${postData.user.last_name}` : null) || postData.user?.username || 'Unknown User',
     avatarUrl: postData.user?.profile_picture,
     imageUrl: postData.media || undefined,
+    media_type: postData.media_type || undefined,
     previewDetails: postData.preview_details || null,
     time: postData.created_at || new Date().toISOString(), // Pass raw timestamp for proper relative time calculation
     created_at: postData.created_at, // Also include created_at for ProfileActivityCard to use
@@ -175,7 +179,7 @@ export default function PostDetail() {
 
   // Calculate image sizes
   useEffect(() => {
-    if (post?.imageUrl) {
+    if (post?.imageUrl && post?.media_type !== 'video') {
       Image.getSize(
         post.imageUrl,
         (width, height) => {
@@ -1205,25 +1209,31 @@ export default function PostDetail() {
                 </View>
               </TouchableOpacity>
             ) : post.imageUrl ? (
-              <TouchableOpacity
-                onPress={() => {
-                  setSelectedImage(post.imageUrl || null);
-                  setIsImageModalVisible(true);
-                }}
-                activeOpacity={0.9}
-                style={{ flexDirection: 'row', borderRadius: 8, marginTop: 12 }}
-              >
-                <Image
-                  source={{ uri: post.imageUrl }}
-                  style={{
-                    width: imageWidth || 0,
-                    height: 200,
-                    borderRadius: 8,
-                    opacity: imageWidth ? 1 : 0
-                  }}
-                  resizeMode="cover"
-                />
-              </TouchableOpacity>
+              <View style={{ marginTop: 12 }}>
+                {post.media_type === 'video' ? (
+                  <VideoPlayer src={post.imageUrl} />
+                ) : (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setSelectedImage(post.imageUrl || null);
+                      setIsImageModalVisible(true);
+                    }}
+                    activeOpacity={0.9}
+                    style={{ flexDirection: 'row', borderRadius: 8 }}
+                  >
+                    <Image
+                      source={{ uri: post.imageUrl }}
+                      style={{
+                        width: imageWidth || 0,
+                        height: 200,
+                        borderRadius: 8,
+                        opacity: imageWidth ? 1 : 0
+                      }}
+                      resizeMode="cover"
+                    />
+                  </TouchableOpacity>
+                )}
+              </View>
             ) : null}
 
             <View style={{

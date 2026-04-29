@@ -87,6 +87,7 @@ import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { useAuthStore } from './src/store/store';
 import { PostHog, PostHogProvider, usePostHog } from 'posthog-react-native'
 import NewGivingGroupPage from './src/screens/NewGivingGroup'
+import FullscreenVideoScreen from './src/screens/FullscreenVideoScreen'
 
 const Tab = createBottomTabNavigator()
 const Drawer = createDrawerNavigator()
@@ -415,6 +416,15 @@ export default function App() {
 
         <Stack.Screen name="Articles" component={Articles} />
         <Stack.Screen name="ArticleDetail" component={ArticleDetail} />
+        <Stack.Screen 
+          name="FullscreenVideo" 
+          component={FullscreenVideoScreen} 
+          options={{ 
+            animation: 'fade',
+            gestureEnabled: true,
+            gestureDirection: 'vertical',
+          }} 
+        />
       </Stack.Navigator>
     )
   }

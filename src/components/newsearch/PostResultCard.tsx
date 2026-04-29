@@ -675,7 +675,26 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
         {!post.fundraiser && !post.preview_details && post.media && (
           <View style={{ marginTop: 12 }}>
             {post.media_type === 'video' ? (
-              <VideoPlayer src={post.media} />
+              <VideoPlayer 
+                src={post.media} 
+                user={{
+                  name: fullName,
+                  username: post.user?.username,
+                  avatar: post.user?.profile_picture || '',
+                  isVerified: false
+                }}
+                caption={post.content}
+                likes={likesCount}
+                comments={post.comments_count}
+                isLiked={isLiked}
+                onLike={handleLikePress}
+                onComment={() => onCommentPress ? onCommentPress(post) : (navigation as any).navigate('PostDetail', { postId: post.id })}
+                onShare={handleShare}
+                onUserPress={(username) => {
+                  const targetId = post.user?.id || username;
+                  (navigation as any).navigate('UserProfile', { userId: targetId.toString() });
+                }}
+              />
             ) : (
               <View style={{ flexDirection: 'row', borderRadius: 8 }}>
                 <Image

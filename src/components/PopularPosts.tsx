@@ -1069,7 +1069,25 @@ export default function PopularPosts({
                                         {!item.fundraiser && !item.previewDetails && item.imageUrl && (
                                             <View style={{ marginTop: 12 }}>
                                                 {item.media_type === 'video' ? (
-                                                    <VideoPlayer src={item.imageUrl} />
+                                                    <VideoPlayer 
+                                                        src={item.imageUrl} 
+                                                        user={{
+                                                            name: item.username || 'User',
+                                                            username: item.username,
+                                                            avatar: item.avatarUrl || '',
+                                                            isVerified: false
+                                                        }}
+                                                        caption={item.text}
+                                                        likes={postsLikesCount[item.id] || item.likes || 0}
+                                                        comments={item.comments || 0}
+                                                        isLiked={likedPosts.has(item.id)}
+                                                        onLike={() => handleLikePress(item.id)}
+                                                        onComment={() => onCommentPress ? onCommentPress(item) : navigation.navigate('PostDetail', { postId: item.id })}
+                                                        onShare={() => handleShare(item)}
+                                                        onUserPress={(username) => {
+                                                            navigation.navigate('UserProfile', { userId: item.userId || username });
+                                                        }}
+                                                    />
                                                 ) : (
                                                     <View style={[styles.mediaContainer, { alignSelf: 'flex-start', width: 'auto' }]}>
                                                         <Image

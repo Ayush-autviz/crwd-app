@@ -1211,7 +1211,25 @@ export default function PostDetail() {
             ) : post.imageUrl ? (
               <View style={{ marginTop: 12 }}>
                 {post.media_type === 'video' ? (
-                  <VideoPlayer src={post.imageUrl} />
+                  <VideoPlayer 
+                    src={post.imageUrl} 
+                    user={{
+                      name: post.username,
+                      username: post.user.username,
+                      avatar: post.avatarUrl || '',
+                      isVerified: false
+                    }}
+                    caption={post.text}
+                    likes={post.likes}
+                    comments={post.comments}
+                    isLiked={post.isLiked}
+                    onLike={() => post.isLiked ? unlikePostMutation.mutate() : likePostMutation.mutate()}
+                    onComment={() => {}}
+                    onShare={() => {}}
+                    onUserPress={(username) => {
+                      (navigation as any).navigate('UserProfile', { userId: post.user.id.toString() });
+                    }}
+                  />
                 ) : (
                   <TouchableOpacity
                     onPress={() => {

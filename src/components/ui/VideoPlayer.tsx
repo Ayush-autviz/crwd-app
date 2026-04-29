@@ -19,26 +19,54 @@ import {
   Loader2,
 } from 'lucide-react-native';
 import Slider from '@react-native-community/slider';
+import { useNavigation } from '@react-navigation/native';
 
 interface VideoPlayerProps {
   src: string;
   poster?: string;
   style?: any;
+  user?: {
+    name: string;
+    username?: string;
+    avatar: string;
+    isVerified?: boolean;
+  };
+  caption?: string;
+  likes?: number | string;
+  comments?: number | string;
+  isLiked?: boolean;
+  onLike?: () => void;
+  onComment?: () => void;
+  onShare?: () => void;
+  onUserPress?: (username: string) => void;
 }
 
-const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, poster, style }) => {
+const VideoPlayer: React.FC<VideoPlayerProps> = ({
+  src,
+  poster,
+  style,
+  user,
+  caption,
+  likes = 0,
+  comments = 0,
+  isLiked = false,
+  onLike,
+  onComment,
+  onShare,
+  onUserPress,
+}) => {
   const videoRef = useRef<VideoRef>(null);
-  const bgVideoRef = useRef<VideoRef>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [hasLoaded, setHasLoaded] = useState(false);
+  const [isFinished, setIsFinished] = useState(false);
   const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const navigation = useNavigation<any>();
 
   const screenWidth = Dimensions.get('window').width;
 
@@ -49,12 +77,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, poster, style }) => {
     return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
   };
 
-  const [isFinished, setIsFinished] = useState(false);
-
   const togglePlay = () => {
     if (isFinished || progress >= 0.99) {
       videoRef.current?.seek(0);
-      bgVideoRef.current?.seek(0);
       setProgress(0);
       setIsFinished(false);
       setIsPlaying(true);
@@ -81,22 +106,24 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, poster, style }) => {
     setHasLoaded(true);
   };
 
-  const onSeek = (value: number) => {
-    videoRef.current?.seek(value * duration);
-    setProgress(value);
-  };
-
   const toggleMute = () => {
     setIsMuted(!isMuted);
   };
 
   const toggleFullscreen = () => {
-    if (isFullscreen) {
-      videoRef.current?.dismissFullscreenPlayer();
-    } else {
-      videoRef.current?.presentFullscreenPlayer();
-    }
-    setIsFullscreen(!isFullscreen);
+    setIsPlaying(false);
+    navigation.navigate('FullscreenVideo', {
+      src,
+      user,
+      caption,
+      likes,
+      comments,
+      isLiked,
+      onLike,
+      onComment,
+      onShare,
+      onUserPress,
+    });
   };
 
   const hideControlsDelayed = () => {
@@ -126,13 +153,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, poster, style }) => {
 
   const containerStyle = useMemo(() => {
     if (naturalAspectRatio > 1.1) {
-      // Horizontal video - match image post height
       return {
         height: 200,
         aspectRatio: naturalAspectRatio,
       };
     } else {
-      // Vertical or Square video - allow more height
       return {
         maxHeight: 350,
         aspectRatio: naturalAspectRatio,
@@ -142,23 +167,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, poster, style }) => {
 
   return (
     <View style={[styles.container, containerStyle, style]}>
-      {/* Background Blur Effect (Ambient) */}
-      {/* Ambient background removed for actual video width */}
-      {/* <View style={styles.ambientContainer}>
-        <Video
-          ref={bgVideoRef}
-          source={{ uri: src }}
-          style={styles.ambientVideo}
-          resizeMode={ResizeMode.COVER}
-          muted={true}
-          paused={!isPlaying}
-          repeat={true}
-          blurRadius={Platform.OS === 'ios' ? 50 : 0}
-        />
-        <View style={styles.ambientOverlay} />
-      </View> */}
-
-      {/* Main Video */}
       <TouchableOpacity
         activeOpacity={1}
         onPress={handleContainerPress}
@@ -172,7 +180,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, poster, style }) => {
           resizeMode={ResizeMode.CONTAIN}
           paused={!isPlaying}
           muted={isMuted}
-          volume={volume}
           onProgress={onProgress}
           onLoad={onLoad}
           onBuffer={({ isBuffering }) => setIsLoading(isBuffering)}
@@ -184,6 +191,16 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, poster, style }) => {
           playsInline={true}
         />
 
+        {/* Top Right Fullscreen Button */}
+        {!isLoading && hasLoaded && (
+          <TouchableOpacity
+            style={styles.fullscreenButton}
+            onPress={toggleFullscreen}
+          >
+            <Maximize size={16} color="white" />
+          </TouchableOpacity>
+        )}
+
         {/* Loading Indicator */}
         {isLoading && (
           <View style={styles.loadingContainer}>
@@ -191,7 +208,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, poster, style }) => {
           </View>
         )}
 
-        {/* Play Button Overlay (when paused or controls shown) */}
+        {/* Play Button Overlay */}
         {(!isPlaying || showControls) && !isLoading && (
           <TouchableOpacity
             style={styles.playOverlay}
@@ -205,7 +222,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, poster, style }) => {
           </TouchableOpacity>
         )}
 
-        {/* Controls Bar */}
         {/* Minimal Overlay Controls */}
         {!isLoading && hasLoaded && (
           <View style={styles.minimalControls}>
@@ -227,56 +243,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, poster, style }) => {
             </TouchableOpacity>
           </View>
         )}
-
-        {/* Controls Bar Commented Out */}
-        {/* {showControls && (
-          <View style={styles.controlsBar}>
-            <View style={styles.sliderContainer}>
-              <Slider
-                style={styles.slider}
-                minimumValue={0}
-                maximumValue={1}
-                value={progress}
-                onSlidingComplete={onSeek}
-                minimumTrackTintColor="#3B82F6"
-                maximumTrackTintColor="rgba(255, 255, 255, 0.3)"
-                thumbTintColor="white"
-              />
-            </View>
-
-            <View style={styles.bottomControls}>
-              <View style={styles.leftControls}>
-                <TouchableOpacity onPress={togglePlay} style={styles.controlButton}>
-                  {isPlaying ? (
-                    <Pause size={20} color="white" fill="white" />
-                  ) : (
-                    <Play size={20} color="white" fill="white" />
-                  )}
-                </TouchableOpacity>
-
-                <TouchableOpacity onPress={toggleMute} style={styles.controlButton}>
-                  {isMuted ? (
-                    <VolumeX size={20} color="white" />
-                  ) : (
-                    <Volume2 size={20} color="white" />
-                  )}
-                </TouchableOpacity>
-
-                <Text style={styles.timeText}>
-                  {formatTime(progress * duration)} / {formatTime(duration)}
-                </Text>
-              </View>
-
-              <TouchableOpacity onPress={toggleFullscreen} style={styles.controlButton}>
-                {isFullscreen ? (
-                  <Minimize size={20} color="white" />
-                ) : (
-                  <Maximize size={20} color="white" />
-                )}
-              </TouchableOpacity>
-            </View>
-          </View>
-        )} */}
       </TouchableOpacity>
     </View>
   );
@@ -291,19 +257,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     alignSelf: 'flex-start',
-  },
-  ambientContainer: {
-    ...StyleSheet.absoluteFillObject,
-    overflow: 'hidden',
-    opacity: 0.5,
-  },
-  ambientVideo: {
-    ...StyleSheet.absoluteFillObject,
-    transform: [{ scale: 1.2 }],
-  },
-  ambientOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.2)',
   },
   videoWrapper: {
     width: '100%',
@@ -339,44 +292,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  controlsBar: {
+  fullscreenButton: {
     position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: 8,
-    // backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    top: 8,
+    right: 8,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    padding: 6,
+    borderRadius: 20,
     zIndex: 30,
-  },
-  sliderContainer: {
-    width: '100%',
-    height: 30,
-    justifyContent: 'center',
-  },
-  slider: {
-    width: '166.6%',
-    height: 20,
-    alignSelf: 'center',
-    transform: [{ scale: 0.6 }],
-  },
-  bottomControls: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: -5,
-  },
-  leftControls: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 15,
-  },
-  controlButton: {
-    padding: 5,
-  },
-  timeText: {
-    color: 'white',
-    fontSize: 12,
-    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   minimalControls: {
     position: 'absolute',
@@ -400,7 +325,6 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 10,
     fontWeight: '600',
-    fontVariant: ['tabular-nums'],
   },
   minimalMuteButton: {
     backgroundColor: 'rgba(0, 0, 0, 0.4)',

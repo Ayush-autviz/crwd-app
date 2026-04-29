@@ -1005,7 +1005,32 @@ export default function GivingPost({
                                                 {!item.fundraiser && !item.previewDetails && item.imageUrl && (
                                                     <View style={{ marginTop: 12 }}>
                                                         {item.media_type === 'video' ? (
-                                                            <VideoPlayer src={item.imageUrl} />
+                                                            <VideoPlayer 
+                                                                src={item.imageUrl} 
+                                                                user={{
+                                                                    name: item.username || 'User',
+                                                                    username: item.username,
+                                                                    avatar: item.avatarUrl || '',
+                                                                    isVerified: false
+                                                                }}
+                                                                caption={item.text}
+                                                                likes={postsLikesCount[item.id] || item.likes || 0}
+                                                                comments={item.comments || 0}
+                                                                isLiked={likedPosts.has(item.id)}
+                                                                onLike={() => likedPosts.has(item.id) ? unlikeMutation.mutate(item.id) : likeMutation.mutate(item.id)}
+                                                                onComment={() => onCommentPress ? onCommentPress(item) : navigation.navigate('PostDetail', { postId: item.id })}
+                                                                onShare={() => {
+                                                                    setShareData({
+                                                                        url: `${WEB_BASE_URL}/post/${encodePostId(item.id)}`,
+                                                                        title: '',
+                                                                        message: ''
+                                                                    });
+                                                                    shareSheetRef.current?.present();
+                                                                }}
+                                                                onUserPress={(username) => {
+                                                                    navigation.navigate('UserProfile', { userId: item.userId || username });
+                                                                }}
+                                                            />
                                                         ) : (
                                                             <View style={[styles.mediaContainer, { alignSelf: 'flex-start', width: 'auto' }]}>
                                                                 <Image

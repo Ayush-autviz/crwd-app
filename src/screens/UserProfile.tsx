@@ -92,14 +92,9 @@ export default function UserProfile() {
         queryFn: ({ pageParam = 1 }) => getPosts(targetUserId, '', pageParam),
         getNextPageParam: (lastPage: any) => {
             // Extract page number from next URL if available
-            if (lastPage.next) {
-                try {
-                    const url = new URL(lastPage.next);
-                    const page = url.searchParams.get('page');
-                    return page ? parseInt(page) : undefined;
-                } catch (e) {
-                    return undefined;
-                }
+            if (lastPage?.next) {
+                const match = lastPage.next.match(/page=(\d+)/);
+                return match ? parseInt(match[1]) : undefined;
             }
             return undefined;
         },
@@ -774,7 +769,7 @@ export default function UserProfile() {
                     />
 
                     {/* Posts Section */}
-                    <View style={{ marginTop: 12, borderTopWidth: 1, borderTopColor: '#f3f4f6', paddingTop: 20, paddingBottom: 100 }}>
+                    <View style={{ marginTop: 12, borderTopWidth: 1, borderTopColor: '#f3f4f6', paddingTop: 20, paddingBottom: 40 }}>
                         {postsLoading ? (
                             <View style={{ padding: 20, alignItems: 'center' }}>
                                 <ActivityIndicator size="large" color={PrimaryBlue} />
@@ -791,7 +786,8 @@ export default function UserProfile() {
                                     posts={userPosts}
                                     title=""
                                     onLoadMore={fetchNextPage}
-                                    hasMore={!!hasNextPage}
+                                    hasMore={false}
+                                    isLoadingMore={isFetchingNextPage}
                                     onCommentPress={(post) => {
                                         const originalPost = posts?.results?.find((p: any) => p.id?.toString() === post.id);
                                         setSelectedPost({
@@ -805,6 +801,38 @@ export default function UserProfile() {
                                         setShowCommentsSheet(true);
                                     }}
                                 />
+                                {hasNextPage && (
+                                    <View style={{ marginTop: 0, alignItems: 'center' }}>
+                                        <TouchableOpacity
+                                            onPress={() => fetchNextPage()}
+                                            disabled={isFetchingNextPage}
+                                            style={{
+                                                paddingVertical: 12,
+                                                paddingHorizontal: 20,
+                                                borderWidth: 1,
+                                                borderColor: '#d1d5db',
+                                                borderRadius: 10,
+                                                flexDirection: 'row',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                gap: 8,
+                                                backgroundColor: '#f9fafb',
+                                                // width: '100%',
+                                                // marginTop: 10,
+                                                // marginBottom: 30
+                                            }}
+                                        >
+                                            {isFetchingNextPage ? (
+                                                <>
+                                                    <ActivityIndicator size="small" color={PrimaryBlue} />
+                                                    <Text style={{ fontSize: 15, fontFamily: 'Outfit-SemiBold', color: '#374151' }}>Loading...</Text>
+                                                </>
+                                            ) : (
+                                                <Text style={{ fontSize: 15, fontFamily: 'Outfit-SemiBold', color: '#374151' }}>Show More Posts</Text>
+                                            )}
+                                        </TouchableOpacity>
+                                    </View>
+                                )}
                             </>
                         ) : (
                             <View style={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 40, paddingHorizontal: 20 }}>

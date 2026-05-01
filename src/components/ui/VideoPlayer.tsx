@@ -56,10 +56,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   onUserPress,
 }) => {
   const videoRef = useRef<VideoRef>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [currentTime, setCurrentTime] = useState(0);
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
   const [showControls, setShowControls] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [hasLoaded, setHasLoaded] = useState(false);
@@ -90,6 +91,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   };
 
   const onProgress = (data: { currentTime: number; playableDuration: number }) => {
+    setCurrentTime(data.currentTime);
     if (duration > 0) {
       setProgress(data.currentTime / duration);
     }
@@ -152,24 +154,40 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   }, [isPlaying]);
 
   const containerStyle = useMemo(() => {
-    if (naturalAspectRatio > 1.1) {
-      return {
-        height: 200,
-        aspectRatio: naturalAspectRatio,
-      };
+    const maxWidth = screenWidth - 70;
+
+    if (naturalAspectRatio > 1) {
+      // Landscape video: start from target height, calculate width
+      const targetHeight = 200;
+      let width = targetHeight * naturalAspectRatio;
+      let height = targetHeight;
+
+      if (width > maxWidth) {
+        width = maxWidth;
+        height = maxWidth / naturalAspectRatio;
+      }
+
+      return { width, height };
     } else {
-      return {
-        maxHeight: 350,
-        aspectRatio: naturalAspectRatio,
-      };
+      // Portrait video: start from target height, calculate width
+      const targetHeight = 350;
+      let width = targetHeight * naturalAspectRatio;
+      let height = targetHeight;
+
+      if (width > maxWidth) {
+        width = maxWidth;
+        height = maxWidth / naturalAspectRatio;
+      }
+
+      return { width, height };
     }
-  }, [naturalAspectRatio]);
+  }, [naturalAspectRatio, screenWidth]);
 
   return (
     <View style={[styles.container, containerStyle, style]}>
       <TouchableOpacity
         activeOpacity={1}
-        onPress={handleContainerPress}
+        onPress={toggleFullscreen}
         style={styles.videoWrapper}
       >
         <Video
@@ -177,29 +195,20 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
           source={{ uri: src }}
           poster={poster}
           style={styles.video}
-          resizeMode={ResizeMode.CONTAIN}
+          resizeMode={ResizeMode.COVER}
           paused={!isPlaying}
           muted={isMuted}
+          repeat={true}
           onProgress={onProgress}
           onLoad={onLoad}
           onBuffer={({ isBuffering }) => setIsLoading(isBuffering)}
           onEnd={() => {
-            setIsPlaying(false);
-            setProgress(1);
-            setIsFinished(true);
+            if (Platform.OS === 'android') {
+              videoRef.current?.seek(0);
+            }
           }}
           playsInline={true}
         />
-
-        {/* Top Right Fullscreen Button */}
-        {!isLoading && hasLoaded && (
-          <TouchableOpacity
-            style={styles.fullscreenButton}
-            onPress={toggleFullscreen}
-          >
-            <Maximize size={16} color="white" />
-          </TouchableOpacity>
-        )}
 
         {/* Loading Indicator */}
         {isLoading && (
@@ -208,26 +217,12 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
           </View>
         )}
 
-        {/* Play Button Overlay */}
-        {(!isPlaying || showControls) && !isLoading && (
-          <TouchableOpacity
-            style={styles.playOverlay}
-            onPress={togglePlay}
-          >
-            {!isPlaying && (
-              <View style={styles.playButtonCircle}>
-                <Play size={32} color="white" fill="white" style={{ marginLeft: 4 }} />
-              </View>
-            )}
-          </TouchableOpacity>
-        )}
-
         {/* Minimal Overlay Controls */}
         {!isLoading && hasLoaded && (
           <View style={styles.minimalControls}>
             <View style={styles.minimalTimeBadge}>
               <Text style={styles.minimalTimeText}>
-                {formatTime(progress * duration)}
+                {formatTime(currentTime)}
               </Text>
             </View>
             <TouchableOpacity
@@ -251,7 +246,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
 const styles = StyleSheet.create({
   container: {
     maxWidth: '100%',
-    backgroundColor: 'rgba(0,0,0,0.05)',
+    // backgroundColor: 'rgba(0,0,0,0.05)',
     borderRadius: 12,
     overflow: 'hidden',
     justifyContent: 'center',
@@ -268,6 +263,7 @@ const styles = StyleSheet.create({
   video: {
     width: '100%',
     height: '100%',
+    borderRadius: 12,
   },
   loadingContainer: {
     ...StyleSheet.absoluteFillObject,

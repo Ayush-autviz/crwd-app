@@ -179,7 +179,7 @@ export default function PopularPosts({
     const [showFundraiserMenu, setShowFundraiserMenu] = useState<number | null>(null);
     const shareSheetRef = useRef<BottomSheetModal>(null);
     const [shareData, setShareData] = useState({ url: '', title: '', message: '' });
-    const [imageWidths, setImageWidths] = useState<Record<string, number>>({});
+    const [imageDimensions, setImageDimensions] = useState<Record<string, { width: number, height: number }>>({});
     const deleteBottomSheetRef = useRef<BottomSheetModal>(null);
 
     const queryClient = useQueryClient();
@@ -315,17 +315,26 @@ export default function PopularPosts({
         setPostsLikesCount(likesCount);
     }, [posts]);
 
-    // Calculate image sizes for all posts
+    // Calculate image dimensions for all posts
     useEffect(() => {
         if (!posts) return;
         posts.forEach(item => {
             const imageUrl = item.fundraiser?.image || item.previewDetails?.image || item.imageUrl;
-            if (imageUrl && !imageWidths[item.id] && item.media_type !== 'video') {
+            if (imageUrl && !imageDimensions[item.id] && item.media_type !== 'video') {
                 Image.getSize(imageUrl, (width, height) => {
-                    const calculatedWidth = (200 * width) / height;
-                    setImageWidths(prev => ({
+                    const maxWidth = screenWidth - 32;
+                    const targetHeight = 200;
+                    let calculatedWidth = (targetHeight * width) / height;
+                    let finalHeight = targetHeight;
+
+                    if (calculatedWidth > maxWidth) {
+                        calculatedWidth = maxWidth;
+                        finalHeight = (maxWidth * height) / width;
+                    }
+
+                    setImageDimensions(prev => ({
                         ...prev,
-                        [item.id]: Math.min(calculatedWidth, screenWidth - 32)
+                        [item.id]: { width: calculatedWidth, height: finalHeight }
                     }));
                 }, (error) => console.log('Image size error for post', item.id, error));
             }
@@ -911,12 +920,12 @@ export default function PopularPosts({
                                                             <Image
                                                                 source={{ uri: item.fundraiser.image }}
                                                                 style={{
-                                                                    width: imageWidths[item.id] || 0,
-                                                                    height: 200,
+                                                                    width: imageDimensions[item.id]?.width || 0,
+                                                                    height: imageDimensions[item.id]?.height || 200,
                                                                     borderRadius: 8,
-                                                                    opacity: imageWidths[item.id] ? 1 : 0
+                                                                    opacity: imageDimensions[item.id] ? 1 : 0
                                                                 }}
-                                                                resizeMode="cover"
+                                                                resizeMode="contain"
                                                             />
                                                         </View>
                                                     ) : (
@@ -1007,12 +1016,12 @@ export default function PopularPosts({
                                                             <Image
                                                                 source={{ uri: item.fundraiser.image }}
                                                                 style={{
-                                                                    width: imageWidths[item.id] || 0,
-                                                                    height: 200,
+                                                                    width: imageDimensions[item.id]?.width || 0,
+                                                                    height: imageDimensions[item.id]?.height || 200,
                                                                     borderRadius: 8,
-                                                                    opacity: imageWidths[item.id] ? 1 : 0
+                                                                    opacity: imageDimensions[item.id] ? 1 : 0
                                                                 }}
-                                                                resizeMode="cover"
+                                                                resizeMode="contain"
                                                             />
                                                         </View>
                                                     ) : (
@@ -1065,12 +1074,12 @@ export default function PopularPosts({
                                             </>
                                         )}
 
-                                         {/* Media Section - Only show if NO fundraiser */}
+                                        {/* Media Section - Only show if NO fundraiser */}
                                         {!item.fundraiser && !item.previewDetails && item.imageUrl && (
                                             <View style={{ marginTop: 12 }}>
                                                 {item.media_type === 'video' ? (
-                                                    <VideoPlayer 
-                                                        src={item.imageUrl} 
+                                                    <VideoPlayer
+                                                        src={item.imageUrl}
                                                         user={{
                                                             name: item.username || 'User',
                                                             username: item.username,
@@ -1088,17 +1097,39 @@ export default function PopularPosts({
                                                             navigation.navigate('UserProfile', { userId: item.userId || username });
                                                         }}
                                                     />
-                                                ) : (
-                                                    <View style={[styles.mediaContainer, { alignSelf: 'flex-start', width: 'auto' }]}>
-                                                        <Image
-                                                            source={{ uri: item.imageUrl }}
-                                                            style={[styles.postImage, {
-                                                                width: imageWidths[item.id] || 0,
-                                                                opacity: imageWidths[item.id] ? 1 : 0
-                                                            }]}
-                                                            resizeMode="cover"
-                                                        />
-                                                    </View>
+                                                ) : (<TouchableOpacity
+                                                    activeOpacity={0.9}
+                                                    onPress={() => (navigation as any).navigate('FullscreenImage', {
+                                                        src: item.imageUrl,
+                                                        user: {
+                                                            name: item.username || 'User',
+                                                            username: item.username,
+                                                            avatar: item.avatarUrl || '',
+                                                            isVerified: false
+                                                        },
+                                                        caption: item.text,
+                                                        likes: postsLikesCount[item.id] || item.likes || 0,
+                                                        comments: item.comments || 0,
+                                                        isLiked: likedPosts.has(item.id),
+                                                        onLike: () => handleLikePress(item.id),
+                                                        onComment: () => onCommentPress ? onCommentPress(item) : (navigation as any).navigate('PostDetail', { postId: item.id }),
+                                                        onShare: () => handleShare(item),
+                                                        onUserPress: (username: string) => {
+                                                            (navigation as any).navigate('UserProfile', { userId: item.userId || username });
+                                                        }
+                                                    })}
+                                                    style={[styles.mediaContainer, { alignSelf: 'flex-start', width: 'auto', maxWidth: '100%' }]}
+                                                >
+                                                    <Image
+                                                        source={{ uri: item.imageUrl }}
+                                                        style={[styles.postImage, {
+                                                            width: imageDimensions[item.id]?.width || 0,
+                                                            height: imageDimensions[item.id]?.height || 200,
+                                                            opacity: imageDimensions[item.id] ? 1 : 0
+                                                        }]}
+                                                        resizeMode="contain"
+                                                    />
+                                                </TouchableOpacity>
                                                 )}
                                             </View>
                                         )}

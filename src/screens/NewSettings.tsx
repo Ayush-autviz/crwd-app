@@ -130,7 +130,7 @@ export default function NewSettings() {
               console.error('Error unregistering token:', error);
             }
             logout()
-            showToast('Logged out successfully', 3000)
+            // showToast('Logged out successfully', 3000)
             queryClient.clear()
             navigation.reset({
               index: 0,

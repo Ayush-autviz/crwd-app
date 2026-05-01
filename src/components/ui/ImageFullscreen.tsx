@@ -1,20 +1,18 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   TouchableOpacity,
   StyleSheet,
   Dimensions,
-  ActivityIndicator,
   Text,
   StatusBar,
   Image,
 } from 'react-native';
-import Video, { VideoRef, ResizeMode } from 'react-native-video';
-import { X, Heart, MessageCircle, Share2, Volume2, VolumeX, Play } from 'lucide-react-native';
+import { X, Heart, MessageCircle, Share2 } from 'lucide-react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-interface VideoFullscreenProps {
+interface ImageFullscreenProps {
   isOpen: boolean;
   onClose: () => void;
   src: string;
@@ -36,7 +34,7 @@ interface VideoFullscreenProps {
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-const VideoFullscreen: React.FC<VideoFullscreenProps> = ({
+const ImageFullscreen: React.FC<ImageFullscreenProps> = ({
   isOpen,
   onClose,
   src,
@@ -50,32 +48,27 @@ const VideoFullscreen: React.FC<VideoFullscreenProps> = ({
   onShare,
   onUserPress,
 }) => {
-  const videoRef = useRef<VideoRef>(null);
-  const [isPlaying, setIsPlaying] = useState(true);
-  const [isMuted, setIsMuted] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
   const [isExpanded, setIsExpanded] = useState(false);
   const [canExpand, setCanExpand] = useState(false);
+  const [isLikedState, setIsLikedState] = useState(isLiked);
+  const [likesCount, setLikesCount] = useState(Number(likes));
+  const [forceUpdate, setForceUpdate] = useState(0);
   const insets = useSafeAreaInsets();
 
   useEffect(() => {
-    if (isOpen) {
-      setIsPlaying(true);
-    }
-  }, [isOpen]);
+    // Force a re-render after a short delay to ensure onTextLayout fires
+    const timer = setTimeout(() => {
+      setForceUpdate(prev => prev + 1);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
 
-  const togglePlay = () => {
-    setIsPlaying(!isPlaying);
-  };
-
-  const toggleMute = () => {
-    setIsMuted(!isMuted);
-  };
-
-  const handleProgress = (data: { currentTime: number; playableDuration: number; seekableDuration: number }) => {
-    if (data.seekableDuration > 0) {
-      setProgress(data.currentTime / data.seekableDuration);
+  const handleLike = () => {
+    const newLikedState = !isLikedState;
+    setIsLikedState(newLikedState);
+    setLikesCount(prev => newLikedState ? Number(prev) + 1 : Number(prev) - 1);
+    if (onLike) {
+      onLike();
     }
   };
 
@@ -91,43 +84,14 @@ const VideoFullscreen: React.FC<VideoFullscreenProps> = ({
     <View style={styles.overlayContainer}>
       <StatusBar barStyle="light-content" backgroundColor="black" translucent />
 
-      {/* Video Player */}
-      <TouchableOpacity
-        activeOpacity={1}
-        onPress={togglePlay}
-        style={styles.videoContainer}
-      >
-        <Video
-          ref={videoRef}
+      {/* Image Container */}
+      <View style={styles.imageContainer}>
+        <Image
           source={{ uri: src }}
-          style={styles.video}
-          resizeMode={ResizeMode.CONTAIN}
-          paused={!isPlaying}
-          muted={isMuted}
-          onProgress={handleProgress}
-          onLoadStart={() => setIsLoading(true)}
-          onLoad={() => setIsLoading(false)}
-          onBuffer={({ isBuffering }) => setIsLoading(isBuffering)}
-          repeat={true}
-          playsInline={true}
+          style={styles.image}
+          resizeMode="contain"
         />
-
-        {/* Loading Indicator */}
-        {isLoading && (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="white" />
-          </View>
-        )}
-
-        {/* Play Icon Overlay */}
-        {!isPlaying && !isLoading && (
-          <View style={styles.playOverlay}>
-            <View style={styles.playButtonCircle}>
-              <Play size={40} color="white" fill="white" style={{ marginLeft: 4 }} />
-            </View>
-          </View>
-        )}
-      </TouchableOpacity>
+      </View>
 
       {/* Close Button */}
       <TouchableOpacity
@@ -141,16 +105,16 @@ const VideoFullscreen: React.FC<VideoFullscreenProps> = ({
       <View style={styles.interactionBar}>
         <TouchableOpacity
           style={styles.interactionButton}
-          onPress={onLike}
+          onPress={handleLike}
           activeOpacity={0.7}
         >
           <Heart
             size={28}
-            color={isLiked ? "#EF4444" : "white"}
-            fill={isLiked ? "#EF4444" : "transparent"}
+            color={isLikedState ? "#EF4444" : "white"}
+            fill={isLikedState ? "#EF4444" : "transparent"}
             style={styles.iconShadow}
           />
-          <Text style={styles.interactionText}>{likes}</Text>
+          <Text style={styles.interactionText}>{likesCount}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -168,14 +132,6 @@ const VideoFullscreen: React.FC<VideoFullscreenProps> = ({
           activeOpacity={0.7}
         >
           <Share2 size={28} color="white" style={styles.iconShadow} />
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.interactionButton}
-          onPress={toggleMute}
-          activeOpacity={0.7}
-        >
-          {isMuted ? <VolumeX size={28} color="white" style={styles.iconShadow} /> : <Volume2 size={28} color="white" style={styles.iconShadow} />}
         </TouchableOpacity>
       </View>
 
@@ -200,21 +156,15 @@ const VideoFullscreen: React.FC<VideoFullscreenProps> = ({
             </View>
             <View style={styles.userNameContainer}>
               <Text style={styles.userName}>{user?.name || 'User'}</Text>
-              {/* {user?.isVerified && (
-                <Image
-                  source={require('../../assets/icons/verified.png')}
-                  style={{ width: 14, height: 14 }}
-                />
-              )} */}
             </View>
           </TouchableOpacity>
 
           <View>
             {!isExpanded && (
               <Text
-                style={[styles.caption, { position: 'absolute', opacity: 0 }]}
+                style={[styles.caption, { position: 'absolute', left: -SCREEN_WIDTH, width: SCREEN_WIDTH - 40 }]}
                 onTextLayout={(e) => {
-                  if (e.nativeEvent.lines.length > 2) {
+                  if (e.nativeEvent.lines.length > 3) {
                     setCanExpand(true);
                   }
                 }}
@@ -224,7 +174,7 @@ const VideoFullscreen: React.FC<VideoFullscreenProps> = ({
             )}
             <Text
               style={styles.caption}
-              numberOfLines={isExpanded ? undefined : 2}
+              numberOfLines={isExpanded ? undefined : 3}
             >
               {caption}
             </Text>
@@ -240,11 +190,6 @@ const VideoFullscreen: React.FC<VideoFullscreenProps> = ({
             )}
           </View>
         </View>
-
-        {/* Progress Bar */}
-        <View style={styles.progressBarContainer}>
-          <View style={[styles.progressBar, { width: `${progress * 100}%` }]} />
-        </View>
       </LinearGradient>
     </View>
   );
@@ -255,35 +200,14 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'black',
   },
-  videoContainer: {
+  imageContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  video: {
+  image: {
     width: SCREEN_WIDTH,
     height: SCREEN_HEIGHT,
-  },
-  loadingContainer: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.3)',
-  },
-  playOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  playButtonCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   closeButton: {
     position: 'absolute',
@@ -370,23 +294,6 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
   },
-  progressBarContainer: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    height: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    zIndex: 60,
-  },
-  progressBar: {
-    height: '100%',
-    backgroundColor: 'white',
-    shadowColor: 'white',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.5,
-    shadowRadius: 4,
-  },
   moreButton: {
     marginTop: 4,
   },
@@ -398,4 +305,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default VideoFullscreen;
+export default ImageFullscreen;

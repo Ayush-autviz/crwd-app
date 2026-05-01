@@ -128,6 +128,7 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
   const [isLiked, setIsLiked] = useState(post.is_liked || false);
   const [likesCount, setLikesCount] = useState(post.likes_count || 0);
   const [imageWidth, setImageWidth] = useState<number | null>(null);
+  const [imageHeight, setImageHeight] = useState<number>(200);
   const shareSheetRef = useRef<BottomSheetModal>(null);
   const deleteBottomSheetRef = useRef<BottomSheetModal>(null);
   const [tooltipVisible, setTooltipVisible] = useState(false);
@@ -147,15 +148,25 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
       Image.getSize(
         imageUrl,
         (width, height) => {
-          const screenWidth = Dimensions.get('window').width - 32; // adjust for padding
-          const calculatedWidth = Math.min((200 * width) / height, screenWidth);
+          const maxWidth = Dimensions.get('window').width - 32; // adjust for padding
+          const targetHeight = 200;
+          let calculatedWidth = (targetHeight * width) / height;
+          let finalHeight = targetHeight;
+
+          if (calculatedWidth > maxWidth) {
+            calculatedWidth = maxWidth;
+            finalHeight = (maxWidth * height) / width;
+          }
+
           setImageWidth(calculatedWidth);
+          setImageHeight(finalHeight);
         },
         (error) => {
           console.log('Image size error', error);
           // Fallback to full width on error
           const screenWidth = Dimensions.get('window').width - 32;
           setImageWidth(screenWidth);
+          setImageHeight(200);
         }
       );
     } else {
@@ -675,8 +686,8 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
         {!post.fundraiser && !post.preview_details && post.media && (
           <View style={{ marginTop: 12 }}>
             {post.media_type === 'video' ? (
-              <VideoPlayer 
-                src={post.media} 
+              <VideoPlayer
+                src={post.media}
                 user={{
                   name: fullName,
                   username: post.user?.username,
@@ -696,18 +707,42 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
                 }}
               />
             ) : (
-              <View style={{ flexDirection: 'row', borderRadius: 8 }}>
+              <TouchableOpacity
+                onPress={() => (navigation as any).navigate('FullscreenImage', {
+                  src: post.media,
+                  user: {
+                    name: fullName,
+                    username: post.user?.username,
+                    avatar: post.user?.profile_picture || '',
+                    isVerified: false
+                  },
+                  caption: post.content,
+                  likes: likesCount,
+                  comments: post.comments_count,
+                  isLiked: isLiked,
+                  onLike: handleLikePress,
+                  onComment: () => onCommentPress ? onCommentPress(post) : (navigation as any).navigate('PostDetail', { postId: post.id }),
+                  onShare: handleShare,
+                  onUserPress: (username: string) => {
+                    const targetId = post.user?.id || username;
+                    (navigation as any).navigate('UserProfile', { userId: targetId.toString() });
+                  }
+                })}
+                activeOpacity={0.9}
+                style={{ flexDirection: 'row', borderRadius: 8 }}
+              >
                 <Image
                   source={{ uri: post.media }}
                   style={[
                     styles.media,
                     {
                       width: imageWidth || '100%',
+                      height: imageHeight,
                     }
                   ]}
-                  resizeMode="cover"
+                  resizeMode="contain"
                 />
-              </View>
+              </TouchableOpacity>
             )}
           </View>
         )}
@@ -739,10 +774,10 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
                     source={{ uri: post.fundraiser.image }}
                     style={{
                       width: imageWidth || '100%',
-                      height: 200,
+                      height: imageHeight,
                       borderRadius: 8,
                     }}
-                    resizeMode="cover"
+                    resizeMode="contain"
                   />
                 </View>
               ) : (

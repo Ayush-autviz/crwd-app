@@ -26,6 +26,7 @@ import { truncateAtFirstPeriod } from '../utils/truncateFirstPeriod'
 import { CompactProfileHeader } from '../components/profile/CompactProfileHeader'
 import { ProfileDonationBox } from '../components/profile/ProfileDonationBox'
 import { ProfileGroups } from '../components/profile/ProfileGroups'
+import { useInfiniteQuery } from '@tanstack/react-query';
 
 type RootStackParamList = {
     ProfileEdit: undefined;
@@ -149,10 +150,25 @@ export default function Profile() {
         enabled: !!user?.id,
     });
 
-    // Fetch user posts - matching Vite version
-    const postsQuery = useQuery({
+    // Fetch user posts - matching Vite version with pagination
+    const {
+        data: postsData,
+        isLoading: postsLoading,
+        fetchNextPage: fetchNextPosts,
+        hasNextPage: hasNextPosts,
+        isFetchingNextPage: isFetchingNextPosts,
+        refetch: refetchPosts
+    } = useInfiniteQuery({
         queryKey: ['posts', user?.id],
-        queryFn: () => getPosts(user?.id?.toString() || '', ''),
+        queryFn: ({ pageParam = 1 }) => getPosts(user?.id?.toString() || '', '', pageParam),
+        getNextPageParam: (lastPage: any) => {
+            if (lastPage?.next) {
+                const match = lastPage.next.match(/page=(\d+)/);
+                return match ? parseInt(match[1]) : undefined;
+            }
+            return undefined;
+        },
+        initialPageParam: 1,
         enabled: !!user?.id,
     });
 
@@ -292,27 +308,29 @@ export default function Profile() {
 
 
     // Transform posts data to match PostDetail interface - matching Vite version
-    const userPosts = postsQuery?.data?.results?.map((post: any) => ({
-        id: post.id,
-        userId: post.user?.id?.toString(),
-        avatarUrl: post.user?.profile_picture,
-        username: post.user?.first_name + ' ' + post.user?.last_name || 'Unknssown User',
-        time: post.created_at || new Date().toISOString(), // Pass raw timestamp for proper relative time calculation
-        created_at: post.created_at, // Also include created_at for ProfileActivityCard to use
-        timestamp: post.created_at, // Include timestamp as well
-        org: post.collective?.name,
-        orgUrl: post.collective?.id,
-        text: post.content || '',
-        imageUrl: post.media || undefined,
-        media_type: post.media_type || undefined,
-        previewDetails: post.preview_details || null,
-        likes: post.likes_count || 0,
-        comments: post.comments_count || 0,
-        shares: 0, // API doesn't provide shares count
-        isLiked: post.is_liked || false,
-        color: post.user?.color,
-        mentions: post.mentions || [],
-    })) || [];
+    const userPosts = useMemo(() => {
+        return postsData?.pages?.flatMap((page: any) => page.results || [])?.map((post: any) => ({
+            id: post.id,
+            userId: post.user?.id?.toString(),
+            avatarUrl: post.user?.profile_picture,
+            username: post.user?.first_name + ' ' + post.user?.last_name || 'Unknown User',
+            time: post.created_at || new Date().toISOString(),
+            created_at: post.created_at,
+            timestamp: post.created_at,
+            org: post.collective?.name,
+            orgUrl: post.collective?.id,
+            text: post.content || '',
+            imageUrl: post.media || undefined,
+            media_type: post.media_type || undefined,
+            previewDetails: post.preview_details || null,
+            likes: post.likes_count || 0,
+            comments: post.comments_count || 0,
+            shares: 0,
+            isLiked: post.is_liked || false,
+            color: post.user?.color,
+            mentions: post.mentions || [],
+        })) || [];
+    }, [postsData]);
 
     const handleShare = () => {
         if (!user?.id) return;
@@ -621,7 +639,7 @@ export default function Profile() {
             // Refetch all queries
             await Promise.all([
                 refetchProfile(),
-                postsQuery.refetch(),
+                refetchPosts(),
                 followersQuery.refetch(),
                 followingQuery.refetch(),
                 favoriteCausesQuery.refetch(),
@@ -687,9 +705,9 @@ export default function Profile() {
 
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, height: 60, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                    <TouchableOpacity onPress={() => (navigation as any).goBack()}>
+                    {/* <TouchableOpacity onPress={() => (navigation as any).goBack()}>
                         <ArrowLeft size={24} color="#111827" />
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
                     <Text style={{ fontSize: 18, fontFamily: 'Outfit-Bold', color: '#111827' }}>
                         {profileData?.first_name && profileData?.last_name
                             ? `${profileData.first_name} ${profileData.last_name}`
@@ -805,7 +823,7 @@ export default function Profile() {
 
             {/* Activate Donation Box Prompt */}
             {!donationBoxData?.is_active && !donationBoxLoading && (
-                <TouchableOpacity 
+                <TouchableOpacity
                     onPress={() => (navigation as any).navigate('MainTabs', { screen: 'Donate' })}
                     style={{ backgroundColor: '#FEF2F2', borderBottomWidth: 1, borderBottomColor: '#FEE2E2', paddingVertical: 12, alignItems: 'center', zIndex: 10, elevation: 1, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2 }}
                 >
@@ -917,7 +935,7 @@ export default function Profile() {
 
                     {/* Posts Section */}
                     <View style={{ marginTop: 12, borderTopWidth: 1, borderTopColor: '#f3f4f6', paddingTop: 10, paddingBottom: 100 }}>
-                        {postsQuery.isLoading ? (
+                        {postsLoading ? (
                             <View style={{ padding: 20, alignItems: 'center' }}>
                                 <ActivityIndicator size="large" color={PrimaryBlue} />
                                 <Text style={{ marginTop: 10, color: '#6b7280', fontFamily: 'Outfit-Regular' }}>Loading posts...</Text>
@@ -932,10 +950,11 @@ export default function Profile() {
                                 <PopularPosts
                                     posts={userPosts}
                                     title=""
-                                    onLoadMore={async () => { }}
+                                    onLoadMore={fetchNextPosts}
                                     hasMore={false}
+                                    isLoadingMore={isFetchingNextPosts}
                                     onCommentPress={(post) => {
-                                        const originalPost = postsQuery?.data?.results?.find((p: any) => p.id?.toString() === post.id);
+                                        const originalPost = postsData?.pages?.flatMap(page => page.results || [])?.find((p: any) => p.id?.toString() === post.id);
                                         setSelectedPost({
                                             id: parseInt(post.id),
                                             username: post.username,
@@ -947,6 +966,35 @@ export default function Profile() {
                                         setShowCommentsSheet(true);
                                     }}
                                 />
+                                {hasNextPosts && (
+                                    <View style={{ marginTop: 20, alignItems: 'center' }}>
+                                        <TouchableOpacity
+                                            onPress={() => fetchNextPosts()}
+                                            disabled={isFetchingNextPosts}
+                                            style={{
+                                                paddingVertical: 10,
+                                                paddingHorizontal: 20,
+                                                borderWidth: 1,
+                                                borderColor: '#d1d5db',
+                                                borderRadius: 10,
+                                                flexDirection: 'row',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                gap: 8,
+                                                backgroundColor: '#f9fafb',
+                                            }}
+                                        >
+                                            {isFetchingNextPosts ? (
+                                                <>
+                                                    <ActivityIndicator size="small" color={PrimaryBlue} />
+                                                    <Text style={{ fontSize: 15, fontFamily: 'Outfit-SemiBold', color: '#374151' }}>Loading...</Text>
+                                                </>
+                                            ) : (
+                                                <Text style={{ fontSize: 15, fontFamily: 'Outfit-SemiBold', color: '#374151' }}>Show More Posts</Text>
+                                            )}
+                                        </TouchableOpacity>
+                                    </View>
+                                )}
                             </>
                         ) : (
                             <View style={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 40, paddingHorizontal: 20 }}>

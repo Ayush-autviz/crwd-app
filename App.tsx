@@ -88,6 +88,7 @@ import { useAuthStore } from './src/store/store';
 import { PostHog, PostHogProvider, usePostHog } from 'posthog-react-native'
 import NewGivingGroupPage from './src/screens/NewGivingGroup'
 import FullscreenVideoScreen from './src/screens/FullscreenVideoScreen'
+import FullscreenImageScreen from './src/screens/FullscreenImageScreen'
 
 const Tab = createBottomTabNavigator()
 const Drawer = createDrawerNavigator()
@@ -419,6 +420,15 @@ export default function App() {
         <Stack.Screen 
           name="FullscreenVideo" 
           component={FullscreenVideoScreen} 
+          options={{ 
+            animation: 'fade',
+            gestureEnabled: true,
+            gestureDirection: 'vertical',
+          }} 
+        />
+        <Stack.Screen 
+          name="FullscreenImage" 
+          component={FullscreenImageScreen} 
           options={{ 
             animation: 'fade',
             gestureEnabled: true,

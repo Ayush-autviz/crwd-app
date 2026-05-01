@@ -182,7 +182,7 @@ export default function GivingPost({
     const [showFundraiserMenu, setShowFundraiserMenu] = useState<number | null>(null);
     const shareSheetRef = useRef<BottomSheetModal>(null);
     const [shareData, setShareData] = useState({ url: '', title: '', message: '' });
-    const [imageWidths, setImageWidths] = useState<Record<string, number>>({});
+    const [imageDimensions, setImageDimensions] = useState<Record<string, { width: number, height: number }>>({});
     const deleteBottomSheetRef = useRef<BottomSheetModal>(null);
 
     const queryClient = useQueryClient();
@@ -318,17 +318,26 @@ export default function GivingPost({
         setPostsLikesCount(likesCount);
     }, [posts]);
 
-    // Calculate image sizes for all posts
+    // Calculate image dimensions for all posts
     useEffect(() => {
         if (!posts) return;
         posts.forEach(item => {
             const imageUrl = item.fundraiser?.image || item.previewDetails?.image || item.imageUrl;
-            if (imageUrl && !imageWidths[item.id] && item.media_type !== 'video') {
+            if (imageUrl && !imageDimensions[item.id] && item.media_type !== 'video') {
                 Image.getSize(imageUrl, (width, height) => {
-                    const calculatedWidth = (200 * width) / height;
-                    setImageWidths(prev => ({
+                    const maxWidth = screenWidth - 70;
+                    const targetHeight = 200;
+                    let calculatedWidth = (targetHeight * width) / height;
+                    let finalHeight = targetHeight;
+
+                    if (calculatedWidth > maxWidth) {
+                        calculatedWidth = maxWidth;
+                        finalHeight = (maxWidth * height) / width;
+                    }
+
+                    setImageDimensions(prev => ({
                         ...prev,
-                        [item.id]: Math.min(calculatedWidth, screenWidth - 32)
+                        [item.id]: { width: calculatedWidth, height: finalHeight }
                     }));
                 }, (error) => console.log('Image size error for post', item.id, error));
             }
@@ -917,12 +926,12 @@ export default function GivingPost({
                                                                     <Image
                                                                         source={{ uri: item.fundraiser.image }}
                                                                         style={{
-                                                                            width: imageWidths[item.id] || 0,
-                                                                            height: 200,
+                                                                            width: imageDimensions[item.id]?.width || 0,
+                                                                            height: imageDimensions[item.id]?.height || 200,
                                                                             borderRadius: 8,
-                                                                            opacity: imageWidths[item.id] ? 1 : 0
+                                                                            opacity: imageDimensions[item.id] ? 1 : 0
                                                                         }}
-                                                                        resizeMode="cover"
+                                                                        resizeMode="contain"
                                                                     />
                                                                 </View>
                                                             ) : (
@@ -982,7 +991,7 @@ export default function GivingPost({
                                                     <View style={{ width: '100%', borderRadius: 12, overflow: 'hidden', backgroundColor: '#EFF6FF', marginBottom: 8 }}>
                                                         <View style={{ width: '100%', height: 160 }}>
                                                             {item.fundraiser.image ? (
-                                                                <Image source={{ uri: item.fundraiser.image }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+                                                                <Image source={{ uri: item.fundraiser.image }} style={{ width: '100%', height: '100%' }} resizeMode="contain" />
                                                             ) : (
                                                                 <View style={{ width: '100%', height: '100%', backgroundColor: item.fundraiser.color || '#1600ff', justifyContent: 'center', alignItems: 'center' }}>
                                                                     <Text style={{ color: 'white', fontSize: 18, fontFamily: 'Outfit-Bold' }}>{item.fundraiser.name}</Text>
@@ -1001,12 +1010,12 @@ export default function GivingPost({
                                                     <Text style={styles.postText}>{renderHighlightedText(item.text, item.mentions)}</Text>
                                                 )}
 
-                                                 {/* Media Section */}
+                                                {/* Media Section */}
                                                 {!item.fundraiser && !item.previewDetails && item.imageUrl && (
-                                                    <View style={{ marginTop: 12 }}>
-                                                        {item.media_type === 'video' ? (
-                                                            <VideoPlayer 
-                                                                src={item.imageUrl} 
+                                                    item.media_type === 'video' ? (
+                                                        <View style={{ marginBottom: 12 }}>
+                                                            <VideoPlayer
+                                                                src={item.imageUrl}
                                                                 user={{
                                                                     name: item.username || 'User',
                                                                     username: item.username,
@@ -1031,19 +1040,44 @@ export default function GivingPost({
                                                                     navigation.navigate('UserProfile', { userId: item.userId || username });
                                                                 }}
                                                             />
-                                                        ) : (
-                                                            <View style={[styles.mediaContainer, { alignSelf: 'flex-start', width: 'auto' }]}>
+                                                        </View>
+                                                    ) : (
+                                                        <View style={styles.mediaContainer}>
+                                                            <TouchableOpacity
+                                                                onPress={() => (navigation as any).navigate('FullscreenImage', {
+                                                                    src: item.imageUrl,
+                                                                    user: {
+                                                                        name: item.username || 'User',
+                                                                        username: item.username,
+                                                                        avatar: item.avatarUrl || '',
+                                                                        isVerified: false
+                                                                    },
+                                                                    caption: item.text,
+                                                                    likes: postsLikesCount[item.id] || item.likes || 0,
+                                                                    comments: item.comments || 0,
+                                                                    isLiked: likedPosts.has(item.id),
+                                                                    onLike: () => handleLikePress(item.id),
+                                                                    onComment: () => onCommentPress ? onCommentPress(item) : (navigation as any).navigate('PostDetail', { postId: item.id }),
+                                                                    onShare: () => handleShare(item),
+                                                                    onUserPress: (username) => {
+                                                                        navigation.navigate('UserProfile', { userId: item.userId || username });
+                                                                    }
+                                                                })}
+                                                                activeOpacity={0.9}
+                                                                style={[styles.mediaContainer, { alignSelf: 'flex-start', width: 'auto', maxWidth: '100%' }]}
+                                                            >
                                                                 <Image
                                                                     source={{ uri: item.imageUrl }}
                                                                     style={[styles.postImage, {
-                                                                        width: imageWidths[item.id] || 0,
-                                                                        opacity: imageWidths[item.id] ? 1 : 0
+                                                                        width: imageDimensions[item.id]?.width || 0,
+                                                                        height: imageDimensions[item.id]?.height || 200,
+                                                                        opacity: imageDimensions[item.id] ? 1 : 0
                                                                     }]}
-                                                                    resizeMode="cover"
+                                                                    resizeMode="contain"
                                                                 />
-                                                            </View>
-                                                        )}
-                                                    </View>
+                                                            </TouchableOpacity>
+                                                        </View>
+                                                    )
                                                 )}
 
                                                 {/* Link Preview Section */}
@@ -1054,7 +1088,7 @@ export default function GivingPost({
                                                         activeOpacity={0.8}
                                                     >
                                                         {item.previewDetails.image && (
-                                                            <Image source={{ uri: item.previewDetails.image }} style={{ width: '100%', height: 180 }} resizeMode="cover" />
+                                                            <Image source={{ uri: item.previewDetails.image }} style={{ width: '100%', height: 180 }} resizeMode="contain" />
                                                         )}
                                                         <View style={{ padding: 10 }}>
                                                             {item.previewDetails.site_name && (
@@ -1299,7 +1333,7 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         backgroundColor: 'white',
         overflow: 'hidden',
-        marginBottom: 12,
+        marginBottom: 6,
     },
     postImage: {
         height: 200,

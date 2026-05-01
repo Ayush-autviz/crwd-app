@@ -115,7 +115,9 @@ export default function PostDetail() {
   const [pendingAction, setPendingAction] = useState<any>(null)
 
   const [imageWidth, setImageWidth] = useState<number | null>(null)
+  const [imageHeight, setImageHeight] = useState<number>(200)
   const [previewImageWidth, setPreviewImageWidth] = useState<number | null>(null)
+  const [previewImageHeight, setPreviewImageHeight] = useState<number>(200)
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [isImageModalVisible, setIsImageModalVisible] = useState(false)
 
@@ -183,8 +185,18 @@ export default function PostDetail() {
       Image.getSize(
         post.imageUrl,
         (width, height) => {
-          const calculatedWidth = (200 * width) / height;
-          setImageWidth(Math.min(calculatedWidth, screenWidth - 40)); // padding 20 on each side
+          const maxWidth = screenWidth - 40;
+          const targetHeight = 200;
+          let calculatedWidth = (targetHeight * width) / height;
+          let finalHeight = targetHeight;
+
+          if (calculatedWidth > maxWidth) {
+            calculatedWidth = maxWidth;
+            finalHeight = (maxWidth * height) / width;
+          }
+
+          setImageWidth(calculatedWidth);
+          setImageHeight(finalHeight);
         },
         (error) => console.log('Image size error', error)
       );
@@ -196,8 +208,18 @@ export default function PostDetail() {
       Image.getSize(
         post.previewDetails.image,
         (width, height) => {
-          const calculatedWidth = (200 * width) / height;
-          setPreviewImageWidth(Math.min(calculatedWidth, screenWidth - 42)); // padding + border
+          const maxWidth = screenWidth - 42;
+          const targetHeight = 180;
+          let calculatedWidth = (targetHeight * width) / height;
+          let finalHeight = targetHeight;
+
+          if (calculatedWidth > maxWidth) {
+            calculatedWidth = maxWidth;
+            finalHeight = (maxWidth * height) / width;
+          }
+
+          setPreviewImageWidth(calculatedWidth);
+          setPreviewImageHeight(finalHeight);
         },
         (error) => console.log('Preview image size error', error)
       );
@@ -1166,11 +1188,11 @@ export default function PostDetail() {
                       source={{ uri: post.previewDetails.image }}
                       style={{
                         width: previewImageWidth || 0,
-                        height: 200,
+                        height: previewImageHeight,
                         opacity: previewImageWidth ? 1 : 0,
                         borderRadius: 8,
                       }}
-                      resizeMode="cover"
+                      resizeMode="contain"
                     />
                   </View>
                 )}
@@ -1211,8 +1233,8 @@ export default function PostDetail() {
             ) : post.imageUrl ? (
               <View style={{ marginTop: 12 }}>
                 {post.media_type === 'video' ? (
-                  <VideoPlayer 
-                    src={post.imageUrl} 
+                  <VideoPlayer
+                    src={post.imageUrl}
                     user={{
                       name: post.username,
                       username: post.user.username,
@@ -1224,30 +1246,45 @@ export default function PostDetail() {
                     comments={post.comments}
                     isLiked={post.isLiked}
                     onLike={() => post.isLiked ? unlikePostMutation.mutate() : likePostMutation.mutate()}
-                    onComment={() => {}}
-                    onShare={() => {}}
+                    onComment={() => { }}
+                    onShare={() => { }}
                     onUserPress={(username) => {
                       (navigation as any).navigate('UserProfile', { userId: post.user.id.toString() });
                     }}
                   />
                 ) : (
                   <TouchableOpacity
-                    onPress={() => {
-                      setSelectedImage(post.imageUrl || null);
-                      setIsImageModalVisible(true);
-                    }}
+                    onPress={() => (navigation as any).navigate('FullscreenImage', {
+                      src: post.imageUrl,
+                      user: {
+                        name: post.username,
+                        username: post.user.username,
+                        avatar: post.avatarUrl || '',
+                        isVerified: false
+                      },
+                      caption: post.text,
+                      likes: post.likes,
+                      comments: comments.length,
+                      isLiked: post.isLiked,
+                      onLike: handlePostLike,
+                      onComment: () => { },
+                      onShare: handleShare,
+                      onUserPress: (username: string) => {
+                        (navigation as any).navigate('UserProfile', { userId: post.user.id.toString() });
+                      }
+                    })}
                     activeOpacity={0.9}
                     style={{ flexDirection: 'row', borderRadius: 8 }}
                   >
                     <Image
                       source={{ uri: post.imageUrl }}
                       style={{
-                        width: imageWidth || 0,
-                        height: 200,
+                        width: imageWidth || '100%',
+                        height: imageHeight,
                         borderRadius: 8,
                         opacity: imageWidth ? 1 : 0
                       }}
-                      resizeMode="cover"
+                      resizeMode="contain"
                     />
                   </TouchableOpacity>
                 )}
@@ -1355,50 +1392,6 @@ export default function PostDetail() {
           disabled={createCommentMutation.isPending || createReplyMutation.isPending}
         />
 
-        {/* Full Image Modal */}
-        <Modal
-          visible={isImageModalVisible}
-          transparent={true}
-          animationType="fade"
-          onRequestClose={() => setIsImageModalVisible(false)}
-        >
-          <View style={{
-            flex: 1,
-            backgroundColor: 'rgba(0, 0, 0, 0.9)',
-            justifyContent: 'center',
-            alignItems: 'center'
-          }}>
-            <TouchableOpacity
-              style={{
-                position: 'absolute',
-                top: Platform.OS === 'ios' ? 60 : 40,
-                right: 20,
-                zIndex: 10,
-                padding: 10,
-                backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                borderRadius: 20
-              }}
-              onPress={() => setIsImageModalVisible(false)}
-            >
-              <X color="white" size={24} />
-            </TouchableOpacity>
-
-            <TouchableWithoutFeedback onPress={() => setIsImageModalVisible(false)}>
-              <View style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}>
-                {selectedImage && (
-                  <Image
-                    source={{ uri: selectedImage }}
-                    style={{
-                      width: '100%',
-                      height: '80%',
-                    }}
-                    resizeMode="contain"
-                  />
-                )}
-              </View>
-            </TouchableWithoutFeedback>
-          </View>
-        </Modal>
 
         {/* Exit Confirmation Modal */}
         <Modal

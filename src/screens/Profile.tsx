@@ -26,6 +26,7 @@ import { truncateAtFirstPeriod } from '../utils/truncateFirstPeriod'
 import { CompactProfileHeader } from '../components/profile/CompactProfileHeader'
 import { ProfileDonationBox } from '../components/profile/ProfileDonationBox'
 import { ProfileGroups } from '../components/profile/ProfileGroups'
+import { Skeleton } from '../components/ui/Skeleton'
 import { useInfiniteQuery } from '@tanstack/react-query';
 
 type RootStackParamList = {
@@ -62,6 +63,28 @@ const getInitials = (firstName?: string, lastName?: string, name?: string, usern
     }
     return username?.charAt(0).toUpperCase() || 'U';
 };
+
+const PostSkeleton = () => (
+    <View style={{ marginBottom: 24, padding: 16, backgroundColor: 'white', borderRadius: 12, borderWidth: 1, borderColor: '#f3f4f6' }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+            <Skeleton width={40} height={40} borderRadius={20} style={{ marginRight: 12 }} />
+            <View>
+                <Skeleton width={120} height={16} borderRadius={4} style={{ marginBottom: 6 }} />
+                <Skeleton width={80} height={12} borderRadius={4} />
+            </View>
+        </View>
+        <Skeleton width="100%" height={16} borderRadius={4} style={{ marginBottom: 8 }} />
+        <Skeleton width="90%" height={16} borderRadius={4} style={{ marginBottom: 16 }} />
+        <Skeleton width="100%" height={200} borderRadius={12} style={{ marginBottom: 16 }} />
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <View style={{ flexDirection: 'row', gap: 24 }}>
+                <Skeleton width={40} height={20} borderRadius={4} />
+                <Skeleton width={40} height={20} borderRadius={4} />
+            </View>
+            <Skeleton width={20} height={20} borderRadius={4} />
+        </View>
+    </View>
+);
 
 export default function Profile() {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -936,9 +959,10 @@ export default function Profile() {
                     {/* Posts Section */}
                     <View style={{ marginTop: 12, borderTopWidth: 1, borderTopColor: '#f3f4f6', paddingTop: 10, paddingBottom: 100 }}>
                         {postsLoading ? (
-                            <View style={{ padding: 20, alignItems: 'center' }}>
-                                <ActivityIndicator size="large" color={PrimaryBlue} />
-                                <Text style={{ marginTop: 10, color: '#6b7280', fontFamily: 'Outfit-Regular' }}>Loading posts...</Text>
+                            <View style={{ paddingVertical: 10 }}>
+                                <PostSkeleton />
+                                <PostSkeleton />
+                                <PostSkeleton />
                             </View>
                         ) : userPosts.length > 0 ? (
                             <>

@@ -10,9 +10,11 @@ import {
   Image,
 } from 'react-native';
 import Video, { VideoRef, ResizeMode } from 'react-native-video';
-import { X, Heart, MessageCircle, Share2, Volume2, VolumeX, Play } from 'lucide-react-native';
+import { X, Heart, MessageCircle, Share2, Volume2, VolumeX, Play, Pause, SkipBack, SkipForward } from 'lucide-react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, { useSharedValue, runOnJS } from 'react-native-reanimated';
 
 interface VideoFullscreenProps {
   isOpen: boolean;
@@ -55,15 +57,75 @@ const VideoFullscreen: React.FC<VideoFullscreenProps> = ({
   const [isMuted, setIsMuted] = useState(false);
   const [progress, setProgress] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [duration, setDuration] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
   const [isExpanded, setIsExpanded] = useState(false);
   const [canExpand, setCanExpand] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isBuffering, setIsBuffering] = useState(false);
+  const [barWidth, setBarWidth] = useState(SCREEN_WIDTH - 32);
+  const [seekFeedback, setSeekFeedback] = useState<{ type: 'forward' | 'backward', visible: boolean }>({ type: 'forward', visible: false });
+  const [isLikedState, setIsLikedState] = useState(isLiked);
+  const [likesCount, setLikesCount] = useState(Number(likes));
+
+  const progressSV = useSharedValue(0);
+  const progressBarRef = useRef<View>(null);
+  const barLayout = useRef({ x: 0, width: SCREEN_WIDTH - 32 });
+  const tapTimeout = useRef<NodeJS.Timeout | null>(null);
+  const feedbackTimeout = useRef<NodeJS.Timeout | null>(null);
+  const lastTapRef = useRef<number>(0);
   const insets = useSafeAreaInsets();
+
+  useEffect(() => {
+    return () => {
+      if (tapTimeout.current) clearTimeout(tapTimeout.current);
+      if (feedbackTimeout.current) clearTimeout(feedbackTimeout.current);
+    };
+  }, []);
+
+  const panGesture = Gesture.Pan()
+    .onBegin((e) => {
+      runOnJS(setIsDragging)(true);
+    })
+    .onUpdate((e) => {
+      const x = e.absoluteX - barLayout.current.x;
+      const value = Math.max(0, Math.min(1, x / barLayout.current.width));
+
+      progressSV.value = value;
+
+      runOnJS(setProgress)(value);
+      runOnJS(setCurrentTime)(value * duration);
+
+      if (videoRef.current) {
+        runOnJS(videoRef.current.seek)(value * duration);
+      }
+    })
+    .onEnd(() => {
+      runOnJS(setIsDragging)(false);
+    });
 
   useEffect(() => {
     if (isOpen) {
       setIsPlaying(true);
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    setIsLikedState(isLiked);
+  }, [isLiked]);
+
+  useEffect(() => {
+    setLikesCount(Number(likes));
+  }, [likes]);
+
+  const handleLike = () => {
+    const newLikedState = !isLikedState;
+    setIsLikedState(newLikedState);
+    setLikesCount(prev => newLikedState ? Number(prev) + 1 : Number(prev) - 1);
+    if (onLike) {
+      onLike();
+    }
+  };
 
   const togglePlay = () => {
     setIsPlaying(!isPlaying);
@@ -74,9 +136,60 @@ const VideoFullscreen: React.FC<VideoFullscreenProps> = ({
   };
 
   const handleProgress = (data: { currentTime: number; playableDuration: number; seekableDuration: number }) => {
-    if (data.seekableDuration > 0) {
-      setProgress(data.currentTime / data.seekableDuration);
+    if (!isDragging) {
+      setCurrentTime(data.currentTime);
+      if (data.seekableDuration > 0) {
+        setProgress(data.currentTime / data.seekableDuration);
+      }
     }
+  };
+
+  const handleLoad = (data: { duration: number }) => {
+    setDuration(data.duration);
+    setIsLoading(false);
+  };
+
+  const handleSeek = (amount: number) => {
+    if (videoRef.current) {
+      const newTime = Math.max(0, Math.min(duration, currentTime + amount));
+      videoRef.current.seek(newTime);
+      setCurrentTime(newTime);
+    }
+  };
+
+  const handleVideoPress = (e: any) => {
+    const { locationX } = e.nativeEvent;
+    const now = Date.now();
+    const DOUBLE_TAP_DELAY = 300;
+
+    if (now - lastTapRef.current < DOUBLE_TAP_DELAY) {
+      if (tapTimeout.current) {
+        clearTimeout(tapTimeout.current);
+        tapTimeout.current = null;
+      }
+
+      const isRightSide = locationX > SCREEN_WIDTH / 2;
+      handleSeek(isRightSide ? 5 : -5);
+
+      if (feedbackTimeout.current) clearTimeout(feedbackTimeout.current);
+      setSeekFeedback({ type: isRightSide ? 'forward' : 'backward', visible: true });
+      feedbackTimeout.current = setTimeout(() => setSeekFeedback(prev => ({ ...prev, visible: false })), 500);
+
+      lastTapRef.current = 0;
+    } else {
+      lastTapRef.current = now;
+      tapTimeout.current = setTimeout(() => {
+        togglePlay();
+        tapTimeout.current = null;
+      }, DOUBLE_TAP_DELAY);
+    }
+  };
+
+  const formatRemainingTime = (current: number, total: number) => {
+    const remaining = Math.max(0, total - current);
+    const minutes = Math.floor(remaining / 60);
+    const seconds = Math.floor(remaining % 60);
+    return `-${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
   };
 
   const handleUserPress = () => {
@@ -94,7 +207,7 @@ const VideoFullscreen: React.FC<VideoFullscreenProps> = ({
       {/* Video Player */}
       <TouchableOpacity
         activeOpacity={1}
-        onPress={togglePlay}
+        onPress={handleVideoPress}
         style={styles.videoContainer}
       >
         <Video
@@ -106,11 +219,23 @@ const VideoFullscreen: React.FC<VideoFullscreenProps> = ({
           muted={isMuted}
           onProgress={handleProgress}
           onLoadStart={() => setIsLoading(true)}
-          onLoad={() => setIsLoading(false)}
-          onBuffer={({ isBuffering }) => setIsLoading(isBuffering)}
+          onLoad={handleLoad}
+          onBuffer={({ isBuffering }) => setIsBuffering(isBuffering)}
           repeat={true}
           playsInline={true}
+          progressUpdateInterval={100}
+          ignoreSilentSwitch="ignore"
+          playInBackground={false}
+          playWhenInactive={false}
+          bufferConfig={{ minBufferMs: 15000, maxBufferMs: 50000, bufferForPlaybackMs: 2500, bufferForPlaybackAfterRebufferMs: 5000 }}
         />
+
+        {/* Buffering Indicator */}
+        {isBuffering && !isLoading && (
+          <View style={styles.bufferingContainer}>
+            <ActivityIndicator size="small" color="white" />
+          </View>
+        )}
 
         {/* Loading Indicator */}
         {isLoading && (
@@ -141,16 +266,16 @@ const VideoFullscreen: React.FC<VideoFullscreenProps> = ({
       <View style={styles.interactionBar}>
         <TouchableOpacity
           style={styles.interactionButton}
-          onPress={onLike}
+          onPress={handleLike}
           activeOpacity={0.7}
         >
           <Heart
             size={28}
-            color={isLiked ? "#EF4444" : "white"}
-            fill={isLiked ? "#EF4444" : "transparent"}
+            color={isLikedState ? "#EF4444" : "white"}
+            fill={isLikedState ? "#EF4444" : "transparent"}
             style={styles.iconShadow}
           />
-          <Text style={styles.interactionText}>{likes}</Text>
+          <Text style={styles.interactionText}>{likesCount}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -170,13 +295,13 @@ const VideoFullscreen: React.FC<VideoFullscreenProps> = ({
           <Share2 size={28} color="white" style={styles.iconShadow} />
         </TouchableOpacity>
 
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={styles.interactionButton}
           onPress={toggleMute}
           activeOpacity={0.7}
         >
           {isMuted ? <VolumeX size={28} color="white" style={styles.iconShadow} /> : <Volume2 size={28} color="white" style={styles.iconShadow} />}
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
 
       {/* Metadata Overlay (Bottom) */}
@@ -185,7 +310,7 @@ const VideoFullscreen: React.FC<VideoFullscreenProps> = ({
         style={styles.metadataGradient}
         pointerEvents="box-none"
       >
-        <View style={[styles.metadataContent, { paddingBottom: insets.bottom + 20 }]}>
+        <View style={[styles.metadataContent, { paddingBottom: 0 }]}>
           <TouchableOpacity
             style={styles.userInfo}
             onPress={handleUserPress}
@@ -200,12 +325,6 @@ const VideoFullscreen: React.FC<VideoFullscreenProps> = ({
             </View>
             <View style={styles.userNameContainer}>
               <Text style={styles.userName}>{user?.name || 'User'}</Text>
-              {/* {user?.isVerified && (
-                <Image
-                  source={require('../../assets/icons/verified.png')}
-                  style={{ width: 14, height: 14 }}
-                />
-              )} */}
             </View>
           </TouchableOpacity>
 
@@ -241,11 +360,60 @@ const VideoFullscreen: React.FC<VideoFullscreenProps> = ({
           </View>
         </View>
 
-        {/* Progress Bar */}
-        <View style={styles.progressBarContainer}>
-          <View style={[styles.progressBar, { width: `${progress * 100}%` }]} />
+        {/* New Interactive Footer */}
+        <View style={[styles.footerContainer, { paddingBottom: insets.bottom + 10 }]} pointerEvents="box-none">
+          {/* Interactive Progress Bar with GestureDetector for Dragging */}
+          <GestureDetector gesture={panGesture}>
+            <View
+              ref={progressBarRef}
+              onLayout={() => {
+                progressBarRef.current?.measureInWindow((x, y, width) => {
+                  barLayout.current = { x, width };
+                });
+              }}
+              style={[styles.progressBarWrapper, { zIndex: 100 }]}
+            >
+              <View style={styles.progressBarBg} pointerEvents="none">
+                <View style={[styles.progressBarActive, { width: `${progress * 100}%` }]}>
+                  <View style={[
+                    styles.scrubberThumb,
+                    isDragging && { transform: [{ scale: 1.5 }] }
+                  ]} />
+                </View>
+              </View>
+            </View>
+          </GestureDetector>
+
+          <View style={styles.footerControls}>
+            <View style={styles.footerLeft}>
+              <TouchableOpacity onPress={togglePlay} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                {isPlaying ? <Pause size={24} color="white" fill="white" /> : <Play size={24} color="white" fill="white" />}
+              </TouchableOpacity>
+              <Text style={styles.timestampText}>{formatRemainingTime(currentTime, duration)}</Text>
+            </View>
+
+            <TouchableOpacity onPress={toggleMute} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+              {isMuted ? <VolumeX size={24} color="white" /> : <Volume2 size={24} color="white" />}
+            </TouchableOpacity>
+          </View>
         </View>
       </LinearGradient>
+      {/* Seek Feedback Overlays - Centered on screen */}
+      {seekFeedback.visible && (
+        <View style={styles.seekFeedbackOverlay} pointerEvents="none">
+          <View style={[
+            styles.seekFeedbackContent,
+            seekFeedback.type === 'backward' ? { marginRight: 'auto', marginLeft: '2%' } : { marginLeft: 'auto', marginRight: '2%' }
+          ]}>
+            {seekFeedback.type === 'forward' ? (
+              <SkipForward size={40} color="white" fill="white" />
+            ) : (
+              <SkipBack size={40} color="white" fill="white" />
+            )}
+            <Text style={styles.seekFeedbackText}>5s</Text>
+          </View>
+        </View>
+      )}
     </View>
   );
 };
@@ -370,22 +538,57 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
   },
-  progressBarContainer: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    height: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    zIndex: 60,
+  footerContainer: {
+    paddingHorizontal: 16,
   },
-  progressBar: {
+  progressBarWrapper: {
+    height: 30,
+    justifyContent: 'center',
+    zIndex: 100,
+  },
+  progressBarBg: {
+    height: 3,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 1.5,
+    width: '100%',
+    overflow: 'visible',
+  },
+  progressBarActive: {
     height: '100%',
     backgroundColor: 'white',
-    shadowColor: 'white',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.5,
-    shadowRadius: 4,
+    borderRadius: 1.5,
+    position: 'relative',
+  },
+  scrubberThumb: {
+    position: 'absolute',
+    right: -6,
+    top: -4.5,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: 'white',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+  },
+  footerControls: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  footerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    flex: 1,
+  },
+  timestampText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '500',
+    fontVariant: ['tabular-nums'],
   },
   moreButton: {
     marginTop: 4,
@@ -395,6 +598,29 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     opacity: 0.8,
+  },
+  bufferingContainer: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  seekFeedbackOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 200,
+    justifyContent: 'center',
+    alignItems: 'center',
+    pointerEvents: 'none',
+  },
+  seekFeedbackContent: {
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+  },
+  seekFeedbackText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });
 

@@ -10,6 +10,7 @@ import { Comment, CommentData } from './Comment';
 import { PrimaryBlue, PrimaryGrey } from '../../Constants/Colors';
 import { useNavigation, CommonActions } from '@react-navigation/native';
 import { MentionSearchResults } from './MentionSearchResults';
+import DiscardBottomSheet from '../ui/DiscardBottomSheet';
 
 interface CommentsBottomSheetProps {
   isOpen: boolean;
@@ -35,6 +36,7 @@ interface CommentInputFooterHandle {
   clear: () => void;
   setText: (text: string) => void;
   addMention: (mention: { type: string; id: number | string; name: string }) => void;
+  hasContent: () => boolean;
 }
 
 interface CommentInputFooterProps {
@@ -78,7 +80,8 @@ const CommentInputFooter = memo(React.forwardRef<CommentInputFooterHandle, Comme
         ...prev.filter(m => m.name !== mention.name),
         mention
       ]);
-    }
+    },
+    hasContent: () => text.trim().length > 0
   }));
 
   useEffect(() => {
@@ -136,7 +139,7 @@ const CommentInputFooter = memo(React.forwardRef<CommentInputFooterHandle, Comme
     const newTextBeforeCursor = textBeforeCursor.substring(0, lastAtSymbolIndex) + mentionText;
 
     const newText = newTextBeforeCursor + textAfterCursor;
-    
+
     // Lock mentions during selection update
     selectionLockRef.current = true;
 
@@ -266,7 +269,9 @@ export default function CommentsBottomSheet({
   post,
 }: CommentsBottomSheetProps) {
   console.log('CommentsBottomSheet rendered with props:', { isOpen, post });
+  const isForceClosing = useRef(false);
   const bottomSheetRef = useRef<BottomSheetModal>(null);
+  const discardSheetRef = useRef<BottomSheetModal>(null);
   const footerRef = useRef<CommentInputFooterHandle>(null);
   const [comments, setComments] = useState<CommentData[]>([]);
   const [expandedComments, setExpandedComments] = useState<Set<number>>(new Set());
@@ -280,33 +285,37 @@ export default function CommentsBottomSheet({
 
   // Handle opening/closing the bottom sheet
   useEffect(() => {
-    console.log('CommentsBottomSheet useEffect - isOpen changed:', isOpen);
-    console.log('bottomSheetRef.current:', bottomSheetRef.current);
     if (isOpen) {
-      console.log('Presenting bottom sheet modal');
+      isForceClosing.current = false;
       // Use setTimeout to ensure the ref is ready
       setTimeout(() => {
-        console.log('Attempting to present, ref:', bottomSheetRef.current);
         if (bottomSheetRef.current) {
           bottomSheetRef.current.present();
-          console.log('present() called');
-        } else {
-          console.log('bottomSheetRef.current is null!');
         }
       }, 100);
     } else {
-      console.log('Dismissing bottom sheet');
       bottomSheetRef.current?.dismiss();
     }
   }, [isOpen]);
 
-  const handleClose = useCallback(() => {
+  const forceClose = useCallback(() => {
+    isForceClosing.current = true;
     bottomSheetRef.current?.dismiss();
     onClose();
-    footerRef.current?.clear(); // Optional: clear text on close
+    footerRef.current?.clear();
     setReplyingTo(null);
     setExpandedComments(new Set());
   }, [onClose]);
+
+  const handleClose = useCallback(() => {
+    if (isForceClosing.current) return;
+
+    if (footerRef.current?.hasContent()) {
+      discardSheetRef.current?.present();
+    } else {
+      forceClose();
+    }
+  }, [forceClose]);
 
   const renderBackdrop = useCallback(
     (props: any) => (
@@ -674,7 +683,7 @@ export default function CommentsBottomSheet({
     if (!text.trim()) return;
 
     let finalMentions = [...mentions];
-    
+
     // If it's a reply, ensure the person we are replying to is mentioned
     if (replyingTo) {
       const targetId = replyingTo.userId || replyingTo.id;
@@ -820,6 +829,22 @@ export default function CommentsBottomSheet({
           )}
         </BottomSheetScrollView>
       </View>
+      <DiscardBottomSheet
+        ref={discardSheetRef}
+        onDiscard={() => {
+          discardSheetRef.current?.dismiss();
+          setTimeout(() => {
+            forceClose();
+          }, 300);
+        }}
+        onCancel={() => {
+          discardSheetRef.current?.dismiss();
+          // If the sheet was swiped down, we need to re-present it
+          setTimeout(() => {
+            bottomSheetRef.current?.present();
+          }, 300);
+        }}
+      />
     </BottomSheetModal>
   );
 }
@@ -857,7 +882,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   headerSubtitle: {
-    fontSize: 13,
+    fontSize: 14,
     color: '#6B7280',
     fontFamily: 'Outfit-Regular',
   },

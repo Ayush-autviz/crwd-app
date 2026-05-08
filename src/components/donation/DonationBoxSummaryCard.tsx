@@ -94,7 +94,12 @@ export default function DonationBoxSummaryCard({
   })
 
   const handleSaveAmount = () => {
+    if (editableAmount < 5) {
+      Alert.alert('Invalid Amount', 'The minimum monthly donation is $5.')
+      return
+    }
     // Calculate capacity for the new amount
+
     const fees = calculateFees(editableAmount)
     const net = fees.net
     const newMaxCapacity = Math.floor(net / 0.20)
@@ -155,9 +160,10 @@ export default function DonationBoxSummaryCard({
                 <TextInput
                   value={Math.round(editableAmount).toString()}
                   onChangeText={(text) => {
-                    const value = parseInt(text) || 5
-                    setEditableAmount(Math.max(5, value))
+                    const value = parseInt(text)
+                    setEditableAmount(isNaN(value) ? 0 : value)
                   }}
+
                   style={styles.amountInput}
                   keyboardType="numeric"
                   autoFocus

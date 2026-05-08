@@ -404,6 +404,12 @@ export default function ManageDonationBoxScreen() {
       const allCauseIds = [...remainingExistingCauseIds, ...selectedCauses];
       const allCollectiveIdsForUpdate = [...remainingExistingCollectiveIds, ...selectedCollectives];
 
+      // Validate minimum amount
+      if (editableAmount < 5) {
+        showToast('The minimum monthly donation is $5.', 3000);
+        return;
+      }
+
       // Validate that at least one nonprofit or collective exists
       if (allCauseIds.length === 0 && allCollectiveIdsForUpdate.length === 0) {
         showToast('Please add at least one nonprofit or collective to your donation box.', 3000);

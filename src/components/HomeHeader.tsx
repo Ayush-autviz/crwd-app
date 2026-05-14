@@ -1,6 +1,6 @@
 import { View, Text, Image, Dimensions, TouchableOpacity, SafeAreaView, TextInput } from 'react-native'
 import React from 'react'
-import { AlignJustify, Bell, ChevronLeft, Plus, Search, User, Menu } from 'lucide-react-native'
+import { AlignJustify, Bell, ChevronLeft, Plus, Search, User, Menu, MessageCircle } from 'lucide-react-native'
 import { LightGrey, PrimaryGreen, PrimaryGrey } from '../Constants/Colors';
 import { useNavigation, DrawerActions } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -12,6 +12,7 @@ import { Settings } from 'lucide-react-native';
 type RootStackParamList = {
     Post: undefined;
     Donation: undefined;
+    Messages: undefined;
     // ... other screens
     Circles: undefined;
 };
@@ -101,6 +102,14 @@ export default function HomeHeader({ show = false, menu = true, post = true, onL
                         </>
                         </View> */}
 
+
+                        <TouchableOpacity 
+                            onPress={() => navigation.navigate('Messages')} 
+                            activeOpacity={0.8}
+                            style={{ padding: 6 }}
+                        >
+                            <MessageCircle size={20} color="#111827" />
+                        </TouchableOpacity>
 
                         <TouchableOpacity onPress={() => navigation.navigate('NewSettings' as never)} >
                             <Menu size={24} color="#111827" />

@@ -6,7 +6,7 @@ import { navigationRef, navigate } from './src/navigation/navigationRef'
 import { createDrawerNavigator } from '@react-navigation/drawer'
 import Home from './src/screens/Home'
 import NewHome from './src/screens/NewHome'
-import { ToastProvider } from './src/contexts/ToastContext'
+import { ToastProvider, useToast } from './src/contexts/ToastContext'
 import Post from './src/screens/Post'
 import Activity from './src/screens/Activity'
 import Profile from './src/screens/Profile'
@@ -77,7 +77,7 @@ import NewSettings from './src/screens/NewSettings'
 import FundraiserDetail from './src/screens/FundraiserDetail'
 import CreateFundraiser from './src/screens/CreateFundraiser'
 import EditFundraiser from './src/screens/EditFundraiser'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query'
 import { StripeProvider } from '@stripe/stripe-react-native'
 import { STRIPE_PUBLISHABLE_KEY } from './src/config/stripe'
 import messaging from '@react-native-firebase/messaging'
@@ -89,6 +89,8 @@ import { PostHog, PostHogProvider, usePostHog } from 'posthog-react-native'
 import NewGivingGroupPage from './src/screens/NewGivingGroup'
 import FullscreenVideoScreen from './src/screens/FullscreenVideoScreen'
 import FullscreenImageScreen from './src/screens/FullscreenImageScreen'
+import Messages from './src/screens/Messages'
+
 
 const Tab = createBottomTabNavigator()
 const Drawer = createDrawerNavigator()
@@ -417,6 +419,7 @@ export default function App() {
 
         <Stack.Screen name="Articles" component={Articles} />
         <Stack.Screen name="ArticleDetail" component={ArticleDetail} />
+        <Stack.Screen name="Messages" component={Messages} />
         <Stack.Screen 
           name="FullscreenVideo" 
           component={FullscreenVideoScreen} 

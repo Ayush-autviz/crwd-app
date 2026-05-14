@@ -120,6 +120,7 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
   const actionText = update.content || '';
   const isJoinNotification = update.isJoinNotification || false;
   const isDonationNotification = !isJoinNotification && actionText.toLowerCase().includes('donated');
+  const isChatMessage = update.data?.type === 'chat_message';
 
   // Fetch joined collectives to check if user has already joined
   const { data: joinedCollectivesData } = useQuery({
@@ -321,9 +322,21 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
     );
   }
 
+  const handleNotificationPress = () => {
+    if (isChatMessage && update.data?.conversation_id) {
+      (navigation as any).navigate('Messages', { conversationId: update.data.conversation_id });
+    } else if (update.postId) {
+      (navigation as any).navigate('PostDetail', { postId: update.postId });
+    }
+  };
+
   // Default UI for donation and other notifications
   return (
-    <View style={styles.notificationCard}>
+    <TouchableOpacity 
+      style={styles.notificationCard}
+      onPress={handleNotificationPress}
+      activeOpacity={isChatMessage ? 0.7 : 1}
+    >
       {/* Top Section: Profile and Action Button */}
       <View style={styles.header}>
         <View style={styles.userInfo}>
@@ -426,7 +439,7 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
             })()}
           </Text>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 

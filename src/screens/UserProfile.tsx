@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query'
 import BottomSheet, { BottomSheetView, BottomSheetBackdrop, BottomSheetScrollView, BottomSheetModal } from '@gorhom/bottom-sheet'
 import { useRoute, useNavigation } from '@react-navigation/native'
-import { ArrowLeft, Ellipsis, Share2, Flag, MapPin, ChevronRight, X, Users } from 'lucide-react-native'
+import { ArrowLeft, Ellipsis, Share2, Flag, MapPin, ChevronRight, X, Users, MessageCircle } from 'lucide-react-native'
 import { getUserProfileById, followUserById, unfollowUserById, getPosts, getSupportedCausesByUserId, getUserFollowers, getUserFollowing } from '../services/api/social'
 import { getJoinCollective } from '../services/api/crwd'
 import { useAuthStore } from '../store/store'
@@ -751,27 +751,51 @@ export default function UserProfile() {
                             textAlign: 'center',
 
                             marginBottom: 12
-                    {/* Follow Button */}
-                    <TouchableOpacity
-                        onPress={handleFollowClick}
-                        style={[
-                            styles.followButtonMain,
-                            isFollowing && styles.followButtonMainOutline
-                        ]}
-                        disabled={followMutation.isPending || unfollowMutation.isPending}
-                        activeOpacity={0.7}
-                    >
-                        {followMutation.isPending || unfollowMutation.isPending ? (
-                            <ActivityIndicator size="small" color={isFollowing ? PrimaryBlue : '#FFFFFF'} />
-                        ) : (
-                            <Text style={[
-                                styles.followButtonTextMain,
-                                isFollowing && styles.followButtonTextMainOutline
-                            ]}>
-                                {isFollowing ? 'Following' : 'Follow'}
+                    {/* Action Buttons */}
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+                        <TouchableOpacity
+                            onPress={handleFollowClick}
+                            style={[
+                                styles.followButtonMain,
+                                { flex: 1 },
+                                isFollowing && styles.followButtonMainOutline
+                            ]}
+                            disabled={followMutation.isPending || unfollowMutation.isPending}
+                            activeOpacity={0.7}
+                        >
+                            {followMutation.isPending || unfollowMutation.isPending ? (
+                                <ActivityIndicator size="small" color={isFollowing ? PrimaryBlue : '#FFFFFF'} />
+                            ) : (
+                                <Text style={[
+                                    styles.followButtonTextMain,
+                                    isFollowing && styles.followButtonTextMainOutline
+                                ]}>
+                                    {isFollowing ? 'Following' : 'Follow'}
+                                </Text>
+                            )}
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            onPress={() => {
+                                if (!currentUser?.id) {
+                                    (navigation as any).navigate('Login');
+                                } else {
+                                    (navigation as any).navigate('Messages', { userId: targetUserId });
+                                }
+                            }}
+                            style={[
+                                styles.followButtonMain,
+                                styles.followButtonMainOutline,
+                                { flex: 1, flexDirection: 'row', gap: 6 }
+                            ]}
+                            activeOpacity={0.7}
+                        >
+                            <MessageCircle size={18} color="#374151" />
+                            <Text style={[styles.followButtonTextMain, styles.followButtonTextMainOutline]}>
+                                Message
                             </Text>
-                        )}
-                    </TouchableOpacity>
+                        </TouchableOpacity>
+                    </View>
 
                     <ProfileDonationBox
                         causes={statsCausesData?.results?.map((item: any) => item.cause || item) || []}

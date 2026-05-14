@@ -133,6 +133,7 @@ export default function Activity() {
                 personalNotifications
                     .map((notification: any) => {
                         const userId =
+                            notification.data?.sender_id ||
                             notification.data?.liker_id ||
                             notification.data?.commenter_id ||
                             notification.data?.mentioner_id ||
@@ -192,6 +193,7 @@ export default function Activity() {
                 notification.data?.follower_id;
             const isMention = notification.title?.toLowerCase().includes('mentioned') ||
                 notification.body?.toLowerCase().includes('mentioned');
+            const isChatMessage = notification.data?.type === 'chat_message';
 
             // Extract recipient name from body or title
             let collectiveName = '';
@@ -270,6 +272,7 @@ export default function Activity() {
 
             // Extract user info for avatar - get the user who triggered the notification
             const userId =
+                notification.data?.sender_id ||
                 notification.data?.liker_id ||
                 notification.data?.commenter_id ||
                 notification.data?.mentioner_id ||
@@ -311,9 +314,15 @@ export default function Activity() {
                 }
             }
 
-            const firstName = profileUser?.first_name || notification.user?.first_name || notification.data?.first_name || extractedFirstName || '';
-            const lastName = profileUser?.last_name || notification.user?.last_name || notification.data?.last_name || extractedLastName || '';
-            const extractedUsername = username || profileUser?.username || notification.user?.username || notification.data?.username || notification.data?.follower_username || '';
+            const firstName = isChatMessage
+                ? (profileUser?.first_name || notification.data?.sender?.first_name || '')
+                : (profileUser?.first_name || notification.user?.first_name || notification.data?.first_name || extractedFirstName || '');
+            const lastName = isChatMessage
+                ? (profileUser?.last_name || notification.data?.sender?.last_name || '')
+                : (profileUser?.last_name || notification.user?.last_name || notification.data?.last_name || extractedLastName || '');
+            const extractedUsername = isChatMessage
+                ? (profileUser?.username || notification.data?.sender?.username || '')
+                : (username || profileUser?.username || notification.user?.username || notification.data?.username || notification.data?.follower_username || '');
 
             const userFullName = firstName && lastName ? `${firstName} ${lastName}` : firstName || extractedUsername || "";
 
@@ -338,6 +347,16 @@ export default function Activity() {
             } else if (isDonation) {
                 displayTitle = 'Donation Received';
                 displayDescription = notification.body || notification.title || '';
+            } else if (isChatMessage) {
+                displayTitle = notification.title || (userFullName ? `New message from ${userFullName}` : 'New Message');
+                // For images or fundraisers, the body might be a URL or "Shared a fundraiser"
+                if (notification.data?.entity_type === 'image') {
+                    displayDescription = 'Sent an image';
+                } else if (notification.data?.entity_type === 'fundraiser') {
+                    displayDescription = 'Shared a fundraiser';
+                } else {
+                    displayDescription = notification.body || 'Sent a message';
+                }
             }
 
             const postId = notification.data?.post_id || notification.data?.post?.id || notification.post_id;
@@ -346,7 +365,7 @@ export default function Activity() {
 
             return {
                 id: notification.id,
-                type: isDonation ? 'donation' : isNewMember ? 'new_member' : isFollower ? 'follower' : isLike ? 'like' : isComment ? 'comment' : 'other',
+                type: isChatMessage ? 'chat_message' : isDonation ? 'donation' : isNewMember ? 'new_member' : isFollower ? 'follower' : isLike ? 'like' : isComment ? 'comment' : 'other',
                 title: displayTitle,
                 description: displayDescription,
                 collectiveName: collectiveName,
@@ -354,7 +373,12 @@ export default function Activity() {
                 memberName: memberName,
                 donationAmount: donationAmount,
                 time: formatTimeAgo(notification.created_at || notification.updated_at),
-                avatarUrl: notification.data?.user_profile_picture || '',
+                avatarUrl: isChatMessage
+                    ? (profileUser?.profile_picture || notification.data?.sender?.profile_picture || '')
+                    : (profileUser?.profile_picture || notification.user?.profile_picture || notification.data?.user_profile_picture || ''),
+                color: isChatMessage
+                    ? (profileUser?.color || notification.data?.sender?.color || '')
+                    : (profileUser?.color || notification.data?.user_color || notification.user?.color || ''),
                 collectiveId: collectiveId,
                 nonprofitId: nonprofitId,
                 postId: postId,
@@ -363,6 +387,7 @@ export default function Activity() {
                 lastName: lastName,
                 username: extractedUsername,
                 color: notification.data?.user_color || profileUser?.color || notification.user?.color || undefined,
+                conversationId: notification.data?.conversation_id,
             };
         });
     }, [personalNotifications, userProfilesMap]);
@@ -554,7 +579,9 @@ export default function Activity() {
         };
 
         const handleItemPress = () => {
-            if (item.postId) {
+            if (item.type === 'chat_message' && item.conversationId) {
+                (navigation as any).navigate('Messages', { conversationId: item.conversationId });
+            } else if (item.postId) {
                 (navigation as any).navigate('PostDetail', { postId: item.postId });
             } else if (item.collectiveId) {
                 (navigation as any).navigate('GroupCRWD', { collectiveId: item.collectiveId.toString() });

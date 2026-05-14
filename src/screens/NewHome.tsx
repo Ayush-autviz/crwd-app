@@ -264,6 +264,7 @@ export default function NewHome() {
             notification.data?.creator_id ||
             notification.data?.new_member_id ||
             notification.data?.commenter_id ||
+            notification.data?.sender_id ||
             null
           );
         });
@@ -681,6 +682,8 @@ export default function NewHome() {
                   donation_id: notification.data?.donation_id,
                   nonprofit_id: notification.data?.nonprofit_id,
                   nonprofit_count: notification.data?.nonprofit_count,
+                  conversation_id: notification.data?.conversation_id,
+                  sender_id: notification.data?.sender_id,
                 },
                 isFollowing: userId ? followingIds.has(userId.toString()) : false,
               }

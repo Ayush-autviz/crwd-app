@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import MainHeaderNav from '../components/MainHeaderNav'
 import { PrimaryGrey, PrimaryBlue, LightGrey } from '../Constants/Colors'
 import { useInAppBrowser } from '../hooks/useInAppBrowser'
-import { Heart, MessageCircle, ChevronRight, Trash2, Ellipsis, X, Play } from 'lucide-react-native'
+import { Heart, MessageCircle, ChevronRight, Trash2, Ellipsis, X, Play, Repeat } from 'lucide-react-native'
 import { BottomSheetModal } from '@gorhom/bottom-sheet'
 import VideoPlayer from '../components/ui/VideoPlayer'
 import DiscardBottomSheet from '../components/ui/DiscardBottomSheet'
@@ -69,6 +69,7 @@ interface Post {
     name: string;
   };
   mentions?: any[];
+  reposted_from?: any;
 }
 
 interface RouteParams {
@@ -156,6 +157,7 @@ export default function PostDetail() {
       name: postData.collective?.name || 'Unknown Collective',
     },
     mentions: postData.mentions || [],
+    reposted_from: postData.reposted_from,
   } : (route.params as RouteParams)?.post;
 
   // Fetch comments for the post with infinite query
@@ -443,9 +445,10 @@ export default function PostDetail() {
 
     triggers.sort((a, b) => b.length - a.length);
 
+    const urlPattern = '(https?:\\/\\/[^\\s]+)';
     const pattern = triggers.length > 0
-      ? `(${triggers.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')}|@\\w+)`
-      : '(@\\w+)';
+      ? `(${urlPattern}|${triggers.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')}|@\\w+)`
+      : `(${urlPattern}|@\\w+)`;
     const regex = new RegExp(pattern, 'gi');
 
     return content.split(regex).map((part, index) => {
@@ -1065,6 +1068,14 @@ export default function PostDetail() {
         >
           {/* Post Content */}
           <View style={{ padding: 20 }}>
+            {post.reposted_from && (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 12, paddingHorizontal: 4 }}>
+                <Repeat size={14} color="#6B7280" />
+                <Text style={{ fontSize: 11, fontWeight: '600', color: '#6B7280', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                  Reposted from {post.reposted_from.user?.full_name || post.reposted_from.user?.username || (post.reposted_from.user?.first_name ? `${post.reposted_from.user.first_name} ${post.reposted_from.user.last_name || ''}`.trim() : '')}
+                </Text>
+              </View>
+            )}
             <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
               <TouchableOpacity onPress={() => {
                 // If it's the current user's own profile, navigate to Profile tab
@@ -1161,7 +1172,7 @@ export default function PostDetail() {
             </View>
 
             <Text style={{ fontSize: 15, marginTop: 12, lineHeight: 22, color: '#111827', fontFamily: 'Outfit-Regular' }}>
-              {renderCommentContent(post.text, post.mentions)}
+              {renderCommentContent(post.text, post.mentions?.length ? post.mentions : post.reposted_from?.mentions)}
             </Text>
 
             {/* Show preview card if previewDetails exists, otherwise show image */}

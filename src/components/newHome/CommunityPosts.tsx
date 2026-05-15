@@ -118,6 +118,7 @@ export default function CommunityPosts({
               end_date: post.fundraiser.end_date,
             } : undefined,
             mentions: post.mentions || [],
+            reposted_from: post.reposted_from,
           };
 
           return (

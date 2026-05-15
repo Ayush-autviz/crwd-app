@@ -349,6 +349,7 @@ export default function UserProfile() {
         isLiked: post.is_liked || false,
         color: post.user?.color,
         mentions: post.mentions || [],
+        reposted_from: post.reposted_from,
     })) || [];
 
     // Redirect to own profile if viewing own profile

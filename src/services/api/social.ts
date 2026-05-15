@@ -124,6 +124,13 @@ export const unlikePost = async (postId: string) => {
     return response.data;
 };
 
+export const repostPost = async (postId: string | number) => {
+    const response = await axiosClient.post(`/social/posts/${postId}/repost/`, {
+        post_id: postId
+    });
+    return response.data;
+};
+
 // Comment Like/Unlike API endpoints
 export const likeComment = async (commentId: string) => {
     const response = await axiosClient.post(`/social/comments/${commentId}/like/`);

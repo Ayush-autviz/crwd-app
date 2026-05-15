@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { BottomSheetModal } from '@gorhom/bottom-sheet'
 import SharePost from './SharePost'
 import { LightGrey, PrimaryBlue, PrimaryGrey, SecondaryGrey } from '../Constants/Colors'
-import { Ellipsis, Heart, MessageCircle, Trash2, Share2, MessageSquare, Users, MapPin, MoreHorizontal, Pencil, Flag, Play } from 'lucide-react-native'
+import { Ellipsis, Heart, MessageCircle, Trash2, Share2, MessageSquare, Users, MapPin, MoreHorizontal, Pencil, Flag, Play, Repeat } from 'lucide-react-native'
 import { useNavigation, NavigationProp, CommonActions } from '@react-navigation/native'
 import VideoPlayer from './ui/VideoPlayer'
 import SocialShare from './SocialShare'
@@ -116,6 +116,18 @@ interface Post {
         is_active?: boolean;
         total_donors?: number;
         end_date?: string;
+    };
+    reposted_from?: {
+        id: number;
+        content?: string;
+        mentions?: any[];
+        user?: {
+            id: number;
+            username: string;
+            first_name?: string;
+            last_name?: string;
+            full_name?: string;
+        };
     };
 }
 
@@ -436,9 +448,10 @@ export default function PopularPosts({
 
         triggers.sort((a, b) => b.length - a.length);
 
+        const urlPattern = '(https?:\\/\\/[^\\s]+)';
         const pattern = triggers.length > 0
-            ? `(${triggers.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')}|@[\\w\\s]{1,30}(?=\\s|$)|@\\w+)`
-            : '(@[\\w\\s]{1,30}(?=\\s|$)|@\\w+)';
+            ? `(${urlPattern}|${triggers.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')}|@\\w+)`
+            : `(${urlPattern}|@\\w+)`;
         const regex = new RegExp(pattern, 'gi');
 
         return content.split(regex).map((part, index) => {
@@ -727,6 +740,14 @@ export default function PopularPosts({
                                     styles.postCard,
                                     item.fundraiser?.is_active && { backgroundColor: '#fbfcff' }
                                 ]}>
+                                    {item.reposted_from && (
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8, paddingHorizontal: 4 }}>
+                                            <Repeat size={12} color={PrimaryGrey} />
+                                            <Text style={{ fontSize: 10, fontWeight: '700', color: PrimaryGrey, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                                                Reposted from {item.reposted_from.user?.full_name || item.reposted_from.user?.username || (item.reposted_from.user?.first_name ? `${item.reposted_from.user.first_name} ${item.reposted_from.user.last_name || ''}`.trim() : '')}
+                                            </Text>
+                                        </View>
+                                    )}
                                     {/* Pinned Fundraiser Header - Only show if active */}
                                     {item.fundraiser?.is_active && (
                                         <View style={{
@@ -1070,7 +1091,7 @@ export default function PopularPosts({
                                             </>
                                         ) : (
                                             <>
-                                                <Text style={styles.postText}>{renderHighlightedText(item.text, item.mentions)}</Text>
+                                                <Text style={styles.postText}>{renderHighlightedText(item.text, item.mentions?.length ? item.mentions : item.reposted_from?.mentions)}</Text>
                                             </>
                                         )}
 
@@ -1318,6 +1339,8 @@ export default function PopularPosts({
                 url={shareData.url}
                 title={shareData.title}
                 message={shareData.message}
+                entityId={selectedPost?.fundraiser ? selectedPost.fundraiser.id : selectedPost?.id}
+                entityType={selectedPost?.fundraiser ? 'fundraiser' : 'post'}
             />
 
             <DeletePostBottomSheet

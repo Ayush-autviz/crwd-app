@@ -6,7 +6,7 @@ import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import SharePost from '../SharePost';
 import { useNavigation, CommonActions } from '@react-navigation/native';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/Avatar';
-import { Heart, MessageCircle, Share2, Users, Ellipsis, Trash2, Play } from 'lucide-react-native';
+import { Heart, MessageCircle, Share2, Users, Ellipsis, Trash2, Play, Repeat } from 'lucide-react-native';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import VideoPlayer from '../ui/VideoPlayer';
 import { likePost, unlikePost, followUserById, unfollowUserById, getUserProfileById, deletePost } from '../../services/api/social';
@@ -69,6 +69,18 @@ interface PostResultCardProps {
     };
     mentions?: any[];
     isFollowing?: boolean;
+    reposted_from?: {
+      id: number;
+      content?: string;
+      mentions?: any[];
+      user?: {
+        id: number;
+        username: string;
+        first_name?: string;
+        last_name?: string;
+        full_name?: string;
+      };
+    };
   };
   onCommentPress?: (post: PostResultCardProps['post']) => void;
   showSimplifiedHeader?: boolean; // When true, only show name and timestamp (for collective view)
@@ -452,6 +464,14 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
         activeOpacity={0.7}
       >
         <View style={styles.content}>
+          {post.reposted_from && (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8, paddingHorizontal: 4 }}>
+              <Repeat size={12} color={PrimaryGrey} />
+              <Text style={{ fontSize: 10, fontWeight: '700', color: PrimaryGrey, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                Reposted from {post.reposted_from.user?.full_name || post.reposted_from.user?.username || (post.reposted_from.user?.first_name ? `${post.reposted_from.user.first_name} ${post.reposted_from.user.last_name || ''}`.trim() : '')}
+              </Text>
+            </View>
+          )}
           {/* User Header */}
           <View style={styles.header}>
             {user && (
@@ -636,7 +656,7 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
                   }
                 }}
               >
-                {renderContentWithMentions(post.content, post.mentions)}
+                {renderContentWithMentions(post.content, post.mentions?.length ? post.mentions : post.reposted_from?.mentions)}
               </Text>
             )}
             <Text style={styles.postContent}>
@@ -645,7 +665,7 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
                 const isTruncatedView = isHomeFeed && !isExpanded && canExpand;
                 const contentToRender = renderContentWithMentions(
                   post.content,
-                  post.mentions,
+                  post.mentions?.length ? post.mentions : post.reposted_from?.mentions,
                   isTruncatedView ? limit : undefined
                 );
 
@@ -1004,6 +1024,8 @@ export default function PostResultCard({ post, onCommentPress, showSimplifiedHea
           : `${WEB_BASE_URL}/post/${encodePostId(post.id)}`}
         title={''}
         message={''}
+        entityId={post.fundraiser ? post.fundraiser.id : post.id}
+        entityType={post.fundraiser ? 'fundraiser' : 'post'}
       />
 
       <DeletePostBottomSheet

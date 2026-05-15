@@ -34,6 +34,8 @@ import {
 import { useAuthStore } from '../store/store';
 import { Avatar, AvatarImage, AvatarFallback } from './ui/Avatar';
 import { PrimaryBlue } from '../Constants/Colors';
+import { repostPost } from '../services/api/social';
+import { decodePostId } from '../utils/truncateFirstPeriod';
 
 interface SharePostProps {
   url: string;
@@ -182,6 +184,36 @@ const SharePost = forwardRef<BottomSheetModal, SharePostProps>(
       handleClose();
     };
 
+    const handleRepost = async () => {
+      try {
+        let postIdToRepost: string | number | null = entityId || null;
+
+        // Extract from URL if not provided
+        if (!postIdToRepost && url.includes('/post/')) {
+          const parts = url.split('/post/');
+          if (parts.length > 1) {
+            const encoded = parts[1].split(/[/?#]/)[0];
+            if (encoded) {
+              postIdToRepost = decodePostId(encoded);
+            }
+          }
+        }
+
+        if (!postIdToRepost) {
+          showToast('Could not find post to repost');
+          return;
+        }
+
+        await repostPost(postIdToRepost);
+        showToast('Successfully reposted!');
+        handleClose();
+      } catch (err) {
+        showToast('Failed to repost');
+      }
+    };
+
+    const isPostOnly = entityType === 'post' || (!entityType && url.includes('/post/') && !url.includes('/fundraiser/'));
+
     const conversations = (convData?.results || []).slice(0, 8);
 
     const shareOptions = [
@@ -192,6 +224,10 @@ const SharePost = forwardRef<BottomSheetModal, SharePostProps>(
       { id: 'instagram', label: 'Instagram', icon: Instagram, bgColor: '#FDF2F8', iconColor: '#DB2777', onPress: handleInstagramShare },
       { id: 'text', label: 'Text', icon: MessageSquare, bgColor: '#F0FDF4', iconColor: '#16A34A', onPress: handleTextShare },
     ];
+
+    if (isPostOnly) {
+      shareOptions.unshift({ id: 'repost', label: 'Repost on crwd', icon: Repeat, bgColor: '#EFF6FF', iconColor: '#2563EB', onPress: handleRepost });
+    }
 
     return (
       <BottomSheetModal

@@ -527,6 +527,7 @@ export default function NewHome() {
                   end_date: item.fundraiser.end_date,
                 } : undefined,
                 mentions: item.mentions || [],
+                reposted_from: item.reposted_from,
                 isFollowing: item.user?.id ? followingIds.has(item.user.id.toString()) : false,
               }
             };
@@ -718,6 +719,7 @@ export default function NewHome() {
               lastName: post.user?.last_name,
               color: post.user?.color || '',
               mentions: post.mentions || [],
+              reposted_from: post.reposted_from,
             });
             setShowCommentsSheet(true);
           }}

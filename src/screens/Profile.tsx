@@ -352,6 +352,7 @@ export default function Profile() {
             isLiked: post.is_liked || false,
             color: post.user?.color,
             mentions: post.mentions || [],
+            reposted_from: post.reposted_from,
         })) || [];
     }, [postsData]);
 

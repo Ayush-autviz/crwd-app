@@ -90,3 +90,15 @@ export function encodePostId(id: any) {
 
   return encoded;
 }
+
+
+/* ---------------- DECODE ---------------- */
+
+export function decodePostId(encoded: any) {
+  // remove padding
+  const clean = encoded.replace(/^a+/, "");
+
+  const mixed = base62Decode(clean);
+
+  return mixed ^ SECRET_SALT;
+}

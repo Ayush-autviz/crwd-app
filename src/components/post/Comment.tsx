@@ -172,6 +172,7 @@ export const Comment: React.FC<CommentProps> = ({
     const regex = new RegExp(pattern, 'gi');
 
     return content.split(regex).map((part, index) => {
+      if (!part) return null;
       if (part.startsWith('@')) {
         const mention = mentionMap.get(part.toLowerCase());
         const handlePress = () => {

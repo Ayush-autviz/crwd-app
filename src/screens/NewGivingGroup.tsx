@@ -1023,6 +1023,7 @@ export default function NewGivingGroupPage() {
                             shares: 0,
                             isLiked: post.is_liked || false,
                             mentions: post.mentions || [],
+                            reposted_from: post.reposted_from,
                             fundraiser: post.fundraiser ? {
                                 id: post.fundraiser.id,
                                 name: post.fundraiser.name,

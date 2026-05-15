@@ -24,6 +24,7 @@ interface CommentsBottomSheetProps {
     lastName?: string;
     color?: string;
     mentions?: any[];
+    reposted_from?: any;
   };
 }
 
@@ -467,12 +468,28 @@ export default function CommentsBottomSheet({
 
     triggers.sort((a, b) => b.length - a.length);
 
+    const urlPattern = '(https?:\\/\\/[^\\s]+)';
     const pattern = triggers.length > 0
-      ? `(${triggers.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')}|@\\w+)`
-      : '(@\\w+)';
+      ? `(${urlPattern}|${triggers.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')}|@\\w+)`
+      : `(${urlPattern}|@\\w+)`;
     const regex = new RegExp(pattern, 'gi');
 
     return content.split(regex).map((part, index) => {
+      if (!part) return null;
+      if (part.startsWith('http://') || part.startsWith('https://')) {
+        return (
+          <Text
+            key={index}
+            style={{ color: PrimaryBlue, textDecorationLine: 'underline' }}
+            onPress={() => {
+              import('react-native').then(({ Linking }) => Linking.openURL(part));
+            }}
+          >
+            {part}
+          </Text>
+        );
+      }
+
       if (part.startsWith('@')) {
         const mention = mentionMap.get(part.toLowerCase());
 
@@ -774,7 +791,7 @@ export default function CommentsBottomSheet({
           <View style={styles.originalPostContent}>
             <Text style={styles.originalPostDisplayName}>{postDisplayName}</Text>
             <Text style={styles.originalPostText} numberOfLines={2}>
-              {renderMentionText(post.text, post.mentions)}
+              {renderMentionText(post.text, post.mentions?.length ? post.mentions : post.reposted_from?.mentions)}
             </Text>
           </View>
         </View>

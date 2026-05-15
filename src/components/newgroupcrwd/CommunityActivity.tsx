@@ -19,6 +19,7 @@ interface CommunityActivityProps {
   hasMore?: boolean;
   onLoadMore?: () => void;
   isFetchingNextPage?: boolean;
+  reposted_from?: any;
 }
 
 export default function CommunityActivity({
@@ -33,6 +34,7 @@ export default function CommunityActivity({
   onJoin,
   fromCollective = false,
   isFetchingNextPage = false,
+  reposted_from = false,
 }: CommunityActivityProps) {
   const navigation = useNavigation();
   const { user } = useAuthStore();
@@ -127,6 +129,7 @@ export default function CommunityActivity({
                 isLoading={isFetchingNextPage}
                 onCommentPress={onCommentPress}
                 showSimplifiedHeader={true}
+                reposted_from={reposted_from}
               />
             ) : (
               <PopularPosts posts={posts} title="no title" hasMore={false} scrollEnabled={false} onLoadMore={onLoadMore} isLoading={isFetchingNextPage} onCommentPress={onCommentPress} showSimplifiedHeader={true} />

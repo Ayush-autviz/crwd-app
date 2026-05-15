@@ -979,7 +979,7 @@ export default function Profile() {
                                     hasMore={false}
                                     isLoadingMore={isFetchingNextPosts}
                                     onCommentPress={(post) => {
-                                        const originalPost = postsData?.pages?.flatMap(page => page.results || [])?.find((p: any) => p.id?.toString() === post.id);
+                                        const originalPost = postsData?.pages?.flatMap(page => page.results || [])?.find((p: any) => p.id.toString() === post.id.toString());
                                         setSelectedPost({
                                             id: parseInt(post.id),
                                             username: post.username,
@@ -987,6 +987,9 @@ export default function Profile() {
                                             avatarUrl: post.avatarUrl,
                                             firstName: originalPost?.user?.first_name || post.username?.split(' ')[0],
                                             lastName: originalPost?.user?.last_name || post.username?.split(' ').slice(1).join(' ') || '',
+                                            color: originalPost?.user?.color || post.color,
+                                            mentions: originalPost?.mentions || post.mentions || [],
+                                            reposted_from: originalPost?.reposted_from || post.reposted_from,
                                         });
                                         setShowCommentsSheet(true);
                                     }}

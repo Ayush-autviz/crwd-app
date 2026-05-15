@@ -29,6 +29,8 @@ import { ChatView } from '../components/messages/ChatView';
 import { ChatMessage } from '../components/messages/types';
 import { useChatSocket } from '../hooks/useChatSocket';
 import { Skeleton } from '../components/ui/Skeleton';
+import { useChatStore } from '../store/chatStore';
+import { useNotification } from '../contexts/NotificationContext';
 
 interface ConversationItem {
   id: string;
@@ -48,6 +50,8 @@ export default function Messages() {
   const route = useRoute();
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
+  const { setActiveConversationId } = useChatStore();
+  const { markAsRead } = useNotification();
 
   // Extract targeted paths or direct IDs if deep linked
   const params: any = route.params || {};
@@ -80,6 +84,15 @@ export default function Messages() {
     };
     resolveTarget();
   }, [params.userId, params.conversationId]);
+
+  // Sync active conversation ID to store
+  useEffect(() => {
+    setActiveConversationId(selectedId);
+    if (selectedId && !isNaN(Number(selectedId))) {
+      markAsRead(Number(selectedId));
+    }
+    return () => setActiveConversationId(null);
+  }, [selectedId, setActiveConversationId, markAsRead]);
 
   // 1. Fetch Conversation list layer
   const { data: conversationData, isLoading: isConversationsLoading, refetch } = useQuery({
@@ -146,6 +159,12 @@ export default function Messages() {
       };
     });
   }, [conversationData?.results, user?.id]);
+
+  useEffect(() => {
+    console.log("[Messages] Current conversations with unread status:", 
+      conversations.map(c => ({ name: c.user.name, unread: c.unread }))
+    );
+  }, [conversations]);
 
   // Look up selected conversation entity metadata
   const currentConversation = conversations.find(
@@ -738,10 +757,11 @@ const styles = StyleSheet.create({
     right: -2,
     width: 14,
     height: 14,
-    backgroundColor: PrimaryBlue,
+    backgroundColor: '#2222EE', // Match Vite's blue exactly
     borderRadius: 7,
     borderWidth: 2,
     borderColor: '#FFFFFF',
+    zIndex: 10, // Ensure it's on top
   },
   cardContent: {
     flex: 1,

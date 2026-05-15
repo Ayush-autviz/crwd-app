@@ -7,6 +7,7 @@ import { createDrawerNavigator } from '@react-navigation/drawer'
 import Home from './src/screens/Home'
 import NewHome from './src/screens/NewHome'
 import { ToastProvider, useToast } from './src/contexts/ToastContext'
+import { NotificationProvider } from './src/contexts/NotificationContext'
 import Post from './src/screens/Post'
 import Activity from './src/screens/Activity'
 import Profile from './src/screens/Profile'
@@ -459,7 +460,9 @@ export default function App() {
             <QueryClientProvider client={queryClient}>
               <BottomSheetModalProvider>
                 <ToastProvider>
-                  <StackNavigator />
+                  <NotificationProvider>
+                    <StackNavigator />
+                  </NotificationProvider>
                 </ToastProvider>
               </BottomSheetModalProvider>
             </QueryClientProvider>

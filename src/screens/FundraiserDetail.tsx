@@ -564,8 +564,10 @@ export default function FundraiserDetail() {
       <SharePost
         ref={shareSheetRef}
         url={`${WEB_BASE_URL}/fundraiser/${encodePostId(fundraiserId)}`}
-        title={''}
-        message={''}
+        title={fundraiserData?.name || ''}
+        message={fundraiserData?.description || ''}
+        entityId={fundraiserId}
+        entityType="fundraiser"
       />
     </SafeAreaView>
   );

@@ -749,6 +749,43 @@ export default function GivingPost({
                                             <Text style={{ fontSize: 10, fontWeight: '700', color: PrimaryGrey, textTransform: 'uppercase', letterSpacing: 0.5 }}>
                                                 Reposted from {item.reposted_from.user?.full_name || item.reposted_from.user?.username || (item.reposted_from.user?.first_name ? `${item.reposted_from.user.first_name} ${item.reposted_from.user.last_name || ''}`.trim() : '')}
                                             </Text>
+                                            <TouchableOpacity
+                                                onPress={() => {
+                                                    const targetId = item.reposted_from?.user?.id;
+                                                    if (targetId) {
+                                                        if (user?.id && user.id.toString() === targetId.toString()) {
+                                                            navigation.dispatch(
+                                                                CommonActions.reset({
+                                                                    index: 0,
+                                                                    routes: [
+                                                                        {
+                                                                            name: 'DrawerNav',
+                                                                            state: {
+                                                                                routes: [
+                                                                                    {
+                                                                                        name: 'MainTabs',
+                                                                                        state: {
+                                                                                            routes: [{ name: 'Profile' }],
+                                                                                            index: 0,
+                                                                                        },
+                                                                                    },
+                                                                                ],
+                                                                                index: 0,
+                                                                            },
+                                                                        },
+                                                                    ],
+                                                                })
+                                                            );
+                                                        } else {
+                                                            navigation.navigate('UserProfile', { userId: targetId.toString() });
+                                                        }
+                                                    }
+                                                }}
+                                            >
+                                                <Text style={{ fontSize: 10, fontWeight: '700', color: PrimaryBlue, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                                                    {item.reposted_from.user?.full_name || item.reposted_from.user?.username || (item.reposted_from.user?.first_name ? `${item.reposted_from.user.first_name} ${item.reposted_from.user.last_name || ''}`.trim() : '')}
+                                                </Text>
+                                            </TouchableOpacity>
                                         </View>
                                     )}
                                     {/* Pinned Fundraiser Header - Only show if active */}
@@ -866,7 +903,38 @@ export default function GivingPost({
                                             <View style={styles.headerInfo}>
                                                 <View style={styles.headerTop}>
                                                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                                                        <Text style={styles.username}>{item.username || 'Unknown User'}</Text>
+                                                        <TouchableOpacity
+                                                            onPress={() => {
+                                                                if (user?.id && item.userId && user.id.toString() === item.userId.toString()) {
+                                                                    navigation.dispatch(
+                                                                        CommonActions.reset({
+                                                                            index: 0,
+                                                                            routes: [
+                                                                                {
+                                                                                    name: 'DrawerNav',
+                                                                                    state: {
+                                                                                        routes: [
+                                                                                            {
+                                                                                                name: 'MainTabs',
+                                                                                                state: {
+                                                                                                    routes: [{ name: 'Profile' }],
+                                                                                                    index: 0,
+                                                                                                },
+                                                                                            },
+                                                                                        ],
+                                                                                        index: 0,
+                                                                                    },
+                                                                                },
+                                                                            ],
+                                                                        })
+                                                                    );
+                                                                } else {
+                                                                    navigation.navigate('UserProfile', { userId: item.userId || '' });
+                                                                }
+                                                            }}
+                                                        >
+                                                            <Text style={styles.username}>{item.username || 'Unknown User'}</Text>
+                                                        </TouchableOpacity>
                                                         {item.fundraiser && (
                                                             <View style={styles.founderBadge}>
                                                                 <Text style={styles.founderBadgeText}>Organizer</Text>
@@ -1235,6 +1303,8 @@ export default function GivingPost({
                 url={shareData.url}
                 title={shareData.title}
                 message={shareData.message}
+                entityId={selectedPost?.fundraiser ? selectedPost.fundraiser.id : selectedPost?.id}
+                entityType={selectedPost?.fundraiser ? 'fundraiser' : 'post'}
             />
 
             <DeletePostBottomSheet

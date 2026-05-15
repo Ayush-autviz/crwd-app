@@ -640,8 +640,10 @@ export default function CreateFundraiser() {
         <SharePost
           ref={shareSheetRef}
           url={`${WEB_BASE_URL}/fundraiser/${encodePostId(createdFundraiser?.id)}`}
-          title={''}
-          message={''}
+          title={campaignTitle || ''}
+          message={campaignStory || ''}
+          entityType="fundraiser"
+          entityId={createdFundraiser?.id}
         />
       </SafeAreaView>
     );

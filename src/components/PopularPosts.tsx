@@ -862,7 +862,38 @@ export default function PopularPosts({
                                         <View style={styles.headerInfo}>
                                             <View style={styles.headerTop}>
                                                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                                                    <Text style={styles.username}>{item.username || 'Unknown User'}</Text>
+                                                    <TouchableOpacity
+                                                        onPress={() => {
+                                                            if (user?.id && item.userId && user.id.toString() === item.userId.toString()) {
+                                                                navigation.dispatch(
+                                                                    CommonActions.reset({
+                                                                        index: 0,
+                                                                        routes: [
+                                                                            {
+                                                                                name: 'DrawerNav',
+                                                                                state: {
+                                                                                    routes: [
+                                                                                        {
+                                                                                            name: 'MainTabs',
+                                                                                            state: {
+                                                                                                routes: [{ name: 'Profile' }],
+                                                                                                index: 0,
+                                                                                            },
+                                                                                        },
+                                                                                    ],
+                                                                                    index: 0,
+                                                                                },
+                                                                            },
+                                                                        ],
+                                                                    })
+                                                                );
+                                                            } else {
+                                                                navigation.navigate('UserProfile', { userId: item.userId || '' });
+                                                            }
+                                                        }}
+                                                    >
+                                                        <Text style={styles.username}>{item.username || 'Unknown User'}</Text>
+                                                    </TouchableOpacity>
                                                     {item.fundraiser && (
                                                         <View style={styles.founderBadge}>
                                                             <Text style={styles.founderBadgeText}>Organizer</Text>

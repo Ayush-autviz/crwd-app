@@ -22,6 +22,7 @@ import {
   Check,
   X,
   Repeat,
+  Camera,
 } from 'lucide-react-native';
 import { useToast } from '../contexts/ToastContext';
 import { useQuery } from '@tanstack/react-query';
@@ -55,7 +56,7 @@ const SharePost = forwardRef<BottomSheetModal, SharePostProps>(
     const [isSending, setIsSending] = useState<number | null>(null);
     const [copied, setCopied] = useState(false);
 
-    const snapPoints = useMemo(() => ['75%'], []);
+    const snapPoints = useMemo(() => ['85%'], []);
 
     const { data: convData, isLoading: isConversationsLoading } = useQuery({
       queryKey: ['share-conversations', searchQuery],
@@ -178,6 +179,14 @@ const SharePost = forwardRef<BottomSheetModal, SharePostProps>(
       handleClose();
     };
 
+    const handleTwitterShare = () => {
+      const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+        title || message
+      )}&url=${encodeURIComponent(url)}`;
+      Linking.openURL(shareUrl);
+      handleClose();
+    };
+
     const handleTextShare = () => {
       const textBody = title ? `${title}\n${url}` : message ? `${message}\n${url}` : url;
       Linking.openURL(`sms:?&body=${encodeURIComponent(textBody)}`);
@@ -218,11 +227,11 @@ const SharePost = forwardRef<BottomSheetModal, SharePostProps>(
 
     const shareOptions = [
       { id: 'copy', label: 'Copy Link', icon: LinkIcon, bgColor: '#EFF6FF', iconColor: '#2563EB', onPress: handleCopyLink },
+      { id: 'twitter', label: 'Twitter', icon: X, bgColor: '#F3F4F6', iconColor: '#111827', onPress: handleTwitterShare },
       { id: 'messenger', label: 'Messenger', icon: MessageCircle, bgColor: '#EFF6FF', iconColor: '#2563EB', onPress: handleMessengerShare },
       { id: 'linkedin', label: 'LinkedIn', icon: Linkedin, bgColor: '#F3F4F6', iconColor: '#111827', onPress: handleLinkedInShare },
       { id: 'email', label: 'Email', icon: Mail, bgColor: '#FEF2F2', iconColor: '#DC2626', onPress: handleEmailShare },
-      { id: 'instagram', label: 'Instagram', icon: Instagram, bgColor: '#FDF2F8', iconColor: '#DB2777', onPress: handleInstagramShare },
-      { id: 'text', label: 'Text', icon: MessageSquare, bgColor: '#F0FDF4', iconColor: '#16A34A', onPress: handleTextShare },
+      { id: 'instagram', label: 'Instagram', icon: Camera, bgColor: '#FDF2F8', iconColor: '#DB2777', onPress: handleInstagramShare },
     ];
 
     if (isPostOnly) {
@@ -382,7 +391,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   chatsList: {
-    height: 280,
+    height: 200,
     paddingHorizontal: 20,
   },
   chatItem: {

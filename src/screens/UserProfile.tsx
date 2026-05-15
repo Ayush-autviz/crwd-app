@@ -1135,8 +1135,10 @@ export default function UserProfile() {
             <SharePost
                 ref={shareSheetRef}
                 url={`${WEB_BASE_URL}/u/${userProfile?.username}`}
-                title={''}
-                message={''}
+                title={userProfile?.full_name || userProfile?.username || ''}
+                message={userProfile?.bio || ''}
+                entityType="profile"
+                entityId={userId}
             />
         </SafeAreaView>
     )

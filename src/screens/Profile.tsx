@@ -1300,8 +1300,10 @@ export default function Profile() {
             <SharePost
                 ref={shareSheetRef}
                 url={`${WEB_BASE_URL}/u/${user?.username}`}
-                title={''}
-                message={''}
+                title={user?.full_name || user?.username || ''}
+                message={user?.bio || ''}
+                entityType="profile"
+                entityId={user?.id}
                 onClose={() => setShowMenu(false)}
             />
 

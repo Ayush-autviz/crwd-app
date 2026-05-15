@@ -177,7 +177,34 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
   const handleUserNavigation = (userId?: string | number) => {
     if (!userId) return;
     if (currentUser?.id && userId.toString() === currentUser.id.toString()) {
-      (navigation as any).navigate('Profile');
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [
+            {
+              name: 'DrawerNav' as never,
+              state: {
+                routes: [
+                  {
+                    name: 'MainTabs' as never,
+                    state: {
+                      routes: [
+                        { name: 'Home' as never },
+                        { name: 'Search' as never },
+                        { name: 'Donate' as never },
+                        { name: 'Collectives' as never },
+                        { name: 'Profile' as never },
+                      ],
+                      index: 4,
+                    },
+                  },
+                ],
+                index: 0,
+              },
+            },
+          ],
+        })
+      );
     } else {
       (navigation as any).navigate('UserProfile', { userId });
     }
@@ -244,17 +271,22 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
         <View style={styles.header}>
           <View style={styles.userInfo}>
             {/* Avatar */}
-            <Avatar size={44} style={styles.avatar}>
-              <AvatarImage src={update.data?.profile_picture} />
-              <AvatarFallback
-                style={{ backgroundColor: update.data?.color || '#1600ff' }}
-                textStyle={{ color: '#FFFFFF', fontSize: 15 }}
-              >
-                {update.user.name
-                  .charAt(0)
-                  .toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
+            <TouchableOpacity
+              onPress={() => handleUserNavigation(update.user.id)}
+              activeOpacity={0.7}
+            >
+              <Avatar size={44} style={styles.avatar}>
+                <AvatarImage src={update.data?.profile_picture} />
+                <AvatarFallback
+                  style={{ backgroundColor: update.data?.color || '#1600ff' }}
+                  textStyle={{ color: '#FFFFFF', fontSize: 15 }}
+                >
+                  {update.user.name
+                    .charAt(0)
+                    .toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            </TouchableOpacity>
 
             {/* User Info */}
             <View style={styles.userDetails}>
@@ -342,17 +374,22 @@ function NotificationSummary({ update }: { update: CommunityUpdate }) {
       <View style={styles.header}>
         <View style={styles.userInfo}>
           {/* Avatar */}
-          <Avatar size={44} style={styles.avatar}>
-            <AvatarImage src={update.data?.profile_picture} />
-            <AvatarFallback
-              style={{ backgroundColor: update.data?.color || '#1600ff' }}
-              textStyle={{ color: '#FFFFFF', fontSize: 15 }}
-            >
-              {update.user.name
-                .charAt(0)
-                .toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
+          <TouchableOpacity
+            onPress={() => handleUserNavigation(update.user.id)}
+            activeOpacity={0.7}
+          >
+            <Avatar size={44} style={styles.avatar}>
+              <AvatarImage src={update.data?.profile_picture} />
+              <AvatarFallback
+                style={{ backgroundColor: update.data?.color || '#1600ff' }}
+                textStyle={{ color: '#FFFFFF', fontSize: 15 }}
+              >
+                {update.user.name
+                  .charAt(0)
+                  .toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+          </TouchableOpacity>
 
           {/* User Info */}
           <View style={styles.userDetails}>

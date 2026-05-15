@@ -217,7 +217,7 @@ const SharePost = forwardRef<BottomSheetModal, SharePostProps>(
         showToast('Successfully reposted!');
         handleClose();
       } catch (err) {
-        showToast('Failed to repost');
+        showToast('Already reposted!');
       }
     };
 

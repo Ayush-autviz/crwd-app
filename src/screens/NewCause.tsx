@@ -376,8 +376,10 @@ export default function NewCausePage() {
       <SharePost
         ref={shareSheetRef}
         url={`${WEB_BASE_URL}/c/${causeData?.sort_name}`}
-        title={''}
+        title={causeData?.name || ''}
         message={''}
+        entityType="cause"
+        entityId={causeId}
       />
     </SafeAreaView>
   );

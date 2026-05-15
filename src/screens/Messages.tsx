@@ -138,9 +138,9 @@ export default function Messages() {
         lastMessage: lastMsgText,
         timestamp: conv.last_message?.created_at
           ? new Date(conv.last_message.created_at).toLocaleDateString([], {
-              month: 'short',
-              day: 'numeric',
-            })
+            month: 'short',
+            day: 'numeric',
+          })
           : '',
         unread: conv.unread_count > 0,
       };
@@ -200,78 +200,87 @@ export default function Messages() {
           }),
           type:
             msg.entity_type === 'post' ||
-            msg.entity_type === 'cause' ||
-            msg.entity_type === 'collective' ||
-            msg.entity_type === 'profile' ||
-            msg.entity_type === 'fundraiser'
+              msg.entity_type === 'cause' ||
+              msg.entity_type === 'nonprofit' ||
+              msg.entity_type === 'collective' ||
+              msg.entity_type === 'profile' ||
+              msg.entity_type === 'fundraiser'
               ? 'card'
               : msg.entity_type === 'video'
-              ? 'video'
-              : msg.entity_type === 'image'
-              ? 'image'
-              : 'text',
+                ? 'video'
+                : msg.entity_type === 'image'
+                  ? 'image'
+                  : 'text',
           mediaUrl:
             msg.entity_type === 'image' || msg.entity_type === 'video'
               ? msg.entity_data?.url || msg.content
               : undefined,
           cardData:
             msg.entity_type === 'post' ||
-            msg.entity_type === 'cause' ||
-            msg.entity_type === 'collective' ||
-            msg.entity_type === 'profile' ||
-            msg.entity_type === 'fundraiser'
+              msg.entity_type === 'cause' ||
+              msg.entity_type === 'nonprofit' ||
+              msg.entity_type === 'collective' ||
+              msg.entity_type === 'profile' ||
+              msg.entity_type === 'fundraiser'
               ? {
-                  type: msg.entity_type,
-                  id: msg.entity_id || msg.entity_data?.id,
-                  title:
-                    msg.entity_type === 'profile'
-                      ? msg.entity_data?.full_name ||
-                        `${msg.entity_data?.first_name || ''} ${msg.entity_data?.last_name || ''}`.trim() ||
-                        msg.entity_data?.username ||
-                        'Shared Profile'
-                      : msg.entity_type === 'post'
+                type: msg.entity_type,
+                id: msg.entity_id || msg.entity_data?.id,
+                title:
+                  msg.entity_type === 'profile'
+                    ? msg.entity_data?.full_name ||
+                    `${msg.entity_data?.first_name || ''} ${msg.entity_data?.last_name || ''}`.trim() ||
+                    msg.entity_data?.username ||
+                    'Shared Profile'
+                    : msg.entity_type === 'post'
                       ? msg.entity_data?.user?.full_name || msg.entity_data?.user?.username || 'Shared Post'
                       : msg.entity_type === 'fundraiser'
-                      ? msg.entity_data?.name || 'Shared Fundraiser'
-                      : msg.entity_data?.collective?.name ||
+                        ? msg.entity_data?.name || 'Shared Fundraiser'
+                        : msg.entity_data?.collective?.name ||
                         msg.entity_data?.fundraiser?.name ||
+                        msg.entity_data?.nonprofit?.name ||
                         msg.entity_data?.name ||
-                        (msg.entity_type === 'cause'
+                        msg.entity_data?.title ||
+                        (msg.entity_type === 'cause' || msg.entity_type === 'nonprofit'
                           ? 'Shared Nonprofit'
                           : msg.entity_type === 'collective'
-                          ? 'Shared Group'
-                          : 'Shared Post'),
-                  description:
-                    msg.entity_type === 'profile'
-                      ? msg.entity_data?.bio || ''
-                      : msg.entity_data?.content ||
-                        msg.entity_data?.mission ||
-                        msg.entity_data?.description ||
-                        '',
-                  image:
-                    msg.entity_type === 'profile'
-                      ? msg.entity_data?.profile_picture || msg.entity_data?.avatar || ''
-                      : msg.entity_data?.media ||
-                        msg.entity_data?.image ||
-                        msg.entity_data?.logo ||
-                        msg.entity_data?.avatar ||
-                        '',
-                  icon: '🔗',
-                  avatar: msg.entity_type === 'post' ? msg.entity_data?.user?.profile_picture : undefined,
-                  likesCount: msg.entity_data?.likes_count || 0,
-                  commentsCount: msg.entity_data?.comments_count || 0,
-                  color:
-                    msg.entity_data?.color && msg.entity_data.color !== 'string'
-                      ? msg.entity_data.color
-                      : msg.entity_data?.collective?.color && msg.entity_data.collective.color !== 'string'
+                            ? 'Shared Group'
+                            : 'Shared Post'),
+                description:
+                  msg.entity_type === 'profile'
+                    ? msg.entity_data?.bio || ''
+                    : msg.entity_data?.content ||
+                    msg.entity_data?.mission ||
+                    msg.entity_data?.description ||
+                    msg.entity_data?.collective?.mission ||
+                    msg.entity_data?.collective?.description ||
+                    msg.entity_data?.nonprofit?.mission ||
+                    msg.entity_data?.nonprofit?.description ||
+                    msg.entity_data?.fundraiser?.description ||
+                    '',
+                image:
+                  msg.entity_type === 'profile'
+                    ? msg.entity_data?.profile_picture || msg.entity_data?.avatar || ''
+                    : msg.entity_data?.media ||
+                    msg.entity_data?.image ||
+                    msg.entity_data?.logo ||
+                    msg.entity_data?.avatar ||
+                    '',
+                icon: '🔗',
+                avatar: msg.entity_type === 'post' ? msg.entity_data?.user?.profile_picture : undefined,
+                likesCount: msg.entity_data?.likes_count || 0,
+                commentsCount: msg.entity_data?.comments_count || 0,
+                color:
+                  msg.entity_data?.color && msg.entity_data.color !== 'string'
+                    ? msg.entity_data.color
+                    : msg.entity_data?.collective?.color && msg.entity_data.collective.color !== 'string'
                       ? msg.entity_data.collective.color
                       : undefined,
-                  sortName:
-                    msg.entity_type === 'fundraiser'
-                      ? undefined
-                      : msg.entity_data?.sort_name || msg.entity_data?.collective?.sort_name || undefined,
-                  username: msg.entity_data?.username,
-                }
+                sortName:
+                  msg.entity_type === 'fundraiser'
+                    ? undefined
+                    : msg.entity_data?.sort_name || msg.entity_data?.collective?.sort_name || undefined,
+                username: msg.entity_data?.username,
+              }
               : undefined,
           isRead: msg.is_read,
         }));
@@ -299,78 +308,87 @@ export default function Messages() {
         }),
         type:
           data.entity_type === 'post' ||
-          data.entity_type === 'cause' ||
-          data.entity_type === 'collective' ||
-          data.entity_type === 'profile' ||
-          data.entity_type === 'fundraiser'
+            data.entity_type === 'cause' ||
+            data.entity_type === 'nonprofit' ||
+            data.entity_type === 'collective' ||
+            data.entity_type === 'profile' ||
+            data.entity_type === 'fundraiser'
             ? 'card'
             : data.entity_type === 'video'
-            ? 'video'
-            : data.entity_type === 'image'
-            ? 'image'
-            : 'text',
+              ? 'video'
+              : data.entity_type === 'image'
+                ? 'image'
+                : 'text',
         mediaUrl:
           data.entity_type === 'image' || data.entity_type === 'video'
             ? data.entity_data?.url || data.content
             : undefined,
         cardData:
           data.entity_type === 'post' ||
-          data.entity_type === 'cause' ||
-          data.entity_type === 'collective' ||
-          data.entity_type === 'profile' ||
-          data.entity_type === 'fundraiser'
+            data.entity_type === 'cause' ||
+            data.entity_type === 'nonprofit' ||
+            data.entity_type === 'collective' ||
+            data.entity_type === 'profile' ||
+            data.entity_type === 'fundraiser'
             ? {
-                type: data.entity_type,
-                id: data.entity_id || data.entity_data?.id,
-                title:
-                  data.entity_type === 'profile'
-                    ? data.entity_data?.full_name ||
-                      `${data.entity_data?.first_name || ''} ${data.entity_data?.last_name || ''}`.trim() ||
-                      data.entity_data?.username ||
-                      'Shared Profile'
-                    : data.entity_type === 'post'
+              type: data.entity_type,
+              id: data.entity_id || data.entity_data?.id,
+              title:
+                data.entity_type === 'profile'
+                  ? data.entity_data?.full_name ||
+                  `${data.entity_data?.first_name || ''} ${data.entity_data?.last_name || ''}`.trim() ||
+                  data.entity_data?.username ||
+                  'Shared Profile'
+                  : data.entity_type === 'post'
                     ? data.entity_data?.user?.full_name || data.entity_data?.user?.username || 'Shared Post'
                     : data.entity_type === 'fundraiser'
-                    ? data.entity_data?.name || 'Shared Fundraiser'
-                    : data.entity_data?.collective?.name ||
+                      ? data.entity_data?.name || 'Shared Fundraiser'
+                      : data.entity_data?.collective?.name ||
                       data.entity_data?.fundraiser?.name ||
+                      data.entity_data?.nonprofit?.name ||
                       data.entity_data?.name ||
-                      (data.entity_type === 'cause'
+                      data.entity_data?.title ||
+                      (data.entity_type === 'cause' || data.entity_type === 'nonprofit'
                         ? 'Shared Nonprofit'
                         : data.entity_type === 'collective'
-                        ? 'Shared Group'
-                        : 'Shared Post'),
-                description:
-                  data.entity_type === 'profile'
-                    ? data.entity_data?.bio || ''
-                    : data.entity_data?.content ||
-                      data.entity_data?.mission ||
-                      data.entity_data?.description ||
-                      '',
-                image:
-                  data.entity_type === 'profile'
-                    ? data.entity_data?.profile_picture || data.entity_data?.avatar || ''
-                    : data.entity_data?.media ||
-                      data.entity_data?.image ||
-                      data.entity_data?.logo ||
-                      data.entity_data?.avatar ||
-                      '',
-                icon: '🔗',
-                avatar: data.entity_type === 'post' ? data.entity_data?.user?.profile_picture : undefined,
-                likesCount: data.entity_data?.likes_count || 0,
-                commentsCount: data.entity_data?.comments_count || 0,
-                color:
-                  data.entity_data?.color && data.entity_data.color !== 'string'
-                    ? data.entity_data.color
-                    : data.entity_data?.collective?.color && data.entity_data.collective.color !== 'string'
+                          ? 'Shared Group'
+                          : 'Shared Post'),
+              description:
+                data.entity_type === 'profile'
+                  ? data.entity_data?.bio || ''
+                  : data.entity_data?.content ||
+                  data.entity_data?.mission ||
+                  data.entity_data?.description ||
+                  data.entity_data?.collective?.mission ||
+                  data.entity_data?.collective?.description ||
+                  data.entity_data?.nonprofit?.mission ||
+                  data.entity_data?.nonprofit?.description ||
+                  data.entity_data?.fundraiser?.description ||
+                  '',
+              image:
+                data.entity_type === 'profile'
+                  ? data.entity_data?.profile_picture || data.entity_data?.avatar || ''
+                  : data.entity_data?.media ||
+                  data.entity_data?.image ||
+                  data.entity_data?.logo ||
+                  data.entity_data?.avatar ||
+                  '',
+              icon: '🔗',
+              avatar: data.entity_type === 'post' ? data.entity_data?.user?.profile_picture : undefined,
+              likesCount: data.entity_data?.likes_count || 0,
+              commentsCount: data.entity_data?.comments_count || 0,
+              color:
+                data.entity_data?.color && data.entity_data.color !== 'string'
+                  ? data.entity_data.color
+                  : data.entity_data?.collective?.color && data.entity_data.collective.color !== 'string'
                     ? data.entity_data.collective.color
                     : undefined,
-                sortName:
-                  data.entity_type === 'fundraiser'
-                    ? undefined
-                    : data.entity_data?.sort_name || data.entity_data?.collective?.sort_name || undefined,
-                username: data.entity_data?.username,
-              }
+              sortName:
+                data.entity_type === 'fundraiser'
+                  ? undefined
+                  : data.entity_data?.sort_name || data.entity_data?.collective?.sort_name || undefined,
+              username: data.entity_data?.username,
+            }
             : undefined,
         isRead: data.is_read || false,
       };
@@ -532,23 +550,13 @@ export default function Messages() {
             </Text>
           </View>
         ) : (
-          <Text style={styles.headerTitleMain}>Messages</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.headerTitleMain}>Messages</Text>
+          </View>
         )}
 
-        <TouchableOpacity
-          onPress={() => {
-            Keyboard.dismiss();
-            if (selectedId) {
-              queryClient.invalidateQueries({ queryKey: ['messages', selectedId] });
-            } else {
-              refetch();
-            }
-          }}
-          style={styles.headerIconButton}
-          activeOpacity={0.8}
-        >
-          <RefreshCw size={20} color="#6B7280" />
-        </TouchableOpacity>
+        {/* Empty view to balance the back button for centered titles if needed, or just remove for left-align */}
+        <View style={{ width: 40 }} />
       </View>
 
       {/* Primary Split Viewport Container */}
@@ -659,10 +667,10 @@ const styles = StyleSheet.create({
   headerProfileRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    // justifyContent: 'center',
     gap: 10,
     flex: 1,
-    paddingHorizontal: 10,
+    paddingHorizontal: 0,
   },
   headerTitleProfile: {
     fontSize: 17,

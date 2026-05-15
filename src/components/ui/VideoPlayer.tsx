@@ -39,6 +39,7 @@ interface VideoPlayerProps {
   onComment?: () => void;
   onShare?: () => void;
   onUserPress?: (username: string) => void;
+  clickable?: boolean;
 }
 
 const VideoPlayer: React.FC<VideoPlayerProps> = ({
@@ -54,6 +55,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   onComment,
   onShare,
   onUserPress,
+  clickable = true,
 }) => {
   const videoRef = useRef<VideoRef>(null);
   const [isPlaying, setIsPlaying] = useState(true);
@@ -187,7 +189,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     <View style={[styles.container, containerStyle, style]}>
       <TouchableOpacity
         activeOpacity={1}
-        onPress={toggleFullscreen}
+        onPress={clickable ? toggleFullscreen : undefined}
         style={styles.videoWrapper}
       >
         <Video

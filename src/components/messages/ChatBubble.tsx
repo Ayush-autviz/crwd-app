@@ -1,7 +1,8 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native';
 import { CheckCheck } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
+import VideoPlayer from '../ui/VideoPlayer';
 import { ChatMessage } from './types';
 import { SharedCard } from './SharedCard';
 import { PrimaryBlue } from '../../Constants/Colors';
@@ -13,14 +14,38 @@ interface ChatBubbleProps {
 export function ChatBubble({ message }: ChatBubbleProps) {
   const navigation = useNavigation<any>();
   const isMe = message.senderId === 'me';
+  const isVideo = message.type === 'video' || message.mediaUrl?.match(/\.(mp4|mov|webm)($|\?)/i);
+
+  const [imgDim, setImgDim] = useState<{ width: number; height: number } | null>(null);
+
+  useEffect(() => {
+    if (message.mediaUrl && !isVideo) {
+      Image.getSize(
+        message.mediaUrl,
+        (width, height) => {
+          const maxWidth = Dimensions.get('window').width * 0.75; // Max width for chat bubbles
+          const targetHeight = 280;
+          let calculatedWidth = (targetHeight * width) / height;
+          let finalHeight = targetHeight;
+
+          if (calculatedWidth > maxWidth) {
+            calculatedWidth = maxWidth;
+            finalHeight = (maxWidth * height) / width;
+          }
+
+          setImgDim({ width: calculatedWidth, height: finalHeight });
+        },
+        (error) => {
+          console.log('Chat image size error', error);
+        }
+      );
+    }
+  }, [message.mediaUrl, isVideo]);
 
   const handleMediaPress = () => {
     if (!message.mediaUrl) return;
-    
-    const isVideo = message.type === 'video' || message.mediaUrl.match(/\.(mp4|mov|webm)($|\?)/i);
-    if (isVideo) {
-      navigation.navigate('FullscreenVideo', { src: message.mediaUrl });
-    } else {
+
+    if (!isVideo) {
       navigation.navigate('FullscreenImage', { src: message.mediaUrl });
     }
   };
@@ -48,16 +73,27 @@ export function ChatBubble({ message }: ChatBubbleProps) {
           ]}
         >
           {message.mediaUrl ? (
-            <TouchableOpacity activeOpacity={0.9} onPress={handleMediaPress} style={styles.mediaWrap}>
-              <Image source={{ uri: message.mediaUrl }} style={styles.mediaImage} />
-              {(message.type === 'video' || message.mediaUrl.match(/\.(mp4|mov|webm)($|\?)/i)) && (
-                <View style={styles.videoOverlayOverlay}>
-                  <View style={styles.playButtonCircle}>
-                    <Text style={styles.playIconText}>▶</Text>
-                  </View>
-                </View>
+            <View>
+              {isVideo ? (
+                <VideoPlayer
+                  src={message.mediaUrl}
+                  // style={styles.inlineVideo}
+                  clickable={false}
+                />
+              ) : (
+
+                <Image
+                  source={{ uri: message.mediaUrl }}
+                  style={
+                    imgDim
+                      ? { width: imgDim.width, height: imgDim.height, borderRadius: 16 }
+                      : styles.mediaImage
+                  }
+                  resizeMode="contain"
+                />
+
               )}
-            </TouchableOpacity>
+            </View>
           ) : null}
 
           {message.text && !message.text.startsWith('http') ? (
@@ -68,7 +104,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
             </View>
           ) : null}
 
-          {message.text && message.text.startsWith('http') ? (
+          {message.text && message.text.startsWith('http') && !message.mediaUrl ? (
             <View style={[styles.innerPadding, styles.linkBubbleBg]}>
               <Text style={styles.linkText} selectable={true}>
                 {message.text}
@@ -96,7 +132,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
 const styles = StyleSheet.create({
   bubbleWrapper: {
     marginVertical: 4,
-    maxWidth: '82%',
+    maxWidth: Dimensions.get('window').width * 0.82,
   },
   alignRight: {
     alignSelf: 'flex-end',
@@ -110,8 +146,9 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   bubbleContainer: {
-    borderRadius: 18,
+    borderRadius: 10,
     overflow: 'hidden',
+    maxWidth: '100%',
   },
   myBubbleBg: {
     backgroundColor: PrimaryBlue,
@@ -131,7 +168,7 @@ const styles = StyleSheet.create({
   textContainer: {
     paddingHorizontal: 14,
     paddingVertical: 10,
-    borderRadius: 18,
+    borderRadius: 12,
   },
   innerPadding: {
     paddingHorizontal: 14,
@@ -154,17 +191,15 @@ const styles = StyleSheet.create({
   darkText: {
     color: '#111827',
   },
-  mediaWrap: {
-    width: 240,
-    height: 240,
-    borderRadius: 16,
-    overflow: 'hidden',
-    backgroundColor: '#E5E7EB',
-  },
   mediaImage: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
+    width: 260,
+    height: 260,
+    borderRadius: 12,
+  },
+  inlineVideo: {
+    width: 260,
+    height: 260,
+    borderRadius: 12,
   },
   videoOverlayOverlay: {
     ...StyleSheet.absoluteFillObject,

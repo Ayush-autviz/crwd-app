@@ -191,7 +191,8 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   textContent: {
-    flex: 1,
+    flexShrink: 1,
+    paddingLeft: 2,
     justifyContent: 'center',
   },
   titleText: {

@@ -1266,8 +1266,10 @@ export default function NewGroupCrwdPage() {
       <SharePost
         ref={shareSheetRef}
         url={`${WEB_BASE_URL}/g/${crwdData?.sort_name}`}
-        title={''}
+        title={crwdData?.name || ''}
         message={''}
+        entityType="collective"
+        entityId={crwdId}
       />
 
       {crwdData?.is_joined && (

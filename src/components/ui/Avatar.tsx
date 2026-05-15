@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
   avatarFallbackText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#6b7280', // text-muted-foreground equivalent
+    color: '#FFFFFF', // white text for better contrast on colored backgrounds
     textAlign: 'center',
   },
 });

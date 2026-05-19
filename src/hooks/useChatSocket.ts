@@ -9,7 +9,7 @@ interface WebSocketMessage {
 // Automatically match socket host based on environment API URL configuration
 const getSocketHost = () => {
   // Can be configured to match stage-api or production depending on target backend
-  return 'stage-api.crwdfund.org/';
+  return 'crwdfund.org/';
 };
 
 export function useChatSocket(conversationId: string | null, onMessageReceived: (message: any) => void) {
@@ -18,7 +18,7 @@ export function useChatSocket(conversationId: string | null, onMessageReceived: 
   const { token } = useAuthStore();
 
   useEffect(() => {
-    if (!conversationId || !token?.access_token) {
+    if (!conversationId || conversationId.startsWith('new-') || !token?.access_token) {
       return;
     }
 

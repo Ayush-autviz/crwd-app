@@ -56,7 +56,7 @@ export default function Messages() {
   // Extract targeted paths or direct IDs if deep linked
   const params: any = route.params || {};
   const [selectedId, setSelectedId] = useState<string | null>(
-    params.userId || params.conversationId || null
+    params.userId ? `new-${params.userId}` : (params.conversationId || null)
   );
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -74,11 +74,11 @@ export default function Messages() {
           if (res?.id) {
             setSelectedId(res.id.toString());
           } else {
-            setSelectedId(params.userId);
+            setSelectedId(`new-${params.userId}`);
           }
         } catch (e) {
           console.error('Failed to resolve conversation for userId:', e);
-          setSelectedId(params.userId);
+          setSelectedId(`new-${params.userId}`);
         }
       }
     };
@@ -108,7 +108,7 @@ export default function Messages() {
   );
 
   // Map API response to rich display format
-  const conversations: ConversationItem[] = useMemo(() => {
+  const baseConversations: ConversationItem[] = useMemo(() => {
     const results = conversationData?.results || [];
     return results.map((conv: ConversationResponse) => {
       const otherUser = conv.participants?.find(p => p.id !== user?.id) || conv.participants?.[0];
@@ -160,6 +160,36 @@ export default function Messages() {
     });
   }, [conversationData?.results, user?.id]);
 
+  const conversations = useMemo(() => {
+    const list = [...baseConversations];
+    const isNewConversation = selectedId?.startsWith('new-') || false;
+    const newUserState = params.newUser;
+
+    if (isNewConversation && newUserState) {
+      const targetUserId = selectedId?.replace('new-', '');
+      const exists = list.some(c =>
+        c.id === selectedId ||
+        (targetUserId && c.participantId === targetUserId) ||
+        c.user.name.toLowerCase() === newUserState.name.toLowerCase()
+      );
+      if (!exists) {
+        list.unshift({
+          id: selectedId!,
+          participantId: targetUserId,
+          user: {
+            name: newUserState.name,
+            avatar: newUserState.avatar,
+            color: '#2222EE',
+          },
+          lastMessage: 'Start a new conversation',
+          timestamp: '',
+          unread: false,
+        });
+      }
+    }
+    return list;
+  }, [baseConversations, selectedId, params.newUser]);
+
   useEffect(() => {
     console.log("[Messages] Current conversations with unread status:", 
       conversations.map(c => ({ name: c.user.name, unread: c.unread }))
@@ -171,6 +201,25 @@ export default function Messages() {
     c => c.id === selectedId || c.participantId === selectedId
   );
 
+  // Auto-redirect to established numeric conversation ID if user thread already exists
+  useEffect(() => {
+    const isNewConversation = selectedId?.startsWith('new-') || false;
+    if (isNewConversation && selectedId) {
+      const targetUserId = selectedId.replace('new-', '');
+      const newUserState = params.newUser;
+
+      // Find matching conversation in server list by participantId or full name
+      const existingConv = baseConversations.find(c =>
+        (targetUserId && c.participantId === targetUserId) ||
+        (newUserState?.name && c.user.name.toLowerCase() === newUserState.name.toLowerCase())
+      );
+
+      if (existingConv?.id) {
+        setSelectedId(existingConv.id);
+      }
+    }
+  }, [selectedId, baseConversations, params.newUser]);
+
   // 2. Fetch specific Message History pages via TanStack Infinite Queries
   const {
     data: historyData,
@@ -181,7 +230,7 @@ export default function Messages() {
   } = useInfiniteQuery({
     queryKey: ['messages', selectedId],
     queryFn: ({ pageParam = 1 }) => getMessages(selectedId!, pageParam),
-    enabled: !!selectedId,
+    enabled: !!selectedId && !selectedId.startsWith('new-'),
     staleTime: 0,
     gcTime: 0,
     getNextPageParam: lastPage => {
@@ -202,7 +251,7 @@ export default function Messages() {
 
   // Synchronize component messages cache array
   useEffect(() => {
-    if (historyData?.pages && selectedId) {
+    if (historyData?.pages && selectedId && !selectedId.startsWith('new-')) {
       const mappedMessages: ChatMessage[] = allMessages
         .filter((msg: any) => msg && msg.id != null)
         .map((msg: MessageResponse) => ({
@@ -305,7 +354,7 @@ export default function Messages() {
         }));
       // Keep mapped messages in newest-first sorting orientation matching the inverted FlatList container view
       setMessages(mappedMessages);
-    } else if (!selectedId) {
+    } else if (!selectedId || selectedId.startsWith('new-')) {
       setMessages([]);
     }
   }, [historyData?.pages, allMessages, selectedId, user?.id]);
@@ -432,12 +481,22 @@ export default function Messages() {
     if (!inputValue.trim() && (!images || images.length === 0)) return;
 
     try {
-      const actualConvId = selectedId || '';
+      const isNewConversation = selectedId?.startsWith('new-') || false;
+      const actualConvId = isNewConversation ? '' : (selectedId || '');
+      const recipientId = isNewConversation ? selectedId?.replace('new-', '') : '';
+      let lastSentMessage: any | undefined;
+      let resolvedConvId: string | undefined;
 
       const processResponseObj = (rawRes: any) => {
         if (!rawRes) return;
         const resObj = rawRes.id != null ? rawRes : rawRes.message || rawRes.data || rawRes.result;
         if (!resObj || resObj.id == null) return;
+
+        lastSentMessage = resObj;
+        const cid = rawRes.conversation_id || rawRes.conversation?.id || rawRes.data?.conversation_id || rawRes.data?.conversation?.id || resObj?.conversation_id || resObj?.conversation?.id;
+        if (cid != null) {
+          resolvedConvId = cid.toString();
+        }
 
         // Instant inline optimistic sync layer
         const newMsgItem: ChatMessage = {
@@ -471,7 +530,8 @@ export default function Messages() {
       if (images && images.length > 0) {
         for (const fObj of images) {
           const formData = new FormData();
-          formData.append('conversation_id', actualConvId);
+          if (actualConvId) formData.append('conversation_id', actualConvId);
+          if (recipientId) formData.append('recipient_id', recipientId);
           formData.append('content', inputValue.trim() || '');
           formData.append('file', {
             uri: fObj.uri,
@@ -485,7 +545,8 @@ export default function Messages() {
         }
       } else if (inputValue.trim()) {
         const formData = new FormData();
-        formData.append('conversation_id', actualConvId);
+        if (actualConvId) formData.append('conversation_id', actualConvId);
+        if (recipientId) formData.append('recipient_id', recipientId);
         formData.append('content', inputValue.trim());
 
         const res = await sendChatMessage(formData);
@@ -493,6 +554,36 @@ export default function Messages() {
       }
 
       setInputValue('');
+
+      if (isNewConversation) {
+        // Resolve newly created conversation ID
+        let targetConvIdStr = resolvedConvId || (lastSentMessage ? (lastSentMessage.conversation?.id || lastSentMessage.conversation_id)?.toString() : undefined);
+
+        if (!targetConvIdStr && recipientId) {
+          // Await conversations refetch to look up newly established numeric ID
+          await queryClient.invalidateQueries({ queryKey: ['conversations'] });
+          const latestConvs: any = queryClient.getQueryData(['conversations', searchQuery]);
+          const found = latestConvs?.results?.find((c: any) => c.participants?.some((p: any) => p.id?.toString() === recipientId));
+          if (found?.id) {
+            targetConvIdStr = found.id.toString();
+          }
+        }
+
+        if (targetConvIdStr) {
+          if (lastSentMessage) {
+            // Pre-populate cache for the real conversation ID so it renders instantly upon navigation
+            queryClient.setQueryData(['messages', targetConvIdStr], {
+              pages: [{ count: 1, next: null, previous: null, results: [lastSentMessage] }],
+              pageParams: [1],
+            });
+          }
+
+          queryClient.invalidateQueries({ queryKey: ['conversations'] });
+          setSelectedId(targetConvIdStr);
+        } else {
+          queryClient.invalidateQueries({ queryKey: ['conversations'] });
+        }
+      }
     } catch (err) {
       console.error('Submission messaging exception error:', err);
     }
@@ -637,13 +728,12 @@ export default function Messages() {
         ) : (
           // FULL NATIVE CHAT VIEWPORT FEED ENGINE
           <ChatView
-            conversation={currentConversation || { id: selectedId }}
+            conversation={currentConversation || (selectedId ? { id: selectedId } as any : null)}
             messages={messages}
             inputValue={inputValue}
             onInputChange={setInputValue}
             onSend={handleSendMessage}
             isLoading={isHistoryLoading}
-            hasNextPage={hasNextPage}
             isFetchingNextPage={isFetchingNextPage}
             onLoadMore={() => {
               if (hasNextPage && !isFetchingNextPage) {

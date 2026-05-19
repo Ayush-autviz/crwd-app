@@ -781,7 +781,14 @@ export default function UserProfile() {
                                 if (!currentUser?.id) {
                                     (navigation as any).navigate('Login');
                                 } else {
-                                    (navigation as any).navigate('Messages', { userId: targetUserId });
+                                    (navigation as any).navigate('Messages', {
+                                        userId: targetUserId,
+                                        newUser: {
+                                            id: targetUserId,
+                                            name: fullName || userProfile?.username || 'User',
+                                            avatar: userProfile?.profile_picture || '',
+                                        }
+                                    });
                                 }
                             }}
                             style={[
